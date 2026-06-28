@@ -278,6 +278,34 @@ export const PUBLIC_SERVICES: PublicService[] = [
       { id: 'ngayDuKienToChuc', label: 'Ngày dự kiến tổ chức lễ', type: 'date', required: false },
     ],
   },
+  {
+    id: 'lien-thong-khai-sinh',
+    name: 'Liên thông Khai sinh',
+    shortName: 'Liên thông Khai sinh',
+    description: 'Mô phỏng thủ tục nhiều bước: khai sinh, cư trú, BHYT.',
+    route: '/lien-thong-khai-sinh',
+    icon: '🧾',
+    category: 'Liên thông',
+    processingTime: '3-5 ngày làm việc',
+    fee: 'Miễn phí',
+    keywords: ['liên thông', 'liên thông khai sinh', 'khai sinh nhiều bước'],
+    requiredDocs: ['CCCD cha/mẹ', 'Giấy chứng sinh', 'Thông tin nơi cư trú'],
+    steps: ['Bước 1: Thông tin trẻ', 'Bước 2: Thông tin cha mẹ', 'Bước 3: Thông tin liên thông'],
+    fields: [
+      { id: 'ltks_tenTre', label: 'Họ và tên trẻ', type: 'text', required: true, step: 1 },
+      { id: 'ltks_ngaySinhTre', label: 'Ngày sinh', type: 'date', required: true, step: 1 },
+      { id: 'ltks_noiSinhTre', label: 'Nơi sinh', type: 'text', required: true, step: 1 },
+  
+      { id: 'ltks_cccdCha', label: 'CCCD cha', type: 'text', required: true, step: 2, cccdKey: 'id' },
+      { id: 'ltks_hoTenCha', label: 'Họ và tên cha', type: 'text', required: true, step: 2, cccdKey: 'hoTen' },
+      { id: 'ltks_cccdMe', label: 'CCCD mẹ', type: 'text', required: true, step: 2 },
+      { id: 'ltks_hoTenMe', label: 'Họ và tên mẹ', type: 'text', required: true, step: 2 },
+  
+      { id: 'ltks_diaChiThuongTru', label: 'Địa chỉ thường trú', type: 'textarea', required: true, step: 3 },
+      { id: 'ltks_nhanBHYT', label: 'Nơi nhận thẻ BHYT', type: 'text', required: true, step: 3 },
+      { id: 'ltks_ghiChu', label: 'Ghi chú', type: 'textarea', required: false, step: 3 },
+    ],
+  },
 ];
 
 export const SERVICE_MAP = Object.fromEntries(

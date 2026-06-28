@@ -95,6 +95,7 @@ export interface FormField {
   label: string;
   type: FieldType;
   required: boolean;
+  step?: number;
   placeholder?: string;
   options?: FormFieldOption[];
   validation?: {

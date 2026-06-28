@@ -63,6 +63,7 @@ interface ChatbotProviderProps {
   onNavigate: (route: string) => void;
   onFillForm: (fields: Record<string, string>) => void;
   currentRoute: string;
+  formValues: Record<string, string>;
 }
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
@@ -70,6 +71,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   onNavigate,
   onFillForm,
   currentRoute,
+  formValues,
 }) => {
   const [state, dispatch] = useReducer(chatbotReducer, initialState);
   const [enableVoiceResponse, setEnableVoiceResponse] = React.useState(false);
@@ -79,9 +81,13 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const onNavigateRef = useRef(onNavigate);
   const onFillFormRef = useRef(onFillForm);
   const enableVoiceRef = useRef(enableVoiceResponse);
+  const currentRouteRef = useRef(currentRoute);
+  const formValuesRef = useRef(formValues);
   onNavigateRef.current = onNavigate;
   onFillFormRef.current = onFillForm;
   enableVoiceRef.current = enableVoiceResponse;
+  currentRouteRef.current = currentRoute;
+  formValuesRef.current = formValues;
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
 
@@ -174,6 +180,12 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         case 'ERROR':
           addBotMessage(event.message, 'text', undefined, ['Thử lại', 'Tôi cần hỗ trợ']);
           break;
+
+        case 'NEXT_STEP':
+          if (event.message) {
+            addBotMessage(event.message, 'text', undefined, event.suggestions);
+          }
+          break;
       }
     };
 
@@ -263,25 +275,16 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      const response = await smartbotService.sendMessage(text);
+      const result = await smartbotService.sendMessage(text, {
+        currentRoute: currentRouteRef.current,
+        formValues: formValuesRef.current,
+      });
 
-      // Khi dùng OpenAI Tool Calling:
-      //   → agentEventBus đã emit event → listener ở trên đã xử lý UI
-      //   → response.message chỉ dùng cho legacy / fallback display
-      // Khi dùng Mock / VNPT:
-      //   → agentEventBus KHÔNG emit → handleAIResponse xử lý
-      //
-      // Phân biệt: nếu OPENAI key có → Tool Calling đã chạy → chỉ cần silent
-      const isToolCallingPath =
-        !!import.meta.env.VITE_OPENAI_API_KEY &&
-        text.trim() !== '' &&
-        !isExactFAQ(text);
-
-      if (!isToolCallingPath) {
-        // Mock / VNPT path: xử lý response trực tiếp
-        handleAIResponse(response);
+      if (result.actions.length > 0) {
+        result.actions.forEach((action) => agentEventBus.emit(action));
+      } else {
+        handleAIResponse(result.response);
       }
-      // Tool Calling path: event bus đã xử lý rồi, không làm gì thêm
     } catch (err) {
       console.error('Send message error:', err);
       const errMsg: ChatMessage = {
@@ -355,17 +358,6 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     </ChatbotContext.Provider>
   );
 };
-
-// Helper: kiểm tra câu có phải FAQ cố định không
-const FAQ_SET = new Set([
-  'cảm ơn!', 'tôi muốn điền form', 'hướng dẫn thêm', 'chưa điền xong form',
-  'bắt đầu điền form', 'upload ảnh cccd', 'hướng dẫn từng bước', 'cần chuẩn bị gì?',
-  'quy trình các bước', 'điền bằng giọng nói', 'nút nộp hồ sơ ở đâu?',
-  'đồng ý, chuyển ngay!', 'không cần, tôi tự vào', 'thông tin đúng rồi ✓',
-  'cần sửa lại', 'nộp hồ sơ thôi!', 'sửa thông tin', 'nút nộp ở đâu?',
-  'đăng ký khai sinh', 'làm hộ khẩu mới', 'cấp lại cccd', 'đăng ký kết hôn',
-]);
-const isExactFAQ = (text: string) => FAQ_SET.has(text.trim().toLowerCase());
 
 export const useChatbot = () => {
   const ctx = useContext(ChatbotContext);

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { FormValues, FormState } from '../types';
 
 interface FormContextValue {
@@ -20,8 +20,38 @@ const initialFormState: FormState = {
   isSubmitting: false,
 };
 
+const STORAGE_KEY = 'gov-bridge-form-state';
+
+const loadInitialState = (): FormState => {
+  if (typeof window === 'undefined') return initialFormState;
+  try {
+    const saved = window.sessionStorage.getItem(STORAGE_KEY);
+    if (!saved) return initialFormState;
+    const parsed = JSON.parse(saved) as Partial<FormState>;
+    return {
+      values: parsed.values ?? {},
+      errors: parsed.errors ?? {},
+      touched: parsed.touched ?? {},
+      isSubmitting: false,
+    };
+  } catch {
+    return initialFormState;
+  }
+};
+
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [formState, setFormState] = useState<FormState>(initialFormState);
+  const [formState, setFormState] = useState<FormState>(loadInitialState);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        values: formState.values,
+        errors: formState.errors,
+        touched: formState.touched,
+      }),
+    );
+  }, [formState.values, formState.errors, formState.touched]);
 
   const setFieldValue = useCallback((fieldId: string, value: string) => {
     setFormState((prev) => ({

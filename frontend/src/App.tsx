@@ -13,6 +13,7 @@ const KhaiSinhPage = lazy(() => import('./components/pages/KhaiSinhPage'));
 const DangKyThuongTruPage = lazy(() => import('./components/pages/DangKyThuongTruPage'));
 const CCCDPage = lazy(() => import('./components/pages/CCCDPage'));
 const KetHonPage = lazy(() => import('./components/pages/KetHonPage'));
+const LienThongKhaiSinhPage = lazy(() => import('./components/pages/LienThongKhaiSinhPage'));
 
 // Loading fallback
 const PageLoader = () => (
@@ -42,7 +43,7 @@ const PageLoader = () => (
 const AppInner: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { fillFields } = useForm();
+  const { fillFields, formState } = useForm();
 
   const handleNavigate = (route: string) => {
     navigate(route);
@@ -57,6 +58,7 @@ const AppInner: React.FC = () => {
       onNavigate={handleNavigate}
       onFillForm={handleFillForm}
       currentRoute={location.pathname}
+      formValues={formState.values}
     >
       {/* Global overlay & chatbot */}
       <UIHighlighter />
@@ -74,6 +76,8 @@ const AppInner: React.FC = () => {
             <Route path="/ho-khau" element={<DangKyThuongTruPage />} />
             <Route path="/cccd" element={<CCCDPage />} />
             <Route path="/ket-hon" element={<KetHonPage />} />
+            <Route path="/lien-thong-khai-sinh" element={<LienThongKhaiSinhPage />} />
+            <Route path="/lien-thong-khai-sinh/:stepSlug" element={<LienThongKhaiSinhPage />} />
             {/* Fallback */}
             <Route path="*" element={<HomePage />} />
           </Routes>

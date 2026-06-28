@@ -2,8 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import type { PublicService, FormField } from "../../types";
 import { useForm } from "../../contexts/FormContext";
-import { quickValidate } from "../../utils/validator";
+import { quickValidate, validateForm } from "../../utils/validator";
 import { ChevronRight, Home } from "lucide-react";
+import { applicationService } from "../../api/applicationService";
+import { ApiClientError } from "../../api/client";
 
 // ============================================================
 // Reusable form field renderer
@@ -22,6 +24,8 @@ export const FormFieldInput: React.FC<FieldProps> = ({
   isAutofilled,
 }) => {
   const [error, setError] = React.useState("");
+  const { formState } = useForm();
+  const displayError = error || formState.errors[field.id] || "";
 
   const handleChange = (val: string) => {
     onChange(val);
@@ -29,9 +33,9 @@ export const FormFieldInput: React.FC<FieldProps> = ({
     setError(err || "");
   };
 
-  const inputClass = `form-input${isAutofilled ? " autofilled" : ""}${error ? " error" : ""}`;
-  const selectClass = `form-select${isAutofilled ? " autofilled" : ""}${error ? " error" : ""}`;
-  const textareaClass = `form-textarea${isAutofilled ? " autofilled" : ""}${error ? " error" : ""}`;
+  const inputClass = `form-input${isAutofilled ? " autofilled" : ""}${displayError ? " error" : ""}`;
+  const selectClass = `form-select${isAutofilled ? " autofilled" : ""}${displayError ? " error" : ""}`;
+  const textareaClass = `form-textarea${isAutofilled ? " autofilled" : ""}${displayError ? " error" : ""}`;
 
   const commonProps = {
     id: field.id,
@@ -39,7 +43,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
     "data-highlight-id": field.id,
     "aria-label": field.label,
     "aria-required": field.required,
-    "aria-invalid": !!error,
+    "aria-invalid": !!displayError,
   };
 
   let inputEl: React.ReactNode;
@@ -140,12 +144,12 @@ export const FormFieldInput: React.FC<FieldProps> = ({
         )}
       </label>
       {inputEl}
-      {error && (
+      {displayError && (
         <span className="form-error-msg" role="alert">
-          ⚠️ {error}
+          ⚠️ {displayError}
         </span>
       )}
-      {isAutofilled && !error && (
+      {isAutofilled && !displayError && (
         <span className="form-hint" style={{ color: "var(--accent)" }}>
           ✓ Đã tự động điền
         </span>
@@ -166,15 +170,53 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
   service,
   categoryLabel,
 }) => {
-  const { formState, setFieldValue } = useForm();
-  const [submitted, setSubmitted] = React.useState(false);
+  const {
+    formState,
+    setFieldValue,
+    setFieldError,
+    touchField,
+    setIsSubmitting,
+  } = useForm();
+  const [submittedId, setSubmittedId] = React.useState("");
+  const [submitError, setSubmitError] = React.useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Chatbot does NOT submit — user must do this
-    // Just show a confirmation message
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 5000);
+    setSubmitError("");
+    setSubmittedId("");
+
+    const errors = validateForm(formState.values, service.fields);
+    service.fields.forEach((field) => {
+      touchField(field.id);
+      setFieldError(
+        field.id,
+        errors.find((error) => error.field === field.id)?.message || "",
+      );
+    });
+    if (errors.length > 0) return;
+
+    try {
+      setIsSubmitting(true);
+      const application = await applicationService.submit({
+        serviceId: service.id,
+        submittedAt: new Date().toISOString(),
+        data: Object.fromEntries(
+          service.fields.map((field) => [field.id, formState.values[field.id] || ""]),
+        ),
+      });
+      setSubmittedId(application.id);
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        error.details.forEach((detail) => {
+          if (!detail.field) return;
+          touchField(detail.field);
+          setFieldError(detail.field, detail.message);
+        });
+      }
+      setSubmitError(error instanceof Error ? error.message : "Không thể nộp hồ sơ.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getFieldValue = (fieldId: string) => formState.values[fieldId] || "";
@@ -301,11 +343,18 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
                   data-highlight-id="submit-btn"
                   data-highlight-label="Nút Nộp Hồ Sơ"
                   aria-label="Nộp hồ sơ"
+                  disabled={formState.isSubmitting}
                 >
-                  Nộp Hồ Sơ
+                  {formState.isSubmitting ? "Đang nộp..." : "Nộp Hồ Sơ"}
                 </button>
 
-                {submitted && (
+                {submitError && (
+                  <div className="form-error-msg" role="alert" style={{ marginTop: 16 }}>
+                    {submitError}
+                  </div>
+                )}
+
+                {submittedId && (
                   <div
                     style={{
                       marginTop: 16,
@@ -325,7 +374,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
                     <span>
                       <strong>Nộp hồ sơ thành công!</strong> Chúng tôi sẽ xem
                       xét và phản hồi trong {service.processingTime}. Vui lòng
-                      giữ điện thoại để nhận thông báo.
+                      giữ điện thoại để nhận thông báo. Mã hồ sơ: {submittedId}.
                     </span>
                   </div>
                 )}

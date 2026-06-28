@@ -112,27 +112,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
         ],
       });
     } catch (err) {
-      console.warn("[ChatInput OCR] API failed, using demo data:", err);
-      const demoCCCD = {
-        id: "012345678901",
-        hoTen: "LÊ THỊ THÚY QUỲNH",
-        ngaySinh: "2006-10-22",
-        gioiTinh: "Nữ",
-        queQuan: "Thới Sơn, Tịnh Biên, An Giang",
-        thuongTru: "", // do người dùng tự điền
-        ngayCap: "2023-10-22",
-        noiCap: "Cục Cảnh sát QLHC về TTXH",
-      };
+      console.warn("[ChatInput OCR] API failed:", err);
       handleAIResponse({
-        intent: "OCR_CONFIRM",
-        message:
-          "Tôi đã đọc được thông tin từ CCCD của bạn! 📋\n\n+ Họ và tên: Lê Thị Thúy Quỳnh\n+ Số CCCD: 012345678901\n+ Ngày sinh: 22/10/2006\n+ Giới tính: Nữ\n+ Quê quán: Thới Sơn, Tịnh Biên, An Giang\n\nVui lòng kiểm tra lại thông tin bên dưới trước khi xác nhận điền vào form:",
-        data: { cccdInfo: demoCCCD },
-        suggestions: [
-          "Xác nhận và điền vào form",
-          "Thông tin cần sửa lại",
-          "Huỷ",
-        ],
+        intent: "CHAT",
+        message: err instanceof Error
+          ? `Không thể đọc ảnh CCCD: ${err.message}`
+          : "Không thể đọc ảnh CCCD. Vui lòng thử lại với ảnh rõ hơn.",
+        suggestions: ["Thử ảnh khác", "Nhập thông tin thủ công"],
       });
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
