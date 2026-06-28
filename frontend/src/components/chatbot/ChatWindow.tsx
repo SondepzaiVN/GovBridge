@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import type { ChatMessage } from '../../types';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import { useForm } from '../../contexts/FormContext';
+import { ROUTE_TO_SERVICE_MAP } from '../../data/services';
+import { useLocation } from 'react-router-dom';
 import { Bot, User, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
 
 // ============================================================
@@ -33,6 +35,7 @@ interface ChatMessageProps {
 const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const { state, confirmNavigation, cancelNavigation, sendMessage, dispatch, handleAIResponse } = useChatbot();
   const { fillFields } = useForm();
+  const location = useLocation();
 
   const isBot = message.role === 'bot';
   const time = message.timestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -90,34 +93,28 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           <button
             className="btn btn-primary btn-sm"
             onClick={() => {
-              // Map CCCD fields to form fields
               const fields: Record<string, string> = {};
-              if (info.id) {
-                fields['cccdCha'] = info.id;
-                fields['cccd'] = info.id;
-                fields['cccdNam'] = info.id;
+              const serviceRoute = location.pathname.replace(/\/buoc-\d+\/?$/, '');
+              const service = ROUTE_TO_SERVICE_MAP[serviceRoute];
+
+              service?.fields.forEach((field) => {
+                if (!field.cccdKey) return;
+                const rawValue = info[field.cccdKey];
+                if (!rawValue) return;
+                fields[field.id] = field.cccdKey === 'gioiTinh'
+                  ? rawValue.toLowerCase().includes('nữ') ? 'Nu' : 'Nam'
+                  : rawValue;
+              });
+
+              if (Object.keys(fields).length === 0) {
+                handleAIResponse({
+                  intent: 'CHAT',
+                  message: 'Thủ tục hiện tại chưa khai báo trường nào để tự điền từ CCCD.',
+                  suggestions: ['Nhập thông tin thủ công', 'Chọn thủ tục khác'],
+                });
+                return;
               }
-              if (info.hoTen) {
-                fields['hoTenCha'] = info.hoTen;
-                fields['hoTen'] = info.hoTen;
-                fields['hoTenNam'] = info.hoTen;
-              }
-              if (info.ngaySinh) {
-                fields['ngaySinhCha'] = info.ngaySinh;
-                fields['ngaySinh'] = info.ngaySinh;
-                fields['ngaySinhNam'] = info.ngaySinh;
-              }
-              if (info.queQuan) fields['queQuan'] = info.queQuan;
-              if (info.thuongTru) {
-                fields['thuongTru'] = info.thuongTru;
-                fields['diaChiMoi'] = info.thuongTru;
-              }
-              if (info.gioiTinh) {
-                const genderVal = info.gioiTinh.toLowerCase().includes('nữ') ? 'Nu' : 'Nam';
-                fields['gioiTinh'] = genderVal;
-                fields['gioiTinhTre'] = genderVal;
-                fields['gioiTinhNam'] = genderVal; // Or handled specifically per form
-              }
+
               fillFields(fields);
               // Bot responds with confirmation — not a user message
               handleAIResponse({

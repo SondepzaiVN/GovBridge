@@ -52,6 +52,12 @@ export type AgentEvent =
   | {
       type: 'ERROR';
       message: string;
+    }
+  | {
+      type: 'NEXT_STEP';
+      step?: number;
+      message?: string;
+      suggestions?: string[];
     };
 
 type EventHandler = (event: AgentEvent) => void;
