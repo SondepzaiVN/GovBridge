@@ -6,7 +6,7 @@ import type {
   AssistantApiResult,
   AssistantMessageInput,
   AssistantSession,
-  AssistantTool,
+  AssistantProvider,
   AssistantToolContext,
 } from './assistant.types.js';
 
@@ -14,7 +14,7 @@ export class AssistantService {
   constructor(
     private readonly sessions: AssistantSessionRepository,
     private readonly procedures: ProcedureRepository,
-    private readonly tools: AssistantTool[],
+    private readonly provider: AssistantProvider,
   ) {}
 
   async sendMessage(input: AssistantMessageInput): Promise<AssistantApiResult> {
@@ -34,9 +34,8 @@ export class AssistantService {
       formValues: input.formValues ?? {},
     };
 
-    const tool = this.tools.find((candidate) => candidate.canHandle(context));
-    if (!tool) throw new Error('Assistant tool registry must contain a fallback tool.');
-    const result = await tool.execute(context);
+    const history = existing?.messages ?? [];
+    const result = await this.provider.sendMessage(context, history);
 
     const session: AssistantSession = {
       id: sessionId,
@@ -44,9 +43,9 @@ export class AssistantService {
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
       messages: [
-        ...(existing?.messages ?? []),
-        { role: 'user', content: input.message, createdAt: now },
-        { role: 'assistant', content: result.response.message, createdAt: now },
+        ...history,
+        { role: 'user' as const, content: input.message, createdAt: now },
+        { role: 'assistant' as const, content: result.response.message, createdAt: now },
       ].slice(-20),
     };
     await this.sessions.upsert(session);

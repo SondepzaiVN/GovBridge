@@ -1,11 +1,6 @@
-import { PUBLIC_SERVICES } from './services';
+import type { Procedure } from '../procedures/procedure.types.js';
 
-// ============================================================
-// Knowledge Base — Context data cho Agent
-// Không còn ép JSON format (đã dùng Tool Calling)
-// ============================================================
-
-export const KNOWLEDGE_BASE = `
+export const buildKnowledgeBase = (procedures: Procedure[]): string => `
 # CỔNG DỊCH VỤ CÔNG QUỐC GIA — Tri thức hỗ trợ AI
 
 ## Thông tin chung
@@ -14,13 +9,12 @@ export const KNOWLEDGE_BASE = `
 - Người dùng phải tự nhấn nút "Nộp Hồ Sơ" — chatbot KHÔNG được thay mặt người dùng submit form.
 
 ## Danh sách dịch vụ có sẵn
-${PUBLIC_SERVICES.map(
+${procedures.map(
   (s) => `
 ### ${s.name} (ID: ${s.id}, Route: ${s.route})
 - Mô tả: ${s.description}
 - Thời gian xử lý: ${s.processingTime}
 - Lệ phí: ${s.fee}
-- Giấy tờ cần: ${s.requiredDocs.join('; ')}
 - Từ khóa nhận dạng: ${s.keywords.join(', ')}
 - Các field trong form: ${s.fields.map(f => `${f.id} (${f.label})`).join(', ')}
 `
@@ -47,28 +41,22 @@ ${PUBLIC_SERVICES.map(
 - queQuan, thuongTru, diaChiMoi → địa chỉ dạng text
 `;
 
-// ============================================================
-// System Prompt cho Agent (Tool Calling — không ép JSON format)
-// ============================================================
-export const AGENT_SYSTEM_PROMPT = `Bạn là trợ lý AI tên "Trợ lý DVC" của Cổng Dịch Vụ Công Quốc Gia Việt Nam.
+export const buildSystemPrompt = (procedures: Procedure[], currentRoute: string, currentProcedure: Procedure | null): string => {
+  const elementContext = currentProcedure
+    ? `Người dùng đang ở trang "${currentProcedure.name}" (${currentRoute}). Các field trong form: ${currentProcedure.fields.map(f => `${f.id} (${f.label})`).join(', ')}.`
+    : `Người dùng đang ở trang chủ (${currentRoute}).`;
+
+  return `Bạn là trợ lý AI tên "Trợ lý DVC" của Cổng Dịch Vụ Công Quốc Gia Việt Nam.
 Nhiệm vụ: hỗ trợ người dân thực hiện thủ tục hành chính dễ dàng, nhanh chóng.
 
-${KNOWLEDGE_BASE}
+${buildKnowledgeBase(procedures)}
+
+[CONTEXT TRANG HIỆN TẠI]
+${elementContext}
 
 ## Quy tắc sử dụng Tools
 1. **LUÔN** dùng một trong các tool được cung cấp để phản hồi — không bao giờ trả về text thuần.
-2. Khi người dùng hỏi "ô này ở đâu", "nút này ở chỗ nào", "điền tên ở đâu" → dùng \`highlight_element\`.
-3. Khi người dùng cung cấp thông tin cá nhân (họ tên, ngày sinh, CCCD, SĐT...) → dùng \`auto_fill_form\`.
-4. Khi người dùng muốn đến trang dịch vụ khác → dùng \`navigate_page\` và hỏi xác nhận trước.
-5. Khi người dùng hỏi giấy tờ cần, phí, thời gian, quy trình → dùng \`show_service_info\`.
-6. Khi người dùng nhờ kiểm tra form → dùng \`validate_form\`.
-7. Các trường hợp còn lại (chào hỏi, câu hỏi chung) → dùng \`chat_response\`.
-
-## Quy tắc ứng xử
-- Luôn thân thiện, kiên nhẫn, dùng tiếng Việt
-- KHÔNG BAO GIỜ nhấn Submit thay người dùng
-- Luôn đưa ra 2-3 gợi ý cho bước tiếp theo trong field \`suggestions\`
+2. Khi người dùng hỏi "ô này ở đâu", "nút này ở chỗ nào", "điền tên ở đâu" → dùng highlight_element.
+3. Khi người dùng cung cấp thông tin cá nhân (họ tên, ngày sinh, CCCD, SĐT...) → dùng auto_fill_form.
 `;
-
-// Giữ export cũ để không break import cũ nào
-export const SYSTEM_PROMPT = AGENT_SYSTEM_PROMPT;
+};

@@ -14,6 +14,8 @@ import { ApplicationRepository } from './modules/applications/application.reposi
 import { ApplicationService } from './modules/applications/application.service.js';
 import { AssistantSessionRepository } from './modules/assistant/assistant.repository.js';
 import { AssistantService } from './modules/assistant/assistant.service.js';
+import { MockAssistantProvider } from './modules/assistant/providers/mock-assistant.provider.js';
+import { VnptSmartbotProvider } from './integrations/vnpt/vnpt-smartbot.provider.js';
 import { buildAssistantTools } from './modules/assistant/tools/index.js';
 import { IdentityService } from './modules/identity/identity.service.js';
 import { MockOcrProvider } from './modules/identity/providers/mock-ocr.provider.js';
@@ -53,17 +55,26 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
   const ttsProvider: TtsProvider = options.ttsProvider ?? (env.TTS_PROVIDER === 'vnpt'
     ? new VnptTtsProvider({
       url: env.VNPT_TTS_URL,
-      accessToken: env.VNPT_VOICE_ACCESS_TOKEN,
-      tokenId: env.VNPT_VOICE_TOKEN_ID,
-      tokenKey: env.VNPT_VOICE_TOKEN_KEY,
+      accessToken: env.VNPT_TTS_ACCESS_TOKEN,
+      tokenId: env.VNPT_TTS_TOKEN_ID,
+      tokenKey: env.VNPT_TTS_TOKEN_KEY,
     })
     : new MockTtsProvider());
+
+  const assistantProvider = env.ASSISTANT_PROVIDER === 'vnpt'
+    ? new VnptSmartbotProvider({
+        url: env.VNPT_SMARTBOT_URL,
+        accessToken: env.VNPT_SMARTBOT_ACCESS_TOKEN,
+        tokenId: env.VNPT_SMARTBOT_TOKEN_ID,
+        tokenKey: env.VNPT_SMARTBOT_TOKEN_KEY,
+      })
+    : new MockAssistantProvider(buildAssistantTools());
 
   const procedureService = new ProcedureService(procedures);
   const apiRouter = createApiRouter({
     procedureService,
     applicationService: new ApplicationService(applications, procedures),
-    assistantService: new AssistantService(sessions, procedures, buildAssistantTools()),
+    assistantService: new AssistantService(sessions, procedures, assistantProvider),
     identityService: new IdentityService(ocrProvider),
     speechService: new SpeechService(ttsProvider),
     uploadMaxMb: env.UPLOAD_MAX_MB,
