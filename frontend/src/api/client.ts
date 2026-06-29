@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:3000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? '/api' : 'http://127.0.0.1:3000/api');
 
 interface ApiSuccess<T> {
   success: true;
@@ -21,15 +21,24 @@ interface ApiFailure {
 }
 
 export class ApiClientError extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly details: ApiFailure['error']['details'];
+  readonly requestId?: string;
+
   constructor(
     message: string,
-    public readonly status: number,
-    public readonly code = 'API_ERROR',
-    public readonly details: ApiFailure['error']['details'] = [],
-    public readonly requestId?: string,
+    status: number,
+    code = 'API_ERROR',
+    details: ApiFailure['error']['details'] = [],
+    requestId?: string,
   ) {
     super(message);
     this.name = 'ApiClientError';
+    this.status = status;
+    this.code = code;
+    this.details = details;
+    this.requestId = requestId;
   }
 }
 
