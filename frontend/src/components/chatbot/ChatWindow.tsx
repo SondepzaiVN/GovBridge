@@ -41,7 +41,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const time = message.timestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
   // Navigation confirm card (inside bot message)
-  const NavConfirmCard = () => (
+  const renderNavConfirmCard = () => (
     <div className="nav-confirm-card" style={{ marginTop: 10 }}>
       <div className="nav-confirm-title">
         🗺️ Chuyển đến: {state.pendingNavigation?.serviceName}
@@ -66,7 +66,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   );
 
   // CCCD Preview card
-  const CCCDPreviewCard = () => {
+  const renderCCCDPreviewCard = () => {
     const info = message.data?.cccdInfo as Record<string, string> | undefined;
     if (!info) return null;
     return (
@@ -144,7 +144,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   };
 
   // Validation result card
-  const ValidationCard = () => {
+  const renderValidationCard = () => {
     const errors = (message.data?.validationErrors as Array<{ field: string; label: string; message: string; severity: string }>) || [];
     if (errors.length === 0) {
       return (
@@ -186,9 +186,9 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           </div>
 
           {/* Extra cards based on message type */}
-          {message.type === 'navigation-confirm' && state.pendingNavigation && <NavConfirmCard />}
-          {message.type === 'cccd-preview' && <CCCDPreviewCard />}
-          {message.type === 'validation-result' && <ValidationCard />}
+          {message.type === 'navigation-confirm' && state.pendingNavigation && renderNavConfirmCard()}
+          {message.type === 'cccd-preview' && renderCCCDPreviewCard()}
+          {message.type === 'validation-result' && renderValidationCard()}
         </div>
 
         {/* Timestamp */}

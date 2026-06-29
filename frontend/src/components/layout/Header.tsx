@@ -1,163 +1,119 @@
-import React, { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
-import { LogIn, Home, ChevronDown } from "lucide-react";
+import React, { useState } from 'react';
+import { NavLink, Link } from 'react-router-dom';
+import { LogIn, Home, ChevronDown } from 'lucide-react';
 
 const Header: React.FC = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  return (
-    <header className="app-header" role="banner">
-      {/* ── Top white bar: Logo + Title + Login ── */}
-      <div className="header-top-bar">
-        <div className="header-inner">
-          {/* Quốc huy + tên cổng */}
-          <Link
-            to="/"
-            className="header-logo"
-            aria-label="Cổng Dịch Vụ Công Quốc Gia - Trang chủ"
-          >
-            {/* <img
-              src="/quoc_huy.png"
-              alt="Quốc huy Việt Nam"
-              className="header-quoc-huy"
-              width={60}
-              height={60}
-            /> */}
-            <div className="header-logo-text">
-              <span className="header-logo-name">
-                Cổng Dịch Vụ Công Quốc Gia
-              </span>
-              <span className="header-logo-sub">
-                Kết nối, cung cấp thông tin và dịch vụ công mọi lúc, mọi nơi
-              </span>
+    return (
+        <header className="app-header" role="banner">
+            {/* ── Top white bar: Logo + Title + Login ── */}
+            <div className="header-top-bar">
+                <div className="header-inner">
+                    {/* Tên cổng */}
+                    <Link to="/" className="header-logo" aria-label="Cổng Dịch Vụ Công Quốc Gia - Trang chủ">
+                        <div className="header-logo-text">
+                            <span className="header-logo-name">Cổng Dịch Vụ Công Quốc Gia</span>
+                            <span className="header-logo-sub">
+                                Kết nối, cung cấp thông tin và dịch vụ công mọi lúc, mọi nơi
+                            </span>
+                        </div>
+                    </Link>
+
+                    {/* Right: Login */}
+                    <div className="header-actions">
+                        <button
+                            className="btn-header-login"
+                            id="login-btn"
+                            data-highlight-id="login-btn"
+                            aria-label="Đăng nhập tài khoản"
+                        >
+                            <LogIn size={15} />
+                            <span>Đăng nhập</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-          </Link>
 
-          {/* Right: Login */}
-          <div className="header-actions">
-            <button
-              className="btn-header-login"
-              id="login-btn"
-              data-highlight-id="login-btn"
-              aria-label="Đăng nhập tài khoản"
-            >
-              <LogIn size={15} />
-              <span>Đăng nhập</span>
-            </button>
-          </div>
-        </div>
-      </div>
+            {/* ── Orange navigation bar ── */}
+            <div className="header-nav-bar">
+                <div className="header-nav-inner">
+                    <nav className="header-nav" role="navigation" aria-label="Menu chính">
+                        <NavLink
+                            to="/"
+                            end
+                            className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                            data-highlight-id="nav-home"
+                            aria-label="Trang chủ"
+                        >
+                            <Home size={15} />
+                        </NavLink>
+                        <NavLink
+                            to="/khai-sinh"
+                            className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                            data-highlight-id="nav-khai-sinh"
+                        >
+                            Hộ Tịch <ChevronDown size={13} />
+                        </NavLink>
+                        <NavLink
+                            to="/ho-khau"
+                            className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                            data-highlight-id="nav-ho-khau"
+                        >
+                            Cư Trú <ChevronDown size={13} />
+                        </NavLink>
+                        <NavLink
+                            to="/cccd"
+                            className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                            data-highlight-id="nav-cccd"
+                        >
+                            Căn Cước
+                        </NavLink>
+                        <NavLink
+                            to="/ket-hon"
+                            className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                            data-highlight-id="nav-ket-hon"
+                        >
+                            Kết Hôn
+                        </NavLink>
+                        <NavLink to="/" className="header-nav-link">
+                            Hỗ Trợ <ChevronDown size={13} />
+                        </NavLink>
+                    </nav>
 
-      {/* ── Orange navigation bar ── */}
-      <div className="header-nav-bar">
-        <div className="header-nav-inner">
-          <nav className="header-nav" role="navigation" aria-label="Menu chính">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                `header-nav-link${isActive ? " active" : ""}`
-              }
-              data-highlight-id="nav-home"
-              aria-label="Trang chủ"
-            >
-              <Home size={15} />
-            </NavLink>
-            <NavLink
-              to="/khai-sinh"
-              className={({ isActive }) =>
-                `header-nav-link${isActive ? " active" : ""}`
-              }
-              data-highlight-id="nav-khai-sinh"
-            >
-              Hộ Tịch <ChevronDown size={13} />
-            </NavLink>
-            <NavLink
-              to="/ho-khau"
-              className={({ isActive }) =>
-                `header-nav-link${isActive ? " active" : ""}`
-              }
-              data-highlight-id="nav-ho-khau"
-            >
-              Cư Trú <ChevronDown size={13} />
-            </NavLink>
-            <NavLink
-              to="/cccd"
-              className={({ isActive }) =>
-                `header-nav-link${isActive ? " active" : ""}`
-              }
-              data-highlight-id="nav-cccd"
-            >
-              Căn Cước
-            </NavLink>
-            <NavLink
-              to="/ket-hon"
-              className={({ isActive }) =>
-                `header-nav-link${isActive ? " active" : ""}`
-              }
-              data-highlight-id="nav-ket-hon"
-            >
-              Kết Hôn
-            </NavLink>
-            <NavLink to="/" className="header-nav-link">
-              Hỗ Trợ <ChevronDown size={13} />
-            </NavLink>
-          </nav>
+                    {/* Mobile menu toggle */}
+                    <button
+                        className="header-mobile-menu-btn"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label="Mở menu"
+                    >
+                        ☰
+                    </button>
+                </div>
+            </div>
 
-          {/* Mobile menu toggle */}
-          <button
-            className="header-mobile-menu-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Mở menu"
-          >
-            ☰
-          </button>
-        </div>
-      </div>
-
-      {/* ── Mobile dropdown menu ── */}
-      {mobileMenuOpen && (
-        <div className="header-mobile-menu">
-          <NavLink
-            to="/"
-            end
-            className="mobile-nav-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            🏠 Trang Chủ
-          </NavLink>
-          <NavLink
-            to="/khai-sinh"
-            className="mobile-nav-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            👶 Khai Sinh
-          </NavLink>
-          <NavLink
-            to="/ho-khau"
-            className="mobile-nav-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            🏡 Hộ Khẩu
-          </NavLink>
-          <NavLink
-            to="/cccd"
-            className="mobile-nav-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            🪪 Căn Cước
-          </NavLink>
-          <NavLink
-            to="/ket-hon"
-            className="mobile-nav-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            💍 Kết Hôn
-          </NavLink>
-        </div>
-      )}
-    </header>
-  );
+            {/* ── Mobile dropdown menu ── */}
+            {mobileMenuOpen && (
+                <div className="header-mobile-menu">
+                    <NavLink to="/" end className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                        Trang Chủ
+                    </NavLink>
+                    <NavLink to="/khai-sinh" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                        Khai Sinh
+                    </NavLink>
+                    <NavLink to="/ho-khau" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                        Hộ Khẩu
+                    </NavLink>
+                    <NavLink to="/cccd" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                        Căn Cước
+                    </NavLink>
+                    <NavLink to="/ket-hon" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
+                        Kết Hôn
+                    </NavLink>
+                </div>
+            )}
+        </header>
+    );
 };
 
 export default Header;
