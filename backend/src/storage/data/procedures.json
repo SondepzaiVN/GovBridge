@@ -1,6 +1,4 @@
 {
-  "schemaVersion": 1,
-  "procedures": [
     "schemaVersion": 1,
     "procedures": [
         {
@@ -26,1392 +24,6 @@
             ],
             "fields": []
         },
-    {
-      "id": "khai-sinh",
-      "name": "Đăng ký Khai Sinh",
-      "shortName": "Khai Sinh",
-      "description": "Đăng ký khai sinh cho trẻ em mới sinh. Thực hiện tại UBND xã/phường nơi cư trú.",
-      "route": "/khai-sinh",
-      "icon": "👶",
-      "category": "Hộ tịch",
-      "processingTime": "1-3 ngày làm việc",
-      "fee": "Miễn phí",
-      "keywords": [
-        "khai sinh",
-        "sinh",
-        "trẻ em",
-        "trẻ",
-        "bé",
-        "giấy khai sinh",
-        "baby",
-        "đăng ký khai sinh"
-      ],
-      "requiredDocs": [
-        "Giấy chứng sinh (bản gốc)",
-        "CCCD/CMND của cha và mẹ (bản sao)",
-        "Giấy đăng ký kết hôn của cha mẹ (nếu có)",
-        "Sổ hộ khẩu hoặc giấy tờ cư trú của cha/mẹ"
-      ],
-      "steps": [
-        "Chuẩn bị đầy đủ hồ sơ giấy tờ",
-        "Điền thông tin vào đơn đăng ký",
-        "Nộp hồ sơ tại bộ phận một cửa",
-        "Nhận giấy hẹn trả kết quả",
-        "Nhận giấy khai sinh theo lịch hẹn"
-      ],
-      "fields": [
-        {
-          "id": "tenTre",
-          "label": "Họ và tên trẻ",
-          "type": "text",
-          "required": true,
-          "placeholder": "Nguyễn Văn An"
-        },
-        {
-          "id": "ngaySinhTre",
-          "label": "Ngày sinh",
-          "type": "date",
-          "required": true
-        },
-        {
-          "id": "gioiTinhTre",
-          "label": "Giới tính",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "Nam",
-              "label": "Nam"
-            },
-            {
-              "value": "Nu",
-              "label": "Nữ"
-            }
-          ]
-        },
-        {
-          "id": "noiSinhTre",
-          "label": "Nơi sinh (tên bệnh viện/cơ sở y tế)",
-          "type": "text",
-          "required": true,
-          "placeholder": "Bệnh viện Phụ sản Trung ương"
-        },
-        {
-          "id": "queQuanTre",
-          "label": "Quê quán",
-          "type": "text",
-          "required": true,
-          "placeholder": "Hà Nội"
-        },
-        {
-          "id": "thuongTruTre",
-          "label": "Nơi thường trú",
-          "type": "text",
-          "required": true,
-          "placeholder": "Số 1, đường ABC, phường XYZ, quận/huyện..."
-        },
-        {
-          "id": "cccdCha",
-          "label": "Số CCCD/CMND cha",
-          "type": "text",
-          "required": true,
-          "placeholder": "012345678901",
-          "cccdKey": "id",
-          "validation": {
-            "pattern": "^\\d{9}(\\d{3})?$",
-            "message": "CCCD phải có 9 hoặc 12 chữ số"
-          }
-        },
-        {
-          "id": "hoTenCha",
-          "label": "Họ và tên cha",
-          "type": "text",
-          "required": true,
-          "placeholder": "Nguyễn Văn Bình",
-          "cccdKey": "hoTen"
-        },
-        {
-          "id": "ngaySinhCha",
-          "label": "Ngày sinh cha",
-          "type": "date",
-          "required": true,
-          "cccdKey": "ngaySinh"
-        },
-        {
-          "id": "sdtCha",
-          "label": "Số điện thoại cha",
-          "type": "phone",
-          "required": true,
-          "placeholder": "0901234567",
-          "validation": {
-            "pattern": "^(0[3-9]\\d{8})$",
-            "message": "Số điện thoại Việt Nam không hợp lệ"
-          }
-        },
-        {
-          "id": "cccdMe",
-          "label": "Số CCCD/CMND mẹ",
-          "type": "text",
-          "required": true,
-          "placeholder": "012345678901",
-          "validation": {
-            "pattern": "^\\d{9}(\\d{3})?$",
-            "message": "CCCD phải có 9 hoặc 12 chữ số"
-          }
-        },
-        {
-          "id": "hoTenMe",
-          "label": "Họ và tên mẹ",
-          "type": "text",
-          "required": true,
-          "placeholder": "Trần Thị Hoa"
-        },
-        {
-          "id": "ngaySinhMe",
-          "label": "Ngày sinh mẹ",
-          "type": "date",
-          "required": true
-        },
-        {
-          "id": "sdtMe",
-          "label": "Số điện thoại mẹ",
-          "type": "phone",
-          "required": false,
-          "placeholder": "0901234567"
-        },
-        {
-          "id": "ghiChu",
-          "label": "Ghi chú thêm",
-          "type": "textarea",
-          "required": false,
-          "placeholder": "Thông tin bổ sung (nếu có)"
-        }
-      ]
-    },
-    {
-      "id": "ho-khau",
-      "name": "Đăng ký thường trú",
-      "shortName": "Đăng ký thường trú",
-      "description": "Đăng ký thường trú cho công dân Việt Nam. Thực hiện tại Công an xã/phường/thị trấn nơi đăng ký.",
-      "route": "/ho-khau",
-      "icon": "🏠",
-      "category": "Cư trú",
-      "processingTime": "7 ngày làm việc",
-      "fee": "Miễn phí",
-      "keywords": [
-        "hộ khẩu",
-        "thường trú",
-        "cư trú",
-        "nhập hộ khẩu",
-        "đăng ký cư trú",
-        "chuyển hộ khẩu",
-        "đăng ký thường trú"
-      ],
-      "requiredDocs": [
-        "Tờ khai thay đổi thông tin cư trú (CT01)",
-        "CCCD/Căn cước công dân (bản gốc)",
-        "Giấy tờ chứng minh chỗ ở hợp pháp (sổ đỏ, hợp đồng mua bán, thuê nhà...)",
-        "Văn bản đồng ý cho đăng ký thường trú của chủ hộ (nếu đăng ký vào hộ đã có)",
-        "Ý kiến đồng ý của chủ sở hữu chỗ ở hợp pháp (nếu không phải chủ sở hữu)",
-        "Giấy tờ chứng minh quan hệ nhân thân với chủ hộ (nếu đăng ký vào hộ đã có)"
-      ],
-      "steps": [
-        "Chọn cơ quan thực hiện (Công an xã/phường nơi đăng ký)",
-        "Chọn thủ tục hành chính và trường hợp phù hợp",
-        "Khai thông tin người đề nghị đăng ký thường trú",
-        "Nhập thông tin nơi đề nghị đăng ký thường trú",
-        "Đính kèm hồ sơ giấy tờ theo yêu cầu",
-        "Chọn hình thức nhận thông báo và kết quả",
-        "Xác nhận và nộp hồ sơ trực tuyến"
-      ],
-      "fields": [
-        {
-          "id": "tinhThanhCQ",
-          "label": "Tỉnh/Thành phố",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "hanoi",
-              "label": "Thành phố Hà Nội"
-            },
-            {
-              "value": "hcm",
-              "label": "Thành phố Hồ Chí Minh"
-            },
-            {
-              "value": "danang",
-              "label": "Thành phố Đà Nẵng"
-            },
-            {
-              "value": "haiphong",
-              "label": "Thành phố Hải Phòng"
-            },
-            {
-              "value": "cantho",
-              "label": "Thành phố Cần Thơ"
-            },
-            {
-              "value": "hagiang",
-              "label": "Tỉnh Hà Giang"
-            },
-            {
-              "value": "caobang",
-              "label": "Tỉnh Cao Bằng"
-            },
-            {
-              "value": "laichau",
-              "label": "Tỉnh Lai Châu"
-            },
-            {
-              "value": "laocai",
-              "label": "Tỉnh Lào Cai"
-            },
-            {
-              "value": "tuyenquang",
-              "label": "Tỉnh Tuyên Quang"
-            },
-            {
-              "value": "langson",
-              "label": "Tỉnh Lạng Sơn"
-            },
-            {
-              "value": "backan",
-              "label": "Tỉnh Bắc Kạn"
-            },
-            {
-              "value": "thainguyen",
-              "label": "Tỉnh Thái Nguyên"
-            },
-            {
-              "value": "yenbai",
-              "label": "Tỉnh Yên Bái"
-            },
-            {
-              "value": "sonla",
-              "label": "Tỉnh Sơn La"
-            },
-            {
-              "value": "phutho",
-              "label": "Tỉnh Phú Thọ"
-            },
-            {
-              "value": "vinhphuc",
-              "label": "Tỉnh Vĩnh Phúc"
-            },
-            {
-              "value": "quangninh",
-              "label": "Tỉnh Quảng Ninh"
-            },
-            {
-              "value": "bacgiang",
-              "label": "Tỉnh Bắc Giang"
-            },
-            {
-              "value": "bacninh",
-              "label": "Tỉnh Bắc Ninh"
-            },
-            {
-              "value": "haiduong",
-              "label": "Tỉnh Hải Dương"
-            },
-            {
-              "value": "hungyen",
-              "label": "Tỉnh Hưng Yên"
-            },
-            {
-              "value": "hoabinh",
-              "label": "Tỉnh Hòa Bình"
-            },
-            {
-              "value": "hanam",
-              "label": "Tỉnh Hà Nam"
-            },
-            {
-              "value": "namdinh",
-              "label": "Tỉnh Nam Định"
-            },
-            {
-              "value": "thaibinh",
-              "label": "Tỉnh Thái Bình"
-            },
-            {
-              "value": "ninhbinh",
-              "label": "Tỉnh Ninh Bình"
-            },
-            {
-              "value": "thanhhoa",
-              "label": "Tỉnh Thanh Hóa"
-            },
-            {
-              "value": "nghean",
-              "label": "Tỉnh Nghệ An"
-            },
-            {
-              "value": "hatinh",
-              "label": "Tỉnh Hà Tĩnh"
-            },
-            {
-              "value": "quangbinh",
-              "label": "Tỉnh Quảng Bình"
-            },
-            {
-              "value": "quangtri",
-              "label": "Tỉnh Quảng Trị"
-            },
-            {
-              "value": "thuathienhue",
-              "label": "Tỉnh Thừa Thiên Huế"
-            },
-            {
-              "value": "quangnam",
-              "label": "Tỉnh Quảng Nam"
-            },
-            {
-              "value": "quangngai",
-              "label": "Tỉnh Quảng Ngãi"
-            },
-            {
-              "value": "kontum",
-              "label": "Tỉnh Kon Tum"
-            },
-            {
-              "value": "gialai",
-              "label": "Tỉnh Gia Lai"
-            },
-            {
-              "value": "binhdinh",
-              "label": "Tỉnh Bình Định"
-            },
-            {
-              "value": "phuyen",
-              "label": "Tỉnh Phú Yên"
-            },
-            {
-              "value": "daklak",
-              "label": "Tỉnh Đắk Lắk"
-            },
-            {
-              "value": "daknong",
-              "label": "Tỉnh Đắk Nông"
-            },
-            {
-              "value": "khanhhoa",
-              "label": "Tỉnh Khánh Hòa"
-            },
-            {
-              "value": "binhthuan",
-              "label": "Tỉnh Bình Thuận"
-            },
-            {
-              "value": "ninhthuan",
-              "label": "Tỉnh Ninh Thuận"
-            },
-            {
-              "value": "lamdong",
-              "label": "Tỉnh Lâm Đồng"
-            },
-            {
-              "value": "binhphuoc",
-              "label": "Tỉnh Bình Phước"
-            },
-            {
-              "value": "tayninh",
-              "label": "Tỉnh Tây Ninh"
-            },
-            {
-              "value": "binhduong",
-              "label": "Tỉnh Bình Dương"
-            },
-            {
-              "value": "dongnai",
-              "label": "Tỉnh Đồng Nai"
-            },
-            {
-              "value": "bariavungtau",
-              "label": "Tỉnh Bà Rịa - Vũng Tàu"
-            },
-            {
-              "value": "longan",
-              "label": "Tỉnh Long An"
-            },
-            {
-              "value": "tiengiang",
-              "label": "Tỉnh Tiền Giang"
-            },
-            {
-              "value": "bentre",
-              "label": "Tỉnh Bến Tre"
-            },
-            {
-              "value": "travinh",
-              "label": "Tỉnh Trà Vinh"
-            },
-            {
-              "value": "vinhlong",
-              "label": "Tỉnh Vĩnh Long"
-            },
-            {
-              "value": "dongthap",
-              "label": "Tỉnh Đồng Tháp"
-            },
-            {
-              "value": "angiang",
-              "label": "Tỉnh An Giang"
-            },
-            {
-              "value": "kiengiang",
-              "label": "Tỉnh Kiên Giang"
-            },
-            {
-              "value": "haugiang",
-              "label": "Tỉnh Hậu Giang"
-            },
-            {
-              "value": "soctrang",
-              "label": "Tỉnh Sóc Trăng"
-            },
-            {
-              "value": "baclieu",
-              "label": "Tỉnh Bạc Liêu"
-            },
-            {
-              "value": "camau",
-              "label": "Tỉnh Cà Mau"
-            },
-            {
-              "value": "dienbien",
-              "label": "Tỉnh Điện Biên"
-            }
-          ]
-        },
-        {
-          "id": "xaPhuongCQ",
-          "label": "Xã/Phường/Đặc khu",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "bachkhoa",
-              "label": "Phường Bách Khoa"
-            },
-            {
-              "value": "phuongmai",
-              "label": "Phường Phương Mai"
-            },
-            {
-              "value": "truongdinh",
-              "label": "Phường Trương Định"
-            },
-            {
-              "value": "tangmy",
-              "label": "Phường Tăng Nhơn Phú A"
-            },
-            {
-              "value": "binhtri",
-              "label": "Phường Bình Trị Đông"
-            }
-          ]
-        },
-        {
-          "id": "coQuanDKCT",
-          "label": "Cơ quan đăng ký cư trú",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "ca_phuong",
-              "label": "Công an phường Bách Khoa"
-            },
-            {
-              "value": "ca_xa",
-              "label": "Công an xã/phường/thị trấn"
-            }
-          ]
-        },
-        {
-          "id": "sdtCoQuan",
-          "label": "Số điện thoại cơ quan",
-          "type": "phone",
-          "required": false,
-          "placeholder": "024 1234 5678"
-        },
-        {
-          "id": "thuTuc",
-          "label": "Thủ tục",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "dktt",
-              "label": "Đăng ký thường trú"
-            }
-          ]
-        },
-        {
-          "id": "truongHop",
-          "label": "Trường hợp",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "ca_ho",
-              "label": "Đăng ký thường trú cả hộ"
-            },
-            {
-              "value": "lan_dau",
-              "label": "Đăng ký thường trú lần đầu."
-            },
-            {
-              "value": "nhan_khau",
-              "label": "Đăng ký thường trú nhân khẩu"
-            }
-          ]
-        },
-        {
-          "id": "loaiDKTT",
-          "label": "Loại đăng ký",
-          "type": "radio",
-          "required": true,
-          "options": [
-            {
-              "value": "lap_ho_moi",
-              "label": "Đăng ký thường trú lập hộ mới"
-            },
-            {
-              "value": "vao_ho_co",
-              "label": "Đăng ký thường trú vào hộ đã có"
-            }
-          ]
-        },
-        {
-          "id": "hoTen",
-          "label": "Họ tên",
-          "type": "text",
-          "required": true,
-          "placeholder": "Nguyễn Văn An",
-          "cccdKey": "hoTen"
-        },
-        {
-          "id": "ngaySinh",
-          "label": "Ngày sinh",
-          "type": "date",
-          "required": true,
-          "cccdKey": "ngaySinh"
-        },
-        {
-          "id": "gioiTinh",
-          "label": "Giới tính",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "Nam",
-              "label": "Nam"
-            },
-            {
-              "value": "Nu",
-              "label": "Nữ"
-            }
-          ],
-          "cccdKey": "gioiTinh"
-        },
-        {
-          "id": "danToc",
-          "label": "Dân tộc",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "kinh",
-              "label": "Kinh"
-            },
-            {
-              "value": "tay",
-              "label": "Tày"
-            },
-            {
-              "value": "thai",
-              "label": "Thái"
-            },
-            {
-              "value": "muong",
-              "label": "Mường"
-            },
-            {
-              "value": "hoa",
-              "label": "Hoa"
-            },
-            {
-              "value": "khmer",
-              "label": "Khmer"
-            },
-            {
-              "value": "nung",
-              "label": "Nùng"
-            },
-            {
-              "value": "hmong",
-              "label": "H'Mông"
-            },
-            {
-              "value": "khac",
-              "label": "Khác"
-            }
-          ]
-        },
-        {
-          "id": "tonGiao",
-          "label": "Tôn giáo",
-          "type": "select",
-          "required": false,
-          "options": [
-            {
-              "value": "khong",
-              "label": "Không"
-            },
-            {
-              "value": "phat_giao",
-              "label": "Phật giáo"
-            },
-            {
-              "value": "cong_giao",
-              "label": "Công giáo"
-            },
-            {
-              "value": "tin_lanh",
-              "label": "Tin lành"
-            },
-            {
-              "value": "cao_dai",
-              "label": "Cao Đài"
-            },
-            {
-              "value": "hoa_hao",
-              "label": "Hoà Hảo"
-            },
-            {
-              "value": "hoi_giao",
-              "label": "Hồi giáo"
-            },
-            {
-              "value": "khac",
-              "label": "Khác"
-            }
-          ]
-        },
-        {
-          "id": "cccd",
-          "label": "Số ĐDCN (CCCD)",
-          "type": "text",
-          "required": true,
-          "placeholder": "012345678901",
-          "cccdKey": "id",
-          "validation": {
-            "pattern": "^\\d{12}$",
-            "message": "Số CCCD phải có đúng 12 chữ số"
-          }
-        },
-        {
-          "id": "sdt",
-          "label": "SĐT liên hệ",
-          "type": "phone",
-          "required": false,
-          "placeholder": "0901234567"
-        },
-        {
-          "id": "email",
-          "label": "Email",
-          "type": "text",
-          "required": false,
-          "placeholder": "email@example.com"
-        },
-        {
-          "id": "tinhThanhDN",
-          "label": "Tỉnh/Thành phố (nơi đề nghị ĐKTT)",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "hanoi",
-              "label": "Thành phố Hà Nội"
-            },
-            {
-              "value": "hcm",
-              "label": "Thành phố Hồ Chí Minh"
-            },
-            {
-              "value": "danang",
-              "label": "Thành phố Đà Nẵng"
-            },
-            {
-              "value": "haiphong",
-              "label": "Thành phố Hải Phòng"
-            },
-            {
-              "value": "cantho",
-              "label": "Thành phố Cần Thơ"
-            },
-            {
-              "value": "hagiang",
-              "label": "Tỉnh Hà Giang"
-            },
-            {
-              "value": "caobang",
-              "label": "Tỉnh Cao Bằng"
-            },
-            {
-              "value": "laichau",
-              "label": "Tỉnh Lai Châu"
-            },
-            {
-              "value": "laocai",
-              "label": "Tỉnh Lào Cai"
-            },
-            {
-              "value": "tuyenquang",
-              "label": "Tỉnh Tuyên Quang"
-            },
-            {
-              "value": "langson",
-              "label": "Tỉnh Lạng Sơn"
-            },
-            {
-              "value": "backan",
-              "label": "Tỉnh Bắc Kạn"
-            },
-            {
-              "value": "thainguyen",
-              "label": "Tỉnh Thái Nguyên"
-            },
-            {
-              "value": "yenbai",
-              "label": "Tỉnh Yên Bái"
-            },
-            {
-              "value": "sonla",
-              "label": "Tỉnh Sơn La"
-            },
-            {
-              "value": "phutho",
-              "label": "Tỉnh Phú Thọ"
-            },
-            {
-              "value": "vinhphuc",
-              "label": "Tỉnh Vĩnh Phúc"
-            },
-            {
-              "value": "quangninh",
-              "label": "Tỉnh Quảng Ninh"
-            },
-            {
-              "value": "bacgiang",
-              "label": "Tỉnh Bắc Giang"
-            },
-            {
-              "value": "bacninh",
-              "label": "Tỉnh Bắc Ninh"
-            },
-            {
-              "value": "haiduong",
-              "label": "Tỉnh Hải Dương"
-            },
-            {
-              "value": "hungyen",
-              "label": "Tỉnh Hưng Yên"
-            },
-            {
-              "value": "hoabinh",
-              "label": "Tỉnh Hòa Bình"
-            },
-            {
-              "value": "hanam",
-              "label": "Tỉnh Hà Nam"
-            },
-            {
-              "value": "namdinh",
-              "label": "Tỉnh Nam Định"
-            },
-            {
-              "value": "thaibinh",
-              "label": "Tỉnh Thái Bình"
-            },
-            {
-              "value": "ninhbinh",
-              "label": "Tỉnh Ninh Bình"
-            },
-            {
-              "value": "thanhhoa",
-              "label": "Tỉnh Thanh Hóa"
-            },
-            {
-              "value": "nghean",
-              "label": "Tỉnh Nghệ An"
-            },
-            {
-              "value": "hatinh",
-              "label": "Tỉnh Hà Tĩnh"
-            },
-            {
-              "value": "quangbinh",
-              "label": "Tỉnh Quảng Bình"
-            },
-            {
-              "value": "quangtri",
-              "label": "Tỉnh Quảng Trị"
-            },
-            {
-              "value": "thuathienhue",
-              "label": "Tỉnh Thừa Thiên Huế"
-            },
-            {
-              "value": "quangnam",
-              "label": "Tỉnh Quảng Nam"
-            },
-            {
-              "value": "quangngai",
-              "label": "Tỉnh Quảng Ngãi"
-            },
-            {
-              "value": "kontum",
-              "label": "Tỉnh Kon Tum"
-            },
-            {
-              "value": "gialai",
-              "label": "Tỉnh Gia Lai"
-            },
-            {
-              "value": "binhdinh",
-              "label": "Tỉnh Bình Định"
-            },
-            {
-              "value": "phuyen",
-              "label": "Tỉnh Phú Yên"
-            },
-            {
-              "value": "daklak",
-              "label": "Tỉnh Đắk Lắk"
-            },
-            {
-              "value": "daknong",
-              "label": "Tỉnh Đắk Nông"
-            },
-            {
-              "value": "khanhhoa",
-              "label": "Tỉnh Khánh Hòa"
-            },
-            {
-              "value": "binhthuan",
-              "label": "Tỉnh Bình Thuận"
-            },
-            {
-              "value": "ninhthuan",
-              "label": "Tỉnh Ninh Thuận"
-            },
-            {
-              "value": "lamdong",
-              "label": "Tỉnh Lâm Đồng"
-            },
-            {
-              "value": "binhphuoc",
-              "label": "Tỉnh Bình Phước"
-            },
-            {
-              "value": "tayninh",
-              "label": "Tỉnh Tây Ninh"
-            },
-            {
-              "value": "binhduong",
-              "label": "Tỉnh Bình Dương"
-            },
-            {
-              "value": "dongnai",
-              "label": "Tỉnh Đồng Nai"
-            },
-            {
-              "value": "bariavungtau",
-              "label": "Tỉnh Bà Rịa - Vũng Tàu"
-            },
-            {
-              "value": "longan",
-              "label": "Tỉnh Long An"
-            },
-            {
-              "value": "tiengiang",
-              "label": "Tỉnh Tiền Giang"
-            },
-            {
-              "value": "bentre",
-              "label": "Tỉnh Bến Tre"
-            },
-            {
-              "value": "travinh",
-              "label": "Tỉnh Trà Vinh"
-            },
-            {
-              "value": "vinhlong",
-              "label": "Tỉnh Vĩnh Long"
-            },
-            {
-              "value": "dongthap",
-              "label": "Tỉnh Đồng Tháp"
-            },
-            {
-              "value": "angiang",
-              "label": "Tỉnh An Giang"
-            },
-            {
-              "value": "kiengiang",
-              "label": "Tỉnh Kiên Giang"
-            },
-            {
-              "value": "haugiang",
-              "label": "Tỉnh Hậu Giang"
-            },
-            {
-              "value": "soctrang",
-              "label": "Tỉnh Sóc Trăng"
-            },
-            {
-              "value": "baclieu",
-              "label": "Tỉnh Bạc Liêu"
-            },
-            {
-              "value": "camau",
-              "label": "Tỉnh Cà Mau"
-            },
-            {
-              "value": "dienbien",
-              "label": "Tỉnh Điện Biên"
-            }
-          ]
-        },
-        {
-          "id": "xaPhuongDN",
-          "label": "Xã/Phường/Đặc khu",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "bachkhoa",
-              "label": "Phường Bách Khoa"
-            },
-            {
-              "value": "phuongmai",
-              "label": "Phường Phương Mai"
-            },
-            {
-              "value": "truongdinh",
-              "label": "Phường Trương Định"
-            }
-          ]
-        },
-        {
-          "id": "diaChiDN",
-          "label": "Địa chỉ (số nhà, đường phố, thôn, xóm, làng, ấp, bản, buôn, phum, sóc)",
-          "type": "textarea",
-          "required": true,
-          "placeholder": "Địa chỉ nơi cư trú hiện tại của công dân"
-        },
-        {
-          "id": "noiDungDN",
-          "label": "Nội dung đề nghị",
-          "type": "textarea",
-          "required": true,
-          "placeholder": "Nội dung đề nghị đăng ký thường trú"
-        },
-        {
-          "id": "hinhThucNhanTB",
-          "label": "Hình thức nhận thông báo",
-          "type": "select",
-          "required": false,
-          "options": [
-            {
-              "value": "sms",
-              "label": "Tin nhắn SMS"
-            },
-            {
-              "value": "email",
-              "label": "Email"
-            },
-            {
-              "value": "app",
-              "label": "Ứng dụng VNeID"
-            }
-          ]
-        },
-        {
-          "id": "sdtNhanTB",
-          "label": "Số điện thoại nhận thông báo",
-          "type": "phone",
-          "required": false,
-          "placeholder": "0901234567"
-        },
-        {
-          "id": "emailNhanTB",
-          "label": "Email nhận thông báo",
-          "type": "text",
-          "required": false,
-          "placeholder": "email@example.com"
-        },
-        {
-          "id": "hinhThucNhanKQ",
-          "label": "Hình thức nhận kết quả",
-          "type": "select",
-          "required": false,
-          "options": [
-            {
-              "value": "truc_tiep",
-              "label": "Nhận trực tiếp tại cơ quan"
-            },
-            {
-              "value": "buu_dien",
-              "label": "Nhận qua đường bưu điện"
-            },
-            {
-              "value": "truc_tuyen",
-              "label": "Nhận trực tuyến"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "cccd",
-      "name": "Cấp lại CCCD",
-      "shortName": "Cấp lại CCCD",
-      "description": "Cấp lại Căn Cước Công Dân khi hết hạn, mất, hỏng hoặc thay đổi thông tin.",
-      "route": "/cccd",
-      "icon": "🪪",
-      "category": "Căn cước",
-      "processingTime": "5-7 ngày làm việc",
-      "fee": "30.000 - 70.000 VNĐ",
-      "keywords": [
-        "cccd",
-        "căn cước",
-        "cmnd",
-        "chứng minh nhân dân",
-        "cấp lại cccd",
-        "làm lại cccd",
-        "mất cccd",
-        "hết hạn cccd"
-      ],
-      "requiredDocs": [
-        "CCCD/CMND cũ (nếu còn)",
-        "Biên bản khai báo mất (nếu mất)",
-        "Ảnh chân dung 4x6 (2 ảnh)",
-        "Sổ hộ khẩu hoặc giấy tờ cư trú"
-      ],
-      "steps": [
-        "Điền tờ khai đề nghị cấp CCCD",
-        "Chuẩn bị ảnh và giấy tờ cần thiết",
-        "Đến Công an xã/phường hoặc Trung tâm hành chính",
-        "Thu thập thông tin sinh trắc học (vân tay, ảnh)",
-        "Nhận giấy hẹn và đến lấy CCCD theo lịch"
-      ],
-      "fields": [
-        {
-          "id": "hoTen",
-          "label": "Họ và tên",
-          "type": "text",
-          "required": true,
-          "placeholder": "Nguyễn Văn A",
-          "cccdKey": "hoTen"
-        },
-        {
-          "id": "cccdCu",
-          "label": "Số CCCD/CMND cũ (nếu có)",
-          "type": "text",
-          "required": false,
-          "placeholder": "012345678901"
-        },
-        {
-          "id": "ngaySinh",
-          "label": "Ngày sinh",
-          "type": "date",
-          "required": true,
-          "cccdKey": "ngaySinh"
-        },
-        {
-          "id": "gioiTinh",
-          "label": "Giới tính",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "Nam",
-              "label": "Nam"
-            },
-            {
-              "value": "Nu",
-              "label": "Nữ"
-            }
-          ],
-          "cccdKey": "gioiTinh"
-        },
-        {
-          "id": "queQuan",
-          "label": "Quê quán",
-          "type": "text",
-          "required": true,
-          "cccdKey": "queQuan"
-        },
-        {
-          "id": "thuongTru",
-          "label": "Nơi thường trú",
-          "type": "textarea",
-          "required": true,
-          "cccdKey": "thuongTru"
-        },
-        {
-          "id": "lyDoCap",
-          "label": "Lý do cấp lại",
-          "type": "select",
-          "required": true,
-          "options": [
-            {
-              "value": "het_han",
-              "label": "Hết hạn"
-            },
-            {
-              "value": "mat",
-              "label": "Mất"
-            },
-            {
-              "value": "hong",
-              "label": "Hỏng/Rách"
-            },
-            {
-              "value": "thay_doi_tt",
-              "label": "Thay đổi thông tin"
-            },
-            {
-              "value": "cap_lan_dau",
-              "label": "Cấp lần đầu"
-            }
-          ]
-        },
-        {
-          "id": "sdt",
-          "label": "Số điện thoại liên hệ",
-          "type": "phone",
-          "required": true,
-          "placeholder": "0901234567"
-        }
-      ]
-    },
-    {
-      "id": "ket-hon",
-      "name": "Đăng ký Kết Hôn",
-      "shortName": "Kết Hôn",
-      "description": "Đăng ký kết hôn tại UBND xã/phường nơi thường trú của một trong hai bên.",
-      "route": "/ket-hon",
-      "icon": "💍",
-      "category": "Hộ tịch",
-      "processingTime": "5-15 ngày làm việc",
-      "fee": "Miễn phí",
-      "keywords": [
-        "kết hôn",
-        "đám cưới",
-        "hôn nhân",
-        "giấy đăng ký kết hôn",
-        "cưới",
-        "lấy chồng",
-        "lấy vợ"
-      ],
-      "requiredDocs": [
-        "CCCD/CMND của hai bên (bản gốc và sao)",
-        "Giấy xác nhận tình trạng hôn nhân",
-        "Ảnh chân dung 4x6 (mỗi người 2 ảnh)",
-        "Giấy khám sức khỏe (theo yêu cầu)"
-      ],
-      "steps": [
-        "Chuẩn bị đầy đủ hồ sơ",
-        "Điền tờ khai đăng ký kết hôn",
-        "Nộp hồ sơ tại UBND xã/phường",
-        "Chờ cán bộ xét duyệt hồ sơ",
-        "Tổ chức lễ đăng ký kết hôn tại UBND"
-      ],
-      "fields": [
-        {
-          "id": "hoTenNam",
-          "label": "Họ và tên (Bên Nam)",
-          "type": "text",
-          "required": true,
-          "placeholder": "Nguyễn Văn A"
-        },
-        {
-          "id": "cccdNam",
-          "label": "Số CCCD Bên Nam",
-          "type": "text",
-          "required": true,
-          "placeholder": "012345678901",
-          "validation": {
-            "pattern": "^\\d{12}$",
-            "message": "CCCD phải có đúng 12 chữ số"
-          }
-        },
-        {
-          "id": "ngaySinhNam",
-          "label": "Ngày sinh Bên Nam",
-          "type": "date",
-          "required": true
-        },
-        {
-          "id": "diaChiNam",
-          "label": "Địa chỉ thường trú Bên Nam",
-          "type": "textarea",
-          "required": true
-        },
-        {
-          "id": "sdtNam",
-          "label": "Số điện thoại Bên Nam",
-          "type": "phone",
-          "required": true,
-          "placeholder": "0901234567"
-        },
-        {
-          "id": "hoTenNu",
-          "label": "Họ và tên (Bên Nữ)",
-          "type": "text",
-          "required": true,
-          "placeholder": "Trần Thị B"
-        },
-        {
-          "id": "cccdNu",
-          "label": "Số CCCD Bên Nữ",
-          "type": "text",
-          "required": true,
-          "placeholder": "012345678901",
-          "validation": {
-            "pattern": "^\\d{12}$",
-            "message": "CCCD phải có đúng 12 chữ số"
-          }
-        },
-        {
-          "id": "ngaySinhNu",
-          "label": "Ngày sinh Bên Nữ",
-          "type": "date",
-          "required": true
-        },
-        {
-          "id": "diaChiNu",
-          "label": "Địa chỉ thường trú Bên Nữ",
-          "type": "textarea",
-          "required": true
-        },
-        {
-          "id": "sdtNu",
-          "label": "Số điện thoại Bên Nữ",
-          "type": "phone",
-          "required": false,
-          "placeholder": "0901234567"
-        },
-        {
-          "id": "ngayDuKienToChuc",
-          "label": "Ngày dự kiến tổ chức lễ",
-          "type": "date",
-          "required": false
-        }
-      ]
-    },
-    {
-      "id": "lien-thong-khai-sinh",
-      "name": "Liên thông Khai sinh",
-      "shortName": "Liên thông Khai sinh",
-      "description": "Mô phỏng thủ tục nhiều bước: khai sinh, cư trú, BHYT.",
-      "route": "/lien-thong-khai-sinh",
-      "icon": "🧾",
-      "category": "Liên thông",
-      "processingTime": "3-5 ngày làm việc",
-      "fee": "Miễn phí",
-      "keywords": [
-        "liên thông",
-        "liên thông khai sinh",
-        "khai sinh nhiều bước"
-      ],
-      "requiredDocs": [
-        "CCCD cha/mẹ",
-        "Giấy chứng sinh",
-        "Thông tin nơi cư trú"
-      ],
-      "steps": [
-        "Bước 1: Thông tin trẻ",
-        "Bước 2: Thông tin cha mẹ",
-        "Bước 3: Thông tin liên thông"
-      ],
-      "fields": [
-        {
-          "id": "ltks_tenTre",
-          "label": "Họ và tên trẻ",
-          "type": "text",
-          "required": true,
-          "step": 1
-        },
-        {
-          "id": "ltks_ngaySinhTre",
-          "label": "Ngày sinh",
-          "type": "date",
-          "required": true,
-          "step": 1
-        },
-        {
-          "id": "ltks_noiSinhTre",
-          "label": "Nơi sinh",
-          "type": "text",
-          "required": true,
-          "step": 1
-        },
-        {
-          "id": "ltks_cccdCha",
-          "label": "CCCD cha",
-          "type": "text",
-          "required": true,
-          "step": 2,
-          "cccdKey": "id"
-        },
-        {
-          "id": "ltks_hoTenCha",
-          "label": "Họ và tên cha",
-          "type": "text",
-          "required": true,
-          "step": 2,
-          "cccdKey": "hoTen"
-        },
-        {
-          "id": "ltks_cccdMe",
-          "label": "CCCD mẹ",
-          "type": "text",
-          "required": true,
-          "step": 2
-        },
-        {
-          "id": "ltks_hoTenMe",
-          "label": "Họ và tên mẹ",
-          "type": "text",
-          "required": true,
-          "step": 2
-        },
-        {
-          "id": "ltks_diaChiThuongTru",
-          "label": "Địa chỉ thường trú",
-          "type": "textarea",
-          "required": true,
-          "step": 3
-        },
-        {
-          "id": "ltks_nhanBHYT",
-          "label": "Nơi nhận thẻ BHYT",
-          "type": "text",
-          "required": true,
-          "step": 3
-        },
-        {
-          "id": "ltks_ghiChu",
-          "label": "Ghi chú",
-          "type": "textarea",
-          "required": false,
-          "step": 3
         {
             "id": "khai-sinh",
             "name": "Đăng ký Khai Sinh",
@@ -1629,12 +241,172 @@
                             "label": "Thành phố Cần Thơ"
                         },
                         {
-                            "value": "nghean",
-                            "label": "Tỉnh Nghệ An"
+                            "value": "hagiang",
+                            "label": "Tỉnh Hà Giang"
+                        },
+                        {
+                            "value": "caobang",
+                            "label": "Tỉnh Cao Bằng"
+                        },
+                        {
+                            "value": "laichau",
+                            "label": "Tỉnh Lai Châu"
+                        },
+                        {
+                            "value": "laocai",
+                            "label": "Tỉnh Lào Cai"
+                        },
+                        {
+                            "value": "tuyenquang",
+                            "label": "Tỉnh Tuyên Quang"
+                        },
+                        {
+                            "value": "langson",
+                            "label": "Tỉnh Lạng Sơn"
+                        },
+                        {
+                            "value": "backan",
+                            "label": "Tỉnh Bắc Kạn"
+                        },
+                        {
+                            "value": "thainguyen",
+                            "label": "Tỉnh Thái Nguyên"
+                        },
+                        {
+                            "value": "yenbai",
+                            "label": "Tỉnh Yên Bái"
+                        },
+                        {
+                            "value": "sonla",
+                            "label": "Tỉnh Sơn La"
+                        },
+                        {
+                            "value": "phutho",
+                            "label": "Tỉnh Phú Thọ"
+                        },
+                        {
+                            "value": "vinhphuc",
+                            "label": "Tỉnh Vĩnh Phúc"
+                        },
+                        {
+                            "value": "quangninh",
+                            "label": "Tỉnh Quảng Ninh"
+                        },
+                        {
+                            "value": "bacgiang",
+                            "label": "Tỉnh Bắc Giang"
+                        },
+                        {
+                            "value": "bacninh",
+                            "label": "Tỉnh Bắc Ninh"
+                        },
+                        {
+                            "value": "haiduong",
+                            "label": "Tỉnh Hải Dương"
+                        },
+                        {
+                            "value": "hungyen",
+                            "label": "Tỉnh Hưng Yên"
+                        },
+                        {
+                            "value": "hoabinh",
+                            "label": "Tỉnh Hòa Bình"
+                        },
+                        {
+                            "value": "hanam",
+                            "label": "Tỉnh Hà Nam"
+                        },
+                        {
+                            "value": "namdinh",
+                            "label": "Tỉnh Nam Định"
+                        },
+                        {
+                            "value": "thaibinh",
+                            "label": "Tỉnh Thái Bình"
+                        },
+                        {
+                            "value": "ninhbinh",
+                            "label": "Tỉnh Ninh Bình"
                         },
                         {
                             "value": "thanhhoa",
                             "label": "Tỉnh Thanh Hóa"
+                        },
+                        {
+                            "value": "nghean",
+                            "label": "Tỉnh Nghệ An"
+                        },
+                        {
+                            "value": "hatinh",
+                            "label": "Tỉnh Hà Tĩnh"
+                        },
+                        {
+                            "value": "quangbinh",
+                            "label": "Tỉnh Quảng Bình"
+                        },
+                        {
+                            "value": "quangtri",
+                            "label": "Tỉnh Quảng Trị"
+                        },
+                        {
+                            "value": "thuathienhue",
+                            "label": "Tỉnh Thừa Thiên Huế"
+                        },
+                        {
+                            "value": "quangnam",
+                            "label": "Tỉnh Quảng Nam"
+                        },
+                        {
+                            "value": "quangngai",
+                            "label": "Tỉnh Quảng Ngãi"
+                        },
+                        {
+                            "value": "kontum",
+                            "label": "Tỉnh Kon Tum"
+                        },
+                        {
+                            "value": "gialai",
+                            "label": "Tỉnh Gia Lai"
+                        },
+                        {
+                            "value": "binhdinh",
+                            "label": "Tỉnh Bình Định"
+                        },
+                        {
+                            "value": "phuyen",
+                            "label": "Tỉnh Phú Yên"
+                        },
+                        {
+                            "value": "daklak",
+                            "label": "Tỉnh Đắk Lắk"
+                        },
+                        {
+                            "value": "daknong",
+                            "label": "Tỉnh Đắk Nông"
+                        },
+                        {
+                            "value": "khanhhoa",
+                            "label": "Tỉnh Khánh Hòa"
+                        },
+                        {
+                            "value": "binhthuan",
+                            "label": "Tỉnh Bình Thuận"
+                        },
+                        {
+                            "value": "ninhthuan",
+                            "label": "Tỉnh Ninh Thuận"
+                        },
+                        {
+                            "value": "lamdong",
+                            "label": "Tỉnh Lâm Đồng"
+                        },
+                        {
+                            "value": "binhphuoc",
+                            "label": "Tỉnh Bình Phước"
+                        },
+                        {
+                            "value": "tayninh",
+                            "label": "Tỉnh Tây Ninh"
                         },
                         {
                             "value": "binhduong",
@@ -1645,8 +417,60 @@
                             "label": "Tỉnh Đồng Nai"
                         },
                         {
-                            "value": "khanhhoa",
-                            "label": "Tỉnh Khánh Hòa"
+                            "value": "bariavungtau",
+                            "label": "Tỉnh Bà Rịa - Vũng Tàu"
+                        },
+                        {
+                            "value": "longan",
+                            "label": "Tỉnh Long An"
+                        },
+                        {
+                            "value": "tiengiang",
+                            "label": "Tỉnh Tiền Giang"
+                        },
+                        {
+                            "value": "bentre",
+                            "label": "Tỉnh Bến Tre"
+                        },
+                        {
+                            "value": "travinh",
+                            "label": "Tỉnh Trà Vinh"
+                        },
+                        {
+                            "value": "vinhlong",
+                            "label": "Tỉnh Vĩnh Long"
+                        },
+                        {
+                            "value": "dongthap",
+                            "label": "Tỉnh Đồng Tháp"
+                        },
+                        {
+                            "value": "angiang",
+                            "label": "Tỉnh An Giang"
+                        },
+                        {
+                            "value": "kiengiang",
+                            "label": "Tỉnh Kiên Giang"
+                        },
+                        {
+                            "value": "haugiang",
+                            "label": "Tỉnh Hậu Giang"
+                        },
+                        {
+                            "value": "soctrang",
+                            "label": "Tỉnh Sóc Trăng"
+                        },
+                        {
+                            "value": "baclieu",
+                            "label": "Tỉnh Bạc Liêu"
+                        },
+                        {
+                            "value": "camau",
+                            "label": "Tỉnh Cà Mau"
+                        },
+                        {
+                            "value": "dienbien",
+                            "label": "Tỉnh Điện Biên"
                         }
                     ]
                 },
@@ -1720,28 +544,16 @@
                     "required": true,
                     "options": [
                         {
-                            "value": "th1",
-                            "label": "Công dân có chỗ ở hợp pháp thuộc quyền sở hữu của mình"
+                            "value": "ca_ho",
+                            "label": "Đăng ký thường trú cả hộ"
                         },
                         {
-                            "value": "th2",
-                            "label": "Công dân được chủ hộ đồng ý cho đăng ký thường trú"
+                            "value": "lan_dau",
+                            "label": "Đăng ký thường trú lần đầu."
                         },
                         {
-                            "value": "th3",
-                            "label": "Công dân được người có quyền sở hữu chỗ ở đồng ý"
-                        },
-                        {
-                            "value": "th4",
-                            "label": "Trẻ em đăng ký thường trú theo cha hoặc mẹ"
-                        },
-                        {
-                            "value": "th5",
-                            "label": "Vợ/chồng về ở cùng chồng/vợ"
-                        },
-                        {
-                            "value": "th6",
-                            "label": "Người cao tuổi về ở cùng con"
+                            "value": "nhan_khau",
+                            "label": "Đăng ký thường trú nhân khẩu"
                         }
                     ]
                 },
@@ -1928,6 +740,238 @@
                         {
                             "value": "cantho",
                             "label": "Thành phố Cần Thơ"
+                        },
+                        {
+                            "value": "hagiang",
+                            "label": "Tỉnh Hà Giang"
+                        },
+                        {
+                            "value": "caobang",
+                            "label": "Tỉnh Cao Bằng"
+                        },
+                        {
+                            "value": "laichau",
+                            "label": "Tỉnh Lai Châu"
+                        },
+                        {
+                            "value": "laocai",
+                            "label": "Tỉnh Lào Cai"
+                        },
+                        {
+                            "value": "tuyenquang",
+                            "label": "Tỉnh Tuyên Quang"
+                        },
+                        {
+                            "value": "langson",
+                            "label": "Tỉnh Lạng Sơn"
+                        },
+                        {
+                            "value": "backan",
+                            "label": "Tỉnh Bắc Kạn"
+                        },
+                        {
+                            "value": "thainguyen",
+                            "label": "Tỉnh Thái Nguyên"
+                        },
+                        {
+                            "value": "yenbai",
+                            "label": "Tỉnh Yên Bái"
+                        },
+                        {
+                            "value": "sonla",
+                            "label": "Tỉnh Sơn La"
+                        },
+                        {
+                            "value": "phutho",
+                            "label": "Tỉnh Phú Thọ"
+                        },
+                        {
+                            "value": "vinhphuc",
+                            "label": "Tỉnh Vĩnh Phúc"
+                        },
+                        {
+                            "value": "quangninh",
+                            "label": "Tỉnh Quảng Ninh"
+                        },
+                        {
+                            "value": "bacgiang",
+                            "label": "Tỉnh Bắc Giang"
+                        },
+                        {
+                            "value": "bacninh",
+                            "label": "Tỉnh Bắc Ninh"
+                        },
+                        {
+                            "value": "haiduong",
+                            "label": "Tỉnh Hải Dương"
+                        },
+                        {
+                            "value": "hungyen",
+                            "label": "Tỉnh Hưng Yên"
+                        },
+                        {
+                            "value": "hoabinh",
+                            "label": "Tỉnh Hòa Bình"
+                        },
+                        {
+                            "value": "hanam",
+                            "label": "Tỉnh Hà Nam"
+                        },
+                        {
+                            "value": "namdinh",
+                            "label": "Tỉnh Nam Định"
+                        },
+                        {
+                            "value": "thaibinh",
+                            "label": "Tỉnh Thái Bình"
+                        },
+                        {
+                            "value": "ninhbinh",
+                            "label": "Tỉnh Ninh Bình"
+                        },
+                        {
+                            "value": "thanhhoa",
+                            "label": "Tỉnh Thanh Hóa"
+                        },
+                        {
+                            "value": "nghean",
+                            "label": "Tỉnh Nghệ An"
+                        },
+                        {
+                            "value": "hatinh",
+                            "label": "Tỉnh Hà Tĩnh"
+                        },
+                        {
+                            "value": "quangbinh",
+                            "label": "Tỉnh Quảng Bình"
+                        },
+                        {
+                            "value": "quangtri",
+                            "label": "Tỉnh Quảng Trị"
+                        },
+                        {
+                            "value": "thuathienhue",
+                            "label": "Tỉnh Thừa Thiên Huế"
+                        },
+                        {
+                            "value": "quangnam",
+                            "label": "Tỉnh Quảng Nam"
+                        },
+                        {
+                            "value": "quangngai",
+                            "label": "Tỉnh Quảng Ngãi"
+                        },
+                        {
+                            "value": "kontum",
+                            "label": "Tỉnh Kon Tum"
+                        },
+                        {
+                            "value": "gialai",
+                            "label": "Tỉnh Gia Lai"
+                        },
+                        {
+                            "value": "binhdinh",
+                            "label": "Tỉnh Bình Định"
+                        },
+                        {
+                            "value": "phuyen",
+                            "label": "Tỉnh Phú Yên"
+                        },
+                        {
+                            "value": "daklak",
+                            "label": "Tỉnh Đắk Lắk"
+                        },
+                        {
+                            "value": "daknong",
+                            "label": "Tỉnh Đắk Nông"
+                        },
+                        {
+                            "value": "khanhhoa",
+                            "label": "Tỉnh Khánh Hòa"
+                        },
+                        {
+                            "value": "binhthuan",
+                            "label": "Tỉnh Bình Thuận"
+                        },
+                        {
+                            "value": "ninhthuan",
+                            "label": "Tỉnh Ninh Thuận"
+                        },
+                        {
+                            "value": "lamdong",
+                            "label": "Tỉnh Lâm Đồng"
+                        },
+                        {
+                            "value": "binhphuoc",
+                            "label": "Tỉnh Bình Phước"
+                        },
+                        {
+                            "value": "tayninh",
+                            "label": "Tỉnh Tây Ninh"
+                        },
+                        {
+                            "value": "binhduong",
+                            "label": "Tỉnh Bình Dương"
+                        },
+                        {
+                            "value": "dongnai",
+                            "label": "Tỉnh Đồng Nai"
+                        },
+                        {
+                            "value": "bariavungtau",
+                            "label": "Tỉnh Bà Rịa - Vũng Tàu"
+                        },
+                        {
+                            "value": "longan",
+                            "label": "Tỉnh Long An"
+                        },
+                        {
+                            "value": "tiengiang",
+                            "label": "Tỉnh Tiền Giang"
+                        },
+                        {
+                            "value": "bentre",
+                            "label": "Tỉnh Bến Tre"
+                        },
+                        {
+                            "value": "travinh",
+                            "label": "Tỉnh Trà Vinh"
+                        },
+                        {
+                            "value": "vinhlong",
+                            "label": "Tỉnh Vĩnh Long"
+                        },
+                        {
+                            "value": "dongthap",
+                            "label": "Tỉnh Đồng Tháp"
+                        },
+                        {
+                            "value": "angiang",
+                            "label": "Tỉnh An Giang"
+                        },
+                        {
+                            "value": "kiengiang",
+                            "label": "Tỉnh Kiên Giang"
+                        },
+                        {
+                            "value": "haugiang",
+                            "label": "Tỉnh Hậu Giang"
+                        },
+                        {
+                            "value": "soctrang",
+                            "label": "Tỉnh Sóc Trăng"
+                        },
+                        {
+                            "value": "baclieu",
+                            "label": "Tỉnh Bạc Liêu"
+                        },
+                        {
+                            "value": "camau",
+                            "label": "Tỉnh Cà Mau"
+                        },
+                        {
+                            "value": "dienbien",
+                            "label": "Tỉnh Điện Biên"
                         }
                     ]
                 },
