@@ -690,7 +690,8 @@ a:hover {
 /* Radio group */
 .radio-group {
     display: flex;
-    gap: 16px;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .radio-option {
@@ -945,9 +946,13 @@ a:hover {
    ============================================================ */
 .service-page {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: minmax(0, 1fr) 300px;
     gap: 24px;
     align-items: start;
+}
+
+.service-page > * {
+    min-width: 0;
 }
 
 .service-sidebar {
@@ -1990,6 +1995,58 @@ a:hover {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+@media (max-width: 1366px) {
+    .service-page {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .service-sidebar {
+        order: 0;
+    }
+
+    .dktt-form-row.cols-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dktt-choice-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dktt-doc-table {
+        min-width: 880px;
+    }
+
+    .dktt-doc-table th {
+        padding: 7px 6px;
+        font-size: 0.71rem;
+    }
+
+    .dktt-doc-table td {
+        padding: 5px 6px;
+        font-size: 0.735rem;
+    }
+
+    .dktt-doc-col-specialized {
+        width: 96px;
+    }
+
+    .dktt-doc-col-attach,
+    .dktt-doc-col-note {
+        width: 100px;
+    }
+
+    .dktt-doc-attach {
+        min-width: 72px;
+        padding: 4px 6px;
+        font-size: 0.67rem;
+    }
+
+    .dktt-doc-file-list span {
+        max-width: 112px;
+    }
+}
+
 @media (max-width: 1024px) {
     .service-page {
         grid-template-columns: 1fr;
@@ -2221,6 +2278,481 @@ a:hover {
 
 .dktt-sub-title:first-child {
     margin-top: 0;
+}
+
+.dktt-choice-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.dktt-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.dktt-choice-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: linear-gradient(180deg, #fff, #fafbfd);
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.dktt-choice-card:hover {
+    border-color: rgba(26, 86, 160, 0.45);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.dktt-choice-card.disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+.dktt-choice-card input[type='radio'] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+}
+
+.dktt-choice-card span {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dktt-choice-card strong {
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.dktt-choice-card small {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-size: 0.775rem;
+}
+
+.dktt-inline-note {
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid #d5e3f2;
+    background: #f4f8fc;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.dktt-inline-note.warning {
+    border-color: #ecd5a3;
+    background: #fff7e5;
+    color: #785b17;
+}
+
+.dktt-checkbox-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.8375rem;
+    line-height: 1.5;
+    margin-top: 16px;
+}
+
+.dktt-checkbox-line.compact {
+    margin-top: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--gray-50);
+}
+
+.dktt-checkbox-line input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--primary);
+    flex-shrink: 0;
+}
+
+.dktt-panel {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    background: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.dktt-panel-muted {
+    background: linear-gradient(180deg, #fbfdff, #f5f8fc);
+}
+
+.dktt-flag-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background: #f7fbff;
+    border: 1px solid #c7d9ec;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+}
+
+.dktt-flag-note svg {
+    color: var(--primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.dktt-table-caption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.dktt-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.dktt-badge-soft {
+    background: #eef3fa;
+    color: #1a56a0;
+    border: 1px solid rgba(26, 86, 160, 0.25);
+}
+
+.dktt-badge-primary {
+    background: rgba(26, 86, 160, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(26, 86, 160, 0.25);
+}
+
+.dktt-inline-action {
+    border: 1px solid rgba(26, 86, 160, 0.18);
+    border-radius: var(--radius-pill);
+    background: white;
+    color: var(--primary);
+    padding: 8px 14px;
+    font-size: 0.775rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.dktt-inline-action:hover {
+    background: var(--primary-subtle);
+    border-color: rgba(26, 86, 160, 0.35);
+}
+
+.dktt-upload-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dktt-upload-summary {
+    padding: 12px 14px;
+    background: linear-gradient(180deg, #fffef8, #fbfbf7);
+    border: 1px solid #efe6bf;
+    border-radius: var(--radius-md);
+    margin-bottom: 12px;
+}
+
+.dktt-upload-meta {
+    margin: 0;
+    font-size: 0.7875rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.dktt-upload-case-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dktt-upload-case {
+    border: 1px solid #e7e2cc;
+    border-radius: var(--radius-md);
+    background: #fff;
+    overflow: hidden;
+}
+
+.dktt-upload-case.open {
+    box-shadow: var(--shadow-sm);
+}
+
+.dktt-upload-case-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 11px 14px;
+    border: none;
+    background: linear-gradient(180deg, #fffdf3, #fff8da);
+    color: #2f3a4a;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.825rem;
+}
+
+.dktt-upload-case-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.dktt-upload-case-bullet {
+    color: #8b1a1a;
+    font-weight: 700;
+}
+
+.dktt-upload-case-body {
+    padding: 12px 14px 14px;
+    background: #fff;
+}
+
+.dktt-doc-table-wrapper {
+    border-color: #e7dfbf;
+    box-shadow: none;
+}
+
+.dktt-doc-table {
+    min-width: 1020px;
+}
+
+.dktt-doc-table thead tr {
+    background: linear-gradient(180deg, #fffceb, #fff2bd);
+}
+
+.dktt-doc-table th {
+    padding: 8px 8px;
+    font-size: 0.735rem;
+    line-height: 1.35;
+    color: #6f5a11;
+    border-right-color: #efe3ac;
+}
+
+.dktt-doc-table td {
+    padding: 6px 7px;
+    font-size: 0.7625rem;
+}
+
+.dktt-doc-col-stt,
+.dktt-doc-cell-stt {
+    width: 42px;
+}
+
+.dktt-doc-col-pick,
+.dktt-doc-cell-pick {
+    width: 34px;
+}
+
+.dktt-doc-col-kind {
+    width: 98px;
+}
+
+.dktt-doc-col-template,
+.dktt-doc-col-action,
+.dktt-doc-col-quantity {
+    width: 70px;
+}
+
+.dktt-doc-col-specialized {
+    width: 120px;
+}
+
+.dktt-doc-col-attach {
+    width: 120px;
+}
+
+.dktt-doc-col-note {
+    width: 120px;
+}
+
+.dktt-doc-cell-center {
+    text-align: center;
+}
+
+.dktt-doc-checkbox {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--primary);
+}
+
+.dktt-doc-name {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.dktt-doc-name strong {
+    font-size: 0.77rem;
+    color: var(--text-primary);
+    line-height: 1.45;
+    font-weight: 600;
+}
+
+.dktt-doc-name small {
+    font-size: 0.69rem;
+    color: var(--text-secondary);
+    line-height: 1.35;
+}
+
+.dktt-doc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    background: #edf5ff;
+    color: var(--primary);
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(26, 86, 160, 0.18);
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dktt-doc-specialized {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.dktt-doc-specialized input[type='checkbox'] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--primary);
+}
+
+.dktt-doc-specialized.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.dktt-doc-icon-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(26, 86, 160, 0.16);
+    background: white;
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dktt-doc-icon-btn:hover {
+    background: var(--primary-subtle);
+    border-color: rgba(26, 86, 160, 0.34);
+    transform: translateY(-1px);
+}
+
+.dktt-doc-icon-btn.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.dktt-doc-icon-btn input[type='file'] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.dktt-doc-attach {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px dashed rgba(26, 86, 160, 0.4);
+    border-radius: var(--radius-sm);
+    background: #f9fbff;
+    color: var(--primary);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-width: 84px;
+    justify-content: center;
+}
+
+.dktt-doc-attach.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.dktt-doc-attach input[type='file'] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.dktt-doc-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 6px;
+}
+
+.dktt-doc-file-list span {
+    display: inline-flex;
+    align-items: center;
+    max-width: 132px;
+    padding: 2px 7px;
+    background: #f3f5f8;
+    border-radius: var(--radius-pill);
+    color: var(--text-secondary);
+    font-size: 0.67rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dktt-doc-select {
+    min-width: 0;
+    padding: 4px 23px 4px 8px;
+    font-size: 0.73rem;
+}
+
+.dktt-doc-qty-input,
+.dktt-doc-note-input {
+    min-width: 0;
+    padding: 4px 7px;
+    font-size: 0.73rem;
+}
+
+.dktt-doc-qty-input {
+    text-align: center;
 }
 
 /* Note text */
@@ -2478,6 +3010,11 @@ a:hover {
     background: var(--primary-subtle);
 }
 
+.dktt-photo-box.error {
+    border-color: var(--danger);
+    background: var(--danger-subtle);
+}
+
 .dktt-photo-box input[type='file'] {
     position: absolute;
     inset: 0;
@@ -2490,6 +3027,28 @@ a:hover {
     color: var(--text-muted);
     text-align: center;
     padding: 4px;
+}
+
+.dktt-empty-state {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8375rem;
+    background: var(--gray-50);
+}
+
+.dktt-vneid-btn {
+    margin-top: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.8375rem;
+    cursor: pointer;
 }
 
 /* Responsive */
@@ -2511,6 +3070,10 @@ a:hover {
         grid-template-columns: 1fr;
     }
 
+    .dktt-choice-grid {
+        grid-template-columns: 1fr;
+    }
+
     .dktt-actions {
         flex-direction: column;
         align-items: stretch;
@@ -2522,5 +3085,184 @@ a:hover {
 
     .dktt-page-header h1 {
         font-size: 1.125rem;
+    }
+}
+
+/* ============================================================
+   FAMILY MEMBERS TABLE — Những thành viên hộ gia đình
+   ============================================================ */
+
+.dktt-member-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.dktt-member-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    min-width: 960px;
+    background: white;
+}
+
+/* ── Header: yellow-toned ── */
+.dktt-member-table thead tr {
+    background: #fef9e7;
+}
+
+.dktt-member-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.775rem;
+    color: #7a5c00;
+    border-bottom: 2px solid #f0d060;
+    border-right: 1px solid #f5e080;
+    white-space: nowrap;
+}
+
+.dktt-member-table th:last-child {
+    border-right: none;
+}
+
+.dktt-member-table th .req {
+    color: var(--danger);
+    font-weight: 700;
+}
+
+/* ── Body rows: alternating light gray ── */
+.dktt-member-table tbody tr {
+    background: #f8f9fa;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s ease;
+}
+
+.dktt-member-table tbody tr:hover {
+    background: #eef3fa;
+}
+
+.dktt-member-table td {
+    padding: 7px 8px;
+    border-right: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.dktt-member-table td:last-child {
+    border-right: none;
+}
+
+.dktt-table-placeholder {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* ── Fixed-width columns ── */
+.dktt-member-table .col-action {
+    text-align: center;
+    width: 56px;
+}
+
+.dktt-member-table .col-stt {
+    text-align: center;
+    width: 44px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* ── Table inputs ── */
+.dktt-table-input {
+    width: 100%;
+    padding: 5px 9px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    background: white;
+    color: var(--text-primary);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+    min-width: 90px;
+}
+
+.dktt-table-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(26, 86, 160, 0.14);
+}
+
+/* ── Table selects ── */
+.dktt-table-select {
+    width: 100%;
+    padding: 5px 26px 5px 9px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2342526E' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 7px center;
+    color: var(--text-primary);
+    appearance: none;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    outline: none;
+    min-width: 100px;
+}
+
+.dktt-table-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(26, 86, 160, 0.14);
+}
+
+/* ── Add row button ── */
+.dktt-btn-add {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-fast), transform var(--transition-fast);
+    font-weight: 700;
+    padding-bottom: 1px;
+}
+
+.dktt-btn-add:hover {
+    background: var(--primary-dark);
+    transform: scale(1.12);
+}
+
+/* ── Remove row button ── */
+.dktt-btn-remove {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: var(--danger-subtle);
+    color: var(--danger);
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+    font-weight: 700;
+}
+
+.dktt-btn-remove:hover {
+    background: var(--danger);
+    color: white;
+    transform: scale(1.12);
+}
+
+/* ── Responsive: extra-small scroll hint ── */
+@media (max-width: 768px) {
+    .dktt-member-table-wrapper {
+        -webkit-overflow-scrolling: touch;
     }
 }

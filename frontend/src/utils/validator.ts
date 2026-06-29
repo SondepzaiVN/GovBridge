@@ -26,6 +26,20 @@ export const validatePhone = (value: string): ValidationError | null => {
   return null;
 };
 
+export const validateAgencyPhone = (value: string): ValidationError | null => {
+  const clean = value.replace(/[\s\-\.]/g, '');
+  if (!clean) return { field: 'sdtCoQuan', label: 'Số điện thoại cơ quan', message: 'Vui lòng nhập số điện thoại cơ quan', severity: 'error' };
+  if (!/^(0\d{9,10})$/.test(clean)) {
+    return {
+      field: 'sdtCoQuan',
+      label: 'Số điện thoại cơ quan',
+      message: 'Số điện thoại cơ quan không hợp lệ',
+      severity: 'error',
+    };
+  }
+  return null;
+};
+
 export const validateNgaySinh = (value: string): ValidationError | null => {
   if (!value) return { field: 'ngaySinh', label: 'Ngày sinh', message: 'Vui lòng nhập ngày sinh', severity: 'error' };
   const date = new Date(value);
@@ -81,7 +95,10 @@ export const validateForm = (values: FormValues, fields: FormField[]): Validatio
     }
 
     // Type-specific validation
-    if (field.type === 'phone' && value) {
+    if (field.id === 'sdtCoQuan' && value) {
+      const err = validateAgencyPhone(value);
+      if (err) errors.push({ ...err, field: field.id });
+    } else if (field.type === 'phone' && value) {
       const err = validatePhone(value);
       if (err) errors.push({ ...err, field: field.id });
     }
@@ -123,6 +140,9 @@ export const validateForm = (values: FormValues, fields: FormField[]): Validatio
 export const quickValidate = (fieldId: string, value: string, _label: string): string | null => {
   if (fieldId.includes('cccd') || fieldId.includes('Cccd')) {
     return validateCCCD(value)?.message || null;
+  }
+  if (fieldId === 'sdtCoQuan') {
+    return validateAgencyPhone(value)?.message || null;
   }
   if (fieldId.includes('sdt') || fieldId === 'phone') {
     return validatePhone(value)?.message || null;
