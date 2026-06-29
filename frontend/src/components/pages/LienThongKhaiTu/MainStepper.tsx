@@ -38,7 +38,7 @@ const MainStepper: React.FC = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "#fff", minHeight: "100vh" }}>
+    <div style={{ backgroundColor: "#fff", minHeight: "100vh", paddingBottom: "40px", overflow: "hidden" }}>
       {/* Header màu xanh của cổng DVC (Mockup) */}
 
       {/* Thanh Stepper */}

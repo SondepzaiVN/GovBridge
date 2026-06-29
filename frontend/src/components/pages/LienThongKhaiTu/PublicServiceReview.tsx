@@ -20,10 +20,12 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
   return (
     <div
       style={{
+        maxWidth: "960px",
+        margin: "20px auto",
+        padding: "40px",
         backgroundColor: "#fff",
-        padding: "20px",
-        border: "1px solid #e0e0e0",
-        borderRadius: "4px",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        borderRadius: "8px",
         fontFamily: "Arial, sans-serif",
       }}
     >
@@ -261,12 +263,13 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
       >
         <button
           style={{
-            padding: "10px 40px",
+            padding: "10px 24px",
             backgroundColor: "#e0e0e0",
             color: "#333",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
             fontWeight: "bold",
           }}
         >
@@ -275,12 +278,14 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
         <button
           onClick={onBack}
           style={{
-            padding: "10px 40px",
-            backgroundColor: "#f5f5f5",
+            padding: "10px 24px",
+            backgroundColor: "#fff",
+            color: "#666",
             border: "1px solid #ccc",
             borderRadius: "4px",
             cursor: "pointer",
-            color: "#333",
+            fontSize: "14px",
+            fontWeight: "bold",
           }}
         >
           Quay lại bước trước
@@ -288,12 +293,13 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
         <button
           onClick={onNext}
           style={{
-            padding: "10px 40px",
+            padding: "10px 24px",
             backgroundColor: "#a04000",
             color: "#fff",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
             fontWeight: "bold",
           }}
         >
