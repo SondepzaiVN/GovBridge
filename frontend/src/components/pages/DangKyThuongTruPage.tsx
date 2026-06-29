@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronDown, Home, Send, Save, ArrowLeft, Upload, Camera } from 'lucide-react';
+import { ChevronRight, ChevronDown, Home, Send, Save, ArrowLeft, Upload } from 'lucide-react';
 import { SERVICE_MAP } from '../../data/services';
 import { useForm } from '../../contexts/FormContext';
 import { FormFieldInput } from './ServicePageLayout';
@@ -8,8 +8,13 @@ import type { FormField } from '../../types';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 
 const FIXED_RESIDENCE_AGENCY_VALUE = 'ca_phuong';
-const FIXED_RESIDENCE_AGENCY_LABEL = 'Công An phường Tân An';
 const FIXED_RESIDENCE_AGENCY_PHONE = '0292 3894 939';
+
+const toResidenceAgencyLabel = (wardName: string) => (
+  wardName
+    ? `Công an ${wardName.charAt(0).toLocaleLowerCase('vi-VN')}${wardName.slice(1)}`
+    : ''
+);
 
 // ============================================================
 // Section definitions matching the original DVC form
@@ -175,6 +180,7 @@ const DangKyThuongTruPage: React.FC = () => {
   // Build a lookup from field id to FormField
   const fieldMap = useMemo(() => {
     const map = new Map<string, FormField>();
+    const selectedWardName = wardOptions?.find((option) => option.value === selectedWard)?.label || '';
 
     service.fields.forEach((field) => {
       if (field.id === 'tinhThanhCQ') {
@@ -192,7 +198,7 @@ const DangKyThuongTruPage: React.FC = () => {
           ...field,
           options: [{
             value: FIXED_RESIDENCE_AGENCY_VALUE,
-            label: FIXED_RESIDENCE_AGENCY_LABEL,
+            label: toResidenceAgencyLabel(selectedWardName),
           }],
         });
         return;
@@ -202,7 +208,7 @@ const DangKyThuongTruPage: React.FC = () => {
     });
 
     return map;
-  }, [service.fields, provinceOptions, wardOptions]);
+  }, [service.fields, provinceOptions, selectedWard, wardOptions]);
 
   const handleFieldChange = (fieldId: string, value: string) => {
     if (fieldId === 'tinhThanhCQ') {
@@ -394,7 +400,6 @@ const DangKyThuongTruPage: React.FC = () => {
     </div>
   );
 
-  // Render section body content
   const renderSectionContent = (section: SectionDef) => {
     // Section 3: Thông tin người đề nghị — has special radio + photo
     if (section.id === 'nguoi-de-nghi') {
@@ -440,20 +445,12 @@ const DangKyThuongTruPage: React.FC = () => {
             </label>
           </div>
 
-          {/* Row: name, birthdate, gender + photo */}
+          {/* Row: name, birthdate, gender */}
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             <div style={{ flex: '1 1 0', minWidth: 300 }}>
               {renderFields(['hoTen', 'ngaySinh', 'gioiTinh'], 'cols-3')}
               {renderFields(['danToc', 'tonGiao'], 'cols-2')}
               {renderFields(['cccd', 'sdt', 'email'], 'cols-3')}
-            </div>
-            {/* Photo upload */}
-            <div style={{ flexShrink: 0 }}>
-              <div className="dktt-photo-box">
-                <input type="file" accept="image/png, image/jpeg" />
-                <Camera size={24} style={{ opacity: 0.4, marginBottom: 4 }} />
-                <span>Ảnh 4x6</span>
-              </div>
             </div>
           </div>
         </div>
