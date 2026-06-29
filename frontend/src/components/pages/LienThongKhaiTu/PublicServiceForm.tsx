@@ -683,9 +683,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
         <button
           style={{
             padding: "10px 24px",
-            backgroundColor: "#fff",
-            color: "#666",
-            border: "1px solid #ccc",
+            backgroundColor: "#e0e0e0",
+            color: "#333",
+            border: "none",
             borderRadius: "4px",
             cursor: "pointer",
             fontSize: "14px",
@@ -698,8 +698,8 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           onClick={onNext}
           style={{
             padding: "10px 24px",
-            backgroundColor: "#8b2611",
-            color: "white",
+            backgroundColor: "#a04000",
+            color: "#fff",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",

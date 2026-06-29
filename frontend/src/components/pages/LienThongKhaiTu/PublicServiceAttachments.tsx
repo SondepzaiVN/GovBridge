@@ -90,10 +90,12 @@ const PublicServiceAttachments: React.FC<PublicServiceAttachmentsProps> = ({
   return (
     <div
       style={{
+        maxWidth: "960px",
+        margin: "20px auto",
+        padding: "40px",
         backgroundColor: "#fff",
-        padding: "20px",
-        borderRadius: "4px",
-        border: "1px solid #e0e0e0",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        borderRadius: "8px",
         fontFamily: "Arial, sans-serif",
       }}
     >
@@ -164,11 +166,13 @@ const PublicServiceAttachments: React.FC<PublicServiceAttachmentsProps> = ({
       <div style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
         <button
           style={{
-            padding: "10px 35px",
+            padding: "10px 24px",
             backgroundColor: "#e0e0e0",
+            color: "#333",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
             fontWeight: "bold",
           }}
         >
@@ -177,12 +181,13 @@ const PublicServiceAttachments: React.FC<PublicServiceAttachmentsProps> = ({
         <button
           onClick={onBack}
           style={{
-            padding: "10px 35px",
-            backgroundColor: "#a04000",
-            color: "#fff",
-            border: "none",
+            padding: "10px 24px",
+            backgroundColor: "#fff",
+            color: "#666",
+            border: "1px solid #ccc",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
             fontWeight: "bold",
           }}
         >
@@ -191,12 +196,13 @@ const PublicServiceAttachments: React.FC<PublicServiceAttachmentsProps> = ({
         <button
           onClick={onNext}
           style={{
-            padding: "10px 35px",
+            padding: "10px 24px",
             backgroundColor: "#a04000",
             color: "#fff",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
             fontWeight: "bold",
           }}
         >

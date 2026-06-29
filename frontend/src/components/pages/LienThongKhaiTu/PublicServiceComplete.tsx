@@ -19,7 +19,18 @@ const PublicServiceComplete: React.FC<PublicServiceCompleteProps> = ({
   }, []);
 
   return (
-    <div style={{ position: "relative", fontFamily: "Arial, sans-serif" }}>
+    <div
+      style={{
+        position: "relative",
+        maxWidth: "960px",
+        margin: "20px auto",
+        padding: "40px",
+        backgroundColor: "#fff",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        borderRadius: "8px",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
       {/* THÔNG BÁO FLOAT (TOAST) MÀU XANH */}
       {showToast && (
         <div
@@ -198,12 +209,13 @@ const PublicServiceComplete: React.FC<PublicServiceCompleteProps> = ({
         <button
           onClick={onReset}
           style={{
-            padding: "12px 30px",
+            padding: "10px 24px",
             backgroundColor: "#e0e0e0",
             color: "#333",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
             fontWeight: "bold",
           }}
         >
@@ -211,16 +223,17 @@ const PublicServiceComplete: React.FC<PublicServiceCompleteProps> = ({
         </button>
         <button
           style={{
-            padding: "12px 30px",
+            padding: "10px 24px",
             backgroundColor: "#a04000",
             color: "#fff",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
+            fontSize: "14px",
             fontWeight: "bold",
           }}
         >
-          In giấy biên nhận
+          In Biên Lai
         </button>
       </div>
     </div>
