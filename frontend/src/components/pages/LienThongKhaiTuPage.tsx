@@ -1,12 +1,12 @@
 import React from 'react';
-import { SERVICE_MAP } from '../../data/services';
-import ServicePageLayout from './ServicePageLayout';
+import MainStepper from './LienThongKhaiTu/MainStepper';
 
-const LienThongKhaiTuPage: React.FC = () => (
-  <ServicePageLayout
-    service={SERVICE_MAP['lien-thong-khai-tu']}
-    categoryLabel="Dịch vụ công liên thông"
-  />
-);
+const LienThongKhaiTuPage: React.FC = () => {
+    return (
+        <div>
+            <MainStepper />
+        </div>
+    );
+};
 
 export default LienThongKhaiTuPage;
