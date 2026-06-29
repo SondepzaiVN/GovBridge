@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, FileText, Home, Search, UploadCloud } from 'lucide-react';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { ChevronRight, Home, UploadCloud } from 'lucide-react';
 import { applicationService } from '../../api/applicationService';
 import { ApiClientError } from '../../api/client';
 import { useForm } from '../../contexts/FormContext';
@@ -186,27 +186,6 @@ const steps: LinkedStep[] = [
 
 const allFields = steps.flatMap((step) => step.sections.flatMap((section) => section.fields ?? []));
 
-const portalActions = [
-  {
-    title: 'Liên thông thủ tục hành chính về đăng ký khai sinh, đăng ký thường trú, cấp thẻ bảo hiểm y tế cho trẻ em dưới 6 tuổi',
-    icon: FileText,
-    to: '/lien-thong-khai-sinh/buoc-1',
-  },
-  {
-    title: 'Thủ tục liên thông về đăng ký khai tử, xóa đăng ký thường trú, hưởng chế độ tử tuất (trợ cấp tuất và trợ cấp mai táng)/hỗ trợ chi phí mai táng/hưởng mai táng phí',
-    icon: FileText,
-  },
-  {
-    title: 'Hồ sơ của tôi',
-    icon: FileText,
-  },
-  {
-    title: 'TRA CỨU HỒ SƠ',
-    icon: Search,
-    featured: true,
-  },
-];
-
 const parseStep = (stepSlug?: string) => {
   const match = stepSlug?.match(/^buoc-(\d+)$/);
   const step = match ? Number(match[1]) : 1;
@@ -221,8 +200,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
   const [submittedId, setSubmittedId] = React.useState('');
   const [draftSaved, setDraftSaved] = React.useState(false);
 
-  const isPortalHome = !stepSlug;
-  const currentStep = isPortalHome ? 1 : parseStep(stepSlug);
+  const currentStep = parseStep(stepSlug);
   const current = steps[currentStep - 1];
 
   const goToStep = (step: number) => {
@@ -299,50 +277,14 @@ const LienThongKhaiSinhPage: React.FC = () => {
     window.setTimeout(() => setDraftSaved(false), 1800);
   };
 
-  if (isPortalHome) {
-    return (
-      <LienThongShell>
-        <main className="ltks-main ltks-landing" data-highlight-id="ltks-portal-home">
-          <nav className="ltks-breadcrumb ltks-landing-title" aria-label="Dịch vụ trực tuyến liên thông">
-            <ChevronRight size={20} />
-            <strong>DỊCH VỤ TRỰC TUYẾN LIÊN THÔNG</strong>
-          </nav>
-
-          <div className="ltks-service-grid">
-            {portalActions.map((action) => {
-              const Icon = action.icon;
-              const className = `ltks-service-card ${action.featured ? 'featured' : ''}`;
-              const content = (
-                <>
-                  <span className="ltks-service-icon" aria-hidden="true">
-                    <Icon size={42} strokeWidth={1.9} />
-                  </span>
-                  <span className="ltks-service-text">{action.title}</span>
-                </>
-              );
-
-              return action.to ? (
-                <Link className={className} to={action.to} key={action.title}>
-                  {content}
-                </Link>
-              ) : (
-                <button className={className} type="button" key={action.title}>
-                  {content}
-                </button>
-              );
-            })}
-          </div>
-        </main>
-      </LienThongShell>
-    );
-  }
+  if (!stepSlug) return <Navigate to="/lien-thong-khai-sinh/buoc-1" replace />;
 
   return (
     <LienThongShell>
       <main className="ltks-main">
         <nav className="ltks-breadcrumb" aria-label="Breadcrumb">
           <ChevronRight size={20} />
-          <Link to="/lien-thong-khai-sinh">Trang chủ DVCLT</Link>
+          <Link to="/">Trang chủ DVCLT</Link>
           <span>/ THÊM MỚI HỒ SƠ DỊCH VỤ CÔNG LIÊN THÔNG ĐĂNG KÝ KHAI SINH, ĐĂNG KÝ THƯỜNG TRÚ, CẤP THẺ BHYT CHO TRẺ DƯỚI 6 TUỔI</span>
         </nav>
 
@@ -456,7 +398,7 @@ const LienThongShell: React.FC<React.PropsWithChildren> = ({ children }) => (
     </section>
 
     <div className="ltks-topbar">
-      <Link to="/lien-thong-khai-sinh" className="ltks-home" aria-label="Trang chủ">
+      <Link to="/" className="ltks-home" aria-label="Trang chủ">
         <Home size={18} />
       </Link>
       <div className="ltks-top-actions">
