@@ -1,6 +1,29 @@
 {
   "schemaVersion": 1,
   "procedures": [
+        {
+            "id": "lien-thong-khai-tu",
+            "name": "Liên thông khai tử",
+            "shortName": "Liên thông Khai tử",
+            "description": "Thủ tục liên thông về đăng ký khai tử, xóa đăng ký thường trú, hưởng chế độ tử tuất (trợ cấp tuất và trợ cấp mai táng)/hỗ trợ chi phí mai táng/hưởng mai táng phí",
+            "route": "/lien-thong-khai-tu",
+            "icon": "📝",
+            "category": "Liên thông",
+            "processingTime": "3-5 ngày làm việc",
+            "fee": "Tùy khu vực",
+            "keywords": [
+                "khai tử",
+                "chết",
+                "mất",
+                "mai táng",
+                "mai táng phí",
+                "tử tuất",
+                "thường trú",
+                "xoá khẩu",
+                "liên thông"
+            ],
+            "fields": []
+        },
     {
       "id": "khai-sinh",
       "name": "Đăng ký Khai Sinh",
