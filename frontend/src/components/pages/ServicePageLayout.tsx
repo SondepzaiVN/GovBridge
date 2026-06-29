@@ -15,6 +15,7 @@ interface FieldProps {
   value: string;
   onChange: (value: string) => void;
   isAutofilled?: boolean;
+  disabled?: boolean;
 }
 
 export const FormFieldInput: React.FC<FieldProps> = ({
@@ -22,6 +23,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
   value,
   onChange,
   isAutofilled,
+  disabled = false,
 }) => {
   const [error, setError] = React.useState("");
   const { formState } = useForm();
@@ -56,6 +58,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           className={selectClass}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
+          disabled={disabled}
         >
           <option value="">— Chọn —</option>
           {field.options?.map((opt) => (
@@ -76,6 +79,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
           rows={3}
+          disabled={disabled}
         />
       );
       break;
@@ -95,6 +99,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
                 value={opt.value}
                 checked={value === opt.value}
                 onChange={() => handleChange(opt.value)}
+                disabled={disabled}
                 data-highlight-id={`${field.id}-${opt.value}`}
               />
               {opt.label}
@@ -119,6 +124,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
+          disabled={disabled}
           autoComplete={
             field.type === "phone"
               ? "tel"

@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, ChevronDown, Home, Send, Save, ArrowLeft, Upload, Camera } from 'lucide-react';
 import { SERVICE_MAP } from '../../data/services';
 import { useForm } from '../../contexts/FormContext';
 import { FormFieldInput } from './ServicePageLayout';
 import type { FormField } from '../../types';
+import { administrativeUnitService } from '../../api/administrativeUnitService';
+
+const FIXED_RESIDENCE_AGENCY_VALUE = 'ca_phuong';
+const FIXED_RESIDENCE_AGENCY_LABEL = 'Công An phường Tân An';
+const FIXED_RESIDENCE_AGENCY_PHONE = '0292 3894 939';
 
 // ============================================================
 // Section definitions matching the original DVC form
@@ -69,8 +74,15 @@ const SECTIONS: SectionDef[] = [
 // ============================================================
 const DangKyThuongTruPage: React.FC = () => {
   const service = SERVICE_MAP['ho-khau'];
-  const { formState, setFieldValue } = useForm();
+  const { formState, setFieldValue, fillFields } = useForm();
   const navigate = useNavigate();
+  const selectedProvince = formState.values.tinhThanhCQ || '';
+  const selectedWard = formState.values.xaPhuongCQ || '';
+  const [provinceOptions, setProvinceOptions] = useState<FormField['options']>([]);
+  const [wardOptions, setWardOptions] = useState<FormField['options']>([]);
+  const [isLoadingProvinces, setIsLoadingProvinces] = useState(true);
+  const [isLoadingWards, setIsLoadingWards] = useState(Boolean(selectedProvince));
+  const [administrativeError, setAdministrativeError] = useState('');
 
   // Accordion state — first 4 sections open by default
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
@@ -86,6 +98,72 @@ const DangKyThuongTruPage: React.FC = () => {
   const [savedDraft, setSavedDraft] = useState(false);
   const [declareSelf, setDeclareSelf] = useState<'self' | 'proxy'>('proxy');
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    administrativeUnitService.getProvinces(controller.signal)
+      .then((options) => {
+        setProvinceOptions(options);
+        setAdministrativeError('');
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setAdministrativeError('Không tải được danh sách tỉnh/thành phố. Vui lòng tải lại trang.');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingProvinces(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedProvince) return;
+
+    const controller = new AbortController();
+
+    administrativeUnitService.getWards(selectedProvince, controller.signal)
+      .then((options) => {
+        setWardOptions(options);
+        setAdministrativeError('');
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setWardOptions([]);
+        setAdministrativeError('Không tải được danh sách xã/phường/đặc khu của địa phương đã chọn.');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingWards(false);
+      });
+
+    return () => controller.abort();
+  }, [selectedProvince]);
+
+  useEffect(() => {
+    if (selectedProvince && selectedWard) {
+      if (
+        formState.values.coQuanDKCT !== FIXED_RESIDENCE_AGENCY_VALUE
+        || formState.values.sdtCoQuan !== FIXED_RESIDENCE_AGENCY_PHONE
+      ) {
+        fillFields({
+          coQuanDKCT: FIXED_RESIDENCE_AGENCY_VALUE,
+          sdtCoQuan: FIXED_RESIDENCE_AGENCY_PHONE,
+        });
+      }
+      return;
+    }
+
+    if (formState.values.coQuanDKCT) setFieldValue('coQuanDKCT', '');
+    if (formState.values.sdtCoQuan) setFieldValue('sdtCoQuan', '');
+  }, [
+    selectedProvince,
+    selectedWard,
+    formState.values.coQuanDKCT,
+    formState.values.sdtCoQuan,
+    fillFields,
+    setFieldValue,
+  ]);
+
   const toggleSection = (id: string) => {
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -95,8 +173,56 @@ const DangKyThuongTruPage: React.FC = () => {
     !!formState.touched[fieldId] && !!formState.values[fieldId];
 
   // Build a lookup from field id to FormField
-  const fieldMap = new Map<string, FormField>();
-  service.fields.forEach((f) => fieldMap.set(f.id, f));
+  const fieldMap = useMemo(() => {
+    const map = new Map<string, FormField>();
+
+    service.fields.forEach((field) => {
+      if (field.id === 'tinhThanhCQ') {
+        map.set(field.id, { ...field, options: provinceOptions });
+        return;
+      }
+
+      if (field.id === 'xaPhuongCQ') {
+        map.set(field.id, { ...field, options: wardOptions });
+        return;
+      }
+
+      if (field.id === 'coQuanDKCT') {
+        map.set(field.id, {
+          ...field,
+          options: [{
+            value: FIXED_RESIDENCE_AGENCY_VALUE,
+            label: FIXED_RESIDENCE_AGENCY_LABEL,
+          }],
+        });
+        return;
+      }
+
+      map.set(field.id, field);
+    });
+
+    return map;
+  }, [service.fields, provinceOptions, wardOptions]);
+
+  const handleFieldChange = (fieldId: string, value: string) => {
+    if (fieldId === 'tinhThanhCQ') {
+      setFieldValue('tinhThanhCQ', value);
+      setFieldValue('xaPhuongCQ', '');
+      setFieldValue('coQuanDKCT', '');
+      setFieldValue('sdtCoQuan', '');
+      setWardOptions([]);
+      setIsLoadingWards(Boolean(value));
+      return;
+    }
+
+    setFieldValue(fieldId, value);
+  };
+
+  const isFieldDisabled = (fieldId: string) => {
+    if (fieldId === 'tinhThanhCQ') return isLoadingProvinces;
+    if (fieldId === 'xaPhuongCQ') return !selectedProvince || isLoadingWards;
+    return fieldId === 'coQuanDKCT' || fieldId === 'sdtCoQuan';
+  };
 
   const handleSubmit = () => {
     if (!agreedLegal) {
@@ -124,8 +250,9 @@ const DangKyThuongTruPage: React.FC = () => {
             key={field.id}
             field={field}
             value={getFieldValue(field.id)}
-            onChange={(val) => setFieldValue(field.id, val)}
+            onChange={(val) => handleFieldChange(field.id, val)}
             isAutofilled={isAutofilled(field.id)}
+            disabled={isFieldDisabled(field.id)}
           />
         ))}
       </div>
@@ -330,6 +457,19 @@ const DangKyThuongTruPage: React.FC = () => {
             </div>
           </div>
         </div>
+      );
+    }
+
+    if (section.id === 'co-quan') {
+      return (
+        <>
+          {renderFields(section.fieldIds)}
+          {administrativeError && (
+            <p className="form-error-msg" role="alert" style={{ marginTop: 10 }}>
+              ⚠️ {administrativeError}
+            </p>
+          )}
+        </>
       );
     }
 
