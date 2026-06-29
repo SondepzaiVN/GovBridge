@@ -227,12 +227,172 @@
               "label": "Thành phố Cần Thơ"
             },
             {
-              "value": "nghean",
-              "label": "Tỉnh Nghệ An"
+              "value": "hagiang",
+              "label": "Tỉnh Hà Giang"
+            },
+            {
+              "value": "caobang",
+              "label": "Tỉnh Cao Bằng"
+            },
+            {
+              "value": "laichau",
+              "label": "Tỉnh Lai Châu"
+            },
+            {
+              "value": "laocai",
+              "label": "Tỉnh Lào Cai"
+            },
+            {
+              "value": "tuyenquang",
+              "label": "Tỉnh Tuyên Quang"
+            },
+            {
+              "value": "langson",
+              "label": "Tỉnh Lạng Sơn"
+            },
+            {
+              "value": "backan",
+              "label": "Tỉnh Bắc Kạn"
+            },
+            {
+              "value": "thainguyen",
+              "label": "Tỉnh Thái Nguyên"
+            },
+            {
+              "value": "yenbai",
+              "label": "Tỉnh Yên Bái"
+            },
+            {
+              "value": "sonla",
+              "label": "Tỉnh Sơn La"
+            },
+            {
+              "value": "phutho",
+              "label": "Tỉnh Phú Thọ"
+            },
+            {
+              "value": "vinhphuc",
+              "label": "Tỉnh Vĩnh Phúc"
+            },
+            {
+              "value": "quangninh",
+              "label": "Tỉnh Quảng Ninh"
+            },
+            {
+              "value": "bacgiang",
+              "label": "Tỉnh Bắc Giang"
+            },
+            {
+              "value": "bacninh",
+              "label": "Tỉnh Bắc Ninh"
+            },
+            {
+              "value": "haiduong",
+              "label": "Tỉnh Hải Dương"
+            },
+            {
+              "value": "hungyen",
+              "label": "Tỉnh Hưng Yên"
+            },
+            {
+              "value": "hoabinh",
+              "label": "Tỉnh Hòa Bình"
+            },
+            {
+              "value": "hanam",
+              "label": "Tỉnh Hà Nam"
+            },
+            {
+              "value": "namdinh",
+              "label": "Tỉnh Nam Định"
+            },
+            {
+              "value": "thaibinh",
+              "label": "Tỉnh Thái Bình"
+            },
+            {
+              "value": "ninhbinh",
+              "label": "Tỉnh Ninh Bình"
             },
             {
               "value": "thanhhoa",
               "label": "Tỉnh Thanh Hóa"
+            },
+            {
+              "value": "nghean",
+              "label": "Tỉnh Nghệ An"
+            },
+            {
+              "value": "hatinh",
+              "label": "Tỉnh Hà Tĩnh"
+            },
+            {
+              "value": "quangbinh",
+              "label": "Tỉnh Quảng Bình"
+            },
+            {
+              "value": "quangtri",
+              "label": "Tỉnh Quảng Trị"
+            },
+            {
+              "value": "thuathienhue",
+              "label": "Tỉnh Thừa Thiên Huế"
+            },
+            {
+              "value": "quangnam",
+              "label": "Tỉnh Quảng Nam"
+            },
+            {
+              "value": "quangngai",
+              "label": "Tỉnh Quảng Ngãi"
+            },
+            {
+              "value": "kontum",
+              "label": "Tỉnh Kon Tum"
+            },
+            {
+              "value": "gialai",
+              "label": "Tỉnh Gia Lai"
+            },
+            {
+              "value": "binhdinh",
+              "label": "Tỉnh Bình Định"
+            },
+            {
+              "value": "phuyen",
+              "label": "Tỉnh Phú Yên"
+            },
+            {
+              "value": "daklak",
+              "label": "Tỉnh Đắk Lắk"
+            },
+            {
+              "value": "daknong",
+              "label": "Tỉnh Đắk Nông"
+            },
+            {
+              "value": "khanhhoa",
+              "label": "Tỉnh Khánh Hòa"
+            },
+            {
+              "value": "binhthuan",
+              "label": "Tỉnh Bình Thuận"
+            },
+            {
+              "value": "ninhthuan",
+              "label": "Tỉnh Ninh Thuận"
+            },
+            {
+              "value": "lamdong",
+              "label": "Tỉnh Lâm Đồng"
+            },
+            {
+              "value": "binhphuoc",
+              "label": "Tỉnh Bình Phước"
+            },
+            {
+              "value": "tayninh",
+              "label": "Tỉnh Tây Ninh"
             },
             {
               "value": "binhduong",
@@ -243,8 +403,60 @@
               "label": "Tỉnh Đồng Nai"
             },
             {
-              "value": "khanhhoa",
-              "label": "Tỉnh Khánh Hòa"
+              "value": "bariavungtau",
+              "label": "Tỉnh Bà Rịa - Vũng Tàu"
+            },
+            {
+              "value": "longan",
+              "label": "Tỉnh Long An"
+            },
+            {
+              "value": "tiengiang",
+              "label": "Tỉnh Tiền Giang"
+            },
+            {
+              "value": "bentre",
+              "label": "Tỉnh Bến Tre"
+            },
+            {
+              "value": "travinh",
+              "label": "Tỉnh Trà Vinh"
+            },
+            {
+              "value": "vinhlong",
+              "label": "Tỉnh Vĩnh Long"
+            },
+            {
+              "value": "dongthap",
+              "label": "Tỉnh Đồng Tháp"
+            },
+            {
+              "value": "angiang",
+              "label": "Tỉnh An Giang"
+            },
+            {
+              "value": "kiengiang",
+              "label": "Tỉnh Kiên Giang"
+            },
+            {
+              "value": "haugiang",
+              "label": "Tỉnh Hậu Giang"
+            },
+            {
+              "value": "soctrang",
+              "label": "Tỉnh Sóc Trăng"
+            },
+            {
+              "value": "baclieu",
+              "label": "Tỉnh Bạc Liêu"
+            },
+            {
+              "value": "camau",
+              "label": "Tỉnh Cà Mau"
+            },
+            {
+              "value": "dienbien",
+              "label": "Tỉnh Điện Biên"
             }
           ]
         },
@@ -318,28 +530,16 @@
           "required": true,
           "options": [
             {
-              "value": "th1",
-              "label": "Công dân có chỗ ở hợp pháp thuộc quyền sở hữu của mình"
+              "value": "ca_ho",
+              "label": "Đăng ký thường trú cả hộ"
             },
             {
-              "value": "th2",
-              "label": "Công dân được chủ hộ đồng ý cho đăng ký thường trú"
+              "value": "lan_dau",
+              "label": "Đăng ký thường trú lần đầu."
             },
             {
-              "value": "th3",
-              "label": "Công dân được người có quyền sở hữu chỗ ở đồng ý"
-            },
-            {
-              "value": "th4",
-              "label": "Trẻ em đăng ký thường trú theo cha hoặc mẹ"
-            },
-            {
-              "value": "th5",
-              "label": "Vợ/chồng về ở cùng chồng/vợ"
-            },
-            {
-              "value": "th6",
-              "label": "Người cao tuổi về ở cùng con"
+              "value": "nhan_khau",
+              "label": "Đăng ký thường trú nhân khẩu"
             }
           ]
         },
@@ -526,6 +726,238 @@
             {
               "value": "cantho",
               "label": "Thành phố Cần Thơ"
+            },
+            {
+              "value": "hagiang",
+              "label": "Tỉnh Hà Giang"
+            },
+            {
+              "value": "caobang",
+              "label": "Tỉnh Cao Bằng"
+            },
+            {
+              "value": "laichau",
+              "label": "Tỉnh Lai Châu"
+            },
+            {
+              "value": "laocai",
+              "label": "Tỉnh Lào Cai"
+            },
+            {
+              "value": "tuyenquang",
+              "label": "Tỉnh Tuyên Quang"
+            },
+            {
+              "value": "langson",
+              "label": "Tỉnh Lạng Sơn"
+            },
+            {
+              "value": "backan",
+              "label": "Tỉnh Bắc Kạn"
+            },
+            {
+              "value": "thainguyen",
+              "label": "Tỉnh Thái Nguyên"
+            },
+            {
+              "value": "yenbai",
+              "label": "Tỉnh Yên Bái"
+            },
+            {
+              "value": "sonla",
+              "label": "Tỉnh Sơn La"
+            },
+            {
+              "value": "phutho",
+              "label": "Tỉnh Phú Thọ"
+            },
+            {
+              "value": "vinhphuc",
+              "label": "Tỉnh Vĩnh Phúc"
+            },
+            {
+              "value": "quangninh",
+              "label": "Tỉnh Quảng Ninh"
+            },
+            {
+              "value": "bacgiang",
+              "label": "Tỉnh Bắc Giang"
+            },
+            {
+              "value": "bacninh",
+              "label": "Tỉnh Bắc Ninh"
+            },
+            {
+              "value": "haiduong",
+              "label": "Tỉnh Hải Dương"
+            },
+            {
+              "value": "hungyen",
+              "label": "Tỉnh Hưng Yên"
+            },
+            {
+              "value": "hoabinh",
+              "label": "Tỉnh Hòa Bình"
+            },
+            {
+              "value": "hanam",
+              "label": "Tỉnh Hà Nam"
+            },
+            {
+              "value": "namdinh",
+              "label": "Tỉnh Nam Định"
+            },
+            {
+              "value": "thaibinh",
+              "label": "Tỉnh Thái Bình"
+            },
+            {
+              "value": "ninhbinh",
+              "label": "Tỉnh Ninh Bình"
+            },
+            {
+              "value": "thanhhoa",
+              "label": "Tỉnh Thanh Hóa"
+            },
+            {
+              "value": "nghean",
+              "label": "Tỉnh Nghệ An"
+            },
+            {
+              "value": "hatinh",
+              "label": "Tỉnh Hà Tĩnh"
+            },
+            {
+              "value": "quangbinh",
+              "label": "Tỉnh Quảng Bình"
+            },
+            {
+              "value": "quangtri",
+              "label": "Tỉnh Quảng Trị"
+            },
+            {
+              "value": "thuathienhue",
+              "label": "Tỉnh Thừa Thiên Huế"
+            },
+            {
+              "value": "quangnam",
+              "label": "Tỉnh Quảng Nam"
+            },
+            {
+              "value": "quangngai",
+              "label": "Tỉnh Quảng Ngãi"
+            },
+            {
+              "value": "kontum",
+              "label": "Tỉnh Kon Tum"
+            },
+            {
+              "value": "gialai",
+              "label": "Tỉnh Gia Lai"
+            },
+            {
+              "value": "binhdinh",
+              "label": "Tỉnh Bình Định"
+            },
+            {
+              "value": "phuyen",
+              "label": "Tỉnh Phú Yên"
+            },
+            {
+              "value": "daklak",
+              "label": "Tỉnh Đắk Lắk"
+            },
+            {
+              "value": "daknong",
+              "label": "Tỉnh Đắk Nông"
+            },
+            {
+              "value": "khanhhoa",
+              "label": "Tỉnh Khánh Hòa"
+            },
+            {
+              "value": "binhthuan",
+              "label": "Tỉnh Bình Thuận"
+            },
+            {
+              "value": "ninhthuan",
+              "label": "Tỉnh Ninh Thuận"
+            },
+            {
+              "value": "lamdong",
+              "label": "Tỉnh Lâm Đồng"
+            },
+            {
+              "value": "binhphuoc",
+              "label": "Tỉnh Bình Phước"
+            },
+            {
+              "value": "tayninh",
+              "label": "Tỉnh Tây Ninh"
+            },
+            {
+              "value": "binhduong",
+              "label": "Tỉnh Bình Dương"
+            },
+            {
+              "value": "dongnai",
+              "label": "Tỉnh Đồng Nai"
+            },
+            {
+              "value": "bariavungtau",
+              "label": "Tỉnh Bà Rịa - Vũng Tàu"
+            },
+            {
+              "value": "longan",
+              "label": "Tỉnh Long An"
+            },
+            {
+              "value": "tiengiang",
+              "label": "Tỉnh Tiền Giang"
+            },
+            {
+              "value": "bentre",
+              "label": "Tỉnh Bến Tre"
+            },
+            {
+              "value": "travinh",
+              "label": "Tỉnh Trà Vinh"
+            },
+            {
+              "value": "vinhlong",
+              "label": "Tỉnh Vĩnh Long"
+            },
+            {
+              "value": "dongthap",
+              "label": "Tỉnh Đồng Tháp"
+            },
+            {
+              "value": "angiang",
+              "label": "Tỉnh An Giang"
+            },
+            {
+              "value": "kiengiang",
+              "label": "Tỉnh Kiên Giang"
+            },
+            {
+              "value": "haugiang",
+              "label": "Tỉnh Hậu Giang"
+            },
+            {
+              "value": "soctrang",
+              "label": "Tỉnh Sóc Trăng"
+            },
+            {
+              "value": "baclieu",
+              "label": "Tỉnh Bạc Liêu"
+            },
+            {
+              "value": "camau",
+              "label": "Tỉnh Cà Mau"
+            },
+            {
+              "value": "dienbien",
+              "label": "Tỉnh Điện Biên"
             }
           ]
         },

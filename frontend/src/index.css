@@ -690,7 +690,8 @@ a:hover {
 /* Radio group */
 .radio-group {
     display: flex;
-    gap: 16px;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .radio-option {
