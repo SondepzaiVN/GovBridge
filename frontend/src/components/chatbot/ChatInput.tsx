@@ -267,7 +267,6 @@ const VoiceBar: React.FC<{ interim: string; onStop: () => void }> = ({
           key={i}
           className="voice-wave-bar"
           style={{
-            height: `${8 + Math.sin(Date.now() / 200 + i) * 10 + Math.random() * 8}px`,
             animationDelay: `${i * 50}ms`,
           }}
         />
