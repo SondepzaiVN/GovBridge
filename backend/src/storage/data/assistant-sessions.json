@@ -1,4 +1,93 @@
 {
   "schemaVersion": 1,
-  "sessions": []
+  "sessions": [
+    {
+      "id": "2acbf6ce-ba24-41fe-ac4d-9c185ebaa78b",
+      "currentRoute": "/",
+      "createdAt": "2026-06-29T01:18:46.502Z",
+      "updatedAt": "2026-06-29T01:52:11.790Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Cấp lại CCCD",
+          "createdAt": "2026-06-29T01:18:46.502Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-06-29T01:18:46.502Z"
+        },
+        {
+          "role": "user",
+          "content": "tôi muốn cấp lại cccd",
+          "createdAt": "2026-06-29T01:19:03.463Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-06-29T01:19:03.463Z"
+        },
+        {
+          "role": "user",
+          "content": "hi",
+          "createdAt": "2026-06-29T01:48:57.066Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-06-29T01:48:57.066Z"
+        },
+        {
+          "role": "user",
+          "content": "Đăng ký khai sinh",
+          "createdAt": "2026-06-29T01:49:02.124Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy thủ tục **Đăng ký Khai Sinh**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-06-29T01:49:02.124Z"
+        },
+        {
+          "role": "user",
+          "content": "bạn tên là gì",
+          "createdAt": "2026-06-29T01:51:31.622Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đang ở thủ tục **Đăng ký Khai Sinh**. Mình có thể giải thích giấy tờ, quy trình, chỉ bước tiếp theo hoặc điền field theo dạng fieldId: giá trị.",
+          "createdAt": "2026-06-29T01:51:31.622Z"
+        },
+        {
+          "role": "user",
+          "content": "hi",
+          "createdAt": "2026-06-29T01:51:46.585Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-06-29T01:51:46.585Z"
+        },
+        {
+          "role": "user",
+          "content": "goodbye",
+          "createdAt": "2026-06-29T01:51:53.370Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-06-29T01:51:53.370Z"
+        },
+        {
+          "role": "user",
+          "content": "tôi muốn đăng kí khai sinh",
+          "createdAt": "2026-06-29T01:52:11.790Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-06-29T01:52:11.790Z"
+        }
+      ]
+    }
+  ]
 }

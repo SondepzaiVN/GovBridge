@@ -63,3 +63,8 @@ export interface AssistantTool {
   canHandle(context: AssistantToolContext): boolean;
   execute(context: AssistantToolContext): Promise<AssistantResult> | AssistantResult;
 }
+
+export interface AssistantProvider {
+  readonly name: string;
+  sendMessage(context: AssistantToolContext, history: ConversationMessage[]): Promise<AssistantResult>;
+}
