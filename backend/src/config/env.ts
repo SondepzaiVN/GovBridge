@@ -22,6 +22,7 @@ const envSchema = z.object({
   VNPT_SMARTBOT_ACCESS_TOKEN: z.string().default(''),
   VNPT_SMARTBOT_TOKEN_ID: z.string().default(''),
   VNPT_SMARTBOT_TOKEN_KEY: z.string().default(''),
+  VNPT_SMARTBOT_BOT_ID: z.string().default(''),
   VNPT_EKYC_URL: z.string().url().default('https://api.idg.vnpt.vn'),
   VNPT_EKYC_ACCESS_TOKEN: z.string().default(''),
   VNPT_EKYC_TOKEN_ID: z.string().default(''),

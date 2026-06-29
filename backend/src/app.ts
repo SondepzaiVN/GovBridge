@@ -67,6 +67,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
         accessToken: env.VNPT_SMARTBOT_ACCESS_TOKEN,
         tokenId: env.VNPT_SMARTBOT_TOKEN_ID,
         tokenKey: env.VNPT_SMARTBOT_TOKEN_KEY,
+        botId: env.VNPT_SMARTBOT_BOT_ID,
       })
     : new MockAssistantProvider(buildAssistantTools());
 
