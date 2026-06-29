@@ -207,7 +207,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
       setSubmittedId(application.id);
     } catch (error) {
       if (error instanceof ApiClientError) {
-        error.details.forEach((detail) => {
+        (error.details ?? []).forEach((detail) => {
           if (!detail.field) return;
           touchField(detail.field);
           setFieldError(detail.field, detail.message);
