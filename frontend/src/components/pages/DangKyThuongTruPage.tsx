@@ -33,17 +33,25 @@ interface FamilyMember {
   dateOfBirth: string;
   gender: string;
   citizenId: string;
-  occupation: string;
-  workplace: string;
   relationshipWithHouseholder: string;
 }
 
-const GENDER_OPTIONS = ['Nam', 'Nữ', 'Khác'];
-
-const OCCUPATION_OPTIONS = [
-  'Tự do', 'Học sinh/Sinh viên', 'Công nhân',
-  'Nhân viên văn phòng', 'Kinh doanh', 'Không có', 'Khác',
+// Fields that become required when any field in the row is touched
+const MEMBER_REQUIRED_FIELDS: Array<keyof Omit<FamilyMember, 'id'>> = [
+  'fullName', 'dateOfBirth', 'gender', 'citizenId', 'relationshipWithHouseholder',
 ];
+
+const isMemberRowDirty = (m: FamilyMember): boolean =>
+  MEMBER_REQUIRED_FIELDS.some(f => m[f].trim() !== '');
+
+const getMemberRowErrors = (m: FamilyMember): Set<keyof Omit<FamilyMember, 'id'>> => {
+  const errs = new Set<keyof Omit<FamilyMember, 'id'>>();
+  if (!isMemberRowDirty(m)) return errs;
+  MEMBER_REQUIRED_FIELDS.forEach(f => { if (!m[f].trim()) errs.add(f); });
+  return errs;
+};
+
+const GENDER_OPTIONS = ['Nam', 'Nữ', 'Khác'];
 
 const RELATIONSHIP_OPTIONS = [
   'Chủ hộ', 'Vợ', 'Chồng', 'Con đẻ', 'Con nuôi',
@@ -130,14 +138,15 @@ const DangKyThuongTruPage: React.FC = () => {
   // ── Family members table state ──
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([{
     id: 1, fullName: '', dateOfBirth: '', gender: '', citizenId: '',
-    occupation: '', workplace: '', relationshipWithHouseholder: '',
+    relationshipWithHouseholder: '',
   }]);
   const [memberCounter, setMemberCounter] = useState(2);
+  const [showMemberErrors, setShowMemberErrors] = useState(false);
 
   const addFamilyMember = () => {
     setFamilyMembers(prev => [...prev, {
       id: memberCounter, fullName: '', dateOfBirth: '', gender: '', citizenId: '',
-      occupation: '', workplace: '', relationshipWithHouseholder: '',
+      relationshipWithHouseholder: '',
     }]);
     setMemberCounter(prev => prev + 1);
   };
@@ -153,6 +162,10 @@ const DangKyThuongTruPage: React.FC = () => {
   ) => {
     setFamilyMembers(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
   };
+
+  // Returns true if all touched rows pass validation
+  const validateMembers = (): boolean =>
+    familyMembers.every(m => getMemberRowErrors(m).size === 0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -286,6 +299,12 @@ const DangKyThuongTruPage: React.FC = () => {
       alert('Vui lòng xác nhận chịu trách nhiệm trước pháp luật về lời khai trên.');
       return;
     }
+    if (!validateMembers()) {
+      setShowMemberErrors(true);
+      alert('Vui lòng điền đầy đủ thông tin các thành viên đã nhập trong bảng (các trường có dấu *).');
+      return;
+    }
+    setShowMemberErrors(false);
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 5000);
   };
@@ -503,45 +522,18 @@ const DangKyThuongTruPage: React.FC = () => {
             {renderFields(['cccd', 'sdt', 'email'], 'cols-3')}
           </div>
 
-          {/* ── Family members table (conditional by truongHop) ── */}
-          {(() => {
-            // ca_ho / lan_dau / nhan_khau thuộc field 'truongHop'
-            const truongHop = formState.values.truongHop || '';
-
-            // lan_dau = chỉ cần thông tin người đăng ký, ẩn bảng
-            if (truongHop === 'lan_dau') return null;
-
-            const isCaHo = truongHop === 'ca_ho';
-            const isNhanKhau = truongHop === 'nhan_khau';
-            // Hiển thị khi: ca_ho, nhan_khau, hoặc chưa chọn (mặc định)
-            const showTable = isCaHo || isNhanKhau || truongHop === '';
-            if (!showTable) return null;
-
-            const tableTitle = isNhanKhau
-              ? 'Danh sách nhân khẩu được đăng ký thêm / chuyển vào'
-              : 'Những thành viên trong hộ gia đình cùng thay đổi';
-
-            const badgeText = isCaHo
-              ? '✱ Bắt buộc khi đăng ký cả hộ'
-              : isNhanKhau
-              ? 'ℹ️ Tùy chọn — thêm người cùng chuyển vào'
-              : null;
-
-            const badgeColor = isCaHo ? '#8B1A1A' : '#1a56a0';
-            const badgeBg = isCaHo ? '#fff0f0' : '#eef3fa';
-
-            return (
+          {/* ── Family members table (always visible, all fields optional) ── */}
           <div style={{ marginTop: 28 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none', flex: 1 }}>{tableTitle}</div>
-              {badgeText && (
-                <span style={{
-                  fontSize: '0.75rem', fontWeight: 600, padding: '3px 10px',
-                  borderRadius: 'var(--radius-pill)', background: badgeBg,
-                  color: badgeColor, border: `1px solid ${badgeColor}40`,
-                  whiteSpace: 'nowrap',
-                }}>{badgeText}</span>
-              )}
+              <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none', flex: 1 }}>
+                Những thành viên trong hộ gia đình cùng thay đổi
+              </div>
+              <span style={{
+                fontSize: '0.75rem', fontWeight: 600, padding: '3px 10px',
+                borderRadius: 'var(--radius-pill)', background: '#eef3fa',
+                color: '#1a56a0', border: '1px solid #1a56a040',
+                whiteSpace: 'nowrap',
+              }}>Tùy chọn</span>
             </div>
             <div className="dktt-member-table-wrapper">
               <table className="dktt-member-table">
@@ -553,118 +545,85 @@ const DangKyThuongTruPage: React.FC = () => {
                     <th>Ngày sinh <span className="req">(*)</span></th>
                     <th>Giới tính <span className="req">(*)</span></th>
                     <th>Số ĐDCN (CCCD) <span className="req">(*)</span></th>
-                    <th>Nghề nghiệp</th>
-                    <th>Nơi làm việc</th>
                     <th>Quan hệ với chủ hộ <span className="req">(*)</span></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {familyMembers.map((member, index) => (
+                  {familyMembers.map((member, index) => {
+                    const errs = showMemberErrors ? getMemberRowErrors(member) : new Set<keyof Omit<FamilyMember,'id'>>();
+                    const errStyle = (f: keyof Omit<FamilyMember,'id'>) =>
+                      errs.has(f) ? { borderColor: 'var(--danger)', background: 'var(--danger-subtle)' } : {};
+                    return (
                     <tr key={member.id}>
-                      {/* Thao tác */}
                       <td className="col-action">
                         {index === 0 ? (
-                          <button
-                            type="button"
-                            className="dktt-btn-add"
-                            onClick={addFamilyMember}
-                            title="Thêm thành viên"
-                          >+</button>
+                          <button type="button" className="dktt-btn-add" onClick={addFamilyMember} title="Thêm thành viên">+</button>
                         ) : (
-                          <button
-                            type="button"
-                            className="dktt-btn-remove"
-                            onClick={() => removeFamilyMember(member.id)}
-                            title="Xóa dòng này"
-                          >✕</button>
+                          <button type="button" className="dktt-btn-remove" onClick={() => removeFamilyMember(member.id)} title="Xóa dòng này">✕</button>
                         )}
                       </td>
-                      {/* STT */}
                       <td className="col-stt">{index + 1}</td>
-                      {/* Họ và tên */}
                       <td>
                         <input
-                          className="dktt-table-input"
-                          type="text"
+                          className="dktt-table-input" type="text"
                           value={member.fullName}
                           onChange={e => updateFamilyMember(member.id, 'fullName', e.target.value)}
-                          placeholder="Họ và tên"
+                          placeholder="Họ và tên" style={errStyle('fullName')}
                         />
                       </td>
-                      {/* Ngày sinh */}
                       <td>
                         <input
-                          className="dktt-table-input"
-                          type="date"
+                          className="dktt-table-input" type="date"
                           value={member.dateOfBirth}
                           onChange={e => updateFamilyMember(member.id, 'dateOfBirth', e.target.value)}
+                          style={errStyle('dateOfBirth')}
                         />
                       </td>
-                      {/* Giới tính */}
                       <td>
                         <select
                           className="dktt-table-select"
                           value={member.gender}
                           onChange={e => updateFamilyMember(member.id, 'gender', e.target.value)}
+                          style={errStyle('gender')}
                         >
                           <option value="">-- Chọn --</option>
                           {GENDER_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                       </td>
-                      {/* CCCD */}
                       <td>
                         <input
-                          className="dktt-table-input"
-                          type="text"
-                          maxLength={12}
+                          className="dktt-table-input" type="text" maxLength={12}
                           value={member.citizenId}
                           onChange={e => updateFamilyMember(member.id, 'citizenId', e.target.value.replace(/\D/g, ''))}
-                          placeholder="12 chữ số"
+                          placeholder="12 chữ số" style={errStyle('citizenId')}
                         />
                       </td>
-                      {/* Nghề nghiệp */}
-                      <td>
-                        <select
-                          className="dktt-table-select"
-                          value={member.occupation}
-                          onChange={e => updateFamilyMember(member.id, 'occupation', e.target.value)}
-                        >
-                          <option value="">-- Chọn --</option>
-                          {OCCUPATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                        </select>
-                      </td>
-                      {/* Nơi làm việc */}
-                      <td>
-                        <input
-                          className="dktt-table-input"
-                          type="text"
-                          value={member.workplace}
-                          onChange={e => updateFamilyMember(member.id, 'workplace', e.target.value)}
-                          placeholder="Nơi làm việc"
-                        />
-                      </td>
-                      {/* Quan hệ chủ hộ */}
                       <td>
                         <select
                           className="dktt-table-select"
                           value={member.relationshipWithHouseholder}
                           onChange={e => updateFamilyMember(member.id, 'relationshipWithHouseholder', e.target.value)}
+                          style={errStyle('relationshipWithHouseholder')}
                         >
                           <option value="">-- Chọn --</option>
                           {RELATIONSHIP_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+            {showMemberErrors && !validateMembers() && (
+              <p className="form-error-msg" style={{ marginTop: 8 }}>
+                ⚠️ Nếu đã nhập thông tin một thành viên, vui lòng điền đầy đủ tất cả các trường có dấu (*).
+              </p>
+            )}
             <p className="dktt-note" style={{ marginTop: 8 }}>
-              * Nhấn nút <strong style={{ color: 'var(--primary)' }}>+</strong> để thêm thành viên. Từ dòng thứ 2 trở đi có thể xóa dòng bằng nút <strong style={{ color: 'var(--danger)' }}>✕</strong>.
+              Nhấn nút <strong style={{ color: 'var(--primary)' }}>+</strong> để thêm thành viên. Từ dòng thứ 2 trở đi có thể xóa dòng bằng nút <strong style={{ color: 'var(--danger)' }}>✕</strong>. Các trường <span style={{ color: 'var(--danger)' }}>(*)</span> là bắt buộc nếu có nhập dòng này.
             </p>
           </div>
-            );
-          })()}
         </div>
       );
     }
