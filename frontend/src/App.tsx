@@ -45,7 +45,6 @@ const AppInner: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { fillFields, formState } = useForm();
-  const isLienThongClone = location.pathname.startsWith('/lien-thong-khai-sinh') || (location.pathname === '/' && location.search.includes('vneid=1'));
 
   const handleNavigate = (route: string) => {
     navigate(route);
@@ -62,21 +61,17 @@ const AppInner: React.FC = () => {
       currentRoute={location.pathname}
       formValues={formState.values}
     >
-      {!isLienThongClone && (
-        <>
-          <UIHighlighter />
-          <ChatbotFAB />
-          <ChatbotWidget />
-        </>
-      )}
+      <UIHighlighter />
+      <ChatbotFAB />
+      <ChatbotWidget />
 
       {/* App shell */}
-      {!isLienThongClone && <Header />}
+      <Header />
 
       <main>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            <Route path="/" element={location.search.includes('vneid=1') ? <LienThongKhaiSinhPage /> : <HomePage />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/khai-sinh" element={<KhaiSinhPage />} />
             <Route path="/ho-khau" element={<DangKyThuongTruPage />} />
             <Route path="/cccd" element={<CCCDPage />} />

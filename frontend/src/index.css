@@ -3302,6 +3302,234 @@ a:hover {
     font-size: 1.48rem;
 }
 
+.ltks-app-page {
+    min-height: 100vh;
+    background: #fff;
+    color: #111;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.ltks-app-page .ltks-main {
+    width: min(1100px, calc(100% - 40px));
+    max-width: 1100px;
+    min-height: auto;
+    margin: 0 auto;
+    padding: 30px 20px 40px;
+    background: transparent;
+}
+
+.ltks-app-page .ltks-breadcrumb {
+    margin: 0 auto 12px;
+    color: #333;
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: normal;
+    overflow: visible;
+}
+
+.ltks-app-page .ltks-breadcrumb::before {
+    font-size: 1.15rem;
+    letter-spacing: -2px;
+}
+
+.ltks-app-page .ltks-stepper {
+    justify-content: center;
+    margin: 0 auto 20px;
+    padding: 0;
+    overflow-x: auto;
+}
+
+.ltks-app-page .ltks-step {
+    width: 120px;
+    height: 150px;
+    flex: 0 0 120px;
+    border: 2px solid #a0a0a0;
+    border-radius: 8px;
+    background: transparent;
+    padding: 4px;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ltks-app-page .ltks-step.active,
+.ltks-app-page .ltks-step.done {
+    border-color: #ff5722;
+}
+
+.ltks-app-page .ltks-step::after {
+    top: 74px;
+    left: 100%;
+    width: 28px;
+    height: 2px;
+    background: #a0a0a0;
+}
+
+.ltks-app-page .ltks-step::before {
+    top: 70px;
+    left: calc(100% + 28px);
+    border-left-width: 7px;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-left-color: #a0a0a0;
+}
+
+.ltks-app-page .ltks-step.active::after,
+.ltks-app-page .ltks-step.done::after {
+    background: #ff5722;
+}
+
+.ltks-app-page .ltks-step.active::before,
+.ltks-app-page .ltks-step.done::before {
+    border-left-color: #ff5722;
+}
+
+.ltks-app-page .ltks-step > span,
+.ltks-app-page .ltks-step > strong {
+    position: relative;
+    z-index: 1;
+}
+
+.ltks-app-page .ltks-step::marker {
+    content: '';
+}
+
+.ltks-app-page .ltks-step {
+    background:
+        linear-gradient(
+            #fdc543,
+            #fdc543
+        ) content-box;
+}
+
+.ltks-app-page .ltks-step:not(.active):not(.done) {
+    background:
+        linear-gradient(
+            #d1d1d1,
+            #d1d1d1
+        ) content-box;
+}
+
+.ltks-app-page .ltks-step span {
+    margin: 12px 0 8px;
+    color: #222;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+}
+
+.ltks-app-page .ltks-step strong {
+    width: 100%;
+    padding: 0 4px;
+    color: #222;
+    font-size: 0.68rem;
+    font-weight: 400;
+    line-height: 1.3;
+    overflow-wrap: break-word;
+}
+
+.ltks-app-page .ltks-form {
+    max-width: 960px;
+    margin: 20px auto;
+    border: 0;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ltks-app-page .ltks-form-body {
+    padding: 40px 40px 8px;
+}
+
+.ltks-app-page .ltks-section + .ltks-section {
+    margin-top: 25px;
+}
+
+.ltks-app-page .ltks-section-title {
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.ltks-app-page .ltks-section-title::after {
+    height: 1px;
+    background: #8b2611;
+}
+
+.ltks-app-page .ltks-section h3 {
+    color: #8b2611;
+    font-size: 1rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ltks-app-page .ltks-inline-check {
+    color: #8b2611;
+    font-size: 0.95rem;
+}
+
+.ltks-app-page .ltks-inline-check input {
+    width: 22px;
+    height: 22px;
+}
+
+.ltks-app-page .ltks-grid,
+.ltks-app-page .ltks-form-step-1 .ltks-grid {
+    gap: 28px 40px;
+}
+
+.ltks-app-page .ltks-field label,
+.ltks-app-page .ltks-form-step-1 .ltks-field label {
+    color: #333;
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+
+.ltks-app-page .ltks-field input,
+.ltks-app-page .ltks-field select,
+.ltks-app-page .ltks-field textarea,
+.ltks-app-page .ltks-select-trigger,
+.ltks-app-page .ltks-form-step-1 .ltks-field input,
+.ltks-app-page .ltks-form-step-1 .ltks-field select,
+.ltks-app-page .ltks-form-step-1 .ltks-field textarea,
+.ltks-app-page .ltks-form-step-1 .ltks-select-trigger {
+    min-height: 34px;
+    border-bottom: 1px solid #ccc;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.ltks-app-page .ltks-select-menu {
+    max-height: 315px;
+}
+
+.ltks-app-page .ltks-select-option {
+    min-height: 52px;
+    padding: 13px 20px;
+    font-size: 1rem;
+}
+
+.ltks-app-page .ltks-actions {
+    padding: 12px 40px 34px;
+}
+
+.ltks-app-page .ltks-btn {
+    min-height: 40px;
+    padding: 8px 22px;
+    font-size: 0.95rem;
+}
+
+.ltks-app-page .ltks-btn.primary {
+    min-width: 230px;
+    background: #bf3d0c;
+}
+
+.ltks-app-page .ltks-btn.ghost,
+.ltks-app-page .ltks-btn.secondary {
+    min-width: 90px;
+    background: #d0d0d0;
+}
+
 @media (max-width: 1500px) {
     .ltks-portal {
         min-height: 210px;

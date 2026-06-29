@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Home, UploadCloud } from 'lucide-react';
+import { ChevronRight, UploadCloud } from 'lucide-react';
 import { applicationService } from '../../api/applicationService';
 import { ApiClientError } from '../../api/client';
 import { useForm } from '../../contexts/FormContext';
@@ -75,7 +75,7 @@ const steps: LinkedStep[] = [
           { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: birthTypeOptions },
           { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: ['Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'] },
           { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: ['Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'] },
-          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true },
+          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, value: 'Cơ quan X' },
           { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: birthCaseOptions },
         ],
       },
@@ -85,14 +85,14 @@ const steps: LinkedStep[] = [
         fields: [
           { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: ['Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'] },
           { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: ['Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'] },
-          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true },
+          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, value: 'Cơ quan X' },
           { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: residenceCaseOptions },
         ],
       },
       {
         title: 'Cơ quan thực hiện cấp thẻ BHYT',
         fields: [
-          { id: 'ltks_coQuanCapBhyt', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true },
+          { id: 'ltks_coQuanCapBhyt', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, value: 'Cơ quan X' },
         ],
       },
     ],
@@ -380,7 +380,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
           {submittedId && <div className="ltks-alert success">Đã nộp hồ sơ thành công. Mã hồ sơ: {submittedId}</div>}
 
           <div className="ltks-actions">
-            <button type="button" className="ltks-btn ghost" onClick={() => { resetForm(); navigate('/lien-thong-khai-sinh'); }}>
+            <button type="button" className="ltks-btn ghost" onClick={() => { resetForm(); navigate('/'); }}>
               Hủy
             </button>
             {currentStep > 1 && (
@@ -410,39 +410,8 @@ const LienThongKhaiSinhPage: React.FC = () => {
 };
 
 const LienThongShell: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="ltks-page animate-slide-up">
-    <section className="ltks-portal">
-      <div className="ltks-hero-mark" aria-hidden="true" />
-      <h1>DỊCH VỤ CÔNG LIÊN THÔNG</h1>
-      <div className="ltks-user">
-        <span aria-hidden="true">●</span>
-        Trần Minh Hùng
-      </div>
-    </section>
-
-    <div className="ltks-topbar">
-      <Link to="/" className="ltks-home" aria-label="Trang chủ">
-        <Home size={18} />
-      </Link>
-      <div className="ltks-top-actions">
-        <select aria-label="Hướng dẫn sử dụng" defaultValue="guide">
-          <option value="guide">Hướng dẫn sử dụng</option>
-          <option value="docs">Tài liệu HDSD</option>
-          <option value="video">Video HDSD</option>
-        </select>
-        <select aria-label="Ngôn ngữ" defaultValue="vi">
-          <option value="vi">(VIE)Tiếng việt</option>
-          <option value="en">(ENG)English</option>
-        </select>
-      </div>
-    </div>
-
+  <div className="ltks-page ltks-app-page animate-slide-up">
     {children}
-
-    <footer className="ltks-footer">
-      <p>Số điện thoại đường dây nóng: <strong>1900.0368</strong> hoặc <strong>1900.0134</strong></p>
-      <p>Bản quyền thuộc về BỘ CÔNG AN</p>
-    </footer>
   </div>
 );
 
