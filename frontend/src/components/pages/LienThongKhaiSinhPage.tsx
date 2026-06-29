@@ -41,6 +41,29 @@ const resultMethods = [
   'Chỉ nhận bản điện tử',
 ];
 
+const birthTypeOptions = [
+  'Không có yếu tố nước ngoài',
+  'Có yếu tố nước ngoài thuộc các xã vùng biên',
+  'Có yếu tố nước ngoài không thuộc các xã vùng biên',
+];
+
+const birthCaseOptions = [
+  'Đã xác định được cả cha lẫn mẹ',
+  'Chưa xác định được mẹ',
+  'Chưa xác định được cha',
+  'Chưa xác định được cả cha lẫn mẹ',
+  'Trẻ bị bỏ rơi',
+];
+
+const residenceCaseOptions = [
+  'Con về với cha, mẹ; cha, mẹ không là chủ sở hữu chỗ ở hợp pháp',
+  'Trẻ em mới sinh về với người giám hộ',
+  'Trẻ em về với người thân khác',
+  'Đăng ký thường trú tại cơ sở tín ngưỡng, cơ sở tôn giáo',
+  'Đăng ký thường trú tại cơ sở trợ giúp xã hội hoặc hộ gia đình nhận chăm sóc, nuôi dưỡng...',
+  'Đăng ký thường trú tại phương tiện',
+];
+
 const steps: LinkedStep[] = [
   {
     title: 'Lựa chọn cơ quan thực hiện',
@@ -49,11 +72,11 @@ const steps: LinkedStep[] = [
       {
         title: 'Cơ quan thực hiện đăng ký khai sinh',
         fields: [
-          { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: ['Khai sinh trong nước', 'Khai sinh có yếu tố nước ngoài'] },
+          { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: birthTypeOptions },
           { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: ['Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'] },
           { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: ['Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'] },
           { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true },
-          { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: ['Trẻ em sinh tại cơ sở y tế', 'Trẻ em sinh ngoài cơ sở y tế'] },
+          { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: birthCaseOptions },
         ],
       },
       {
@@ -63,7 +86,7 @@ const steps: LinkedStep[] = [
           { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: ['Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'] },
           { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: ['Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'] },
           { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true },
-          { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: ['Đăng ký thường trú cho trẻ dưới 6 tuổi', 'Đăng ký thường trú theo cha hoặc mẹ'] },
+          { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: residenceCaseOptions },
         ],
       },
       {
@@ -446,10 +469,16 @@ const FieldControl: React.FC<FieldControlProps> = ({ field, value, error, onChan
       {field.type === 'textarea' ? (
         <textarea {...commonProps} placeholder={field.placeholder} onChange={(event) => onChange(event.target.value)} />
       ) : field.type === 'select' ? (
-        <select {...commonProps} onChange={(event) => onChange(event.target.value)}>
-          <option value="">{field.placeholder ?? ''}</option>
-          {field.options?.map((option) => <option key={option} value={option}>{option}</option>)}
-        </select>
+        <CustomSelect
+          id={field.id}
+          label={field.label}
+          value={value}
+          options={field.options ?? []}
+          placeholder={field.placeholder ?? ''}
+          required={field.required}
+          invalid={!!error}
+          onChange={onChange}
+        />
       ) : field.type === 'radio' ? (
         <div className="ltks-radio-group">
           {field.options?.map((option) => (
@@ -463,6 +492,136 @@ const FieldControl: React.FC<FieldControlProps> = ({ field, value, error, onChan
         <input {...commonProps} type={field.type} placeholder={field.placeholder} onChange={(event) => onChange(event.target.value)} />
       )}
       {error && <span className="ltks-error">{error}</span>}
+    </div>
+  );
+};
+
+interface CustomSelectProps {
+  id: string;
+  label: string;
+  value: string;
+  options: string[];
+  placeholder: string;
+  required?: boolean;
+  invalid?: boolean;
+  onChange: (value: string) => void;
+}
+
+const CustomSelect: React.FC<CustomSelectProps> = ({
+  id,
+  label,
+  value,
+  options,
+  placeholder,
+  required,
+  invalid,
+  onChange,
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [activeOption, setActiveOption] = React.useState(value || options[0] || '');
+  const [toastText, setToastText] = React.useState('');
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const toastTimerRef = React.useRef<number | null>(null);
+  const listboxId = `${id}-listbox`;
+
+  React.useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  const showToast = (text: string) => {
+    setToastText(text);
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => setToastText(''), 900);
+  };
+
+  const selectOption = (option: string) => {
+    onChange(option);
+    setActiveOption(option);
+    showToast(option);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (!options.length) return;
+    const currentIndex = Math.max(options.indexOf(activeOption || value), 0);
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setIsOpen(true);
+      setActiveOption(options[Math.min(currentIndex + 1, options.length - 1)]);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setIsOpen(true);
+      setActiveOption(options[Math.max(currentIndex - 1, 0)]);
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (isOpen) selectOption(activeOption || options[0]);
+      setIsOpen(!isOpen);
+    } else if (event.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div className="ltks-select" ref={rootRef}>
+      <button
+        type="button"
+        id={id}
+        className="ltks-select-trigger"
+        aria-label={label}
+        aria-required={required}
+        aria-invalid={invalid}
+        aria-expanded={isOpen}
+        aria-controls={listboxId}
+        data-highlight-id={id}
+        onClick={() => {
+          setActiveOption(value || options[0] || '');
+          setIsOpen((open) => !open);
+        }}
+        onKeyDown={handleKeyDown}
+      >
+        <span>{value || placeholder}</span>
+      </button>
+
+      {isOpen && (
+        <div className="ltks-select-menu" id={listboxId} role="listbox" aria-label={label}>
+          {options.map((option) => {
+            const isSelected = value === option;
+            const isActive = activeOption === option;
+            return (
+              <button
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                className={`ltks-select-option ${isSelected || isActive ? 'active' : ''}`}
+                key={option}
+                title={option}
+                onMouseEnter={() => setActiveOption(option)}
+                onFocus={() => setActiveOption(option)}
+                onClick={() => {
+                  selectOption(option);
+                  window.setTimeout(() => setIsOpen(false), 220);
+                }}
+              >
+                {option}
+              </button>
+            );
+          })}
+          {toastText && <div className="ltks-select-toast">{toastText}</div>}
+        </div>
+      )}
     </div>
   );
 };

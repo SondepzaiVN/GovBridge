@@ -2922,6 +2922,7 @@ a:hover {
 .ltks-field {
     grid-column: span 6;
     min-width: 0;
+    position: relative;
 }
 
 .ltks-field.wide {
@@ -2957,19 +2958,130 @@ a:hover {
     font-size: 1.18rem;
 }
 
+.ltks-select {
+    position: relative;
+    width: 100%;
+}
+
+.ltks-select-trigger {
+    position: relative;
+    width: 100%;
+    min-height: 24px;
+    display: block;
+    border: 0;
+    border-bottom: 2px solid #9c9c9c;
+    border-radius: 0;
+    background: transparent;
+    color: #222;
+    padding: 0 28px 3px 0;
+    font: inherit;
+    font-size: 1.18rem;
+    line-height: 1.25;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ltks-select-trigger::after {
+    content: '';
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #001a2a;
+    transform: translateY(-50%);
+}
+
+.ltks-select-trigger:focus {
+    outline: 0;
+    border-color: #b54122;
+}
+
+.ltks-select-trigger span {
+    display: block;
+    min-height: 1.25em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ltks-select-menu {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 1px);
+    left: 0;
+    width: 100%;
+    max-height: 325px;
+    overflow-y: auto;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+.ltks-field.wide .ltks-select-menu {
+    max-height: 285px;
+}
+
+.ltks-select-option {
+    width: 100%;
+    min-height: 67px;
+    display: block;
+    border: 0;
+    background: #fff;
+    color: #252525;
+    padding: 16px 24px;
+    font: inherit;
+    font-size: 1.32rem;
+    line-height: 1.45;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ltks-select-option:hover,
+.ltks-select-option:focus,
+.ltks-select-option.active {
+    outline: 0;
+    background: #e7bf54;
+    color: #000;
+}
+
+.ltks-select-toast {
+    position: sticky;
+    left: 50%;
+    bottom: 52px;
+    z-index: 2;
+    width: fit-content;
+    max-width: min(460px, calc(100% - 80px));
+    margin: -56px auto 14px;
+    padding: 13px 26px;
+    border-radius: 5px;
+    background: rgba(96, 96, 96, 0.86);
+    color: #fff;
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.45;
+    text-align: center;
+    pointer-events: none;
+}
+
 .ltks-field textarea {
     min-height: 34px;
     resize: vertical;
 }
 
 .ltks-field.dotted input,
-.ltks-field.dotted textarea {
+.ltks-field.dotted textarea,
+.ltks-field.dotted .ltks-select-trigger {
     border-bottom-style: dotted;
 }
 
 .ltks-field input:focus,
 .ltks-field select:focus,
-.ltks-field textarea:focus {
+.ltks-field textarea:focus,
+.ltks-select-trigger:focus {
     outline: 0;
     border-color: #b54122;
 }
@@ -3120,7 +3232,8 @@ a:hover {
 
 .ltks-form-step-1 .ltks-field input,
 .ltks-form-step-1 .ltks-field select,
-.ltks-form-step-1 .ltks-field textarea {
+.ltks-form-step-1 .ltks-field textarea,
+.ltks-form-step-1 .ltks-select-trigger {
     min-height: 24px;
     padding-top: 0;
     padding-bottom: 3px;
