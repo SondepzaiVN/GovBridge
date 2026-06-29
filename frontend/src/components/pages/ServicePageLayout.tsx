@@ -26,14 +26,21 @@ export const FormFieldInput: React.FC<FieldProps> = ({
   disabled = false,
 }) => {
   const [error, setError] = React.useState("");
-  const { formState } = useForm();
-  const displayError = error || formState.errors[field.id] || "";
+  const { formState, setFieldError } = useForm();
+  const mergedError = error || formState.errors[field.id] || "";
+  const isLockedValidValue = disabled && !!value.trim() && !quickValidate(field.id, value, field.label);
+  const displayError = isLockedValidValue ? "" : mergedError;
 
   const handleChange = (val: string) => {
     onChange(val);
     const err = quickValidate(field.id, val, field.label);
     setError(err || "");
   };
+
+  React.useEffect(() => {
+    if (!isLockedValidValue) return;
+    if (formState.errors[field.id]) setFieldError(field.id, "");
+  }, [field.id, formState.errors, isLockedValidValue, setFieldError]);
 
   const inputClass = `form-input${isAutofilled ? " autofilled" : ""}${displayError ? " error" : ""}`;
   const selectClass = `form-select${isAutofilled ? " autofilled" : ""}${displayError ? " error" : ""}`;
