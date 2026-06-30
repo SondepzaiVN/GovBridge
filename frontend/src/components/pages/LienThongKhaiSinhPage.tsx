@@ -17,6 +17,7 @@ interface LinkedField {
   options?: string[];
   wide?: boolean;
   dotted?: boolean;
+  readOnly?: boolean;
 }
 
 interface LinkedSection {
@@ -75,7 +76,7 @@ const steps: LinkedStep[] = [
           { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: birthTypeOptions },
           { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: ['Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'] },
           { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: ['Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'] },
-          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, value: 'Cơ quan X' },
+          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
           { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: birthCaseOptions },
         ],
       },
@@ -85,14 +86,14 @@ const steps: LinkedStep[] = [
         fields: [
           { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: ['Thành phố Hà Nội', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'] },
           { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: ['Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'] },
-          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, value: 'Cơ quan X' },
+          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
           { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: residenceCaseOptions },
         ],
       },
       {
         title: 'Cơ quan thực hiện cấp thẻ BHYT',
         fields: [
-          { id: 'ltks_coQuanCapBhyt', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, value: 'Cơ quan X' },
+          { id: 'ltks_coQuanCapBhyt', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
         ],
       },
     ],
@@ -458,7 +459,7 @@ const FieldControl: React.FC<FieldControlProps> = ({ field, value, error, onChan
           ))}
         </div>
       ) : (
-        <input {...commonProps} type={field.type} placeholder={field.placeholder} onChange={(event) => onChange(event.target.value)} />
+        <input {...commonProps} type={field.type} placeholder={field.placeholder} readOnly={field.readOnly} onChange={(event) => onChange(event.target.value)} />
       )}
       {error && <span className="ltks-error">{error}</span>}
     </div>

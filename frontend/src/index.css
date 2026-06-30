@@ -3304,25 +3304,29 @@ a:hover {
 
 .ltks-app-page {
     min-height: 100vh;
-    background: #fff;
+    background:
+        url("data:image/svg+xml,%3Csvg width='980' height='360' viewBox='0 0 980 360' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23c9c9c9' stroke-width='2' opacity='.28'%3E%3Cpath d='M95 320c30-92 68-143 113-152 44-9 84 23 119 96-45 6-82-2-111-24-34 48-74 75-121 80z'/%3E%3Cpath d='M214 239c7-76 35-126 85-151 50-25 100-16 151 27-33 33-71 48-114 45-13 56-54 83-122 79z'/%3E%3Cpath d='M712 320c13-72 46-115 100-129 54-13 101 8 141 65-38 17-77 18-117 5-25 41-66 61-124 59z'/%3E%3Cpath d='M820 250c-6-65 15-111 63-139 48-28 97-25 149 9-26 35-60 54-103 57-12 45-48 69-109 73z'/%3E%3C/g%3E%3C/svg%3E") no-repeat bottom center,
+        #f2f2f2;
+    background-size: min(100%, 1180px) auto;
     color: #111;
     font-family: Arial, Helvetica, sans-serif;
 }
 
 .ltks-app-page .ltks-main {
-    width: min(1100px, calc(100% - 40px));
-    max-width: 1100px;
+    width: min(1140px, calc(100% - 40px));
+    max-width: 1140px;
     min-height: auto;
     margin: 0 auto;
-    padding: 30px 20px 40px;
+    padding: 22px 0 40px;
     background: transparent;
 }
 
 .ltks-app-page .ltks-breadcrumb {
-    margin: 0 auto 12px;
+    margin: 0;
+    padding: 0 0 22px;
     color: #333;
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 0.98rem;
+    font-weight: 400;
     white-space: normal;
     overflow: visible;
 }
@@ -3334,19 +3338,20 @@ a:hover {
 
 .ltks-app-page .ltks-stepper {
     justify-content: center;
-    margin: 0 auto 20px;
-    padding: 0;
+    gap: 34px;
+    margin: 0 auto;
+    padding: 30px 0 45px;
     overflow-x: auto;
 }
 
 .ltks-app-page .ltks-step {
-    width: 120px;
-    height: 150px;
-    flex: 0 0 120px;
-    border: 2px solid #a0a0a0;
-    border-radius: 8px;
+    width: 159px;
+    height: 159px;
+    flex: 0 0 159px;
+    border: 2px solid #b3b3b3;
+    border-radius: 12px;
     background: transparent;
-    padding: 4px;
+    padding: 10px;
     box-shadow: none;
     display: flex;
     flex-direction: column;
@@ -3355,34 +3360,34 @@ a:hover {
 
 .ltks-app-page .ltks-step.active,
 .ltks-app-page .ltks-step.done {
-    border-color: #ff5722;
+    border-color: #fc5732;
 }
 
 .ltks-app-page .ltks-step::after {
-    top: 74px;
+    top: 76px;
     left: 100%;
-    width: 28px;
+    width: 34px;
     height: 2px;
-    background: #a0a0a0;
+    background: #b3b3b3;
 }
 
 .ltks-app-page .ltks-step::before {
-    top: 70px;
-    left: calc(100% + 28px);
+    top: 71px;
+    left: calc(100% + 32px);
     border-left-width: 7px;
     border-top-width: 5px;
     border-bottom-width: 5px;
-    border-left-color: #a0a0a0;
+    border-left-color: #b3b3b3;
 }
 
 .ltks-app-page .ltks-step.active::after,
 .ltks-app-page .ltks-step.done::after {
-    background: #ff5722;
+    background: #fc5732;
 }
 
 .ltks-app-page .ltks-step.active::before,
 .ltks-app-page .ltks-step.done::before {
-    border-left-color: #ff5722;
+    border-left-color: #fc5732;
 }
 
 .ltks-app-page .ltks-step > span,
@@ -3398,8 +3403,8 @@ a:hover {
 .ltks-app-page .ltks-step {
     background:
         linear-gradient(
-            #fdc543,
-            #fdc543
+            #fdc849,
+            #fdc849
         ) content-box;
 }
 
@@ -3412,9 +3417,9 @@ a:hover {
 }
 
 .ltks-app-page .ltks-step span {
-    margin: 12px 0 8px;
+    margin: 12px 0 12px;
     color: #222;
-    font-size: 1.25rem;
+    font-size: 2.25rem;
     font-weight: 800;
     letter-spacing: 4px;
 }
@@ -3423,66 +3428,68 @@ a:hover {
     width: 100%;
     padding: 0 4px;
     color: #222;
-    font-size: 0.68rem;
+    font-size: 0.9rem;
     font-weight: 400;
     line-height: 1.3;
     overflow-wrap: break-word;
 }
 
 .ltks-app-page .ltks-form {
-    max-width: 960px;
-    margin: 20px auto;
+    max-width: none;
+    margin: 0 0 25px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 0;
     background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 6px 4px 10px -2px #8d8989;
 }
 
 .ltks-app-page .ltks-form-body {
-    padding: 40px 40px 8px;
+    padding: 20px 20px 0;
 }
 
 .ltks-app-page .ltks-section + .ltks-section {
-    margin-top: 25px;
+    margin-top: 28px;
 }
 
 .ltks-app-page .ltks-section-title {
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: 20px;
+    margin: 5px 0 25px;
 }
 
 .ltks-app-page .ltks-section-title::after {
-    height: 1px;
-    background: #8b2611;
+    height: 2px;
+    background: #ad4e44;
 }
 
 .ltks-app-page .ltks-section h3 {
-    color: #8b2611;
-    font-size: 1rem;
+    color: #ad3a07;
+    font-size: 1.125rem;
     font-weight: 700;
     white-space: nowrap;
 }
 
 .ltks-app-page .ltks-inline-check {
-    color: #8b2611;
-    font-size: 0.95rem;
+    color: #ad3a07;
+    font-size: 1.125rem;
+    font-weight: 700;
 }
 
 .ltks-app-page .ltks-inline-check input {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
+    background: #ccc;
 }
 
 .ltks-app-page .ltks-grid,
 .ltks-app-page .ltks-form-step-1 .ltks-grid {
-    gap: 28px 40px;
+    gap: 22px 40px;
 }
 
 .ltks-app-page .ltks-field label,
 .ltks-app-page .ltks-form-step-1 .ltks-field label {
-    color: #333;
-    font-size: 0.86rem;
-    font-weight: 700;
+    color: #000;
+    font-size: 0.94rem;
+    font-weight: 400;
 }
 
 .ltks-app-page .ltks-field input,
@@ -3494,34 +3501,36 @@ a:hover {
 .ltks-app-page .ltks-form-step-1 .ltks-field textarea,
 .ltks-app-page .ltks-form-step-1 .ltks-select-trigger {
     min-height: 34px;
-    border-bottom: 1px solid #ccc;
-    color: #333;
+    border-bottom: 1px solid #9f9f9f;
+    color: #000;
     font-size: 0.95rem;
 }
 
 .ltks-app-page .ltks-select-menu {
-    max-height: 315px;
+    max-height: 318px;
+    box-shadow: 0 2px 4px #0003;
 }
 
 .ltks-app-page .ltks-select-option {
-    min-height: 52px;
-    padding: 13px 20px;
-    font-size: 1rem;
+    min-height: 50px;
+    padding: 13px 18px;
+    font-size: 0.96rem;
 }
 
 .ltks-app-page .ltks-actions {
-    padding: 12px 40px 34px;
+    padding: 5px 20px 25px;
 }
 
 .ltks-app-page .ltks-btn {
-    min-height: 40px;
-    padding: 8px 22px;
+    min-height: 35px;
+    padding: 0 25px;
     font-size: 0.95rem;
+    border-radius: 3px;
 }
 
 .ltks-app-page .ltks-btn.primary {
-    min-width: 230px;
-    background: #bf3d0c;
+    min-width: 220px;
+    background: #ad3a07;
 }
 
 .ltks-app-page .ltks-btn.ghost,
