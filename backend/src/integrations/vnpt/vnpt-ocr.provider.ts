@@ -22,7 +22,7 @@ export class VnptOcrProvider implements IdentityOcrProvider {
 
   async extractCccd(image: { buffer: Buffer; mimetype: string; filename: string }): Promise<CCCDInfo> {
     const hash = await this.upload(image);
-    const response = await fetchVnpt(this.config.baseUrl + '/ai/v1/ocr/id/front', {
+    const response = await fetchVnpt(this.config.baseUrl + '/ai/v1/ocr/id', {
       method: 'POST',
       headers: { ...this.headers(), 'Content-Type': 'application/json' },
       body: JSON.stringify({
