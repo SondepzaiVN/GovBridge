@@ -4043,6 +4043,137 @@ a:hover {
     background: #ccc;
 }
 
+.ltks-app-page .ltks-form-step-6 .ltks-form-body {
+    padding: 0;
+}
+
+.ltks-complete-card {
+    position: relative;
+    max-width: 960px;
+    margin: 20px auto;
+    padding: 40px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+.ltks-complete-toast {
+    position: absolute;
+    top: -60px;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 4px;
+    background: #28a745;
+    color: #fff;
+    padding: 10px 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+}
+
+.ltks-complete-toast span {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fff;
+    color: #28a745;
+    font-size: 14px;
+}
+
+.ltks-complete-title {
+    margin-bottom: 20px;
+}
+
+.ltks-complete-title h2 {
+    display: inline-block;
+    margin: 0;
+    border-radius: 4px;
+    background: #ffeb3b;
+    color: #000;
+    padding: 8px 15px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.ltks-complete-content {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #fff;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    color: #333;
+    line-height: 1.8;
+}
+
+.ltks-complete-watermark {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: radial-gradient(circle at center, #000 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.ltks-complete-inner {
+    position: relative;
+    z-index: 1;
+}
+
+.ltks-complete-note {
+    margin: 0 0 10px;
+    color: #b22222;
+    text-align: center;
+    font-size: 16px;
+}
+
+.ltks-complete-code {
+    margin: 0 0 20px;
+    color: #b22222;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.ltks-complete-copy {
+    font-size: 15px;
+}
+
+.ltks-complete-copy p {
+    margin: 10px 0;
+}
+
+.ltks-complete-copy ul {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.ltks-complete-copy li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.ltks-complete-copy li::before {
+    content: '-';
+    margin-right: 8px;
+}
+
+.ltks-complete-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 40px;
+}
+
 .ltks-pdf-review {
     background: #fff;
     max-width: 960px;
