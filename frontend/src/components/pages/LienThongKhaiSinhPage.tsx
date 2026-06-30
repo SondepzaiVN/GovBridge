@@ -30,6 +30,7 @@ interface LinkedSection {
   fields?: LinkedField[];
   reviewTabs?: ReviewTab[];
   uploads?: UploadDocument[];
+  resultOptions?: boolean;
   review?: boolean;
   hideTitle?: boolean;
 }
@@ -55,13 +56,6 @@ interface UploadDocument {
   required?: boolean;
   templateUrl?: string;
 }
-
-const resultMethods = [
-  'Dịch vụ bưu chính công ích',
-  'Tại nơi nhận kết quả khai sinh (UBND)',
-  'Tại cơ quan BHXH cấp thẻ BHYT',
-  'Chỉ nhận bản điện tử',
-];
 
 const birthTypeOptions = [
   'Không có yếu tố nước ngoài',
@@ -96,6 +90,11 @@ const residenceTypeOptions = ['Thường trú', 'Tạm trú', 'Nơi ở hiện t
 const requesterRelationOptions = ['Cha', 'Mẹ', 'Ông', 'Bà', 'Người giám hộ', 'Người thân thích khác'];
 const guardianOptions = ['Thông tin cha', 'Thông tin mẹ', 'Thông tin người yêu cầu'];
 const healthcareOptions = ['Trạm y tế phường/xã', 'Bệnh viện đa khoa khu vực', 'Bệnh viện tuyến huyện'];
+const receiveResultOptions = [
+  'Qua cổng thông tin',
+  'Đến cơ quan giải quyết để nhận kết quả.',
+  'Tại nơi nhận kết quả khai sinh (UBND)',
+];
 const reviewTabs: ReviewTab[] = [
   {
     title: 'Tờ khai đăng ký khai sinh',
@@ -347,14 +346,8 @@ const steps: LinkedStep[] = [
     sections: [
       {
         title: 'Hình thức nhận kết quả',
-        fields: [
-          { id: 'ltks_noiKhamChuaBenh', label: 'Nơi khám chữa bệnh ban đầu', type: 'select', required: true, options: ['Trạm y tế phường/xã', 'Bệnh viện đa khoa khu vực', 'Bệnh viện tuyến huyện'] },
-          { id: 'ltks_hinhThucNhanBhyt', label: 'Hình thức nhận thẻ BHYT', type: 'select', required: true, options: resultMethods },
-          { id: 'ltks_nhanKhaiSinh', label: 'Hình thức nhận kết quả khai sinh', type: 'select', required: true, options: resultMethods },
-          { id: 'ltks_nhanThuongTru', label: 'Hình thức nhận kết quả đăng ký thường trú', type: 'select', required: true, options: resultMethods },
-          { id: 'ltks_nhanTheBhyt', label: 'Hình thức nhận thẻ BHYT', type: 'select', required: true, options: resultMethods },
-          { id: 'ltks_noiNhanKetQua', label: 'Nơi nhận kết quả', type: 'textarea', required: true, wide: true, placeholder: 'Bộ phận một cửa/địa chỉ nhận qua bưu chính' },
-        ],
+        hideTitle: true,
+        resultOptions: true,
       },
     ],
   },
@@ -532,6 +525,12 @@ const LienThongKhaiSinhPage: React.FC = () => {
                 {section.uploads && (
                   <UploadDocumentsTable uploads={section.uploads} />
                 )}
+                {section.resultOptions && (
+                  <ResultOptionsPanel
+                    values={formState.values}
+                    onChange={(fieldId, value) => setFieldValue(fieldId, value)}
+                  />
+                )}
                 {section.review && <ReviewPanel values={formState.values} />}
               </section>
             ))}
@@ -551,11 +550,16 @@ const LienThongKhaiSinhPage: React.FC = () => {
             )}
             {currentStep < steps.length ? (
               <button type="button" className="ltks-btn primary" onClick={handleNext}>
-                Chuyển bước tiếp theo
+                {currentStep === 5 ? 'Hoàn thành' : 'Chuyển bước tiếp theo'}
               </button>
             ) : (
               <button type="button" className="ltks-btn primary" disabled={formState.isSubmitting} onClick={handleSubmit}>
                 {formState.isSubmitting ? 'Đang nộp...' : 'Gửi hồ sơ'}
+              </button>
+            )}
+            {currentStep === 5 && (
+              <button type="button" className="ltks-btn secondary">
+                Lưu nháp
               </button>
             )}
           </div>
@@ -777,6 +781,108 @@ interface PdfReviewTabsProps {
   activeIndex: number;
   onTabChange: (index: number) => void;
 }
+
+interface ResultOptionsPanelProps {
+  values: Record<string, string>;
+  onChange: (fieldId: string, value: string) => void;
+}
+
+const ResultOptionsPanel: React.FC<ResultOptionsPanelProps> = ({ values, onChange }) => {
+  const residenceReceiveValue = values.ltks_nhanThuongTru || 'Qua cổng thông tin';
+  const paperBhytChecked = values.ltks_nhanBhytBanGiay === 'true';
+  const pledgeChecked = values.ltks_camDoanKetQua === 'true';
+
+  React.useEffect(() => {
+    if (!values.ltks_nhanThuongTru) onChange('ltks_nhanThuongTru', 'Qua cổng thông tin');
+    if (!values.ltks_nhanTheBhyt) onChange('ltks_nhanTheBhyt', 'Chỉ nhận bản điện tử của thẻ BHYT trên Cổng DVCQG');
+  }, [onChange, values.ltks_nhanTheBhyt, values.ltks_nhanThuongTru]);
+
+  return (
+    <div className="ltks-result-options">
+      <div className="ltks-result-line compact">
+        <label htmlFor="ltks_nhanKhaiSinh">Hình thức nhận kết quả khai sinh</label>
+        <input
+          id="ltks_nhanKhaiSinh"
+          value={values.ltks_nhanKhaiSinh || ''}
+          readOnly
+          aria-label="Hình thức nhận kết quả khai sinh"
+        />
+      </div>
+
+      <div className="ltks-result-field">
+        <label htmlFor="ltks_noiTraKetQua" className="required">Nơi trả kết quả</label>
+        <input
+          id="ltks_noiTraKetQua"
+          value={values.ltks_noiTraKetQua || ''}
+          readOnly
+          placeholder="Nơi trả kết quả"
+          aria-label="Nơi trả kết quả"
+          onChange={(event) => onChange('ltks_noiTraKetQua', event.target.value)}
+        />
+      </div>
+
+      <div className="ltks-result-line">
+        <label>Hình thức nhận kết quả đăng ký thường trú</label>
+        <CustomSelect
+          id="ltks_nhanThuongTru"
+          label="Hình thức nhận kết quả đăng ký thường trú"
+          value={residenceReceiveValue}
+          options={receiveResultOptions}
+          placeholder=""
+          onChange={(value) => onChange('ltks_nhanThuongTru', value)}
+        />
+      </div>
+
+      <div className="ltks-result-line checkbox-line">
+        <span>Hình thức nhận thẻ BHYT</span>
+        <label className="ltks-material-check disabled">
+          <input type="checkbox" checked readOnly disabled />
+          <span />
+          Chỉ nhận bản điện tử của thẻ BHYT trên Cổng DVCQG
+        </label>
+      </div>
+
+      <label className="ltks-material-check paper-check">
+        <input
+          type="checkbox"
+          checked={paperBhytChecked}
+          onChange={(event) => onChange('ltks_nhanBhytBanGiay', event.target.checked ? 'true' : '')}
+        />
+        <span />
+        Bản giấy
+      </label>
+
+      <div className="ltks-captcha-row">
+        <div className="ltks-result-field">
+          <label htmlFor="ltks_captcha" className="required">Nhập mã kiếm tra</label>
+          <input
+            id="ltks_captcha"
+            value={values.ltks_captcha || ''}
+            aria-label="Nhập mã kiếm tra"
+            onChange={(event) => onChange('ltks_captcha', event.target.value)}
+          />
+        </div>
+        <div className="ltks-captcha-box" aria-label="Mã kiểm tra">
+          <div className="ltks-captcha-image">7K3P9</div>
+          <button type="button" aria-label="Làm mới mã kiểm tra">
+            <RotateCw size={22} />
+          </button>
+        </div>
+      </div>
+
+      <label className="ltks-material-check pledge-check">
+        <input
+          type="checkbox"
+          checked={pledgeChecked}
+          onChange={(event) => onChange('ltks_camDoanKetQua', event.target.checked ? 'true' : '')}
+        />
+        <span />
+        Tôi cam đoan nội dung đề nghị trên đấy là đúng sự thật, được sự thỏa thuận nhất trí của các bên liên quan theo quy định pháp luật. Tôi chịu hoàn toàn trách nhiệm trước pháp luật về nội dung cam đoan của mình.
+      </label>
+      <span className="ltks-result-line-end" />
+    </div>
+  );
+};
 
 const UploadDocumentsTable: React.FC<{ uploads: UploadDocument[] }> = ({ uploads }) => (
   <div className="ltks-upload-table-wrap">
