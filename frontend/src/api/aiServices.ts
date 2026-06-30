@@ -26,6 +26,7 @@ interface TTSApiResult {
 
 const CHAT_SESSION_KEY = 'gov-bridge-chat-session-id';
 let currentRoute = '/';
+let recentOcrFacts: Record<string, string> = {};
 
 const getStoredSessionId = () =>
     typeof window === 'undefined' ? null : window.sessionStorage.getItem(CHAT_SESSION_KEY);
@@ -34,8 +35,16 @@ export const smartbotService = {
     setCurrentRoute: (route: string) => {
         currentRoute = route;
     },
+    setRecentOcrFacts: (facts: Record<string, string>) => {
+        recentOcrFacts = Object.fromEntries(
+            Object.entries(facts)
+                .filter(([, value]) => typeof value === 'string' && value.trim())
+                .map(([key, value]) => [key, value.trim().slice(0, 2_000)]),
+        );
+    },
     clearHistory: async () => {
         const sessionId = getStoredSessionId();
+        recentOcrFacts = {};
         window.sessionStorage.removeItem(CHAT_SESSION_KEY);
         if (!sessionId) return;
 
@@ -59,6 +68,7 @@ export const smartbotService = {
                 message,
                 currentRoute: context.currentRoute ?? currentRoute,
                 formValues: context.formValues ?? {},
+                recentOcrFacts,
             }),
         });
 

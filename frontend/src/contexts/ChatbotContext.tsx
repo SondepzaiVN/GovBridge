@@ -157,6 +157,19 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           }
           break;
 
+        case 'REQUEST_CONFIRM_FILL':
+          addBotMessage(
+            event.message,
+            'fill-confirm',
+            {
+              fields: event.fields,
+              fieldLabels: event.fieldLabels,
+              previousValues: event.previousValues,
+            },
+            event.suggestions,
+          );
+          break;
+
         case 'NAVIGATE':
           addBotMessage(event.message, 'navigation-confirm', undefined, event.suggestions);
           // Đặt pending navigation — user confirm thì mới navigate
