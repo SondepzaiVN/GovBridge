@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, UploadCloud } from 'lucide-react';
+import { ChevronRight, Download, UploadCloud } from 'lucide-react';
 import { applicationService } from '../../api/applicationService';
 import { ApiClientError } from '../../api/client';
 import { useForm } from '../../contexts/FormContext';
@@ -28,6 +28,7 @@ interface LinkedSection {
   actions?: string[];
   sameArea?: boolean;
   fields?: LinkedField[];
+  reviewTabs?: ReviewTab[];
   uploads?: Array<{ title: string; desc: string }>;
   review?: boolean;
 }
@@ -36,6 +37,12 @@ interface LinkedStep {
   title: string;
   shortTitle: string;
   sections: LinkedSection[];
+}
+
+interface ReviewTab {
+  title: string;
+  url: string;
+  pageCount: number;
 }
 
 const resultMethods = [
@@ -78,6 +85,13 @@ const residenceTypeOptions = ['Thường trú', 'Tạm trú', 'Nơi ở hiện t
 const requesterRelationOptions = ['Cha', 'Mẹ', 'Ông', 'Bà', 'Người giám hộ', 'Người thân thích khác'];
 const guardianOptions = ['Thông tin cha', 'Thông tin mẹ', 'Thông tin người yêu cầu'];
 const healthcareOptions = ['Trạm y tế phường/xã', 'Bệnh viện đa khoa khu vực', 'Bệnh viện tuyến huyện'];
+const declarationPdfUrl = '/lien-thong-khai-sinh/tokhai.pdf';
+const reviewTabs: ReviewTab[] = [
+  { title: 'Tờ khai đăng ký khai sinh', url: declarationPdfUrl, pageCount: 2 },
+  { title: 'Tờ khai thay đổi thông tin cư trú (CT01)', url: declarationPdfUrl, pageCount: 2 },
+  { title: 'Tờ khai tham gia, điều chỉnh thông tin BHXH, BHYT (TK1-TS)', url: declarationPdfUrl, pageCount: 2 },
+  { title: 'Tờ khai mẫu 01', url: declarationPdfUrl, pageCount: 2 },
+];
 
 const steps: LinkedStep[] = [
   {
@@ -261,35 +275,8 @@ const steps: LinkedStep[] = [
     shortTitle: 'Xem lại các tờ khai chi tiết',
     sections: [
       {
-        title: 'Thông tin người mẹ đẻ/nhờ mang thai hộ',
-        fields: [
-          { id: 'ltks_hoMe', label: 'Họ mẹ', type: 'text', required: true },
-          { id: 'ltks_chuDemMe', label: 'Chữ đệm mẹ', type: 'text' },
-          { id: 'ltks_tenMe', label: 'Tên mẹ', type: 'text', required: true },
-          { id: 'ltks_cccdMe', label: 'CCCD/CMND mẹ', type: 'text', required: true },
-          { id: 'ltks_danTocMe', label: 'Dân tộc', type: 'select', required: true, options: ['Kinh', 'Tày', 'Thái', 'Mường', 'Khác'] },
-          { id: 'ltks_noiCuTruMe', label: 'Nơi cư trú', type: 'textarea', wide: true, placeholder: 'Cùng nơi cư trú với mẹ' },
-        ],
-      },
-      {
-        title: 'Thông tin người cha đẻ/nhờ mang thai hộ',
-        fields: [
-          { id: 'ltks_hoCha', label: 'Họ cha', type: 'text', required: true },
-          { id: 'ltks_chuDemCha', label: 'Chữ đệm cha', type: 'text' },
-          { id: 'ltks_tenCha', label: 'Tên cha', type: 'text', required: true },
-          { id: 'ltks_cccdCha', label: 'Số định danh cá nhân', type: 'text', required: true },
-          { id: 'ltks_quocTichCha', label: 'Quốc tịch', type: 'select', required: true, options: ['Việt Nam'] },
-          { id: 'ltks_noiCuTruCha', label: 'Nơi cư trú', type: 'textarea', wide: true, placeholder: 'Theo thông tin người yêu cầu' },
-        ],
-      },
-      {
-        title: 'Thông tin đăng ký thường trú',
-        note: 'Chọn hình thức xác nhận của Chủ hộ, Chủ sở hữu chỗ ở hợp pháp, Cha/mẹ/người giám hộ về việc đăng ký thường trú cho trẻ.',
-        fields: [
-          { id: 'ltks_hoTenChuHo', label: 'Họ, chữ đệm, tên chủ hộ', type: 'text', required: true },
-          { id: 'ltks_quanHeVoiChuHo', label: 'Mối quan hệ của người được khai sinh với chủ hộ', type: 'select', required: true, options: ['Con', 'Cháu', 'Người được giám hộ'] },
-          { id: 'ltks_noiDangKyThuongTru', label: 'Nơi đề nghị đăng ký thường trú', type: 'textarea', required: true, wide: true },
-        ],
+        title: 'Xem lại các tờ khai chi tiết',
+        reviewTabs,
       },
     ],
   },
@@ -348,7 +335,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
   const { formState, setFieldValue, setFieldError, touchField, setIsSubmitting, resetForm } = useForm();
   const [submitError, setSubmitError] = React.useState('');
   const [submittedId, setSubmittedId] = React.useState('');
-  const [draftSaved, setDraftSaved] = React.useState(false);
+  const [activeReviewTab, setActiveReviewTab] = React.useState(0);
 
   const currentStep = parseStep(stepSlug);
   const current = steps[currentStep - 1];
@@ -422,11 +409,6 @@ const LienThongKhaiSinhPage: React.FC = () => {
     }
   };
 
-  const saveDraft = () => {
-    setDraftSaved(true);
-    window.setTimeout(() => setDraftSaved(false), 1800);
-  };
-
   if (!stepSlug) return <Navigate to="/lien-thong-khai-sinh/buoc-1" replace />;
 
   return (
@@ -462,23 +444,32 @@ const LienThongKhaiSinhPage: React.FC = () => {
           <div className="ltks-form-body">
             {current.sections.map((section) => (
               <section className="ltks-section" key={section.title}>
-                <div className="ltks-section-title">
-                  <h3>{section.title}</h3>
-                  {section.actions && (
-                    <div className="ltks-section-actions">
-                      {section.actions.map((action) => (
-                        <button type="button" key={action}>{action}</button>
-                      ))}
-                    </div>
-                  )}
-                  {section.sameArea && (
-                    <label className="ltks-inline-check">
-                      <input type="checkbox" aria-label="Cùng địa bàn thực hiện đăng ký khai sinh" />
-                      Cùng địa bàn thực hiện đăng ký khai sinh
-                    </label>
-                  )}
-                </div>
+                {!section.reviewTabs && (
+                  <div className="ltks-section-title">
+                    <h3>{section.title}</h3>
+                    {section.actions && (
+                      <div className="ltks-section-actions">
+                        {section.actions.map((action) => (
+                          <button type="button" key={action}>{action}</button>
+                        ))}
+                      </div>
+                    )}
+                    {section.sameArea && (
+                      <label className="ltks-inline-check">
+                        <input type="checkbox" aria-label="Cùng địa bàn thực hiện đăng ký khai sinh" />
+                        Cùng địa bàn thực hiện đăng ký khai sinh
+                      </label>
+                    )}
+                  </div>
+                )}
                 {section.note && <p className="ltks-note">{section.note}</p>}
+                {section.reviewTabs && (
+                  <PdfReviewTabs
+                    tabs={section.reviewTabs}
+                    activeIndex={activeReviewTab}
+                    onTabChange={setActiveReviewTab}
+                  />
+                )}
                 {section.fields && (
                   <div className="ltks-grid">
                     {section.fields.map((field) => (
@@ -520,11 +511,6 @@ const LienThongKhaiSinhPage: React.FC = () => {
             {currentStep > 1 && (
               <button type="button" className="ltks-btn secondary" onClick={() => goToStep(currentStep - 1)}>
                 Quay lại bước trước
-              </button>
-            )}
-            {currentStep > 1 && (
-              <button type="button" className="ltks-btn secondary" onClick={saveDraft}>
-                {draftSaved ? 'Đã lưu nháp' : 'Lưu nháp'}
               </button>
             )}
             {currentStep < steps.length ? (
@@ -746,6 +732,49 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           {toastText && <div className="ltks-select-toast">{toastText}</div>}
         </div>
       )}
+    </div>
+  );
+};
+
+interface PdfReviewTabsProps {
+  tabs: ReviewTab[];
+  activeIndex: number;
+  onTabChange: (index: number) => void;
+}
+
+const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabChange }) => {
+  const activeTab = tabs[activeIndex] ?? tabs[0];
+
+  return (
+    <div className="ltks-pdf-review">
+      <div className="ltks-pdf-tabs" role="tablist" aria-label="Danh sách tờ khai">
+        {tabs.map((tab, index) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={index === activeIndex}
+            className={index === activeIndex ? 'active' : ''}
+            key={tab.title}
+            onClick={() => onTabChange(index)}
+          >
+            {tab.title}
+          </button>
+        ))}
+      </div>
+
+      <div className="ltks-pdf-panel" role="tabpanel" aria-label={activeTab.title}>
+        <div className="ltks-pdf-toolbar">
+          <span>1 / {activeTab.pageCount}</span>
+          <a href={activeTab.url} download title="Tải tờ khai">
+            <Download size={20} />
+          </a>
+        </div>
+        <iframe
+          title={activeTab.title}
+          src={`${activeTab.url}#toolbar=0&navpanes=0&scrollbar=1`}
+          className="ltks-pdf-frame"
+        />
+      </div>
     </div>
   );
 };
