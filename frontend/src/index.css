@@ -3154,7 +3154,7 @@ a:hover {
 
 .ltks-main {
     width: calc(100% - 88px);
-    max-width: 1808px;
+    max-width: 1280px;
     margin: 0 auto;
 }
 
@@ -3234,7 +3234,7 @@ a:hover {
 .ltks-topbar {
     height: 62px;
     width: calc(100% - 88px);
-    max-width: 1808px;
+    max-width: 1280px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -4110,8 +4110,8 @@ a:hover {
 }
 
 .ltks-app-page .ltks-main {
-    width: min(1780px, calc(100% - 32px));
-    max-width: 1780px;
+    width: min(1280px, calc(100% - 32px));
+    max-width: 1280px;
     min-height: auto;
     margin: 0 auto;
     padding: 22px 0 40px;
@@ -5162,10 +5162,9 @@ a:hover {
         gap: 12px;
         margin-bottom: 24px;
     }
-}
 
-.ltks-step,
-.ltks-step:last-child {
+    .ltks-step,
+    .ltks-step:last-child {
     width: auto;
     height: 100px;
     min-width: 0;
@@ -5348,6 +5347,8 @@ a:hover {
 .ltks-footer {
     font-size: 0.85rem;
 }
+}
+
 .dktt-empty-state {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
