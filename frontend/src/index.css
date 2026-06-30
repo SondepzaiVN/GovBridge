@@ -2875,6 +2875,8 @@ a:hover {
 
 .ltks-section-title::after {
     content: '';
+    grid-column: 2;
+    grid-row: 1;
     height: 2px;
     background: #ad4a3e;
 }
@@ -2902,6 +2904,26 @@ a:hover {
     width: 31px;
     height: 31px;
     accent-color: #bdbdbd;
+}
+
+.ltks-section-actions {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.ltks-section-actions button {
+    min-height: 32px;
+    border: 0;
+    border-radius: 3px;
+    background: #ad3a07;
+    color: #fff;
+    padding: 0 13px;
+    font-size: 0.92rem;
+    font-weight: 700;
 }
 
 .ltks-note {
@@ -3108,6 +3130,17 @@ a:hover {
 .ltks-radio-group input {
     width: auto;
     min-height: auto;
+    accent-color: #ad3a07;
+}
+
+.ltks-form-step-2 .ltks-radio-group {
+    gap: 12px 24px;
+}
+
+.ltks-form-step-2 .ltks-radio-group label {
+    align-items: flex-start;
+    max-width: 100%;
+    line-height: 1.45;
 }
 
 .ltks-error {
@@ -3465,7 +3498,7 @@ a:hover {
     color: #ad3a07;
     font-size: 1.125rem;
     font-weight: 700;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .ltks-app-page .ltks-inline-check {
