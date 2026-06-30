@@ -3640,6 +3640,26 @@ a:hover {
     grid-column: 1 / -1;
 }
 
+.ltks-app-page .ltks-form-step-2 .ltks-field.span-3 {
+    grid-column: span 3;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field.span-4 {
+    grid-column: span 4;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field.span-6 {
+    grid-column: span 6;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field.span-8 {
+    grid-column: span 8;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field.span-12 {
+    grid-column: 1 / -1;
+}
+
 .ltks-app-page .ltks-form-step-2 .ltks-field label {
     margin-bottom: 6px;
     color: #000;
