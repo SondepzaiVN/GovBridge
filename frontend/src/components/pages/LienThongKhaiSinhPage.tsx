@@ -23,6 +23,7 @@ interface LinkedField {
 interface LinkedSection {
   title: string;
   note?: string;
+  actions?: string[];
   sameArea?: boolean;
   fields?: LinkedField[];
   uploads?: Array<{ title: string; desc: string }>;
@@ -65,6 +66,17 @@ const residenceCaseOptions = [
   'Đăng ký thường trú tại phương tiện',
 ];
 
+const genderOptions = ['Nam', 'Nữ'];
+const provinceOptions = ['Thành phố Hà Nội', 'Thành phố Cần Thơ', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'];
+const wardOptions = ['Phường Cái Khế', 'Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'];
+const countryOptions = ['Cộng hòa XHCN Việt Nam'];
+const nationalityOptions = ['Việt Nam'];
+const ethnicityOptions = ['Kinh', 'Tày', 'Thái', 'Mường', 'Khác'];
+const residenceTypeOptions = ['Thường trú', 'Tạm trú', 'Nơi ở hiện tại'];
+const requesterRelationOptions = ['Cha', 'Mẹ', 'Ông', 'Bà', 'Người giám hộ', 'Người thân thích khác'];
+const guardianOptions = ['Thông tin cha', 'Thông tin mẹ', 'Thông tin người yêu cầu'];
+const healthcareOptions = ['Trạm y tế phường/xã', 'Bệnh viện đa khoa khu vực', 'Bệnh viện tuyến huyện'];
+
 const steps: LinkedStep[] = [
   {
     title: 'Lựa chọn cơ quan thực hiện',
@@ -104,28 +116,137 @@ const steps: LinkedStep[] = [
     sections: [
       {
         title: 'Thông tin người yêu cầu',
+        actions: ['Xác thực với CSDLQG về dân cư'],
         fields: [
-          { id: 'ltks_hoTenNguoiYeuCau', label: 'Họ, chữ đệm, tên người yêu cầu', type: 'text', required: true, placeholder: 'Nguyễn Văn An' },
-          { id: 'ltks_soDinhDanhNguoiYeuCau', label: 'Số định danh', type: 'text', required: true, placeholder: '001200000000' },
+          { id: 'ltks_hoTenNguoiYeuCau', label: 'Họ, chữ đệm, tên người yêu cầu', type: 'text', required: true },
+          { id: 'ltks_soDinhDanhNguoiYeuCau', label: 'Số định danh', type: 'text', required: true },
           { id: 'ltks_ngaySinhNguoiYeuCau', label: 'Ngày sinh người yêu cầu', type: 'date', required: true },
-          { id: 'ltks_gioiTinhNguoiYeuCau', label: 'Giới tính', type: 'select', required: true, options: ['Nam', 'Nữ'] },
-          { id: 'ltks_quanHeVoiTre', label: 'Quan hệ với người được khai sinh', type: 'select', required: true, options: ['Cha', 'Mẹ', 'Người giám hộ'] },
-          { id: 'ltks_sdtNguoiYeuCau', label: 'Số điện thoại', type: 'text', placeholder: '09xxxxxxxx' },
-          { id: 'ltks_noiCuTruNguoiYeuCau', label: 'Nơi cư trú', type: 'textarea', required: true, wide: true, placeholder: 'Số nhà, đường/phố, phường/xã, tỉnh/thành phố' },
+          { id: 'ltks_gioiTinhNguoiYeuCau', label: 'Giới tính', type: 'select', required: true, options: genderOptions },
+          { id: 'ltks_ngayCapNguoiYeuCau', label: 'Ngày cấp', type: 'date', required: true },
+          { id: 'ltks_noiCapNguoiYeuCau', label: 'Nơi cấp', type: 'text', required: true },
+          { id: 'ltks_loaiCuTruNguoiYeuCau', label: 'Loại cư trú', type: 'select', required: true, options: residenceTypeOptions },
+          { id: 'ltks_quocGiaNguoiYeuCau', label: 'Quốc gia', type: 'select', required: true, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
+          { id: 'ltks_tinhNguoiYeuCau', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions },
+          { id: 'ltks_phuongNguoiYeuCau', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions },
+          { id: 'ltks_chiTietNguoiYeuCau', label: 'Chi tiết', type: 'text', required: true, wide: true },
+          { id: 'ltks_quanHeVoiTre', label: 'Quan hệ với người được khai sinh', type: 'select', required: true, options: requesterRelationOptions },
+          { id: 'ltks_sdtNguoiYeuCau', label: 'Số điện thoại', type: 'text', required: true },
+          { id: 'ltks_emailNguoiYeuCau', label: 'Email', type: 'text' },
         ],
       },
       {
         title: 'Thông tin người được khai sinh',
-        note: 'Ghi đầy đủ và chính xác họ, chữ đệm, tên của người được khai sinh theo giấy tờ tùy thân nếu có.',
         fields: [
-          { id: 'ltks_hoTre', label: 'Họ người được khai sinh', type: 'text', required: true },
+          { id: 'ltks_nhapThongTinTre', label: 'Phương thức nhập', type: 'radio', required: true, wide: true, options: ['Nhập tay', 'Lấy dữ liệu chứng sinh từ CSDL Bảo hiểm'], value: 'Nhập tay' },
+          { id: 'ltks_hoTre', label: 'Họ người được khai sinh', type: 'text' },
           { id: 'ltks_chuDemTre', label: 'Chữ đệm người được khai sinh', type: 'text' },
           { id: 'ltks_tenTre', label: 'Tên người được khai sinh', type: 'text', required: true },
           { id: 'ltks_ngaySinhTre', label: 'Ngày tháng năm sinh', type: 'date', required: true },
-          { id: 'ltks_gioiTinhTre', label: 'Giới tính', type: 'select', required: true, options: ['Nam', 'Nữ'] },
-          { id: 'ltks_quocTichTre', label: 'Quốc tịch', type: 'select', required: true, options: ['Việt Nam'] },
-          { id: 'ltks_danTocTre', label: 'Dân tộc', type: 'select', required: true, options: ['Kinh', 'Tày', 'Thái', 'Mường', 'Khác'] },
-          { id: 'ltks_noiSinhTre', label: 'Nơi sinh', type: 'textarea', required: true, wide: true, placeholder: 'Tên bệnh viện/cơ sở y tế hoặc địa chỉ chi tiết nơi sinh' },
+          { id: 'ltks_ngaySinhBangChu', label: 'Ghi bằng chữ', type: 'text', required: true },
+          { id: 'ltks_quocGiaNoiSinh', label: 'Quốc gia', type: 'select', required: true, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
+          { id: 'ltks_tinhNoiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions },
+          { id: 'ltks_phuongNoiSinh', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions },
+          { id: 'ltks_chiTietNoiSinh', label: 'Chi tiết', type: 'text', wide: true },
+          { id: 'ltks_gioiTinhTre', label: 'Giới tính', type: 'select', required: true, options: genderOptions },
+          { id: 'ltks_quocTichTre', label: 'Quốc tịch', type: 'select', required: true, options: nationalityOptions, value: 'Việt Nam' },
+          { id: 'ltks_danTocTre', label: 'Dân tộc', type: 'select', required: true, options: ethnicityOptions, value: 'Kinh' },
+        ],
+      },
+      {
+        title: 'Quê quán',
+        fields: [
+          { id: 'ltks_quocGiaQueQuan', label: 'Quốc gia', type: 'select', required: true, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
+          { id: 'ltks_tinhQueQuan', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions },
+          { id: 'ltks_phuongQueQuan', label: 'Phường/Xã', type: 'select', options: wardOptions },
+          { id: 'ltks_chiTietQueQuan', label: 'Chi tiết', type: 'text', wide: true },
+          { id: 'ltks_soLuongBanSao', label: 'Số lượng', type: 'text', value: '1' },
+        ],
+      },
+      {
+        title: 'Thông tin người mẹ đẻ/nhờ mang thai hộ',
+        actions: ['Xác thực với CSDLQG về dân cư', 'Nhập lại'],
+        fields: [
+          { id: 'ltks_quocTichMe', label: 'Quốc tịch', type: 'select', required: true, options: nationalityOptions, value: 'Việt Nam' },
+          { id: 'ltks_danTocMe', label: 'Dân tộc', type: 'select', required: true, options: ethnicityOptions, value: 'Kinh' },
+          { id: 'ltks_hoMe', label: 'Họ mẹ', type: 'text' },
+          { id: 'ltks_chuDemMe', label: 'Chữ đệm mẹ', type: 'text' },
+          { id: 'ltks_tenMe', label: 'Tên mẹ', type: 'text', required: true },
+          { id: 'ltks_ngaySinhMe', label: 'Ngày tháng năm sinh', type: 'date' },
+          { id: 'ltks_soDinhDanhMe', label: 'Số định danh', type: 'text', required: true },
+          { id: 'ltks_loaiCuTruMe', label: 'Loại cư trú', type: 'select', required: true, options: residenceTypeOptions },
+          { id: 'ltks_quocGiaMe', label: 'Quốc gia', type: 'select', required: true, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
+          { id: 'ltks_tinhMe', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions },
+          { id: 'ltks_phuongMe', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions },
+          { id: 'ltks_chiTietMe', label: 'Chi tiết', type: 'text', wide: true },
+        ],
+      },
+      {
+        title: 'Thông tin người cha đẻ/nhờ mang thai hộ',
+        actions: ['Xác thực với CSDLQG về dân cư', 'Nhập lại'],
+        fields: [
+          { id: 'ltks_cungNoiCuTruVoiMe', label: 'Cùng nơi cư trú với mẹ', type: 'radio', wide: true, options: ['Có', 'Không'], value: 'Không' },
+          { id: 'ltks_quocTichCha', label: 'Quốc tịch', type: 'select', required: true, options: nationalityOptions, value: 'Việt Nam' },
+          { id: 'ltks_danTocCha', label: 'Dân tộc', type: 'select', required: true, options: ethnicityOptions, value: 'Kinh' },
+          { id: 'ltks_hoCha', label: 'Họ cha', type: 'text' },
+          { id: 'ltks_chuDemCha', label: 'Chữ đệm cha', type: 'text' },
+          { id: 'ltks_tenCha', label: 'Tên cha', type: 'text', required: true },
+          { id: 'ltks_ngaySinhCha', label: 'Ngày tháng năm sinh', type: 'date' },
+          { id: 'ltks_soDinhDanhCha', label: 'Số định danh', type: 'text', required: true },
+          { id: 'ltks_loaiCuTruCha', label: 'Loại cư trú', type: 'select', required: true, options: residenceTypeOptions },
+          { id: 'ltks_quocGiaCha', label: 'Quốc gia', type: 'select', required: true, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
+          { id: 'ltks_tinhCha', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions },
+          { id: 'ltks_phuongCha', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions },
+          { id: 'ltks_chiTietCha', label: 'Chi tiết', type: 'text', wide: true },
+        ],
+      },
+      {
+        title: 'Thông tin về Giấy chứng nhận kết hôn của cha, mẹ trẻ (nếu cha, mẹ trẻ có đăng ký kết hôn)',
+        fields: [
+          { id: 'ltks_soGiayCnkh', label: 'Số', type: 'text' },
+          { id: 'ltks_quyenSoGiayCnkh', label: 'Quyển số', type: 'text' },
+          { id: 'ltks_ngayCapGiayCnkh', label: 'Ngày cấp', type: 'date' },
+          { id: 'ltks_noiCapGiayCnkh', label: 'Nơi cấp', type: 'text' },
+        ],
+      },
+      {
+        title: 'Thông tin đăng ký thường trú',
+        fields: [
+          {
+            id: 'ltks_xacNhanDangKyThuongTru',
+            label: 'Hình thức xác nhận đăng ký thường trú',
+            type: 'radio',
+            required: true,
+            wide: true,
+            options: [
+              'Xin xác nhận của Chủ hộ, Chủ sở hữu chỗ ở hợp pháp, Cha/mẹ/người giám hộ bằng văn bản giấy hoặc chữ ký vào tờ khai CT01 bản giấy',
+              'Xin xác nhận của Chủ hộ, Chủ sở hữu chỗ ở hợp pháp, Cha/mẹ/người giám hộ qua VNEID',
+            ],
+          },
+        ],
+      },
+      {
+        title: 'Thông tin chủ hộ',
+        fields: [
+          { id: 'ltks_hoTenChuHo', label: 'Họ, chữ đệm, tên chủ hộ', type: 'text', required: true },
+          { id: 'ltks_soDinhDanhChuHo', label: 'Số định danh', type: 'text', required: true },
+          { id: 'ltks_quanHeVoiChuHo', label: 'Mối quan hệ của người được khai sinh với chủ hộ', type: 'select', required: true, options: ['Con', 'Cháu', 'Người được giám hộ', 'Khác'] },
+        ],
+      },
+      {
+        title: 'Nơi đề nghị đăng ký thường trú',
+        fields: [
+          { id: 'ltks_tinhDangKyThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions },
+          { id: 'ltks_phuongDangKyThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions },
+          { id: 'ltks_chiTietDangKyThuongTru', label: 'Chi tiết', type: 'text', required: true, wide: true },
+        ],
+      },
+      {
+        title: 'Thông tin cấp thẻ BHYT',
+        fields: [
+          { id: 'ltks_noiKhamChuaBenhBanDau', label: 'Nơi khám chữa bệnh ban đầu', type: 'select', required: true, options: healthcareOptions },
+          { id: 'ltks_thongTinGiamHoTrenThe', label: 'Thông tin giám hộ trên thẻ', type: 'select', required: true, options: guardianOptions },
+          { id: 'ltks_soGiayChungNhanHoNgheo', label: 'Số giấy chứng nhận hộ nghèo', type: 'text' },
+          { id: 'ltks_ngayCapGiayChungNhanHoNgheo', label: 'Ngày cấp', type: 'date' },
         ],
       },
     ],
@@ -338,6 +459,13 @@ const LienThongKhaiSinhPage: React.FC = () => {
               <section className="ltks-section" key={section.title}>
                 <div className="ltks-section-title">
                   <h3>{section.title}</h3>
+                  {section.actions && (
+                    <div className="ltks-section-actions">
+                      {section.actions.map((action) => (
+                        <button type="button" key={action}>{action}</button>
+                      ))}
+                    </div>
+                  )}
                   {section.sameArea && (
                     <label className="ltks-inline-check">
                       <input type="checkbox" aria-label="Cùng địa bàn thực hiện đăng ký khai sinh" />
