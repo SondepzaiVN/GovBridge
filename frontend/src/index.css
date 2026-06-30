@@ -5597,3 +5597,519 @@ a:hover {
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* ============================================================
+   ĐĂNG KÝ THƯỜNG TRÚ — Public-service portal visual refresh
+   Scoped to this page so other service screens keep their theme.
+   ============================================================ */
+.dktt-main-content {
+    max-width: 1440px;
+    padding-top: 22px;
+    color: #2f3136;
+}
+
+.dktt-main-content .breadcrumb {
+    margin-bottom: 18px;
+    color: #69727d;
+}
+
+.dktt-main-content .breadcrumb a {
+    color: #5b7487;
+}
+
+.dktt-service-page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+}
+
+.dktt-form-shell {
+    min-width: 0;
+}
+
+.dktt-page-header {
+    position: relative;
+    text-align: left;
+    padding: 0 0 10px;
+    margin-bottom: 14px;
+    color: #272a2f;
+    background: transparent;
+    border-radius: 0;
+    border-bottom: 1px solid #d7d7d7;
+    box-shadow: none;
+}
+
+.dktt-page-header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 92px;
+    height: 2px;
+    background: #d71920;
+}
+
+.dktt-page-header h1 {
+    margin: 0 0 5px;
+    color: #24272c;
+    font-size: 1.45rem;
+    font-weight: 650;
+    letter-spacing: 0;
+}
+
+.dktt-page-header p {
+    color: #6c737c;
+    font-size: 0.8rem;
+    opacity: 1;
+}
+
+.dktt-ai-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    color: #5d4a1f;
+    background: #fffaf0;
+    border: 1px solid #ebdfbd;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.dktt-ai-hint-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.dktt-ai-hint-icon img {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #d7c894;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dktt-required-note {
+    margin-bottom: 14px;
+    padding: 4px 0 5px;
+    color: #4d5258;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-size: 0.78rem;
+}
+
+.dktt-section {
+    margin-bottom: 18px;
+    background: #fff;
+    border: 0;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
+}
+
+.dktt-section:hover {
+    box-shadow: 0 3px 9px rgba(32, 35, 40, 0.17);
+}
+
+.dktt-section-header,
+.dktt-section-header:hover {
+    min-height: 42px;
+    padding: 8px 20px;
+    color: #303238;
+    background: rgba(255, 241, 184, 0.52);
+    border-bottom: 2px solid #d71920;
+}
+
+.dktt-section-header-left {
+    gap: 5px;
+}
+
+.dktt-section-number {
+    display: inline;
+    width: auto;
+    height: auto;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.dktt-section-number::after {
+    content: '.';
+}
+
+.dktt-section-title {
+    color: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-transform: uppercase;
+}
+
+.dktt-section-required {
+    margin-left: 3px;
+    color: #d71920;
+}
+
+.dktt-section-chevron {
+    width: 18px;
+    height: 18px;
+    color: #52565c;
+    opacity: 1;
+}
+
+.dktt-section.open .dktt-section-body {
+    padding: 20px;
+}
+
+.dktt-form-row {
+    gap: 15px 18px;
+}
+
+.dktt-form-shell .form-group {
+    gap: 5px;
+}
+
+.dktt-form-shell .form-label {
+    color: #30343a;
+    font-size: 0.79rem;
+    font-weight: 600;
+}
+
+.dktt-form-shell .form-input,
+.dktt-form-shell .form-select,
+.dktt-form-shell .form-textarea {
+    min-height: 38px;
+    padding: 8px 11px;
+    color: #30343a;
+    background-color: #fff;
+    border: 1px solid #cfd3d8;
+    border-radius: 3px;
+    font-size: 0.84rem;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.025);
+}
+
+.dktt-form-shell .form-input:focus,
+.dktt-form-shell .form-select:focus,
+.dktt-form-shell .form-textarea:focus {
+    border-color: #d71920;
+    box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1);
+}
+
+.dktt-form-shell .form-input:disabled,
+.dktt-form-shell .form-select:disabled,
+.dktt-form-shell .form-textarea:disabled {
+    color: #4e5359;
+    background-color: #f3f3f3;
+    opacity: 1;
+}
+
+.dktt-sub-title {
+    margin: 18px 0 11px;
+    padding-bottom: 6px;
+    color: #44484e;
+    border-bottom: 1px solid #e1e2e4;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.dktt-choice-group {
+    gap: 10px;
+}
+
+.dktt-choice-grid {
+    gap: 10px;
+}
+
+.dktt-choice-card {
+    gap: 10px;
+    padding: 11px 13px;
+    background: #fafafa;
+    border: 1px solid #d9dadd;
+    border-radius: 4px;
+    box-shadow: none;
+}
+
+.dktt-choice-card:hover {
+    background: #fffdf6;
+    border-color: #d8c879;
+    box-shadow: none;
+    transform: none;
+}
+
+.dktt-choice-card input[type='radio'],
+.dktt-checkbox-line input[type='checkbox'],
+.dktt-legal-check input[type='checkbox'],
+.dktt-doc-checkbox {
+    accent-color: #d71920;
+}
+
+.dktt-panel {
+    padding: 16px;
+    border: 1px solid #dedfe1;
+    border-radius: 5px;
+    box-shadow: none;
+}
+
+.dktt-panel-muted {
+    background: #fafafa;
+}
+
+.dktt-upload-summary {
+    padding: 9px 12px;
+    background: #fffdf4;
+    border-color: #eee4bc;
+    border-radius: 4px;
+}
+
+.dktt-upload-case-list {
+    gap: 5px;
+}
+
+.dktt-upload-case {
+    border: 0;
+    border-bottom: 1px solid #e4e5e7;
+    border-radius: 0;
+}
+
+.dktt-upload-case.open {
+    box-shadow: none;
+}
+
+.dktt-upload-case-header {
+    padding: 10px 11px;
+    color: #52758a;
+    background: #fff;
+    font-size: 0.8rem;
+}
+
+.dktt-upload-case-header:hover {
+    color: #b3161c;
+    background: #fffdf5;
+}
+
+.dktt-upload-case.open .dktt-upload-case-header {
+    color: #394e5c;
+    background: #fffdf4;
+}
+
+.dktt-upload-case-bullet {
+    color: #d71920;
+}
+
+.dktt-upload-case-body {
+    padding: 10px 10px 14px;
+}
+
+.dktt-member-table-wrapper {
+    border-color: #ded9c5;
+    border-radius: 2px;
+    box-shadow: none;
+}
+
+.dktt-member-table thead tr,
+.dktt-doc-table thead tr {
+    background: #fff8d8;
+}
+
+.dktt-member-table th,
+.dktt-doc-table th {
+    color: #3d4147;
+    border-bottom: 1px solid #e4d8a4;
+    border-right-color: #e9e1bf;
+    font-weight: 600;
+}
+
+.dktt-member-table tbody tr {
+    background: #f1f1f2;
+}
+
+.dktt-member-table tbody tr:nth-child(even) {
+    background: #e9e9eb;
+}
+
+.dktt-member-table tbody tr:hover {
+    background: #f5f1df;
+}
+
+.dktt-table-input,
+.dktt-table-select {
+    border: 1px solid #cfd3d8;
+    border-radius: 2px;
+}
+
+.dktt-table-input:focus,
+.dktt-table-select:focus {
+    border-color: #d71920;
+    box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1);
+}
+
+.dktt-doc-icon-btn,
+.dktt-doc-chip,
+.dktt-doc-attach {
+    color: #5c7382;
+    border-color: #cbd5da;
+    background: #fff;
+}
+
+.dktt-btn-add {
+    background: #6b747b;
+}
+
+.dktt-btn-add:hover {
+    background: #d71920;
+}
+
+.dktt-legal-check {
+    margin-top: 4px;
+    padding: 14px 18px;
+    background: #fffaf0;
+    border-color: #eadfbf;
+    border-radius: 4px;
+}
+
+.dktt-legal-check:hover {
+    background: #fff6df;
+}
+
+.dktt-actions {
+    gap: 12px;
+    padding: 10px 0 26px;
+}
+
+.dktt-actions .btn {
+    min-width: 142px;
+    padding: 10px 22px;
+    border-radius: 4px;
+    font-size: 0.83rem;
+}
+
+.dktt-actions .btn-primary {
+    color: #fff;
+    background: #d71920;
+    border-color: #d71920;
+    box-shadow: none;
+}
+
+.dktt-actions .btn-primary:hover {
+    background: #b9141a;
+    border-color: #b9141a;
+    box-shadow: none;
+    transform: none;
+}
+
+.dktt-actions .btn-secondary {
+    color: #b9141a;
+    background: #fff;
+    border-color: #d71920;
+}
+
+.dktt-actions .btn-secondary:hover {
+    background: #fff2f2;
+}
+
+.dktt-service-sidebar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    order: 0;
+}
+
+.dktt-service-sidebar .sidebar-info-card {
+    border-color: #ddd;
+    border-radius: 6px;
+}
+
+.dktt-service-sidebar .sidebar-info-card-header {
+    padding: 11px 14px;
+    background: rgba(255, 241, 184, 0.52);
+    border-bottom: 2px solid #d71920;
+}
+
+.dktt-service-sidebar .sidebar-info-card-title {
+    color: #33363b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+}
+
+.dktt-service-sidebar .sidebar-info-card-body {
+    padding: 14px;
+}
+
+.dktt-service-sidebar .steps-list li::before {
+    background: #d71920;
+}
+
+.dktt-sidebar-ai {
+    grid-column: 1 / -1;
+    padding: 14px 18px;
+    color: #fff;
+    text-align: center;
+    background: #a9181d;
+    border-radius: 6px;
+}
+
+@media (max-width: 1100px) {
+    .dktt-service-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .dktt-sidebar-ai {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .dktt-main-content {
+        padding: 16px 12px 24px;
+    }
+
+    .dktt-main-content .breadcrumb {
+        gap: 5px;
+        margin-bottom: 14px;
+        font-size: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .dktt-page-header h1 {
+        font-size: 1.08rem;
+    }
+
+    .dktt-page-header p {
+        font-size: 0.73rem;
+    }
+
+    .dktt-ai-hint {
+        align-items: flex-start;
+        padding: 9px 10px;
+    }
+
+    .dktt-section {
+        margin-bottom: 12px;
+        border-radius: 6px;
+    }
+
+    .dktt-section-header,
+    .dktt-section-header:hover {
+        padding: 9px 12px;
+    }
+
+    .dktt-section-title,
+    .dktt-section-number {
+        font-size: 0.78rem;
+    }
+
+    .dktt-section.open .dktt-section-body {
+        padding: 14px 12px;
+    }
+
+    .dktt-form-row {
+        gap: 12px;
+    }
+
+    .dktt-actions {
+        gap: 9px;
+    }
+}
