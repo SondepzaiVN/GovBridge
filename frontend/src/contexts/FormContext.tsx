@@ -78,12 +78,17 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Called by chatbot to auto-fill form fields
   const fillFields = useCallback((fields: Record<string, string>) => {
+    const updatedFieldIds = Object.keys(fields);
     setFormState((prev) => ({
       ...prev,
       values: { ...prev.values, ...fields },
+      errors: {
+        ...prev.errors,
+        ...Object.fromEntries(updatedFieldIds.map((fieldId) => [fieldId, ''])),
+      },
       touched: {
         ...prev.touched,
-        ...Object.fromEntries(Object.keys(fields).map((k) => [k, true])),
+        ...Object.fromEntries(updatedFieldIds.map((fieldId) => [fieldId, true])),
       },
     }));
   }, []);

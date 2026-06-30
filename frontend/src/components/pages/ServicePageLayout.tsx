@@ -15,6 +15,7 @@ interface FieldProps {
   value: string;
   onChange: (value: string) => void;
   isAutofilled?: boolean;
+  disabled?: boolean;
 }
 
 export const FormFieldInput: React.FC<FieldProps> = ({
@@ -22,16 +23,24 @@ export const FormFieldInput: React.FC<FieldProps> = ({
   value,
   onChange,
   isAutofilled,
+  disabled = false,
 }) => {
   const [error, setError] = React.useState("");
-  const { formState } = useForm();
-  const displayError = error || formState.errors[field.id] || "";
+  const { formState, setFieldError } = useForm();
+  const mergedError = error || formState.errors[field.id] || "";
+  const isLockedValidValue = disabled && !!value.trim() && !quickValidate(field.id, value, field.label);
+  const displayError = isLockedValidValue ? "" : mergedError;
 
   const handleChange = (val: string) => {
     onChange(val);
     const err = quickValidate(field.id, val, field.label);
     setError(err || "");
   };
+
+  React.useEffect(() => {
+    if (!isLockedValidValue) return;
+    if (formState.errors[field.id]) setFieldError(field.id, "");
+  }, [field.id, formState.errors, isLockedValidValue, setFieldError]);
 
   const inputClass = `form-input${isAutofilled ? " autofilled" : ""}${displayError ? " error" : ""}`;
   const selectClass = `form-select${isAutofilled ? " autofilled" : ""}${displayError ? " error" : ""}`;
@@ -56,6 +65,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           className={selectClass}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
+          disabled={disabled}
         >
           <option value="">— Chọn —</option>
           {field.options?.map((opt) => (
@@ -76,6 +86,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
           rows={3}
+          disabled={disabled}
         />
       );
       break;
@@ -95,6 +106,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
                 value={opt.value}
                 checked={value === opt.value}
                 onChange={() => handleChange(opt.value)}
+                disabled={disabled}
                 data-highlight-id={`${field.id}-${opt.value}`}
               />
               {opt.label}
@@ -119,6 +131,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
+          disabled={disabled}
           autoComplete={
             field.type === "phone"
               ? "tel"
@@ -207,7 +220,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
       setSubmittedId(application.id);
     } catch (error) {
       if (error instanceof ApiClientError) {
-        (error.details ?? []).forEach((detail) => {
+        error.details?.forEach((detail) => {
           if (!detail.field) return;
           touchField(detail.field);
           setFieldError(detail.field, detail.message);

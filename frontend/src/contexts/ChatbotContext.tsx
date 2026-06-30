@@ -83,11 +83,13 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const enableVoiceRef = useRef(enableVoiceResponse);
   const currentRouteRef = useRef(currentRoute);
   const formValuesRef = useRef(formValues);
-  onNavigateRef.current = onNavigate;
-  onFillFormRef.current = onFillForm;
-  enableVoiceRef.current = enableVoiceResponse;
-  currentRouteRef.current = currentRoute;
-  formValuesRef.current = formValues;
+  useEffect(() => {
+    onNavigateRef.current = onNavigate;
+    onFillFormRef.current = onFillForm;
+    enableVoiceRef.current = enableVoiceResponse;
+    currentRouteRef.current = currentRoute;
+    formValuesRef.current = formValues;
+  });
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
 
@@ -153,6 +155,19 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           if (window.innerWidth <= 768) {
             setTimeout(() => dispatch({ type: 'CLOSE' }), 800);
           }
+          break;
+
+        case 'REQUEST_CONFIRM_FILL':
+          addBotMessage(
+            event.message,
+            'fill-confirm',
+            {
+              fields: event.fields,
+              fieldLabels: event.fieldLabels,
+              previousValues: event.previousValues,
+            },
+            event.suggestions,
+          );
           break;
 
         case 'NAVIGATE':
@@ -359,6 +374,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useChatbot = () => {
   const ctx = useContext(ChatbotContext);
   if (!ctx) throw new Error('useChatbot must be used within ChatbotProvider');

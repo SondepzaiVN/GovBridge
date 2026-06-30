@@ -30,6 +30,14 @@ export type AgentEvent =
       suggestions?: string[];
     }
   | {
+      type: 'REQUEST_CONFIRM_FILL';
+      fields: Record<string, string>;
+      fieldLabels: Record<string, string>;
+      previousValues: Record<string, string>;
+      message: string;
+      suggestions?: string[];
+    }
+  | {
       type: 'NAVIGATE';
       route: string;
       serviceName: string;
