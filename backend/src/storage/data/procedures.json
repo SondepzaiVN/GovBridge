@@ -1383,6 +1383,37 @@
                     "step": 3
                 }
             ]
+        },
+        {
+            "id": "xac-nhan-cu-tru",
+            "name": "Hồ sơ xác nhận về thông tin cư trú",
+            "shortName": "Xác nhận cư trú",
+            "description": "Nộp hồ sơ xác nhận thông tin về cư trú theo giao diện dịch vụ công quản lý cư trú.",
+            "route": "/xac-nhan-cu-tru",
+            "icon": "🏠",
+            "category": "Cư trú",
+            "processingTime": "03 ngày làm việc",
+            "fee": "Miễn phí",
+            "keywords": [
+                "xác nhận cư trú",
+                "xác nhận thông tin cư trú",
+                "thông tin cư trú",
+                "cư trú",
+                "hồ sơ xác nhận cư trú",
+                "xac nhan cu tru"
+            ],
+            "requiredDocs": [
+                "Giấy tờ, tài liệu chứng minh thông tin cư trú cần xác nhận",
+                "Thông tin người được khai hộ nếu nộp thay"
+            ],
+            "steps": [
+                "Chọn cơ quan thực hiện",
+                "Chọn thủ tục hành chính và trường hợp",
+                "Khai thông tin người xác nhận thông tin về cư trú",
+                "Nhập thông tin đề nghị và đính kèm hồ sơ",
+                "Chọn hình thức nhận thông báo, cam kết và nộp hồ sơ"
+            ],
+            "fields": []
         }
     ]
 }
