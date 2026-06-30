@@ -103,7 +103,6 @@ const createHousingProofDoc = (): ResidenceDocumentRequirement => ({
 });
 
 export const getResidenceDocumentCases = ({
-  isNewHousehold,
   isOverseasDossier,
 }: {
   isNewHousehold: boolean;
@@ -362,7 +361,7 @@ export const createBlankOverseasFamilyMember = (id: number): OverseasFamilyMembe
   currentAddress: '',
 });
 
-const namePattern = /^[^\d!@#$%^&*()_+=\[\]{};':"\\|,.<>/?]+$/u;
+const namePattern = /^[^\d!@#$%^&*()_+=[\]{};':"\\|,.<>/?]+$/u;
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const buildOptions = (labels: string[]): FormFieldOption[] =>

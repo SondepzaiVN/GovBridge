@@ -1770,6 +1770,95 @@ a:hover {
     font-size: 0.8rem;
 }
 
+/* Chatbot form-fill confirmation */
+.fill-confirm-card {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--primary) 5%, white);
+}
+
+.fill-confirm-title {
+    margin-bottom: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.fill-confirm-fields {
+    display: grid;
+    gap: 6px;
+}
+
+.fill-confirm-field {
+    display: grid;
+    grid-template-columns: minmax(90px, 0.8fr) minmax(0, 1.2fr);
+    gap: 3px 8px;
+    align-items: baseline;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75rem;
+}
+
+.fill-confirm-field:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.fill-confirm-label {
+    color: var(--text-secondary);
+}
+
+.fill-confirm-old {
+    grid-column: 2;
+    overflow-wrap: anywhere;
+    color: var(--text-secondary);
+    text-decoration: line-through;
+}
+
+.fill-confirm-value {
+    grid-column: 2;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.fill-confirm-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.fill-confirm-actions .btn {
+    flex: 1;
+}
+
+.fill-confirm-status {
+    margin-top: 9px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.fill-confirm-status.confirmed {
+    color: var(--success);
+}
+
+.fill-confirm-status.cancelled {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 420px) {
+    .fill-confirm-field {
+        grid-template-columns: 1fr;
+    }
+
+    .fill-confirm-old,
+    .fill-confirm-value {
+        grid-column: 1;
+    }
+}
+
 /* Validation result */
 .validation-result {
     margin-top: 8px;
