@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import type { ChatMessage } from '../../types';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import { useForm } from '../../contexts/FormContext';
@@ -36,6 +36,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const { state, confirmNavigation, cancelNavigation, sendMessage, dispatch, handleAIResponse } = useChatbot();
   const { fillFields } = useForm();
   const location = useLocation();
+  const [fillDecision, setFillDecision] = useState<'confirmed' | 'cancelled' | null>(null);
 
   const isBot = message.role === 'bot';
   const time = message.timestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -143,6 +144,65 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
     );
   };
 
+  const renderFillConfirmCard = () => {
+    const fields = message.data?.fields as Record<string, string> | undefined;
+    const labels = message.data?.fieldLabels as Record<string, string> | undefined;
+    const previousValues = message.data?.previousValues as Record<string, string> | undefined;
+    if (!fields || Object.keys(fields).length === 0) return null;
+
+    return (
+      <div className="fill-confirm-card">
+        <div className="fill-confirm-title">Thông tin sẽ điền</div>
+        <div className="fill-confirm-fields">
+          {Object.entries(fields).map(([fieldId, value]) => (
+            <div className="fill-confirm-field" key={fieldId}>
+              <span className="fill-confirm-label">{labels?.[fieldId] || fieldId}</span>
+              {previousValues?.[fieldId] && previousValues[fieldId] !== value && (
+                <span className="fill-confirm-old">{previousValues[fieldId]} →</span>
+              )}
+              <span className="fill-confirm-value">{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {fillDecision === null ? (
+          <div className="fill-confirm-actions">
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={() => {
+                fillFields(fields);
+                setFillDecision('confirmed');
+                handleAIResponse({
+                  intent: 'CHAT',
+                  message: 'Đã điền các thông tin bạn vừa xác nhận. Bạn kiểm tra lại trên biểu mẫu trước khi tiếp tục nhé.',
+                  suggestions: ['Cần điền thêm gì?', 'Giải thích trường tiếp theo'],
+                });
+              }}
+            >
+              Xác nhận và điền
+            </button>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                setFillDecision('cancelled');
+                handleAIResponse({
+                  intent: 'CHAT',
+                  message: 'Mình chưa thay đổi biểu mẫu. Bạn có thể gửi lại thông tin đúng khi sẵn sàng.',
+                });
+              }}
+            >
+              Không điền
+            </button>
+          </div>
+        ) : (
+          <div className={`fill-confirm-status ${fillDecision}`}>
+            {fillDecision === 'confirmed' ? 'Đã xác nhận' : 'Đã bỏ qua'}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Validation result card
   const renderValidationCard = () => {
     const errors = (message.data?.validationErrors as Array<{ field: string; label: string; message: string; severity: string }>) || [];
@@ -188,6 +248,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           {/* Extra cards based on message type */}
           {message.type === 'navigation-confirm' && state.pendingNavigation && renderNavConfirmCard()}
           {message.type === 'cccd-preview' && renderCCCDPreviewCard()}
+          {message.type === 'fill-confirm' && renderFillConfirmCard()}
           {message.type === 'validation-result' && renderValidationCard()}
         </div>
 
