@@ -905,28 +905,62 @@ const UploadDocumentsTable: React.FC<{ uploads: UploadDocument[] }> = ({ uploads
 
 const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabChange }) => {
   const activeTab = tabs[activeIndex] ?? tabs[0];
+  const iframeRef = React.useRef<HTMLIFrameElement>(null);
+  const [isTabListVisible, setIsTabListVisible] = React.useState(true);
+  const [zoom, setZoom] = React.useState(100);
+  const [rotation, setRotation] = React.useState(0);
+
+  React.useEffect(() => {
+    setZoom(100);
+    setRotation(0);
+  }, [activeTab.url]);
+
+  const handlePrint = () => {
+    const printWindow = window.open(activeTab.url, '_blank');
+    if (printWindow) {
+      window.setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 700);
+      return;
+    }
+
+    iframeRef.current?.contentWindow?.focus();
+    iframeRef.current?.contentWindow?.print();
+  };
+
+  const handleZoomOut = () => setZoom((currentZoom) => Math.max(50, currentZoom - 10));
+  const handleZoomIn = () => setZoom((currentZoom) => Math.min(200, currentZoom + 10));
+  const handleRotate = () => setRotation((currentRotation) => (currentRotation + 90) % 360);
 
   return (
     <div className="ltks-pdf-review">
-      <div className="ltks-pdf-tabs" role="tablist" aria-label="Danh sách tờ khai">
-        {tabs.map((tab, index) => (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={index === activeIndex}
-            className={index === activeIndex ? 'active' : ''}
-            key={tab.title}
-            onClick={() => onTabChange(index)}
-          >
-            {tab.title}
-          </button>
-        ))}
-      </div>
+      {isTabListVisible && (
+        <div className="ltks-pdf-tabs" role="tablist" aria-label="Danh sách tờ khai">
+          {tabs.map((tab, index) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={index === activeIndex}
+              className={index === activeIndex ? 'active' : ''}
+              key={tab.title}
+              onClick={() => onTabChange(index)}
+            >
+              {tab.title}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="ltks-pdf-panel" role="tabpanel" aria-label={activeTab.title}>
         <div className="ltks-pdf-toolbar">
           <div className="ltks-pdf-toolbar-group">
-            <button type="button" aria-label="Mở danh mục">
+            <button
+              type="button"
+              aria-label={isTabListVisible ? 'Ẩn danh mục tờ khai' : 'Mở danh mục tờ khai'}
+              title={isTabListVisible ? 'Ẩn danh mục tờ khai' : 'Mở danh mục tờ khai'}
+              onClick={() => setIsTabListVisible((isVisible) => !isVisible)}
+            >
               <Menu size={20} />
             </button>
             <strong>{activeTab.title}</strong>
@@ -934,37 +968,48 @@ const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabC
           <div className="ltks-pdf-toolbar-group center">
             <span>1 / {activeTab.pageCount}</span>
             <span className="ltks-pdf-divider" />
-            <button type="button" aria-label="Thu nhỏ">
+            <button type="button" aria-label="Thu nhỏ" title="Thu nhỏ" onClick={handleZoomOut}>
               <Minus size={18} />
             </button>
-            <span>100%</span>
-            <button type="button" aria-label="Phóng to">
+            <span>{zoom}%</span>
+            <button type="button" aria-label="Phóng to" title="Phóng to" onClick={handleZoomIn}>
               <Plus size={18} />
             </button>
             <span className="ltks-pdf-divider" />
-            <button type="button" aria-label="Xoay trang">
+            <button type="button" aria-label="Xoay trang" title="Xoay trang" onClick={handleRotate}>
               <RotateCw size={18} />
             </button>
           </div>
           <div className="ltks-pdf-toolbar-group">
-            <button type="button" aria-label="In tờ khai">
+            <button type="button" aria-label="In tờ khai" title="In tờ khai" onClick={handlePrint}>
               <Printer size={18} />
             </button>
             <a href={activeTab.url} download title="Tải tờ khai" aria-label="Tải tờ khai">
               <Download size={18} />
             </a>
-            <button type="button" aria-label="Thêm tùy chọn">
+            <button
+              type="button"
+              aria-label="Mở tờ khai trong tab mới"
+              title="Mở tờ khai trong tab mới"
+              onClick={() => window.open(activeTab.url, '_blank', 'noopener,noreferrer')}
+            >
               <MoreVertical size={18} />
             </button>
           </div>
         </div>
         <div className="ltks-pdf-canvas">
-          <iframe
-            key={activeTab.url}
-            className="ltks-pdf-frame"
-            src={`${activeTab.url}#toolbar=0&navpanes=0&view=FitH`}
-            title={activeTab.title}
-          />
+          <div
+            className="ltks-pdf-frame-shell"
+            style={{ transform: `scale(${zoom / 100}) rotate(${rotation}deg)` }}
+          >
+            <iframe
+              ref={iframeRef}
+              key={activeTab.url}
+              className="ltks-pdf-frame"
+              src={`${activeTab.url}#toolbar=0&navpanes=0&view=FitH`}
+              title={activeTab.title}
+            />
+          </div>
         </div>
       </div>
     </div>
