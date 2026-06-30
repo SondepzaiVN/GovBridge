@@ -6594,3 +6594,207 @@ a:hover {
         flex-direction: column;
     }
 }
+
+/* HAR alignment: dichvucong.dancuquocgia.gov.vn residence form */
+.xctt-page {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+}
+
+.xctt-breadcrumb {
+    font-size: 14px;
+    color: #292d34;
+}
+
+.xctt-title-row {
+    margin-bottom: 28px;
+}
+
+.xctt-title-row span {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.xctt-title-row h1 {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #292d34;
+}
+
+.xctt-note {
+    margin-bottom: 8px;
+    font-size: 18px;
+    color: #292d34;
+}
+
+.xctt-section {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
+}
+
+.xctt-section-header {
+    min-height: 40px;
+    padding: 7px 20px;
+    border-bottom: 2px solid #d71920;
+    border-radius: 8px 8px 0 0;
+    background: rgba(255, 241, 184, 0.5);
+}
+
+.xctt-section-header span {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.42857143;
+}
+
+.xctt-section-body {
+    padding: 20px;
+}
+
+.xctt-grid {
+    gap: 22px 44px;
+}
+
+.xctt-grid.cols-4 {
+    gap: 22px 28px;
+}
+
+.xctt-field label,
+.xctt-family h3,
+.xctt-subtitle {
+    margin-bottom: 8px;
+    color: #292d34;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.42857143;
+}
+
+.xctt-field input,
+.xctt-field select,
+.xctt-field textarea,
+.xctt-family-table input,
+.xctt-family-table select {
+    min-height: 34px;
+    height: 34px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: #555;
+    padding: 6px 12px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.xctt-field input[readonly],
+.xctt-field select:disabled {
+    background-color: #eee;
+    opacity: 1;
+}
+
+.xctt-field textarea {
+    height: auto;
+    min-height: 80px;
+}
+
+.xctt-field input:focus,
+.xctt-field select:focus,
+.xctt-field textarea:focus,
+.xctt-family-table input:focus,
+.xctt-family-table select:focus {
+    border-color: #66afe9;
+    box-shadow:
+        inset 0 1px 1px rgba(0, 0, 0, 0.075),
+        0 0 8px rgba(102, 175, 233, 0.6);
+}
+
+.xctt-radio-stack {
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.xctt-radio-stack label {
+    gap: 10px;
+    font-size: 16px;
+    line-height: 1.55;
+    font-weight: 400;
+}
+
+.xctt-radio-stack input[type='radio'] {
+    width: 20px;
+    height: 20px;
+}
+
+.xctt-family {
+    margin-top: 24px;
+}
+
+.xctt-family-table th {
+    padding: 12px 10px;
+    background: rgba(255, 241, 184, 0.5);
+    color: #292d34;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.xctt-family-table td {
+    padding: 8px;
+}
+
+.xctt-upload-intro,
+.xctt-pledge {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.xctt-tag-select {
+    min-height: 34px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+.xctt-tag-select span {
+    font-size: 14px;
+    line-height: 1.42857143;
+}
+
+.xctt-attachment-row {
+    margin-top: 14px;
+    padding: 12px;
+}
+
+.xctt-pledge input {
+    width: 20px;
+    height: 20px;
+}
+
+.xctt-actions {
+    margin-top: 24px;
+}
+
+.xctt-btn {
+    min-height: 44px;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.42857143;
+}
+
+.xctt-btn.ghost {
+    border-color: #d71920;
+    color: #d71920;
+}
+
+.xctt-btn.secondary,
+.xctt-btn.primary,
+.xctt-upload-btn {
+    border-color: #d71920;
+    background: #d71920;
+}
