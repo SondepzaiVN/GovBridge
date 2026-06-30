@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ChevronUp, FileText, Home, Paperclip, Plus, Save, Send, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { administrativeUnitService } from '../../api/administrativeUnitService';
 
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
 
@@ -60,17 +61,43 @@ const provinces = [
   'Thành phố Cần Thơ',
   'Tỉnh Cà Mau',
 ];
-const wards = [
-  'Phường Cái Khế',
-  'Phường An Khánh',
-  'Phường Cửa Nam',
-  'Phường Bến Nghé',
-  'Phường Phúc Xá',
-  'Phường Trúc Bạch',
-  'Phường Hàng Bạc',
-  'Xã Đông Anh',
-  'Xã Gia Lâm',
-];
+const provinceCodeByName: Record<string, string> = {
+  'Thành phố Hà Nội': '01',
+  'Tỉnh Cao Bằng': '04',
+  'Tỉnh Tuyên Quang': '08',
+  'Tỉnh Điện Biên': '11',
+  'Tỉnh Lai Châu': '12',
+  'Tỉnh Sơn La': '14',
+  'Tỉnh Lào Cai': '15',
+  'Tỉnh Thái Nguyên': '19',
+  'Tỉnh Lạng Sơn': '20',
+  'Tỉnh Quảng Ninh': '22',
+  'Tỉnh Bắc Ninh': '24',
+  'Tỉnh Phú Thọ': '25',
+  'Thành phố Hải Phòng': '31',
+  'Tỉnh Hưng Yên': '33',
+  'Tỉnh Ninh Bình': '37',
+  'Tỉnh Thanh Hóa': '38',
+  'Tỉnh Nghệ An': '40',
+  'Tỉnh Hà Tĩnh': '42',
+  'Tỉnh Quảng Trị': '44',
+  'Thành phố Huế': '46',
+  'Thành phố Đà Nẵng': '48',
+  'Tỉnh Quảng Ngãi': '51',
+  'Tỉnh Gia Lai': '52',
+  'Tỉnh Khánh Hòa': '56',
+  'Tỉnh Đắk Lắk': '66',
+  'Tỉnh Lâm Đồng': '68',
+  'Thành phố Đồng Nai': '75',
+  'Tỉnh Đồng Nai': '75',
+  'Thành phố Hồ Chí Minh': '79',
+  'Tỉnh Tây Ninh': '80',
+  'Tỉnh Đồng Tháp': '82',
+  'Tỉnh Vĩnh Long': '86',
+  'Tỉnh An Giang': '91',
+  'Thành phố Cần Thơ': '92',
+  'Tỉnh Cà Mau': '96',
+};
 const genderOptions = ['Chưa có thông tin', 'Nam', 'Nữ', 'Khác'];
 const ethnicityOptions = [
   'Kinh',
@@ -105,11 +132,7 @@ const ethnicityOptions = [
   'Chưa có thông tin',
   'Khác',
 ];
-const procedureOptions = [
-  'Đăng ký thường trú lập hộ mới',
-  'Đăng ký thường trú vào hộ đã có',
-  'CD Việt Nam định cư ở nước ngoài không có hộ chiếu Việt Nam còn giá trị sử dụng',
-];
+const procedureOptions = ['Xác định thông tin về cư trú'];
 const caseOptions = ['Xác nhận thông tin về cư trú'];
 const relationOptions = [
   'Anh',
@@ -200,10 +223,24 @@ const createMember = (id: number): FamilyMember => ({
   quanHe: '',
 });
 
-const agencyFields: FieldConfig[] = [
+const getResidenceAgencyOptions = (wardName: string): string[] => (
+  wardName ? ['Cơ quan X', `Công an ${wardName}`] : ['Cơ quan X']
+);
+
+const getWardFieldPlaceholder = (provinceName: string, isLoading: boolean): string => {
+  if (!provinceName) return 'Chọn tỉnh/thành phố trước';
+  return isLoading ? 'Đang tải...' : 'Chọn';
+};
+
+const createAgencyFields = (
+  wardOptions: string[],
+  selectedProvince: string,
+  selectedWard: string,
+  isLoading: boolean,
+): FieldConfig[] => [
   { id: 'provinceAgency', label: 'Tỉnh/ Thành phố', kind: 'select', required: true, placeholder: 'Chọn', options: provinces },
-  { id: 'wardAgency', label: 'Xã/Phường/Đặc khu', kind: 'select', required: true, placeholder: 'Chọn', options: wards },
-  { id: 'residenceAgency', label: 'Cơ quan đăng ký cư trú', kind: 'select', required: true, options: ['Công an Phường Cái Khế', 'Công an Phường An Khánh', 'Công an Phường Cửa Nam'] },
+  { id: 'wardAgency', label: 'Xã/Phường/Đặc khu', kind: 'select', required: true, placeholder: getWardFieldPlaceholder(selectedProvince, isLoading), options: wardOptions },
+  { id: 'residenceAgency', label: 'Cơ quan đăng ký cư trú', kind: 'select', required: true, placeholder: 'Cơ quan X', options: getResidenceAgencyOptions(selectedWard) },
   { id: 'agencyPhone', label: 'Số điện thoại', kind: 'text', readOnly: true, placeholder: '0292 3894 939' },
 ];
 
@@ -223,15 +260,21 @@ const applicantFields: FieldConfig[] = [
   { id: 'email', label: 'Email', kind: 'text' },
 ];
 
-const requestFields: FieldConfig[] = [
+const createRequestFields = (
+  wardOptions: string[],
+  selectedProvince: string,
+  isLoading: boolean,
+): FieldConfig[] => [
   { id: 'requestProvince', label: 'Tỉnh/ Thành phố', kind: 'select', required: true, placeholder: 'Chọn', options: provinces },
-  { id: 'requestWard', label: 'Xã/Phường/Đặc khu', kind: 'select', required: true, placeholder: 'Chọn', options: wards },
+  { id: 'requestWard', label: 'Xã/Phường/Đặc khu', kind: 'select', required: true, placeholder: getWardFieldPlaceholder(selectedProvince, isLoading), options: wardOptions },
   { id: 'address', label: 'Địa chỉ (số nhà, đường phố, thôn, xóm, làng, ấp, bản, buôn, phum, sóc)', kind: 'text', required: true, placeholder: 'Địa chỉ nơi cư trú hiện tại của công dân', span: 2 },
   { id: 'requestContent', label: 'Nội dung đề nghị', kind: 'textarea', required: true, span: 2 },
 ];
 
 const initialValues: Record<string, string> = {
   birthType: 'Ngày tháng năm',
+  procedure: 'Xác định thông tin về cư trú',
+  caseType: 'Xác nhận thông tin về cư trú',
   notificationMethod: 'Nhận qua cổng thông tin',
   resultMethod: 'Nhận qua cổng thông tin',
 };
@@ -254,10 +297,91 @@ const XacNhanCuTruPage: React.FC = () => {
   const [pledged, setPledged] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [draftSaved, setDraftSaved] = React.useState(false);
+  const [agencyWardOptions, setAgencyWardOptions] = React.useState<string[]>([]);
+  const [requestWardOptions, setRequestWardOptions] = React.useState<string[]>([]);
+  const [loadingAgencyWards, setLoadingAgencyWards] = React.useState(false);
+  const [loadingRequestWards, setLoadingRequestWards] = React.useState(false);
+
+  React.useEffect(() => {
+    const provinceCode = provinceCodeByName[values.provinceAgency || ''];
+
+    if (!provinceCode) {
+      setAgencyWardOptions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    setLoadingAgencyWards(true);
+    administrativeUnitService.getWards(provinceCode, controller.signal)
+      .then((options) => setAgencyWardOptions(options.map((option) => option.label)))
+      .catch((error) => {
+        if (error.name !== 'AbortError') setAgencyWardOptions([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoadingAgencyWards(false);
+      });
+
+    return () => controller.abort();
+  }, [values.provinceAgency]);
+
+  React.useEffect(() => {
+    const provinceCode = provinceCodeByName[values.requestProvince || ''];
+
+    if (!provinceCode) {
+      setRequestWardOptions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+    setLoadingRequestWards(true);
+    administrativeUnitService.getWards(provinceCode, controller.signal)
+      .then((options) => setRequestWardOptions(options.map((option) => option.label)))
+      .catch((error) => {
+        if (error.name !== 'AbortError') setRequestWardOptions([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoadingRequestWards(false);
+      });
+
+    return () => controller.abort();
+  }, [values.requestProvince]);
+
+  const agencyFields = React.useMemo(
+    () => createAgencyFields(agencyWardOptions, values.provinceAgency || '', values.wardAgency || '', loadingAgencyWards),
+    [agencyWardOptions, loadingAgencyWards, values.provinceAgency, values.wardAgency],
+  );
+
+  const requestFields = React.useMemo(
+    () => createRequestFields(requestWardOptions, values.requestProvince || '', loadingRequestWards),
+    [loadingRequestWards, requestWardOptions, values.requestProvince],
+  );
 
   const setFieldValue = (fieldId: string, value: string) => {
-    setValues((current) => ({ ...current, [fieldId]: value }));
-    setErrors((current) => ({ ...current, [fieldId]: '' }));
+    setValues((current) => {
+      if (fieldId === 'provinceAgency') {
+        return { ...current, provinceAgency: value, wardAgency: '', residenceAgency: '' };
+      }
+
+      if (fieldId === 'requestProvince') {
+        return { ...current, requestProvince: value, requestWard: '' };
+      }
+
+      if (fieldId === 'wardAgency') {
+        return { ...current, wardAgency: value, residenceAgency: value ? 'Cơ quan X' : '' };
+      }
+
+      return { ...current, [fieldId]: value };
+    });
+    setErrors((current) => {
+      const nextErrors = { ...current, [fieldId]: '' };
+      if (fieldId === 'provinceAgency') {
+        nextErrors.wardAgency = '';
+        nextErrors.residenceAgency = '';
+      }
+      if (fieldId === 'requestProvince') nextErrors.requestWard = '';
+      if (fieldId === 'wardAgency') nextErrors.residenceAgency = '';
+      return nextErrors;
+    });
   };
 
   const toggleSection = (sectionId: string) => {
