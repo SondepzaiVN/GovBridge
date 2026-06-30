@@ -112,6 +112,16 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
     skip: (request) => request.path.endsWith('/health'),
   }));
 
+  app.get('/', (_request, response) => {
+    response.json({
+      success: true,
+      message: 'GovBridge backend API is running.',
+      frontendUrl: 'http://127.0.0.1:5173/#/lien-thong-khai-sinh',
+      healthUrl: '/api/v1/health',
+      proceduresUrl: '/api/v1/procedures?includeFields=true',
+    });
+  });
+
   app.use('/api/v1', apiRouter);
   app.use('/api', apiRouter);
   app.use(notFoundHandler);
