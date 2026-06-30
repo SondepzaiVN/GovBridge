@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Download, Menu, Minus, MoreVertical, Plus, Printer, RotateCw, UploadCloud } from 'lucide-react';
+import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw } from 'lucide-react';
 import { applicationService } from '../../api/applicationService';
 import { ApiClientError } from '../../api/client';
 import { useForm } from '../../contexts/FormContext';
@@ -29,8 +29,9 @@ interface LinkedSection {
   sameArea?: boolean;
   fields?: LinkedField[];
   reviewTabs?: ReviewTab[];
-  uploads?: Array<{ title: string; desc: string }>;
+  uploads?: UploadDocument[];
   review?: boolean;
+  hideTitle?: boolean;
 }
 
 interface LinkedStep {
@@ -46,6 +47,13 @@ interface ReviewTab {
   formTitle: string;
   recipient: string;
   description: string;
+}
+
+interface UploadDocument {
+  title: string;
+  copies: number;
+  required?: boolean;
+  templateUrl?: string;
 }
 
 const resultMethods = [
@@ -316,11 +324,19 @@ const steps: LinkedStep[] = [
     sections: [
       {
         title: 'Đính kèm thành phần hồ sơ',
+        hideTitle: true,
         uploads: [
-          { title: 'Tờ khai đăng ký khai sinh', desc: 'PDF, PNG, JPG tối đa 5MB' },
-          { title: 'Tờ khai thay đổi thông tin cư trú (CT01)', desc: 'Bản ký số hoặc bản scan' },
-          { title: 'Tờ khai tham gia, điều chỉnh thông tin BHXH, BHYT (TK1-TS)', desc: 'Mẫu TK1-TS' },
-          { title: 'Giấy chứng sinh', desc: 'Mã giấy chứng sinh hoặc file đính kèm' },
+          {
+            title: 'Bản chụp Giấy chứng sinh, Trường hợp không có Giấy chứng sinh thì đăng tải bản chụp văn bản của người làm chứng xác nhận về việc sinh, ; Nếu không có người làm chứng thì phải có bản chụp giấy cam đoan về việc sinh. Khi đến cơ quan đăng ký hộ tịch nhận kết quả (Giấy khai sinh/bản sao Giấy khai sinh), công dân phải nộp bản chính Giấy chứng sinh',
+            copies: 1,
+            required: true,
+          },
+          {
+            title: 'Tờ khai thay đổi thông tin cư trú (trường hợp trẻ còn bố, mẹ, người giám hộ thì phải có ý kiến đồng ý khi trẻ không ở cùng bố, mẹ, người giám hộ). Tờ khai cần có đầy đủ ý kiến, chữ ký của các thành phần tham gia trong mẫu',
+            copies: 1,
+            required: true,
+            templateUrl: '/lien-thong-khai-sinh/tokhai_cutru.pdf',
+          },
         ],
       },
     ],
@@ -474,7 +490,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
           <div className="ltks-form-body">
             {current.sections.map((section) => (
               <section className="ltks-section" key={section.title}>
-                {!section.reviewTabs && (
+                {!section.reviewTabs && !section.hideTitle && (
                   <div className="ltks-section-title">
                     <h3>{section.title}</h3>
                     {section.actions && (
@@ -514,17 +530,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
                   </div>
                 )}
                 {section.uploads && (
-                  <div className="ltks-upload-list">
-                    {section.uploads.map((upload) => (
-                      <button type="button" className="ltks-upload-item" key={upload.title}>
-                        <span>
-                          <strong>{upload.title}</strong>
-                          <small>{upload.desc}</small>
-                        </span>
-                        <UploadCloud size={20} />
-                      </button>
-                    ))}
-                  </div>
+                  <UploadDocumentsTable uploads={section.uploads} />
                 )}
                 {section.review && <ReviewPanel values={formState.values} />}
               </section>
@@ -771,6 +777,47 @@ interface PdfReviewTabsProps {
   activeIndex: number;
   onTabChange: (index: number) => void;
 }
+
+const UploadDocumentsTable: React.FC<{ uploads: UploadDocument[] }> = ({ uploads }) => (
+  <div className="ltks-upload-table-wrap">
+    <table className="ltks-upload-table">
+      <thead>
+        <tr>
+          <th className="stt">STT</th>
+          <th>Tên giấy tờ</th>
+          <th className="copies">Số bản</th>
+          <th className="file">Tệp tin</th>
+          <th className="template">Mẫu đơn</th>
+        </tr>
+      </thead>
+      <tbody>
+        {uploads.map((upload, index) => (
+          <tr key={upload.title}>
+            <td className="stt">{index + 1}</td>
+            <td className="document-name">
+              <span>{upload.title}</span>
+              {upload.required && <span className="required"> (Bắt buộc)</span>}
+            </td>
+            <td className="copies">{upload.copies}</td>
+            <td className="file">
+              <button type="button" className="ltks-file-button">
+                <Paperclip size={20} />
+                Chọn tệp tin
+              </button>
+            </td>
+            <td className="template">
+              {upload.templateUrl && (
+                <a href={upload.templateUrl} download>
+                  Tải mẫu
+                </a>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
 const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabChange }) => {
   const activeTab = tabs[activeIndex] ?? tabs[0];

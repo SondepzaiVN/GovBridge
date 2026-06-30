@@ -3206,6 +3206,95 @@ a:hover {
     color: #68656b;
 }
 
+.ltks-upload-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.ltks-upload-table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: collapse;
+    background: #fff;
+    color: #000;
+    font-size: 1rem;
+}
+
+.ltks-upload-table th,
+.ltks-upload-table td {
+    border: 1px solid #e0e4eb;
+    padding: 16px 18px;
+    vertical-align: middle;
+}
+
+.ltks-upload-table th {
+    height: 74px;
+    border-bottom: 3px solid #b9bdc3;
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.ltks-upload-table td {
+    font-size: 1rem;
+    line-height: 1.45;
+}
+
+.ltks-upload-table .stt {
+    width: 80px;
+    text-align: center;
+}
+
+.ltks-upload-table .copies {
+    width: 110px;
+    text-align: center;
+}
+
+.ltks-upload-table .file {
+    width: 270px;
+    text-align: center;
+}
+
+.ltks-upload-table .template {
+    width: 140px;
+    text-align: center;
+}
+
+.ltks-upload-table .document-name {
+    text-align: left;
+}
+
+.ltks-upload-table .required {
+    color: #f00;
+}
+
+.ltks-file-button {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 4px;
+    background: #ad3a07;
+    color: #fff;
+    padding: 0 22px;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.24);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ltks-upload-table .template a {
+    color: #06f;
+    font-weight: 400;
+    text-decoration: none;
+}
+
+.ltks-upload-table .template a:hover {
+    text-decoration: underline;
+}
+
 .ltks-review {
     border: 1px solid #ddd5d8;
     background: #fff;
@@ -3730,6 +3819,14 @@ a:hover {
 
 .ltks-app-page .ltks-form-step-3 .ltks-section + .ltks-section {
     margin-top: 0;
+}
+
+.ltks-app-page .ltks-form-step-4 .ltks-form-body {
+    padding: 30px 30px 0;
+}
+
+.ltks-app-page .ltks-form-step-4 .ltks-actions {
+    padding-top: 24px;
 }
 
 .ltks-pdf-review {
