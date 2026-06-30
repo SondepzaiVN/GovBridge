@@ -85,12 +85,27 @@ const residenceTypeOptions = ['Thường trú', 'Tạm trú', 'Nơi ở hiện t
 const requesterRelationOptions = ['Cha', 'Mẹ', 'Ông', 'Bà', 'Người giám hộ', 'Người thân thích khác'];
 const guardianOptions = ['Thông tin cha', 'Thông tin mẹ', 'Thông tin người yêu cầu'];
 const healthcareOptions = ['Trạm y tế phường/xã', 'Bệnh viện đa khoa khu vực', 'Bệnh viện tuyến huyện'];
-const declarationPdfUrl = '/lien-thong-khai-sinh/tokhai.pdf';
 const reviewTabs: ReviewTab[] = [
-  { title: 'Tờ khai đăng ký khai sinh', url: declarationPdfUrl, pageCount: 2 },
-  { title: 'Tờ khai thay đổi thông tin cư trú (CT01)', url: declarationPdfUrl, pageCount: 2 },
-  { title: 'Tờ khai tham gia, điều chỉnh thông tin BHXH, BHYT (TK1-TS)', url: declarationPdfUrl, pageCount: 2 },
-  { title: 'Tờ khai mẫu 01', url: declarationPdfUrl, pageCount: 2 },
+  {
+    title: 'Tờ khai đăng ký khai sinh',
+    url: '/lien-thong-khai-sinh/tokhai_khaisinh.pdf',
+    pageCount: 2,
+  },
+  {
+    title: 'Tờ khai thay đổi thông tin cư trú (CT01)',
+    url: '/lien-thong-khai-sinh/tokhai_cutru.pdf',
+    pageCount: 2,
+  },
+  {
+    title: 'Tờ khai tham gia, điều chỉnh thông tin BHXH, BHYT (TK1-TS)',
+    url: '/lien-thong-khai-sinh/tokhai_bhyt.pdf',
+    pageCount: 2,
+  },
+  {
+    title: 'Tờ khai mẫu 01',
+    url: '/lien-thong-khai-sinh/tokhai_mau01.pdf',
+    pageCount: 3,
+  },
 ];
 
 const steps: LinkedStep[] = [
