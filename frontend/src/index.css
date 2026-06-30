@@ -5,7 +5,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ---- CSS Variables ---- */
@@ -1692,8 +1694,13 @@ a:hover {
 }
 
 @keyframes voice-wave {
-    0%, 100% { height: 4px; }
-    50% { height: 20px; }
+    0%,
+    100% {
+        height: 4px;
+    }
+    50% {
+        height: 20px;
+    }
 }
 
 .voice-wave-bar {
@@ -2390,7 +2397,10 @@ a:hover {
     border-radius: var(--radius-md);
     background: linear-gradient(180deg, #fff, #fafbfd);
     cursor: pointer;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
 }
 
 .dktt-choice-card:hover {
@@ -2543,7 +2553,9 @@ a:hover {
     font-size: 0.775rem;
     font-weight: 700;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .dktt-inline-action:hover {
@@ -2753,7 +2765,10 @@ a:hover {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
     position: relative;
     overflow: hidden;
 }
@@ -3271,7 +3286,8 @@ a:hover {
     padding: 31px 0 38px;
     background:
         linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.88)),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1150' height='360' viewBox='0 0 1150 360'%3E%3Cg fill='none' stroke='%23888888' stroke-opacity='.22' stroke-width='2.6'%3E%3Cpath d='M110 330c65-120 150-120 215 0M145 338c28-165 112-165 140 0M190 344c0-172 58-172 58 0M418 340c34-110 95-110 130 0M452 344c5-135 60-135 66 0M800 332c72-130 160-130 234 0M840 342c30-176 126-176 156 0M895 348c2-190 68-190 72 0'/%3E%3Cpath d='M330 310c-48-106-22-178 78-214M718 318c-48-120-17-198 93-235M1002 314c-62-114-35-202 79-250'/%3E%3C/g%3E%3C/svg%3E") center bottom / min(1150px, 100%) auto no-repeat;
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1150' height='360' viewBox='0 0 1150 360'%3E%3Cg fill='none' stroke='%23888888' stroke-opacity='.22' stroke-width='2.6'%3E%3Cpath d='M110 330c65-120 150-120 215 0M145 338c28-165 112-165 140 0M190 344c0-172 58-172 58 0M418 340c34-110 95-110 130 0M452 344c5-135 60-135 66 0M800 332c72-130 160-130 234 0M840 342c30-176 126-176 156 0M895 348c2-190 68-190 72 0'/%3E%3Cpath d='M330 310c-48-106-22-178 78-214M718 318c-48-120-17-198 93-235M1002 314c-62-114-35-202 79-250'/%3E%3C/g%3E%3C/svg%3E")
+            center bottom / min(1150px, 100%) auto no-repeat;
 }
 
 .ltks-breadcrumb {
@@ -3353,7 +3369,9 @@ a:hover {
     box-shadow: none;
     cursor: pointer;
     overflow: hidden;
-    transition: background-color 0.18s ease, box-shadow 0.18s ease;
+    transition:
+        background-color 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
 .ltks-service-card:hover {
@@ -4083,7 +4101,8 @@ a:hover {
 .ltks-app-page {
     min-height: 100vh;
     background:
-        url("data:image/svg+xml,%3Csvg width='980' height='360' viewBox='0 0 980 360' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23c9c9c9' stroke-width='2' opacity='.28'%3E%3Cpath d='M95 320c30-92 68-143 113-152 44-9 84 23 119 96-45 6-82-2-111-24-34 48-74 75-121 80z'/%3E%3Cpath d='M214 239c7-76 35-126 85-151 50-25 100-16 151 27-33 33-71 48-114 45-13 56-54 83-122 79z'/%3E%3Cpath d='M712 320c13-72 46-115 100-129 54-13 101 8 141 65-38 17-77 18-117 5-25 41-66 61-124 59z'/%3E%3Cpath d='M820 250c-6-65 15-111 63-139 48-28 97-25 149 9-26 35-60 54-103 57-12 45-48 69-109 73z'/%3E%3C/g%3E%3C/svg%3E") no-repeat bottom center,
+        url("data:image/svg+xml,%3Csvg width='980' height='360' viewBox='0 0 980 360' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23c9c9c9' stroke-width='2' opacity='.28'%3E%3Cpath d='M95 320c30-92 68-143 113-152 44-9 84 23 119 96-45 6-82-2-111-24-34 48-74 75-121 80z'/%3E%3Cpath d='M214 239c7-76 35-126 85-151 50-25 100-16 151 27-33 33-71 48-114 45-13 56-54 83-122 79z'/%3E%3Cpath d='M712 320c13-72 46-115 100-129 54-13 101 8 141 65-38 17-77 18-117 5-25 41-66 61-124 59z'/%3E%3Cpath d='M820 250c-6-65 15-111 63-139 48-28 97-25 149 9-26 35-60 54-103 57-12 45-48 69-109 73z'/%3E%3C/g%3E%3C/svg%3E")
+            no-repeat bottom center,
         #f2f2f2;
     background-size: min(100%, 1180px) auto;
     color: #111;
@@ -4179,19 +4198,11 @@ a:hover {
 }
 
 .ltks-app-page .ltks-step {
-    background:
-        linear-gradient(
-            #fdc849,
-            #fdc849
-        ) content-box;
+    background: linear-gradient(#fdc849, #fdc849) content-box;
 }
 
 .ltks-app-page .ltks-step:not(.active):not(.done) {
-    background:
-        linear-gradient(
-            #d1d1d1,
-            #d1d1d1
-        ) content-box;
+    background: linear-gradient(#d1d1d1, #d1d1d1) content-box;
 }
 
 .ltks-app-page .ltks-step span {
@@ -5151,191 +5162,192 @@ a:hover {
         gap: 12px;
         margin-bottom: 24px;
     }
+}
 
-    .ltks-step,
-    .ltks-step:last-child {
-        width: auto;
-        height: 100px;
-        min-width: 0;
-        flex-basis: auto;
-    }
+.ltks-step,
+.ltks-step:last-child {
+    width: auto;
+    height: 100px;
+    min-width: 0;
+    flex-basis: auto;
+}
 
-    .ltks-step::before,
-    .ltks-step::after {
-        display: none;
-    }
+.ltks-step::before,
+.ltks-step::after {
+    display: none;
+}
 
-    .ltks-portal,
-    .ltks-topbar,
-    .ltks-main {
-        width: 100%;
-        max-width: none;
-    }
+.ltks-portal,
+.ltks-topbar,
+.ltks-main {
+    width: 100%;
+    max-width: none;
+}
 
-    .ltks-portal {
-        min-height: 148px;
-        padding: 24px 12px 30px;
-    }
+.ltks-portal {
+    min-height: 148px;
+    padding: 24px 12px 30px;
+}
 
-    .ltks-portal h1 {
-        max-width: calc(100% - 28px);
-        font-size: 1.45rem;
-    }
+.ltks-portal h1 {
+    max-width: calc(100% - 28px);
+    font-size: 1.45rem;
+}
 
-    .ltks-topbar {
-        border-radius: 0;
-        height: 56px;
-    }
+.ltks-topbar {
+    border-radius: 0;
+    height: 56px;
+}
 
-    .ltks-top-actions {
-        max-width: calc(100% - 46px);
-        flex: 1 1 auto;
-    }
+.ltks-top-actions {
+    max-width: calc(100% - 46px);
+    flex: 1 1 auto;
+}
 
-    .ltks-top-actions select {
-        flex: 1 1 0;
-        width: 0;
-        min-width: 0;
-        max-width: none;
-        font-size: 0.82rem;
-        padding-right: 18px;
-    }
+.ltks-top-actions select {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    max-width: none;
+    font-size: 0.82rem;
+    padding-right: 18px;
+}
 
-    .ltks-main {
-        padding: 22px 14px 96px;
-    }
+.ltks-main {
+    padding: 22px 14px 96px;
+}
 
-    .ltks-landing {
-        padding: 20px 14px 110px;
-    }
+.ltks-landing {
+    padding: 20px 14px 110px;
+}
 
-    .ltks-landing-title {
-        margin-bottom: 24px;
-        font-size: 1rem;
-    }
+.ltks-landing-title {
+    margin-bottom: 24px;
+    font-size: 1rem;
+}
 
-    .ltks-service-grid {
-        width: 100%;
-        gap: 14px;
-    }
+.ltks-service-grid {
+    width: 100%;
+    gap: 14px;
+}
 
-    .ltks-service-card {
-        min-height: 92px;
-        grid-template-columns: 58px minmax(0, 1fr);
-        gap: 14px;
-        padding: 12px 14px;
-        border-radius: 8px;
-    }
+.ltks-service-card {
+    min-height: 92px;
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 8px;
+}
 
-    .ltks-service-card.featured {
-        box-shadow: none;
-    }
+.ltks-service-card.featured {
+    box-shadow: none;
+}
 
-    .ltks-service-icon {
-        width: 58px;
-        height: 58px;
-    }
+.ltks-service-icon {
+    width: 58px;
+    height: 58px;
+}
 
-    .ltks-service-icon svg {
-        width: 34px;
-        height: 34px;
-    }
+.ltks-service-icon svg {
+    width: 34px;
+    height: 34px;
+}
 
-    .ltks-service-card.featured .ltks-service-icon svg {
-        width: 48px;
-        height: 48px;
-    }
+.ltks-service-card.featured .ltks-service-icon svg {
+    width: 48px;
+    height: 48px;
+}
 
-    .ltks-service-text {
-        font-size: 0.94rem;
-    }
+.ltks-service-text {
+    font-size: 0.94rem;
+}
 
-    .ltks-breadcrumb {
-        margin-bottom: 22px;
-        font-size: 0.86rem;
-        white-space: normal;
-        overflow: visible;
-    }
+.ltks-breadcrumb {
+    margin-bottom: 22px;
+    font-size: 0.86rem;
+    white-space: normal;
+    overflow: visible;
+}
 
-    .ltks-breadcrumb a {
-        flex: 0 0 auto;
-    }
+.ltks-breadcrumb a {
+    flex: 0 0 auto;
+}
 
-    .ltks-step,
-    .ltks-step:last-child {
-        min-height: 96px;
-    }
+.ltks-step,
+.ltks-step:last-child {
+    min-height: 96px;
+}
 
-    .ltks-step span {
-        font-size: 1.55rem;
-    }
+.ltks-step span {
+    font-size: 1.55rem;
+}
 
-    .ltks-step strong {
-        font-size: 0.74rem;
-    }
+.ltks-step strong {
+    font-size: 0.74rem;
+}
 
-    .ltks-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
+.ltks-actions {
+    flex-direction: column;
+    align-items: stretch;
+}
 
-    .ltks-form-body {
-        padding: 18px 16px 10px;
-    }
+.ltks-form-body {
+    padding: 18px 16px 10px;
+}
 
-    .ltks-section-title {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
+.ltks-section-title {
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
 
-    .ltks-section-title::after {
-        display: none;
-    }
+.ltks-section-title::after {
+    display: none;
+}
 
-    .ltks-inline-check {
-        grid-column: auto;
-        grid-row: auto;
-        white-space: normal;
-    }
+.ltks-inline-check {
+    grid-column: auto;
+    grid-row: auto;
+    white-space: normal;
+}
 
-    .ltks-section h3 {
-        font-size: 0.98rem;
-        align-items: flex-start;
-    }
+.ltks-section h3 {
+    font-size: 0.98rem;
+    align-items: flex-start;
+}
 
-    .ltks-grid {
-        grid-template-columns: 1fr;
-        gap: 13px;
-    }
+.ltks-grid {
+    grid-template-columns: 1fr;
+    gap: 13px;
+}
 
-    .ltks-field,
-    .ltks-field.wide {
-        grid-column: auto;
-    }
+.ltks-field,
+.ltks-field.wide {
+    grid-column: auto;
+}
 
-    .ltks-upload-item {
-        grid-template-columns: 1fr;
-    }
+.ltks-upload-item {
+    grid-template-columns: 1fr;
+}
 
-    .ltks-review div {
-        grid-template-columns: 1fr;
-    }
+.ltks-review div {
+    grid-template-columns: 1fr;
+}
 
-    .ltks-review strong {
-        border-bottom: 1px solid #ddd5d8;
-    }
+.ltks-review strong {
+    border-bottom: 1px solid #ddd5d8;
+}
 
-    .ltks-actions {
-        padding: 16px;
-    }
+.ltks-actions {
+    padding: 16px;
+}
 
-    .ltks-btn {
-        width: 100%;
-    }
+.ltks-btn {
+    width: 100%;
+}
 
-    .ltks-footer {
-        font-size: 0.85rem;
-    }
+.ltks-footer {
+    font-size: 0.85rem;
+}
 .dktt-empty-state {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -5488,7 +5500,9 @@ a:hover {
     font-family: inherit;
     background: white;
     color: var(--text-primary);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
     outline: none;
     min-width: 90px;
 }
@@ -5506,11 +5520,15 @@ a:hover {
     border-radius: var(--radius-sm);
     font-size: 0.8125rem;
     font-family: inherit;
-    background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2342526E' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 7px center;
+    background: white
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2342526E' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+        no-repeat right 7px center;
     color: var(--text-primary);
     appearance: none;
     cursor: pointer;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
     outline: none;
     min-width: 100px;
 }
@@ -5534,7 +5552,9 @@ a:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background var(--transition-fast), transform var(--transition-fast);
+    transition:
+        background var(--transition-fast),
+        transform var(--transition-fast);
     font-weight: 700;
     padding-bottom: 1px;
 }
@@ -5557,7 +5577,10 @@ a:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+    transition:
+        background var(--transition-fast),
+        color var(--transition-fast),
+        transform var(--transition-fast);
     font-weight: 700;
 }
 
