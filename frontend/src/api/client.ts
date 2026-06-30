@@ -21,10 +21,10 @@ interface ApiFailure {
 }
 
 export class ApiClientError extends Error {
-  readonly status: number;
-  readonly code: string;
-  readonly details: ApiFailure['error']['details'];
-  readonly requestId?: string;
+  public readonly status: number;
+  public readonly code: string;
+  public readonly details: ApiFailure['error']['details'];
+  public readonly requestId?: string;
 
   constructor(
     message: string,

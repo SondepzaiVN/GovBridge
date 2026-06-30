@@ -18,94 +18,93 @@ const LienThongKhaiTuPage = lazy(() => import('./components/pages/LienThongKhaiT
 
 // Loading fallback
 const PageLoader = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '60vh',
-    flexDirection: 'column',
-    gap: 16,
-    color: 'var(--text-secondary)',
-  }}>
-    <div style={{
-      width: 40, height: 40,
-      border: '3px solid var(--border)',
-      borderTopColor: 'var(--primary)',
-      borderRadius: '50%',
-      animation: 'spin 0.8s linear infinite',
-    }} />
-    <span style={{ fontSize: '0.875rem' }}>Đang tải...</span>
-  </div>
+    <div
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '60vh',
+            flexDirection: 'column',
+            gap: 16,
+            color: 'var(--text-secondary)',
+        }}
+    >
+        <div
+            style={{
+                width: 40,
+                height: 40,
+                border: '3px solid var(--border)',
+                borderTopColor: 'var(--primary)',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+            }}
+        />
+        <span style={{ fontSize: '0.875rem' }}>Đang tải...</span>
+    </div>
 );
 
 // ============================================================
 // Inner App (needs router context)
 // ============================================================
 const AppInner: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { fillFields, formState } = useForm();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { fillFields, formState } = useForm();
 
-  const handleNavigate = (route: string) => {
-    navigate(route);
-  };
+    const handleNavigate = (route: string) => {
+        navigate(route);
+    };
 
-  const handleFillForm = (fields: Record<string, string>) => {
-    fillFields(fields);
-  };
+    const handleFillForm = (fields: Record<string, string>) => {
+        fillFields(fields);
+    };
 
-  return (
-    <ChatbotProvider
-      onNavigate={handleNavigate}
-      onFillForm={handleFillForm}
-      currentRoute={location.pathname}
-      formValues={formState.values}
-    >
-      <UIHighlighter />
-      <ChatbotFAB />
-      <ChatbotWidget />
+    return (
+        <ChatbotProvider
+            onNavigate={handleNavigate}
+            onFillForm={handleFillForm}
+            currentRoute={location.pathname}
+            formValues={formState.values}
+        >
+            {/* Global overlay & chatbot */}
+            <UIHighlighter />
+            <ChatbotFAB />
+            <ChatbotWidget />
 
-      {/* App shell */}
-      <Header />
+            {/* App shell */}
+            <Header />
 
-      <main>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/khai-sinh" element={<KhaiSinhPage />} />
-            <Route path="/ho-khau" element={<DangKyThuongTruPage />} />
-            <Route path="/cccd" element={<CCCDPage />} />
-            <Route path="/ket-hon" element={<KetHonPage />} />
-            <Route path="/lien-thong-khai-tu" element={<LienThongKhaiTuPage />} />
-            <Route path="/lien-thong-khai-sinh" element={<LienThongKhaiSinhPage />} />
-            <Route path="/lien-thong-khai-sinh/:stepSlug" element={<LienThongKhaiSinhPage />} />
-            {/* Fallback */}
-            <Route path="*" element={<HomePage />} />
-          </Routes>
-        </Suspense>
-      </main>
-
-      {/* Spinner keyframe (in JS for portability) */}
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </ChatbotProvider>
-  );
+            <main>
+                <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/khai-sinh" element={<KhaiSinhPage />} />
+                        <Route path="/ho-khau" element={<DangKyThuongTruPage />} />
+                        <Route path="/cccd" element={<CCCDPage />} />
+                        <Route path="/ket-hon" element={<KetHonPage />} />
+                        <Route path="/lien-thong-khai-sinh" element={<LienThongKhaiSinhPage />} />
+                        <Route path="/lien-thong-khai-sinh/:stepSlug" element={<LienThongKhaiSinhPage />} />
+                        <Route path="/lien-thong-khai-tu" element={<LienThongKhaiTuPage />} />
+                        {/* Fallback */}
+                        <Route path="*" element={<HomePage />} />
+                    </Routes>
+                </Suspense>
+            </main>
+        </ChatbotProvider>
+    );
 };
 
 // ============================================================
 // Root App
 // ============================================================
 const App: React.FC = () => {
-  return (
-    <Router>
-      <FormProvider>
-        <AppInner />
-      </FormProvider>
-    </Router>
-  );
+    return (
+        <Router>
+            <FormProvider>
+                <AppInner />
+            </FormProvider>
+        </Router>
+    );
 };
 
 export default App;

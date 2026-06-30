@@ -8,6 +8,7 @@ export type MessageType =
   | 'voice'
   | 'image'
   | 'cccd-preview'
+  | 'fill-confirm'
   | 'navigation-confirm'
   | 'validation-result'
   | 'form-filled'

@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { MockOcrProvider } from '../src/modules/identity/providers/mock-ocr.provider.js';
 import { MockTtsProvider } from '../src/modules/speech/providers/mock-tts.provider.js';
+import type { AssistantProvider } from '../src/modules/assistant/assistant.types.js';
 
 let dataDirectory: string;
 
@@ -100,5 +101,86 @@ describe('Gov Bridge API', () => {
       },
     }).expect(200);
     expect(second.body.data.actions[0].type).toBe('NEXT_STEP');
+  });
+
+  it('asks for confirmation before mock autofill changes the form', async () => {
+    const response = await request(createTestApp()).post('/api/v1/assistant/messages').send({
+      message: 'hoTen: Nguyễn Thị Lan',
+      currentRoute: '/ho-khau',
+    }).expect(200);
+
+    expect(response.body.data.actions[0]).toEqual(expect.objectContaining({
+      type: 'REQUEST_CONFIRM_FILL',
+      fields: { hoTen: 'Nguyễn Thị Lan' },
+    }));
+  });
+
+  it('validates VNPT facts in backend and requests confirmation before filling', async () => {
+    const assistantProvider: AssistantProvider = {
+      name: 'structured-test',
+      async sendMessage() {
+        return {
+          response: {
+            intent: 'CHAT',
+            message: 'Mình đã nhận được thông tin bạn cung cấp.',
+          },
+          actions: [],
+          understanding: {
+            facts: [
+              {
+                fieldHint: 'hoTen',
+                value: 'Nguyễn Thị Lan',
+                confidence: 0.98,
+                source: 'chat',
+              },
+              {
+                fieldHint: 'sdtCoQuan',
+                value: '0901234567',
+                confidence: 0.99,
+                source: 'chat',
+              },
+              {
+                fieldHint: 'fieldKhongTonTai',
+                value: 'không hợp lệ',
+                confidence: 0.99,
+                source: 'inference',
+              },
+              {
+                fieldHint: 'gioiTinh',
+                value: 'Nữ',
+                confidence: 0.99,
+                source: 'inference',
+              },
+            ],
+            caseSuggestion: {
+              id: 'vao_ho_da_co',
+              confidence: 0.75,
+              reason: 'Người dùng nói muốn nhập khẩu về nhà chồng.',
+            },
+            followUpQuestion: null,
+            fieldExplanation: null,
+          },
+        };
+      },
+    };
+
+    const response = await request(createApp({
+      dataDirectory,
+      ocrProvider: new MockOcrProvider(),
+      ttsProvider: new MockTtsProvider(),
+      assistantProvider,
+    })).post('/api/v1/assistant/messages').send({
+      message: 'Tôi tên Nguyễn Thị Lan',
+      currentRoute: '/ho-khau',
+      formValues: { thuTuc: 'dktt' },
+    }).expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: { hoTen: 'Nguyễn Thị Lan' },
+        fieldLabels: { hoTen: 'Họ tên' },
+      }),
+    ]);
   });
 });

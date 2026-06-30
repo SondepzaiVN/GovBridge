@@ -17,6 +17,7 @@ import { AssistantService } from './modules/assistant/assistant.service.js';
 import { MockAssistantProvider } from './modules/assistant/providers/mock-assistant.provider.js';
 import { VnptSmartbotProvider } from './integrations/vnpt/vnpt-smartbot.provider.js';
 import { buildAssistantTools } from './modules/assistant/tools/index.js';
+import type { AssistantProvider } from './modules/assistant/assistant.types.js';
 import { IdentityService } from './modules/identity/identity.service.js';
 import { MockOcrProvider } from './modules/identity/providers/mock-ocr.provider.js';
 import { ProcedureRepository } from './modules/procedures/procedure.repository.js';
@@ -32,6 +33,7 @@ export interface CreateAppOptions {
   corsOrigins?: string[];
   ocrProvider?: IdentityOcrProvider;
   ttsProvider?: TtsProvider;
+  assistantProvider?: AssistantProvider;
 }
 
 export const createApp = (options: CreateAppOptions = {}): Express => {
@@ -61,14 +63,15 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
     })
     : new MockTtsProvider());
 
-  const assistantProvider = env.ASSISTANT_PROVIDER === 'vnpt'
+  const assistantProvider = options.assistantProvider ?? (env.ASSISTANT_PROVIDER === 'vnpt'
     ? new VnptSmartbotProvider({
         url: env.VNPT_SMARTBOT_URL,
         accessToken: env.VNPT_SMARTBOT_ACCESS_TOKEN,
         tokenId: env.VNPT_SMARTBOT_TOKEN_ID,
         tokenKey: env.VNPT_SMARTBOT_TOKEN_KEY,
+        botId: env.VNPT_SMARTBOT_BOT_ID,
       })
-    : new MockAssistantProvider(buildAssistantTools());
+    : new MockAssistantProvider(buildAssistantTools()));
 
   const procedureService = new ProcedureService(procedures);
   const apiRouter = createApiRouter({

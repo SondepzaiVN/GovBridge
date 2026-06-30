@@ -97,8 +97,10 @@ const UIHighlighter: React.FC = () => {
   // ── Legacy: elementId từ ChatbotContext state ──
   useEffect(() => {
     if (!elementId) {
-      setRect(null);
-      setLabel('');
+      requestAnimationFrame(() => {
+        setRect(null);
+        setLabel('');
+      });
       observerRef.current?.disconnect();
       return;
     }
