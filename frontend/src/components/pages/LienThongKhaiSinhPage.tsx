@@ -5,7 +5,7 @@ import { applicationService } from '../../api/applicationService';
 import { ApiClientError } from '../../api/client';
 import { useForm } from '../../contexts/FormContext';
 
-type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio';
+type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
 
 interface LinkedField {
   id: string;
@@ -17,6 +17,7 @@ interface LinkedField {
   options?: string[];
   wide?: boolean;
   dotted?: boolean;
+  hideLabel?: boolean;
   readOnly?: boolean;
 }
 
@@ -137,7 +138,7 @@ const steps: LinkedStep[] = [
       {
         title: 'Thông tin người được khai sinh',
         fields: [
-          { id: 'ltks_nhapThongTinTre', label: 'Phương thức nhập', type: 'radio', required: true, wide: true, options: ['Nhập tay', 'Lấy dữ liệu chứng sinh từ CSDL Bảo hiểm'], value: 'Nhập tay' },
+          { id: 'ltks_nhapThongTinTre', label: 'Phương thức nhập', type: 'radio', required: true, wide: true, hideLabel: true, options: ['Nhập tay', 'Lấy dữ liệu chứng sinh từ CSDL Bảo hiểm'], value: 'Nhập tay' },
           { id: 'ltks_hoTre', label: 'Họ người được khai sinh', type: 'text' },
           { id: 'ltks_chuDemTre', label: 'Chữ đệm người được khai sinh', type: 'text' },
           { id: 'ltks_tenTre', label: 'Tên người được khai sinh', type: 'text', required: true },
@@ -217,16 +218,19 @@ const steps: LinkedStep[] = [
             type: 'radio',
             required: true,
             wide: true,
+            hideLabel: true,
             options: [
               'Xin xác nhận của Chủ hộ, Chủ sở hữu chỗ ở hợp pháp, Cha/mẹ/người giám hộ bằng văn bản giấy hoặc chữ ký vào tờ khai CT01 bản giấy',
               'Xin xác nhận của Chủ hộ, Chủ sở hữu chỗ ở hợp pháp, Cha/mẹ/người giám hộ qua VNEID',
             ],
+            value: 'Xin xác nhận của Chủ hộ, Chủ sở hữu chỗ ở hợp pháp, Cha/mẹ/người giám hộ bằng văn bản giấy hoặc chữ ký vào tờ khai CT01 bản giấy',
           },
         ],
       },
       {
         title: 'Thông tin chủ hộ',
         fields: [
+          { id: 'ltks_chuHoLaChaMe', label: 'Chủ hộ là cha/mẹ', type: 'checkbox', wide: true, hideLabel: true, options: ['Bố là chủ hộ', 'Mẹ là chủ hộ'] },
           { id: 'ltks_hoTenChuHo', label: 'Họ, chữ đệm, tên chủ hộ', type: 'text', required: true },
           { id: 'ltks_soDinhDanhChuHo', label: 'Số định danh', type: 'text', required: true },
           { id: 'ltks_quanHeVoiChuHo', label: 'Mối quan hệ của người được khai sinh với chủ hộ', type: 'select', required: true, options: ['Con', 'Cháu', 'Người được giám hộ', 'Khác'] },
@@ -563,7 +567,7 @@ const FieldControl: React.FC<FieldControlProps> = ({ field, value, error, onChan
 
   return (
     <div className={`ltks-field ${field.wide || field.type === 'textarea' ? 'wide' : ''} ${field.dotted ? 'dotted' : ''}`}>
-      <label htmlFor={field.id} className={field.required ? 'required' : ''}>{field.label}</label>
+      {!field.hideLabel && <label htmlFor={field.id} className={field.required ? 'required' : ''}>{field.label}</label>}
       {field.type === 'textarea' ? (
         <textarea {...commonProps} placeholder={field.placeholder} onChange={(event) => onChange(event.target.value)} />
       ) : field.type === 'select' ? (
@@ -585,6 +589,27 @@ const FieldControl: React.FC<FieldControlProps> = ({ field, value, error, onChan
               {option}
             </label>
           ))}
+        </div>
+      ) : field.type === 'checkbox' ? (
+        <div className="ltks-checkbox-group">
+          {field.options?.map((option) => {
+            const values = value ? value.split('|') : [];
+            const checked = values.includes(option);
+            return (
+              <label key={option}>
+                <input
+                  type="checkbox"
+                  name={field.id}
+                  checked={checked}
+                  onChange={() => {
+                    const next = checked ? values.filter((item) => item !== option) : [...values, option];
+                    onChange(next.join('|'));
+                  }}
+                />
+                {option}
+              </label>
+            );
+          })}
         </div>
       ) : (
         <input {...commonProps} type={field.type} placeholder={field.placeholder} readOnly={field.readOnly} onChange={(event) => onChange(event.target.value)} />

@@ -3133,6 +3133,27 @@ a:hover {
     accent-color: #ad3a07;
 }
 
+.ltks-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ltks-checkbox-group label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: 400;
+}
+
+.ltks-checkbox-group input {
+    width: 22px;
+    height: 22px;
+    min-height: auto;
+    accent-color: #ad3a07;
+}
+
 .ltks-form-step-2 .ltks-radio-group {
     gap: 12px 24px;
 }
@@ -3346,8 +3367,8 @@ a:hover {
 }
 
 .ltks-app-page .ltks-main {
-    width: min(1140px, calc(100% - 40px));
-    max-width: 1140px;
+    width: min(1780px, calc(100% - 32px));
+    max-width: 1780px;
     min-height: auto;
     margin: 0 auto;
     padding: 22px 0 40px;
@@ -3370,8 +3391,8 @@ a:hover {
 }
 
 .ltks-app-page .ltks-stepper {
-    justify-content: center;
-    gap: 34px;
+    justify-content: space-between;
+    gap: 18px;
     margin: 0 auto;
     padding: 30px 0 45px;
     overflow-x: auto;
@@ -3570,6 +3591,117 @@ a:hover {
 .ltks-app-page .ltks-btn.secondary {
     min-width: 90px;
     background: #d0d0d0;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-form-body {
+    padding: 30px 30px 0;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-section + .ltks-section {
+    margin-top: 34px;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-section-title {
+    grid-template-columns: auto minmax(80px, 1fr) auto;
+    gap: 18px;
+    margin: 5px 0 28px;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-section-title::after {
+    height: 2px;
+    background: #ad4e44;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-section h3 {
+    color: #ad3a07;
+    font-size: 1.28rem;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-section-actions button {
+    min-height: 35px;
+    background: #ad3a07;
+    box-shadow: 0 2px 5px #0004;
+    padding: 0 18px;
+    font-size: 0.98rem;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px 30px;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field {
+    grid-column: span 3;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field.wide {
+    grid-column: 1 / -1;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field label {
+    margin-bottom: 6px;
+    color: #000;
+    font-size: 0.92rem;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-field input,
+.ltks-app-page .ltks-form-step-2 .ltks-field textarea,
+.ltks-app-page .ltks-form-step-2 .ltks-select-trigger {
+    min-height: 32px;
+    border-bottom: 2px dotted #9c9c9c;
+    padding: 0 26px 5px 0;
+    color: #000;
+    font-size: 1.18rem;
+    line-height: 1.25;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-select-trigger::after {
+    border-top-color: #9a9a9a;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-radio-group {
+    display: grid;
+    gap: 16px;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-radio-group label {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 12px;
+    min-height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #000;
+    font-size: 1.08rem;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-radio-group input {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    accent-color: #ad3a07;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-checkbox-group {
+    gap: 10px 14px;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-checkbox-group label {
+    color: #000;
+    font-size: 1.08rem;
+    font-weight: 400;
+}
+
+.ltks-app-page .ltks-form-step-2 .ltks-checkbox-group input {
+    width: 22px;
+    height: 22px;
 }
 
 @media (max-width: 1500px) {
