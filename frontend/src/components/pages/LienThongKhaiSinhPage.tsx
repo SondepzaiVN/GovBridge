@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Download, UploadCloud } from 'lucide-react';
+import { ChevronRight, Download, Menu, Minus, MoreVertical, Plus, Printer, RotateCw, UploadCloud } from 'lucide-react';
 import { applicationService } from '../../api/applicationService';
 import { ApiClientError } from '../../api/client';
 import { useForm } from '../../contexts/FormContext';
@@ -43,6 +43,9 @@ interface ReviewTab {
   title: string;
   url: string;
   pageCount: number;
+  formTitle: string;
+  recipient: string;
+  description: string;
 }
 
 const resultMethods = [
@@ -90,21 +93,33 @@ const reviewTabs: ReviewTab[] = [
     title: 'Tờ khai đăng ký khai sinh',
     url: '/lien-thong-khai-sinh/tokhai_khaisinh.pdf',
     pageCount: 2,
+    formTitle: 'TỜ KHAI ĐĂNG KÝ KHAI SINH',
+    recipient: 'Ủy ban nhân dân cấp xã nơi thực hiện đăng ký khai sinh',
+    description: 'Tờ khai đăng ký khai sinh cho trẻ em dưới 6 tuổi.',
   },
   {
     title: 'Tờ khai thay đổi thông tin cư trú (CT01)',
     url: '/lien-thong-khai-sinh/tokhai_cutru.pdf',
     pageCount: 2,
+    formTitle: 'TỜ KHAI THAY ĐỔI THÔNG TIN CƯ TRÚ',
+    recipient: 'Cơ quan đăng ký cư trú',
+    description: 'Thông tin đăng ký thường trú cho trẻ sau khi đăng ký khai sinh.',
   },
   {
     title: 'Tờ khai tham gia, điều chỉnh thông tin BHXH, BHYT (TK1-TS)',
     url: '/lien-thong-khai-sinh/tokhai_bhyt.pdf',
     pageCount: 2,
+    formTitle: 'TỜ KHAI THAM GIA, ĐIỀU CHỈNH THÔNG TIN BHXH, BHYT',
+    recipient: 'Cơ quan Bảo hiểm xã hội',
+    description: 'Thông tin cấp thẻ bảo hiểm y tế cho trẻ em dưới 6 tuổi.',
   },
   {
     title: 'Tờ khai mẫu 01',
     url: '/lien-thong-khai-sinh/tokhai_mau01.pdf',
     pageCount: 3,
+    formTitle: 'MẪU SỐ 01',
+    recipient: 'Cơ quan tiếp nhận hồ sơ liên thông',
+    description: 'Phiếu thông tin dùng trong quy trình liên thông khai sinh, thường trú, BHYT.',
   },
 ];
 
@@ -779,16 +794,85 @@ const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabC
 
       <div className="ltks-pdf-panel" role="tabpanel" aria-label={activeTab.title}>
         <div className="ltks-pdf-toolbar">
-          <span>1 / {activeTab.pageCount}</span>
-          <a href={activeTab.url} download title="Tải tờ khai">
-            <Download size={20} />
-          </a>
+          <div className="ltks-pdf-toolbar-group">
+            <button type="button" aria-label="Mở danh mục">
+              <Menu size={20} />
+            </button>
+            <strong>{activeTab.title}</strong>
+          </div>
+          <div className="ltks-pdf-toolbar-group center">
+            <span>1 / {activeTab.pageCount}</span>
+            <span className="ltks-pdf-divider" />
+            <button type="button" aria-label="Thu nhỏ">
+              <Minus size={18} />
+            </button>
+            <span>100%</span>
+            <button type="button" aria-label="Phóng to">
+              <Plus size={18} />
+            </button>
+            <span className="ltks-pdf-divider" />
+            <button type="button" aria-label="Xoay trang">
+              <RotateCw size={18} />
+            </button>
+          </div>
+          <div className="ltks-pdf-toolbar-group">
+            <button type="button" aria-label="In tờ khai">
+              <Printer size={18} />
+            </button>
+            <a href={activeTab.url} download title="Tải tờ khai" aria-label="Tải tờ khai">
+              <Download size={18} />
+            </a>
+            <button type="button" aria-label="Thêm tùy chọn">
+              <MoreVertical size={18} />
+            </button>
+          </div>
         </div>
-        <iframe
-          title={activeTab.title}
-          src={`${activeTab.url}#toolbar=0&navpanes=0&scrollbar=1`}
-          className="ltks-pdf-frame"
-        />
+        <div className="ltks-pdf-canvas">
+          <article className="ltks-pdf-sheet">
+            <header className="ltks-pdf-sheet-header">
+              <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
+              <p>Độc lập - Tự do - Hạnh phúc</p>
+              <h2>{activeTab.formTitle}</h2>
+              <span>Kính gửi: {activeTab.recipient}</span>
+            </header>
+
+            <div className="ltks-pdf-sheet-body">
+              <p className="ltks-pdf-lead">{activeTab.description}</p>
+              <div className="ltks-pdf-row">
+                <strong>Họ, chữ đệm, tên người yêu cầu:</strong>
+                <span>TRẦN MINH HÙNG</span>
+              </div>
+              <div className="ltks-pdf-row">
+                <strong>Số định danh cá nhân:</strong>
+                <span>093206008464</span>
+              </div>
+              <div className="ltks-pdf-row">
+                <strong>Ngày sinh:</strong>
+                <span>23/02/2006</span>
+              </div>
+              <div className="ltks-pdf-row">
+                <strong>Nơi cư trú:</strong>
+                <span>Phường Cái Khế, Thành phố Cần Thơ</span>
+              </div>
+              <div className="ltks-pdf-row">
+                <strong>Người được khai sinh:</strong>
+                <span>[Thông tin trẻ được hệ thống tổng hợp từ bước kê khai]</span>
+              </div>
+              <div className="ltks-pdf-row">
+                <strong>Cơ quan thực hiện:</strong>
+                <span>Cơ quan X</span>
+              </div>
+              <p>
+                Tôi cam đoan những nội dung khai trên là đúng sự thật và chịu trách nhiệm trước pháp luật về
+                cam đoan của mình.
+              </p>
+              <div className="ltks-pdf-signature">
+                <span>Ngày ...... tháng ...... năm ......</span>
+                <strong>Người yêu cầu</strong>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
   );
