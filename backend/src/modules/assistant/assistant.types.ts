@@ -12,6 +12,14 @@ export interface AIResponse {
 export type AgentAction =
   | { type: 'CHAT'; message: string; suggestions?: string[] }
   | { type: 'FILL_FORM'; fields: Record<string, string>; message: string; suggestions?: string[] }
+  | {
+      type: 'REQUEST_CONFIRM_FILL';
+      fields: Record<string, string>;
+      fieldLabels: Record<string, string>;
+      previousValues: Record<string, string>;
+      message: string;
+      suggestions?: string[];
+    }
   | { type: 'NAVIGATE'; route: string; serviceName: string; message: string; suggestions?: string[] }
   | { type: 'NEXT_STEP'; step?: number; message?: string; suggestions?: string[] }
   | { type: 'HIGHLIGHT_ELEMENT'; elementId: string; message: string; suggestions?: string[] };
@@ -26,6 +34,7 @@ export interface AssistantSession {
   id: string;
   currentRoute: string;
   messages: ConversationMessage[];
+  state?: AssistantSessionState;
   createdAt: string;
   updatedAt: string;
 }
@@ -40,6 +49,8 @@ export interface AssistantMessageInput {
   message: string;
   currentRoute?: string;
   formValues?: Record<string, string>;
+  currentSection?: string;
+  recentOcrFacts?: Record<string, string>;
 }
 
 export interface AssistantResult {
@@ -49,13 +60,63 @@ export interface AssistantResult {
 
 export interface AssistantApiResult extends AssistantResult { sessionId: string; }
 
+export type FactSource = 'chat' | 'ocr' | 'form' | 'inference';
+
+export interface ExtractedFact {
+  fieldHint: string;
+  value: string;
+  confidence: number;
+  source: FactSource;
+  evidence?: string;
+}
+
+export interface CaseSuggestion {
+  id: string;
+  confidence: number;
+  reason: string;
+}
+
+export interface FieldExplanation {
+  fieldId: string;
+  explanation: string;
+}
+
+export interface AssistantUnderstanding {
+  facts: ExtractedFact[];
+  caseSuggestion: CaseSuggestion | null;
+  followUpQuestion: string | null;
+  fieldExplanation: FieldExplanation | null;
+}
+
+export interface AssistantProviderResult extends AssistantResult {
+  understanding?: AssistantUnderstanding;
+}
+
+export interface AssistantFormContext {
+  currentStep: number | null;
+  currentSection: string | null;
+  knownFields: Record<string, string>;
+  missingRequiredFields: Array<{ id: string; label: string }>;
+  recentChanges: Record<string, string>;
+  candidateCases: CaseSuggestion[];
+  recentOcrFacts: Record<string, string>;
+}
+
+export interface AssistantSessionState {
+  formSnapshot: Record<string, string>;
+  candidateCases: CaseSuggestion[];
+  recentFacts: ExtractedFact[];
+}
+
 export interface AssistantToolContext {
+  sessionId: string;
   message: string;
   normalizedMessage: string;
   currentRoute: string;
   currentProcedure: Procedure | null;
   procedures: Procedure[];
   formValues: Record<string, string>;
+  formContext: AssistantFormContext;
 }
 
 export interface AssistantTool {
@@ -66,5 +127,5 @@ export interface AssistantTool {
 
 export interface AssistantProvider {
   readonly name: string;
-  sendMessage(context: AssistantToolContext, history: ConversationMessage[]): Promise<AssistantResult>;
+  sendMessage(context: AssistantToolContext, history: ConversationMessage[]): Promise<AssistantProviderResult>;
 }

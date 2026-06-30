@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useChatbot } from "../../contexts/ChatbotContext";
-import { sttService } from "../../api/aiServices";
-import { ocrService } from "../../api/aiServices";
+import { ocrService, smartbotService, sttService } from "../../api/aiServices";
 import { Mic, MicOff, Send, Camera, X } from "lucide-react";
 
 interface ChatInputProps {
@@ -99,6 +98,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
     try {
       const resizedFile = await ocrService.resizeImage(file);
       const cccdInfo = await ocrService.extractCCCDInfo(resizedFile);
+      smartbotService.setRecentOcrFacts(
+        Object.fromEntries(
+          Object.entries(cccdInfo)
+            .filter(([key, value]) => key !== "rawText" && typeof value === "string" && value.trim()),
+        ),
+      );
 
       handleAIResponse({
         intent: "OCR_CONFIRM",

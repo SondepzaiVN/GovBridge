@@ -151,7 +151,9 @@ Backend không nhận dữ liệu theo từng bước trong luồng hiện tại
   "sessionId": "có thể bỏ ở tin đầu",
   "message": "bước tiếp theo",
   "currentRoute": "/lien-thong-khai-sinh/buoc-2",
-  "formValues": { "ltks_cccdCha": "012345678901" }
+  "currentSection": "thong-tin-cha-me",
+  "formValues": { "ltks_cccdCha": "012345678901" },
+  "recentOcrFacts": { "id": "012345678901" }
 }
 ~~~
 
@@ -159,11 +161,15 @@ Kết quả data gồm:
 
 - sessionId: frontend lưu lại và gửi ở các tin sau.
 - response: tương thích với AIResponse hiện tại, gồm intent, message, data, suggestions.
-- actions: danh sách lệnh có cấu trúc như NAVIGATE, FILL_FORM hoặc NEXT_STEP để frontend phát qua agentEventBus.
+- actions: danh sách lệnh có cấu trúc như NAVIGATE, REQUEST_CONFIRM_FILL, FILL_FORM hoặc NEXT_STEP để frontend phát qua agentEventBus.
 
 Frontend nên chọn một đường xử lý hiển thị duy nhất để tránh lặp tin nhắn: dùng response cho tin nhắn, và chỉ phát các action có thao tác UI; không phát lại action CHAT nếu đã hiển thị response.
 
-Chế độ mock hỗ trợ tư vấn giấy tờ/thời gian/quy trình, điều hướng, NEXT_STEP và điền form theo cú pháp rõ ràng. NEXT_STEP chỉ được phát khi formValues cho thấy các field bắt buộc của bước hiện tại đã đủ, ví dụ:
+Backend dựng context theo schema thủ tục: bước hiện tại, field đã có, field bắt buộc còn thiếu, thay đổi gần nhất, candidate case và field OCR gần nhất. Giá trị thật của form/OCR chỉ được backend dùng để kiểm tra; VNPT chỉ nhận ID/trạng thái field cùng câu chat mà người dùng chủ động gửi.
+
+VNPT phải trả JSON có cấu trúc gồm facts, confidence, caseSuggestion, followUpQuestion và fieldExplanation. Backend không tin trực tiếp kết quả này: field lạ, field hệ thống, giá trị sai option/pattern và fact suy diễn đều bị loại. Fact hợp lệ được chuyển thành REQUEST_CONFIRM_FILL; frontend chỉ điền sau khi người dùng xác nhận.
+
+Chế độ mock hỗ trợ tư vấn giấy tờ/thời gian/quy trình, điều hướng, NEXT_STEP và đề xuất điền form theo cú pháp rõ ràng. NEXT_STEP chỉ được phát khi formValues cho thấy các field bắt buộc của bước hiện tại đã đủ, ví dụ:
 
 ~~~text
 ltks_hoTenCha: Nguyễn Văn Bình; ltks_cccdCha: 012345678901
