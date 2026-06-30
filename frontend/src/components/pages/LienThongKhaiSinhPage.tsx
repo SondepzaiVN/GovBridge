@@ -97,6 +97,9 @@ const receiveResultOptions = [
   'Đến cơ quan giải quyết để nhận kết quả.',
   'Tại nơi nhận kết quả khai sinh (UBND)',
 ];
+const defaultBirthReceiveResult = 'Đến cơ quan giải quyết để nhận kết quả';
+const defaultResidenceReceiveResult = 'Qua cổng thông tin';
+const defaultBhytReceiveResult = 'Chỉ nhận bản điện tử của thẻ BHYT trên Cổng DVCQG';
 const reviewTabs: ReviewTab[] = [
   {
     title: 'Tờ khai đăng ký khai sinh',
@@ -761,14 +764,16 @@ interface ResultOptionsPanelProps {
 }
 
 const ResultOptionsPanel: React.FC<ResultOptionsPanelProps> = ({ values, onChange }) => {
-  const residenceReceiveValue = values.ltks_nhanThuongTru || 'Qua cổng thông tin';
+  const birthReceiveValue = values.ltks_nhanKhaiSinh || defaultBirthReceiveResult;
+  const residenceReceiveValue = values.ltks_nhanThuongTru || defaultResidenceReceiveResult;
   const paperBhytChecked = values.ltks_nhanBhytBanGiay === 'true';
   const pledgeChecked = values.ltks_camDoanKetQua === 'true';
 
   React.useEffect(() => {
-    if (!values.ltks_nhanThuongTru) onChange('ltks_nhanThuongTru', 'Qua cổng thông tin');
-    if (!values.ltks_nhanTheBhyt) onChange('ltks_nhanTheBhyt', 'Chỉ nhận bản điện tử của thẻ BHYT trên Cổng DVCQG');
-  }, [onChange, values.ltks_nhanTheBhyt, values.ltks_nhanThuongTru]);
+    if (!values.ltks_nhanKhaiSinh) onChange('ltks_nhanKhaiSinh', defaultBirthReceiveResult);
+    if (!values.ltks_nhanThuongTru) onChange('ltks_nhanThuongTru', defaultResidenceReceiveResult);
+    if (!values.ltks_nhanTheBhyt) onChange('ltks_nhanTheBhyt', defaultBhytReceiveResult);
+  }, [onChange, values.ltks_nhanKhaiSinh, values.ltks_nhanTheBhyt, values.ltks_nhanThuongTru]);
 
   return (
     <div className="ltks-result-options">
@@ -776,7 +781,7 @@ const ResultOptionsPanel: React.FC<ResultOptionsPanelProps> = ({ values, onChang
         <label htmlFor="ltks_nhanKhaiSinh">Hình thức nhận kết quả khai sinh</label>
         <input
           id="ltks_nhanKhaiSinh"
-          value={values.ltks_nhanKhaiSinh || ''}
+          value={birthReceiveValue}
           readOnly
           aria-label="Hình thức nhận kết quả khai sinh"
         />
@@ -811,7 +816,7 @@ const ResultOptionsPanel: React.FC<ResultOptionsPanelProps> = ({ values, onChang
         <label className="ltks-material-check disabled">
           <input type="checkbox" checked readOnly disabled />
           <span />
-          Chỉ nhận bản điện tử của thẻ BHYT trên Cổng DVCQG
+          {defaultBhytReceiveResult}
         </label>
       </div>
 
@@ -954,50 +959,12 @@ const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabC
           </div>
         </div>
         <div className="ltks-pdf-canvas">
-          <article className="ltks-pdf-sheet">
-            <header className="ltks-pdf-sheet-header">
-              <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
-              <p>Độc lập - Tự do - Hạnh phúc</p>
-              <h2>{activeTab.formTitle}</h2>
-              <span>Kính gửi: {activeTab.recipient}</span>
-            </header>
-
-            <div className="ltks-pdf-sheet-body">
-              <p className="ltks-pdf-lead">{activeTab.description}</p>
-              <div className="ltks-pdf-row">
-                <strong>Họ, chữ đệm, tên người yêu cầu:</strong>
-                <span>TRẦN MINH HÙNG</span>
-              </div>
-              <div className="ltks-pdf-row">
-                <strong>Số định danh cá nhân:</strong>
-                <span>093206008464</span>
-              </div>
-              <div className="ltks-pdf-row">
-                <strong>Ngày sinh:</strong>
-                <span>23/02/2006</span>
-              </div>
-              <div className="ltks-pdf-row">
-                <strong>Nơi cư trú:</strong>
-                <span>Phường Cái Khế, Thành phố Cần Thơ</span>
-              </div>
-              <div className="ltks-pdf-row">
-                <strong>Người được khai sinh:</strong>
-                <span>[Thông tin trẻ được hệ thống tổng hợp từ bước kê khai]</span>
-              </div>
-              <div className="ltks-pdf-row">
-                <strong>Cơ quan thực hiện:</strong>
-                <span>Cơ quan X</span>
-              </div>
-              <p>
-                Tôi cam đoan những nội dung khai trên là đúng sự thật và chịu trách nhiệm trước pháp luật về
-                cam đoan của mình.
-              </p>
-              <div className="ltks-pdf-signature">
-                <span>Ngày ...... tháng ...... năm ......</span>
-                <strong>Người yêu cầu</strong>
-              </div>
-            </div>
-          </article>
+          <iframe
+            key={activeTab.url}
+            className="ltks-pdf-frame"
+            src={`${activeTab.url}#toolbar=0&navpanes=0&view=FitH`}
+            title={activeTab.title}
+          />
         </div>
       </div>
     </div>
