@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw } from 'lucide-react';
-import { applicationService } from '../../api/applicationService';
-import { ApiClientError } from '../../api/client';
 import { useForm } from '../../contexts/FormContext';
 
 type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
@@ -31,6 +29,7 @@ interface LinkedSection {
   reviewTabs?: ReviewTab[];
   uploads?: UploadDocument[];
   resultOptions?: boolean;
+  complete?: boolean;
   review?: boolean;
   hideTitle?: boolean;
 }
@@ -355,12 +354,10 @@ const steps: LinkedStep[] = [
     title: 'Hoàn thành',
     shortTitle: 'Hoàn thành',
     sections: [
-      { title: 'Xác nhận thông tin hồ sơ', review: true },
+      { title: 'Hoàn thành nộp hồ sơ', complete: true, hideTitle: true },
     ],
   },
 ];
-
-const allFields = steps.flatMap((step) => step.sections.flatMap((section) => section.fields ?? []));
 
 const parseStep = (stepSlug?: string) => {
   const match = stepSlug?.match(/^buoc-(\d+)$/);
@@ -371,9 +368,8 @@ const parseStep = (stepSlug?: string) => {
 const LienThongKhaiSinhPage: React.FC = () => {
   const navigate = useNavigate();
   const { stepSlug } = useParams();
-  const { formState, setFieldValue, setFieldError, touchField, setIsSubmitting, resetForm } = useForm();
+  const { formState, setFieldValue, setFieldError, touchField, resetForm } = useForm();
   const [submitError, setSubmitError] = React.useState('');
-  const [submittedId, setSubmittedId] = React.useState('');
   const [activeReviewTab, setActiveReviewTab] = React.useState(0);
 
   const currentStep = parseStep(stepSlug);
@@ -404,47 +400,6 @@ const LienThongKhaiSinhPage: React.FC = () => {
     if (!validateStep()) return;
     if (currentStep < steps.length) {
       goToStep(currentStep + 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setSubmitError('');
-    setSubmittedId('');
-    if (!validateStep()) return;
-
-    const missing = allFields.filter((field) => {
-      const value = formState.values[field.id] ?? field.value ?? '';
-      return field.required && !String(value).trim();
-    });
-
-    if (missing.length) {
-      missing.forEach((field) => {
-        touchField(field.id);
-        setFieldError(field.id, 'Vui lòng nhập thông tin bắt buộc.');
-      });
-      setSubmitError('Vui lòng hoàn thiện các bước trước khi gửi hồ sơ.');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      const application = await applicationService.submit({
-        serviceId: 'lien-thong-khai-sinh',
-        submittedAt: new Date().toISOString(),
-        data: Object.fromEntries(allFields.map((field) => [field.id, formState.values[field.id] ?? field.value ?? ''])),
-      });
-      setSubmittedId(application.id);
-    } catch (error) {
-      if (error instanceof ApiClientError) {
-        (error.details ?? []).forEach((detail) => {
-          if (!detail.field) return;
-          touchField(detail.field);
-          setFieldError(detail.field, detail.message);
-        });
-      }
-      setSubmitError(error instanceof Error ? error.message : 'Không thể nộp hồ sơ.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -531,38 +486,36 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     onChange={(fieldId, value) => setFieldValue(fieldId, value)}
                   />
                 )}
+                {section.complete && (
+                  <CompletePanel onReset={() => goToStep(1)} />
+                )}
                 {section.review && <ReviewPanel values={formState.values} />}
               </section>
             ))}
           </div>
 
           {submitError && <div className="ltks-alert error">{submitError}</div>}
-          {submittedId && <div className="ltks-alert success">Đã nộp hồ sơ thành công. Mã hồ sơ: {submittedId}</div>}
 
-          <div className="ltks-actions">
-            <button type="button" className="ltks-btn ghost" onClick={() => { resetForm(); navigate('/'); }}>
-              Hủy
-            </button>
-            {currentStep > 1 && (
-              <button type="button" className="ltks-btn secondary" onClick={() => goToStep(currentStep - 1)}>
-                Quay lại bước trước
+          {currentStep < steps.length && (
+            <div className="ltks-actions">
+              <button type="button" className="ltks-btn ghost" onClick={() => { resetForm(); navigate('/'); }}>
+                Hủy
               </button>
-            )}
-            {currentStep < steps.length ? (
+              {currentStep > 1 && (
+                <button type="button" className="ltks-btn secondary" onClick={() => goToStep(currentStep - 1)}>
+                  Quay lại bước trước
+                </button>
+              )}
               <button type="button" className="ltks-btn primary" onClick={handleNext}>
                 {currentStep === 5 ? 'Hoàn thành' : 'Chuyển bước tiếp theo'}
               </button>
-            ) : (
-              <button type="button" className="ltks-btn primary" disabled={formState.isSubmitting} onClick={handleSubmit}>
-                {formState.isSubmitting ? 'Đang nộp...' : 'Gửi hồ sơ'}
-              </button>
-            )}
-            {currentStep === 5 && (
-              <button type="button" className="ltks-btn secondary">
-                Lưu nháp
-              </button>
-            )}
-          </div>
+              {currentStep === 5 && (
+                <button type="button" className="ltks-btn secondary">
+                  Lưu nháp
+                </button>
+              )}
+            </div>
+          )}
         </form>
       </main>
     </LienThongShell>
@@ -1026,6 +979,61 @@ const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabC
             </div>
           </article>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const CompletePanel: React.FC<{ onReset: () => void }> = ({ onReset }) => {
+  const [showToast, setShowToast] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => setShowToast(false), 3500);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="ltks-complete-card">
+      {showToast && (
+        <div className="ltks-complete-toast">
+          <span>✓</span>
+          Kê khai thành công!
+        </div>
+      )}
+
+      <div className="ltks-complete-title">
+        <h2>BƯỚC 6: HOÀN THÀNH NỘP HỒ SƠ</h2>
+      </div>
+
+      <div className="ltks-complete-content">
+        <div className="ltks-complete-watermark" />
+        <div className="ltks-complete-inner">
+          <p className="ltks-complete-note">
+            Vui lòng ghi nhớ các thông tin bên dưới để theo dõi tình hình xử lý hoặc cập nhật thông tin hồ sơ của bạn.
+          </p>
+          <p className="ltks-complete-code">Số hồ sơ: G22.99.09-240114-0001</p>
+
+          <div className="ltks-complete-copy">
+            <p>
+              Thời gian giải quyết của <strong>hồ sơ liên thông</strong> là không quá <strong>03 ngày làm việc</strong> kể từ khi cán bộ tiếp nhận hồ sơ.
+            </p>
+            <p>Cụ thể:</p>
+            <ul>
+              <li>Hồ sơ đăng ký khai sinh: 01 ngày làm việc kể từ khi cán bộ tiếp nhận hồ sơ.</li>
+              <li>Hồ sơ đăng ký thường trú: 02 ngày làm việc kể từ khi cán bộ tiếp nhận hồ sơ.</li>
+              <li>Hồ sơ cấp thẻ bảo hiểm y tế cho trẻ dưới 6 tuổi: được chuyển xử lý theo dữ liệu liên thông đã kê khai.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="ltks-complete-actions">
+        <button type="button" className="ltks-btn secondary" onClick={onReset}>
+          Về trang chủ
+        </button>
+        <button type="button" className="ltks-btn primary">
+          In Biên Lai
+        </button>
       </div>
     </div>
   );
