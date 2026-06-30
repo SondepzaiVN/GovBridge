@@ -1921,7 +1921,7 @@ const DangKyThuongTruPage: React.FC = () => {
   };
 
   return (
-    <div className="main-content animate-slide-up">
+    <div className="main-content dktt-main-content animate-slide-up">
       <nav className="breadcrumb" aria-label="Breadcrumb">
         <Link to="/">
           <Home size={13} style={{ marginRight: 4, verticalAlign: 'middle' }} />
@@ -1935,33 +1935,16 @@ const DangKyThuongTruPage: React.FC = () => {
         </span>
       </nav>
 
-      <div className="service-page">
-        <div>
+      <div className="service-page dktt-service-page">
+        <div className="dktt-form-shell">
           <div className="dktt-page-header" data-highlight-id="form-section">
             <h1>ĐĂNG KÝ THƯỜNG TRÚ</h1>
             <p>Cổng Dịch vụ Công — Bộ Công An</p>
           </div>
 
-          <div
-            style={{
-              background: '#FFF3EE',
-              border: '1px solid #C8441A',
-              borderRadius: 'var(--radius-md)',
-              padding: '12px 16px',
-              marginBottom: 20,
-              fontSize: '0.8375rem',
-              color: '#8B1A1A',
-              display: 'flex',
-              gap: 8,
-              alignItems: 'center',
-            }}
-            data-highlight-id="ai-hint"
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <img src="/logo_Gov_Bridge.jpg" alt="AI" style={{
-                width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
-                border: '1px solid #C8441A',
-              }} />
+          <div className="dktt-ai-hint" data-highlight-id="ai-hint">
+            <span className="dktt-ai-hint-icon">
+              <img src="/logo_Gov_Bridge.jpg" alt="AI" />
             </span>
             <span>
               <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
@@ -1994,7 +1977,10 @@ const DangKyThuongTruPage: React.FC = () => {
               >
                 <div className="dktt-section-header-left">
                   <span className="dktt-section-number">{section.number}</span>
-                  <h3 className="dktt-section-title">{section.title}</h3>
+                  <h3 className="dktt-section-title">
+                    {section.title}
+                    {section.id === 'ho-so-dinh-kem' && <span className="dktt-section-required">(*)</span>}
+                  </h3>
                 </div>
                 <ChevronDown size={20} className="dktt-section-chevron" />
               </div>
@@ -2035,7 +2021,7 @@ const DangKyThuongTruPage: React.FC = () => {
           </div>
         </div>
 
-        <aside className="service-sidebar" aria-label="Thông tin dịch vụ">
+        <aside className="service-sidebar dktt-service-sidebar" aria-label="Thông tin dịch vụ">
           <div className="sidebar-info-card">
             <div className="sidebar-info-card-header">
               <div className="sidebar-info-card-title">Giấy tờ cần chuẩn bị</div>
@@ -2084,13 +2070,7 @@ const DangKyThuongTruPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{
-            background: 'linear-gradient(135deg, #8B1A1A, #C8441A)',
-            color: 'white',
-            borderRadius: 'var(--radius-lg)',
-            padding: '20px',
-            textAlign: 'center',
-          }}>
+          <div className="dktt-sidebar-ai">
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
               <img src="/logo_Gov_Bridge.jpg" alt="AI" style={{
                 width: 44, height: 44, borderRadius: '50%', objectFit: 'cover',
