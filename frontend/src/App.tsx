@@ -15,6 +15,7 @@ const CCCDPage = lazy(() => import('./components/pages/CCCDPage'));
 const KetHonPage = lazy(() => import('./components/pages/KetHonPage'));
 const LienThongKhaiSinhPage = lazy(() => import('./components/pages/LienThongKhaiSinhPage'));
 const LienThongKhaiTuPage = lazy(() => import('./components/pages/LienThongKhaiTuPage'));
+const XacNhanCuTruPage = lazy(() => import('./components/pages/XacNhanCuTruPage'));
 
 // Loading fallback
 const PageLoader = () => (
@@ -85,6 +86,7 @@ const AppInner: React.FC = () => {
                         <Route path="/lien-thong-khai-sinh" element={<LienThongKhaiSinhPage />} />
                         <Route path="/lien-thong-khai-sinh/:stepSlug" element={<LienThongKhaiSinhPage />} />
                         <Route path="/lien-thong-khai-tu" element={<LienThongKhaiTuPage />} />
+                        <Route path="/xac-nhan-cu-tru" element={<XacNhanCuTruPage />} />
                         {/* Fallback */}
                         <Route path="*" element={<HomePage />} />
                     </Routes>
