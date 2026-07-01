@@ -6690,6 +6690,58 @@ a:hover {
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
 
+.xctt-select-shell {
+    position: relative;
+}
+
+.xctt-select-shell select {
+    padding-right: 62px;
+}
+
+.xctt-select-clear {
+    position: absolute;
+    top: 50%;
+    right: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: #111827;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.xctt-select-clear:hover {
+    color: #d71920;
+}
+
+.xctt-birth-date-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+}
+
+.xctt-date-input-shell {
+    position: relative;
+}
+
+.xctt-date-input-shell input {
+    padding-right: 42px;
+}
+
+.xctt-date-input-shell svg {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    color: #777;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
 .xctt-field input[readonly],
 .xctt-field select:disabled {
     background-color: #eee;
@@ -6797,4 +6849,190 @@ a:hover {
 .xctt-upload-btn {
     border-color: #d71920;
     background: #d71920;
+}
+
+.xctt-section-procedure {
+    border-radius: 8px;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.15);
+}
+
+.xctt-section-procedure .xctt-section-header {
+    min-height: 40px;
+    padding: 7px 20px;
+    border-bottom: 2px solid #d71920;
+    background: rgba(255, 241, 184, 0.5);
+}
+
+.xctt-section-procedure .xctt-section-header span {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.42857143;
+}
+
+.xctt-section-procedure .xctt-section-body {
+    padding: 20px;
+}
+
+.xctt-section-procedure .xctt-grid {
+    grid-template-columns: minmax(320px, 550px) minmax(320px, 550px);
+    justify-content: space-between;
+    gap: 22px 44px;
+}
+
+.xctt-section-procedure .xctt-field label {
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.42857143;
+}
+
+.xctt-section-procedure .xctt-field select {
+    min-height: 34px;
+    height: 34px;
+    border-color: #ccc;
+    border-radius: 4px;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.42857143;
+}
+
+.xctt-section-procedure .xctt-select-clear {
+    right: 30px;
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 900px) {
+    .xctt-section-procedure .xctt-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .xctt-section-procedure .xctt-section-header span,
+    .xctt-section-procedure .xctt-field label {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 420px) {
+    .xctt-birth-date-controls {
+        grid-template-columns: 1fr;
+    }
+}
+
+.xctt-family {
+    margin-top: 24px;
+}
+
+.xctt-family h3 {
+    margin: 0 0 8px;
+    color: #162033;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.xctt-family-table-wrap {
+    overflow-x: auto;
+}
+
+.xctt-family-table {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+    border-collapse: collapse;
+    background: #ddd;
+}
+
+.xctt-family-table th {
+    height: 76px;
+    border: 1px solid #eadfbc;
+    background: rgba(255, 241, 184, 0.55);
+    color: #162033;
+    padding: 10px 8px;
+    font-size: clamp(14px, 1.15vw, 22px);
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.xctt-family-table td {
+    height: 72px;
+    border: 1px solid #ddd;
+    background: #ddd;
+    padding: 10px 8px;
+    color: #111827;
+    font-size: clamp(14px, 1.1vw, 22px);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.xctt-family-col-action {
+    width: 9%;
+}
+
+.xctt-family-col-index {
+    width: 6%;
+}
+
+.xctt-family-col-name {
+    width: 15%;
+}
+
+.xctt-family-col-birth {
+    width: 15%;
+}
+
+.xctt-family-col-gender {
+    width: 13%;
+}
+
+.xctt-family-col-id {
+    width: 22%;
+}
+
+.xctt-family-col-relation {
+    width: 20%;
+}
+
+.xctt-table-control {
+    width: 100%;
+}
+
+.xctt-family-table input,
+.xctt-family-table select {
+    width: 100%;
+    min-height: 41px;
+    height: 41px;
+    border: 1px solid #d7dce3;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #202938;
+    padding: 6px 10px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: clamp(14px, 1.1vw, 22px);
+    line-height: 1.2;
+    box-shadow: none;
+}
+
+.xctt-family-table select {
+    color: #888;
+}
+
+.xctt-add-row {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    background: transparent;
+    color: #8b929c;
+    cursor: pointer;
+}
+
+.xctt-add-row svg {
+    width: 26px;
+    height: 26px;
+    stroke-width: 1.8;
 }
