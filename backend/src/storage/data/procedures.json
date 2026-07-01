@@ -182,7 +182,7 @@
             "name": "Đăng ký thường trú",
             "shortName": "Đăng ký thường trú",
             "description": "Đăng ký thường trú cho công dân Việt Nam. Thực hiện tại Công an xã/phường/thị trấn nơi đăng ký.",
-            "route": "/ho-khau",
+            "route": "/dang-ky-thuong-tru",
             "icon": "🏠",
             "category": "Cư trú",
             "processingTime": "7 ngày làm việc",
@@ -1064,6 +1064,38 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "tam-tru",
+            "name": "Đăng ký tạm trú",
+            "shortName": "Đăng ký tạm trú",
+            "description": "Đăng ký tạm trú cho công dân Việt Nam tại nơi ở tạm thời. Hỗ trợ AI tự động điền form và rà soát hồ sơ.",
+            "route": "/dang-ky-tam-tru",
+            "icon": "🏘️",
+            "category": "Cư trú",
+            "processingTime": "03 ngày làm việc",
+            "fee": "7.000 VNĐ",
+            "keywords": [
+                "tạm trú",
+                "đăng ký tạm trú",
+                "cư trú",
+                "nơi ở tạm thời",
+                "tam tru",
+                "dang ky tam tru"
+            ],
+            "requiredDocs": [
+                "Tờ khai thay đổi thông tin cư trú (CT01)",
+                "Giấy tờ, tài liệu chứng minh chỗ ở hợp pháp",
+                "Hợp đồng thuê nhà hoặc văn bản cho ở nhờ nếu có"
+            ],
+            "steps": [
+                "Chọn cơ quan thực hiện",
+                "Khai thông tin người đề nghị đăng ký tạm trú",
+                "Nhập thông tin nơi đề nghị đăng ký tạm trú",
+                "Đính kèm hồ sơ giấy tờ",
+                "Chọn hình thức nhận kết quả và nộp hồ sơ"
+            ],
+            "fields": []
         },
         {
             "id": "cccd",
