@@ -1,3 +1,6 @@
 _tmp_*
 
 ref/
+.codex-work/
+outputs/
+prompt.md
