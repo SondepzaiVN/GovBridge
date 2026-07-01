@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ChevronUp, FileText, Home, Paperclip, Plus, Save, Send, X } from 'lucide-react';
+import { ArrowLeft, Calendar, ChevronUp, FileText, Home, Paperclip, Plus, Save, Send, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 
@@ -132,8 +132,8 @@ const ethnicityOptions = [
   'Chưa có thông tin',
   'Khác',
 ];
-const procedureOptions = ['Xác định thông tin về cư trú'];
-const caseOptions = ['Xác nhận thông tin về cư trú'];
+const procedureOptions = ['Xác nhận thông tin về cư trú'];
+const caseOptions = ['Cấp cho NK trên địa bàn quản lí', 'Cấp cho NK khác địa bàn quản lí'];
 const relationOptions = [
   'Anh',
   'Anh chồng',
@@ -223,8 +223,12 @@ const createMember = (id: number): FamilyMember => ({
   quanHe: '',
 });
 
+const getResidenceAgencyName = (wardName: string): string => (
+  wardName ? `Công an ${wardName}` : 'Cơ quan X'
+);
+
 const getResidenceAgencyOptions = (wardName: string): string[] => (
-  wardName ? ['Cơ quan X', `Công an ${wardName}`] : ['Cơ quan X']
+  wardName ? [getResidenceAgencyName(wardName)] : []
 );
 
 const getWardFieldPlaceholder = (provinceName: string, isLoading: boolean): string => {
@@ -240,19 +244,19 @@ const createAgencyFields = (
 ): FieldConfig[] => [
   { id: 'provinceAgency', label: 'Tỉnh/ Thành phố', kind: 'select', required: true, placeholder: 'Chọn', options: provinces },
   { id: 'wardAgency', label: 'Xã/Phường/Đặc khu', kind: 'select', required: true, placeholder: getWardFieldPlaceholder(selectedProvince, isLoading), options: wardOptions },
-  { id: 'residenceAgency', label: 'Cơ quan đăng ký cư trú', kind: 'select', required: true, placeholder: 'Cơ quan X', options: getResidenceAgencyOptions(selectedWard) },
+  { id: 'residenceAgency', label: 'Cơ quan đăng ký cư trú', kind: 'select', required: true, placeholder: 'Chọn', options: getResidenceAgencyOptions(selectedWard) },
   { id: 'agencyPhone', label: 'Số điện thoại', kind: 'text', readOnly: true, placeholder: '0292 3894 939' },
 ];
 
 const procedureFields: FieldConfig[] = [
   { id: 'procedure', label: 'Thủ tục', kind: 'select', required: true, placeholder: 'Thủ tục', options: procedureOptions },
-  { id: 'caseType', label: 'Trường hợp', kind: 'select', required: true, placeholder: 'Trường hợp', options: caseOptions },
+  { id: 'caseType', label: 'Trường hợp', kind: 'select', required: true, placeholder: 'Chọn', options: caseOptions },
 ];
 
 const applicantFields: FieldConfig[] = [
   { id: 'fullName', label: 'Họ tên', kind: 'text', required: true },
   { id: 'birthType', label: 'Ngày sinh', kind: 'select', required: true, options: ['Ngày tháng năm', 'Tháng năm', 'Năm'], placeholder: 'Ngày tháng năm' },
-  { id: 'birthDate', label: 'Chọn thời gian', kind: 'date', required: true },
+  { id: 'birthDate', label: 'Ngày sinh', kind: 'text', required: true, placeholder: 'Chọn thời gian' },
   { id: 'gender', label: 'Giới tính', kind: 'select', required: true, placeholder: 'Chọn', options: genderOptions },
   { id: 'ethnicity', label: 'Dân tộc', kind: 'select', required: true, placeholder: 'Dân tộc', options: ethnicityOptions },
   { id: 'citizenId', label: 'Số ĐDCN (CCCD)', kind: 'text', required: true },
@@ -273,8 +277,7 @@ const createRequestFields = (
 
 const initialValues: Record<string, string> = {
   birthType: 'Ngày tháng năm',
-  procedure: 'Xác định thông tin về cư trú',
-  caseType: 'Xác nhận thông tin về cư trú',
+  procedure: 'Xác nhận thông tin về cư trú',
   notificationMethod: 'Nhận qua cổng thông tin',
   resultMethod: 'Nhận qua cổng thông tin',
 };
@@ -367,7 +370,7 @@ const XacNhanCuTruPage: React.FC = () => {
       }
 
       if (fieldId === 'wardAgency') {
-        return { ...current, wardAgency: value, residenceAgency: value ? 'Cơ quan X' : '' };
+        return { ...current, wardAgency: value, residenceAgency: value ? getResidenceAgencyName(value) : '' };
       }
 
       return { ...current, [fieldId]: value };
@@ -469,7 +472,7 @@ const XacNhanCuTruPage: React.FC = () => {
             Khai hộ (yêu cầu khai đúng các trường thông tin có trong cơ sở dữ liệu quốc gia về dân cư của người được khai hộ)
           </label>
         </div>
-        <FieldGrid fields={applicantFields} values={values} errors={errors} onChange={setFieldValue} columns={4} />
+        <ApplicantFieldGrid fields={applicantFields} values={values} errors={errors} onChange={setFieldValue} />
         <FamilyMemberTable members={members} errors={errors} onAdd={() => setMembers((current) => [...current, createMember(current.length + 1)])} onChange={updateMember} />
       </XcttSection>
 
@@ -551,7 +554,7 @@ interface SectionProps {
 }
 
 const XcttSection: React.FC<SectionProps> = ({ id, title, open, onToggle, children }) => (
-  <section className={`xctt-section ${open ? 'open' : ''}`}>
+  <section className={`xctt-section xctt-section-${id} ${open ? 'open' : ''}`}>
     <button type="button" className="xctt-section-header" onClick={() => onToggle(id)} aria-expanded={open}>
       <span>{title}</span>
       <ChevronUp size={24} />
@@ -574,6 +577,75 @@ const FieldGrid: React.FC<{
   </div>
 );
 
+const ApplicantFieldGrid: React.FC<{
+  fields: FieldConfig[];
+  values: Record<string, string>;
+  errors: Record<string, string>;
+  onChange: (fieldId: string, value: string) => void;
+}> = ({ fields, values, errors, onChange }) => {
+  const birthTypeField = fields.find((field) => field.id === 'birthType');
+  const birthDateField = fields.find((field) => field.id === 'birthDate');
+  const displayFields = fields.filter((field) => field.id !== 'birthType' && field.id !== 'birthDate');
+
+  return (
+    <div className="xctt-grid cols-4">
+      {displayFields.map((field) => (
+        <React.Fragment key={field.id}>
+          <FieldControl field={field} value={values[field.id] || ''} error={errors[field.id]} onChange={(value) => onChange(field.id, value)} />
+          {field.id === 'fullName' && birthTypeField && birthDateField && (
+            <BirthDateControl
+              birthTypeField={birthTypeField}
+              birthDateField={birthDateField}
+              values={values}
+              errors={errors}
+              onChange={onChange}
+            />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+const BirthDateControl: React.FC<{
+  birthTypeField: FieldConfig;
+  birthDateField: FieldConfig;
+  values: Record<string, string>;
+  errors: Record<string, string>;
+  onChange: (fieldId: string, value: string) => void;
+}> = ({ birthTypeField, birthDateField, values, errors, onChange }) => (
+  <div className="xctt-field xctt-birth-date-field span-2">
+    <label htmlFor={birthDateField.id}>
+      Ngày sinh <span>(*)</span>
+    </label>
+    <div className="xctt-birth-date-controls">
+      <div className="xctt-select-shell">
+        <select
+          id={birthTypeField.id}
+          value={values[birthTypeField.id] || ''}
+          onChange={(event) => onChange(birthTypeField.id, event.target.value)}
+        >
+          <option value="">{birthTypeField.placeholder || 'Chọn'}</option>
+          {(birthTypeField.options || []).map((option) => (
+            <option value={option} key={option}>{option}</option>
+          ))}
+        </select>
+      </div>
+      <div className="xctt-date-input-shell">
+        <input
+          id={birthDateField.id}
+          type="text"
+          value={values[birthDateField.id] || ''}
+          placeholder={birthDateField.placeholder}
+          onChange={(event) => onChange(birthDateField.id, event.target.value)}
+        />
+        <Calendar size={18} aria-hidden="true" />
+      </div>
+    </div>
+    {(errors.birthType || errors.birthDate) && <p className="xctt-error">{errors.birthType || errors.birthDate}</p>}
+  </div>
+);
+
 const FieldControl: React.FC<{
   field: FieldConfig;
   value: string;
@@ -585,12 +657,19 @@ const FieldControl: React.FC<{
       {field.label} {field.required && <span>(*)</span>}
     </label>
     {field.kind === 'select' ? (
-      <select id={field.id} value={value} onChange={(event) => onChange(event.target.value)} disabled={field.readOnly}>
-        <option value="">{field.placeholder || 'Chọn'}</option>
-        {(field.options || []).map((option) => (
-          <option value={option} key={option}>{option}</option>
-        ))}
-      </select>
+      <div className="xctt-select-shell">
+        <select id={field.id} value={value} onChange={(event) => onChange(event.target.value)} disabled={field.readOnly}>
+          <option value="">{field.placeholder || 'Chọn'}</option>
+          {(field.options || []).map((option) => (
+            <option value={option} key={option}>{option}</option>
+          ))}
+        </select>
+        {value && !field.readOnly && (
+          <button type="button" className="xctt-select-clear" aria-label={`Xóa ${field.label}`} onClick={() => onChange('')}>
+            <X size={16} />
+          </button>
+        )}
+      </div>
     ) : field.kind === 'textarea' ? (
       <textarea id={field.id} value={value} placeholder={field.placeholder} onChange={(event) => onChange(event.target.value)} />
     ) : (
@@ -610,6 +689,15 @@ const FamilyMemberTable: React.FC<{
     <h3>Những thành viên trong hộ gia đình cùng thay đổi</h3>
     <div className="xctt-family-table-wrap">
       <table className="xctt-family-table">
+        <colgroup>
+          <col className="xctt-family-col-action" />
+          <col className="xctt-family-col-index" />
+          <col className="xctt-family-col-name" />
+          <col className="xctt-family-col-birth" />
+          <col className="xctt-family-col-gender" />
+          <col className="xctt-family-col-id" />
+          <col className="xctt-family-col-relation" />
+        </colgroup>
         <thead>
           <tr>
             <th>Thao tác</th>
@@ -633,7 +721,7 @@ const FamilyMemberTable: React.FC<{
               </td>
               <td>{index + 1}</td>
               <td><TableInput value={member.hoTen} error={errors[`member-${member.id}-hoTen`]} onChange={(value) => onChange(member.id, 'hoTen', value)} /></td>
-              <td><TableInput type="date" value={member.ngaySinh} error={errors[`member-${member.id}-ngaySinh`]} onChange={(value) => onChange(member.id, 'ngaySinh', value)} /></td>
+              <td><TableInput value={member.ngaySinh} error={errors[`member-${member.id}-ngaySinh`]} onChange={(value) => onChange(member.id, 'ngaySinh', value)} /></td>
               <td><TableSelect value={member.gioiTinh} options={genderOptions} error={errors[`member-${member.id}-gioiTinh`]} onChange={(value) => onChange(member.id, 'gioiTinh', value)} /></td>
               <td><TableInput value={member.cccd} error={errors[`member-${member.id}-cccd`]} onChange={(value) => onChange(member.id, 'cccd', value)} /></td>
               <td><TableSelect value={member.quanHe} options={relationOptions} error={errors[`member-${member.id}-quanHe`]} onChange={(value) => onChange(member.id, 'quanHe', value)} /></td>
@@ -646,14 +734,14 @@ const FamilyMemberTable: React.FC<{
 );
 
 const TableInput: React.FC<{ type?: string; value: string; error?: string; onChange: (value: string) => void }> = ({ type = 'text', value, error, onChange }) => (
-  <div>
+  <div className="xctt-table-control">
     <input type={type} value={value} onChange={(event) => onChange(event.target.value)} />
     {error && <small className="xctt-error">{error}</small>}
   </div>
 );
 
 const TableSelect: React.FC<{ value: string; options: string[]; error?: string; onChange: (value: string) => void }> = ({ value, options, error, onChange }) => (
-  <div>
+  <div className="xctt-table-control">
     <select value={value} onChange={(event) => onChange(event.target.value)}>
       <option value="">Chọn</option>
       {options.map((option) => (
