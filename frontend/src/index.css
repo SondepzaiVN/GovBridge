@@ -9678,6 +9678,11 @@ a:hover {
     color: #a32824;
 }
 
+.officer-status.missing {
+    background: #edf0f3;
+    color: #59636d;
+}
+
 .officer-empty {
     min-height: 180px;
     display: flex;
@@ -9687,6 +9692,23 @@ a:hover {
     gap: 8px;
     color: #8a929a;
     font-size: 0.72rem;
+}
+
+.officer-empty button {
+    min-height: 32px;
+    padding: 6px 12px;
+    border: 1px solid #8b1a1a;
+    border-radius: 4px;
+    background: #fff;
+    color: #8b1a1a;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.officer-empty button:hover {
+    background: #8b1a1a;
+    color: #fff;
 }
 
 .officer-detail-pane {
