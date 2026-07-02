@@ -192,6 +192,73 @@
       ]
     },
     {
+      "id": "275a3121-b858-4b7e-bb14-fec9a8c7ce53",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_356b08fd-4714-4249-9d0b-376832636c40",
+          "sessionId": "knowledge_2844fcc7-89f1-4e4e-aceb-01b4452a7056"
+        }
+      },
+      "createdAt": "2026-07-02T00:54:09.896Z",
+      "updatedAt": "2026-07-02T01:56:53.066Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T00:54:09.896Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello! How can I assist you today?",
+          "createdAt": "2026-07-02T00:54:09.896Z"
+        },
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T01:15:03.719Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị, em là trợ lý ảo của VNPT AI.\n\nHiện tại, hệ thống của em đang cung cấp thông tin chi tiết về các quy trình thủ tục hành chính phổ biến như:\n- **Xác nhận thông tin về cư trú** (Mã thủ tục: 1.010041): Thực hiện qua Công an cấp xã hoặc trực tuyến qua VNeID/Cổng Dịch vụ công.\n- **Đăng ký khai tử** (Mã thủ tục: 1.000656): Thực hiện tại Ủy ban nhân dân cấp xã hoặc qua hình thức trực tuyến, có thể liên thông với các thủ tục xóa đăng ký thường trú và giải quyết trợ cấp mai táng, tử tuất.\n\nAnh/chị đang cần tìm hiểu chi tiết về quy trình của thủ tục hành chính cụ thể nào để em có thể hỗ trợ thông tin chính xác nhất ạ?",
+          "createdAt": "2026-07-02T01:15:03.719Z"
+        },
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T01:34:29.420Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị, em là trợ lý ảo của VNPT AI.\n\nEm đã nhận được yêu cầu tìm hiểu về thủ tục **Đăng ký thường trú** (Mã thủ tục: 1.004222). Dưới đây là các thông tin chính:\n\n**1. Thông tin chung về thủ tục**\n- **Tên thủ tục:** Đăng ký thường trú.\n- **Mã thủ tục:** 1.004222.\n- **Cơ quan có thẩm quyền:** Công an cấp xã.\n- **Đối tượng thực hiện:** Công dân Việt Nam và người Việt Nam định cư ở nước ngoài có nhu cầu đăng ký thường trú tại Việt Nam.\n- **Mục đích:** Xác lập nơi thường trú để phục vụ quản lý cư trú.\n\n**2. Hình thức thực hiện**\n- **Trực tuyến:** Qua Cổng Dịch vụ công quốc gia hoặc ứng dụng VNeID.\n- **Trực tiếp:** Nộp hồ sơ tại Công an cấp xã.\n\n**3. Hồ sơ cần chuẩn bị**\n- Tờ khai thay đổi thông tin cư trú (Mẫu CT01).\n- Giấy tờ chứng minh chỗ ở hợp pháp (nếu chưa có từ cơ sở dữ liệu).\n- Giấy tờ chứng minh quan hệ nhân thân (nếu đăng ký theo quan hệ gia đình).\n\n**4. Thời hạn và lệ phí**\n- **Thời hạn giải quyết:** 07 ngày làm việc.\n- **Lệ phí:** 10.000 đồng/lần trực tuyến và 20.000 đồng/lần trực tiếp (trừ trường hợp miễn).\n\nAnh/chị cần thêm thông tin gì cụ thể hơn không ạ?",
+          "createdAt": "2026-07-02T01:34:29.420Z"
+        },
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T01:50:41.621Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị! Em có thể giúp gì cho anh/chị hôm nay?",
+          "createdAt": "2026-07-02T01:50:41.621Z"
+        },
+        {
+          "role": "user",
+          "content": "Đăng ký khai sinh",
+          "createdAt": "2026-07-02T01:56:53.066Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để đăng ký khai sinh, anh/chị cần cung cấp một số thông tin và chuẩn bị hồ sơ theo quy định. Dưới đây là thông tin chi tiết về thủ tục này:",
+          "createdAt": "2026-07-02T01:56:53.066Z"
+        }
+      ]
+    },
+    {
       "id": "8691f56e-80d5-4927-b38b-77497113604d",
       "currentRoute": "/",
       "state": {
