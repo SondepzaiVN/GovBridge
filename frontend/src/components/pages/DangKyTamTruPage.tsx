@@ -65,7 +65,7 @@ const initialForm: TamTruApplicationData = {
     receiveVillageCode: '',
     receiveOrgAddress: '',
     receiveOrgPhone: '',
-    procedureTypeCode: '',
+    procedureTypeCode: 'dang-ky-tam-tru',
     procedureCaseCode: '',
     registrationMode: '',
     declareMode: 'proxy',
@@ -591,7 +591,7 @@ const DangKyTamTruPage: React.FC = () => {
 
                     <Section number={2} title="THỦ TỤC HÀNH CHÍNH YÊU CẦU">
                         <div className="dktt-form-row cols-2">
-                            {renderSelect('procedureTypeCode', procedureTypes, '-- Chọn --', 'procedureTypeCode', handleProcedureChange)}
+                            {renderSelect('procedureTypeCode', procedureTypes, '-- Chọn --', 'procedureTypeCode', handleProcedureChange, true)}
                             {renderSelect('procedureCaseCode', procedureCases, '-- Chọn --', 'procedureCaseCode')}
                         </div>
                         {showRegistrationMode && (
