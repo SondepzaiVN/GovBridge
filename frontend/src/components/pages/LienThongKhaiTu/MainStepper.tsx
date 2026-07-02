@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Home, ChevronRight } from "lucide-react";
 import StepHeader from "./StepHeader";
 import PublicServiceForm from "./PublicServiceForm";
 import PublicServiceDeclaration from "./PublicServiceDeclaration";
@@ -42,6 +44,19 @@ const MainStepper: React.FC = () => {
   return (
     <div className="ltks-page ltks-app-page ltkt-page-shell animate-slide-up">
       <main className="ltks-main">
+        <nav className="breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">
+            <Home size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+            Trang Chủ
+          </Link>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span>Hộ tịch</span>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+            Liên thông khai tử
+          </span>
+        </nav>
+        
         <StepHeader currentStep={currentStep} />
 
         <div className="ltkt-standard-notices">

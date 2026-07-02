@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw } from 'lucide-react';
+import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw, Home } from 'lucide-react';
 import { useForm } from '../../contexts/FormContext';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import type { FormFieldOption } from '../../types';
@@ -642,10 +642,17 @@ const LienThongKhaiSinhPage: React.FC = () => {
   return (
     <LienThongShell>
       <main className="ltks-main">
-        <nav className="ltks-breadcrumb" aria-label="Breadcrumb">
-          <ChevronRight size={20} />
-          <Link to="/">Trang chủ DVCLT</Link>
-          <span>/ THÊM MỚI HỒ SƠ DỊCH VỤ CÔNG LIÊN THÔNG ĐĂNG KÝ KHAI SINH, ĐĂNG KÝ THƯỜNG TRÚ, CẤP THẺ BHYT CHO TRẺ DƯỚI 6 TUỔI</span>
+        <nav className="breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">
+            <Home size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+            Trang Chủ
+          </Link>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span>Hộ tịch</span>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+            Liên thông khai sinh
+          </span>
         </nav>
 
         <div className="ltks-stepper" role="tablist" aria-label="Các bước kê khai">
