@@ -6162,6 +6162,15 @@ a:hover {
     color: #5b7487;
 }
 
+.ltks-main .breadcrumb {
+    margin-bottom: 18px;
+    color: #69727d;
+}
+
+.ltks-main .breadcrumb a {
+    color: #5b7487;
+}
+
 .dktt-service-page {
     grid-template-columns: minmax(0, 1fr);
     gap: 22px;
