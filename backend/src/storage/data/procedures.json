@@ -22,6 +22,23 @@
                 "xoá khẩu",
                 "liên thông"
             ],
+            "requiredDocs": [
+                "Giấy báo tử hoặc giấy tờ thay thế giấy báo tử",
+                "CCCD/CMND/định danh cá nhân của người đi khai tử",
+                "Thông tin người chết: họ tên, ngày sinh, nơi cư trú, số định danh",
+                "Giấy tờ chứng minh quan hệ với người chết nếu có",
+                "Giấy tờ liên quan đến mai táng phí/tử tuất nếu người chết thuộc diện hưởng",
+                "Thông tin người nhận hỗ trợ: số điện thoại, tài khoản ngân hàng hoặc nhận tiền mặt"
+            ],
+            "steps": [
+                "Chọn thủ tục liên thông khai tử",
+                "Điền tờ khai đăng ký khai tử",
+                "Tải lên hoặc nộp giấy tờ cần thiết",
+                "Cơ quan tiếp nhận kiểm tra hồ sơ",
+                "Thực hiện đăng ký khai tử và xóa thường trú",
+                "Giải quyết mai táng phí/tử tuất nếu có",
+                "Nhận trích lục khai tử và kết quả liên quan"
+            ],
             "fields": []
         },
         {
