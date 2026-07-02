@@ -8595,7 +8595,7 @@ a:hover {
 
 .ltkt-form-frame .ltkt-form-card {
     display: block;
-    margin-bottom: 22px;
+    margin-bottom: 28px;
     padding: 0 20px 20px;
     background: #fff;
     border-radius: 8px;
@@ -8623,6 +8623,176 @@ a:hover {
 
 .ltkt-form-frame .ltkt-form-card > div:has(> h3) > div {
     background-color: transparent !important;
+}
+
+.ltkt-form-frame .ltkt-form-card + .ltkt-form-card {
+    margin-top: 28px;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 0 20px !important;
+    background: #fff !important;
+    border: 1px solid #e0e2e6 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14) !important;
+    overflow: visible;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h4,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > table {
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h4) {
+    min-height: 42px;
+    margin: 28px 0 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:first-child:has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:first-child:has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:first-child:has(> h4) {
+    margin-top: 0 !important;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) {
+    padding: 0 20px 18px !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) + div:has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) + div:has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) + div:has(> h4) {
+    margin-top: 10px !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:first-child):has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:first-child):has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:first-child):has(> h4) {
+    margin-top: 10px !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h4 {
+    min-height: 42px;
+    margin: 28px 0 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920 !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> span:first-child) > span:first-child,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h3) h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h4) h4,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h4 {
+    color: #303238 !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+}
+
+.ltkt-form-frame > .ltks-form-body > .ltkt-public-service-form {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #303238;
+    font-family: inherit !important;
+    overflow: visible;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card {
+    display: block;
+    margin: 0 0 18px;
+    padding: 0 20px 20px;
+    background: #fff;
+    border: 1px solid #e0e2e6;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
+    overflow: visible;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child),
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3),
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+    min-height: 42px;
+    margin: 0 -20px 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920 !important;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child) > span:first-child,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3) h3,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+    color: #303238 !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35;
+    text-transform: uppercase;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child) > div,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3) > div {
+    background-color: transparent !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+    display: flex;
+    align-items: center;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:last-child,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3:last-child {
+    margin-bottom: 0 !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card label {
+    color: #30343a !important;
+    font-size: 0.79rem !important;
+    font-weight: 600 !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card input,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card select,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card textarea {
+    min-height: 38px;
+    color: #30343a !important;
+    font-size: 0.84rem !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card h4 {
+    color: #303238 !important;
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > .ltkt-public-service-form {
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
 }
 
 .ltkt-page-shell input,
@@ -8746,4 +8916,31 @@ a:hover {
     display: flex;
     margin-right: auto;
     margin-left: auto;
+}
+
+.service-standard-page label:has(> input[type='radio']),
+.service-standard-page label:has(> input[type='checkbox']),
+.ltks-app-page label:has(> input[type='radio']),
+.ltks-app-page label:has(> input[type='checkbox']),
+.ltkt-page-shell label:has(> input[type='radio']),
+.ltkt-page-shell label:has(> input[type='checkbox']) {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+
+.service-standard-page label > input[type='radio'],
+.service-standard-page label > input[type='checkbox'],
+.ltks-app-page label > input[type='radio'],
+.ltks-app-page label > input[type='checkbox'],
+.ltkt-page-shell label > input[type='radio'],
+.ltkt-page-shell label > input[type='checkbox'] {
+    flex: 0 0 auto;
+    margin: 0 !important;
+}
+
+.ltkt-form-frame input[type="radio"] {
+    border-radius: 50% !important;
 }

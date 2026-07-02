@@ -143,17 +143,8 @@ const PublicServiceDeclaration: React.FC<{
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "960px",
-        margin: "20px auto",
-        padding: "40px",
-        backgroundColor: "#fff",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        borderRadius: "8px",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
+    <div className="ltkt-public-service-form">
+      <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 1: THÔNG TIN NGƯỜI YÊU CẦU 
           ========================================================= */}
@@ -259,6 +250,9 @@ const PublicServiceDeclaration: React.FC<{
         </div>
       </div>
 
+      </section>
+
+      <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 2: THÔNG TIN NGƯỜI ĐƯỢC KHAI TỬ
           ========================================================= */}
@@ -494,6 +488,9 @@ const PublicServiceDeclaration: React.FC<{
         </div>
       </div>
 
+      </section>
+
+      <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 3: THỜI GIAN VÀ NƠI CHẾT
           ========================================================= */}
@@ -581,6 +578,10 @@ const PublicServiceDeclaration: React.FC<{
           </div>
         </div>
       </div>
+
+      </section>
+
+      <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 4: NGUYÊN NHÂN CHẾT & GIẤY BÁO TỬ
           ========================================================= */}
@@ -791,6 +792,9 @@ const PublicServiceDeclaration: React.FC<{
         </label>
       </div>
 
+      </section>
+
+      <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 5: THÔNG TIN CHỦ HỘ
           ========================================================= */}
@@ -889,6 +893,9 @@ const PublicServiceDeclaration: React.FC<{
         </div>
       </div>
 
+      </section>
+
+      <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 6: THÔNG TIN MAI TÁNG PHÍ / TRỢ CẤP
           ========================================================= */}
@@ -972,10 +979,14 @@ const PublicServiceDeclaration: React.FC<{
             padding: "8px 0",
             border: "none",
             borderBottom: "1px solid #ccc",
-            outline: "none",
+          outline: "none",
           }}
         />
       </div>
+
+      </section>
+
+      <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 6: THÔNG TIN CƠ QUAN, TỔ CHỨC, CÁ NHÂN NHẬN TRỢ CẤP MAI TÁNG
           ========================================================= */}
@@ -1425,6 +1436,8 @@ const PublicServiceDeclaration: React.FC<{
           </option>
         </select>
       </div>
+
+      </section>
 
       {/* ĐIỀU HƯỚNG */}
       <div
