@@ -20,6 +20,7 @@ export interface ApiDependencies {
   uploadMaxMb: number;
   providerNames: {
     assistant: string;
+    knowledge: string;
     ocr: string;
     tts: string;
   };
@@ -29,6 +30,7 @@ export const createApiRouter = (dependencies: ApiDependencies): Router => {
   const router = Router();
   router.use('/health', createHealthRouter({
     assistantProvider: dependencies.providerNames.assistant,
+    knowledgeProvider: dependencies.providerNames.knowledge,
     ocrProvider: dependencies.providerNames.ocr,
     ttsProvider: dependencies.providerNames.tts,
   }));
