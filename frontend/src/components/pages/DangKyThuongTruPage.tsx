@@ -43,6 +43,7 @@ const POSTAL_ADDRESS_FIELD_ID = 'dkttPostalAddress';
 const POSTAL_PHONE_FIELD_ID = 'dkttPostalPhone';
 const OVERSEAS_PHOTO_FIELD_ID = 'ct02Photo';
 const COLLAPSED_UPLOAD_CASE = '__collapsed__';
+const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 const SPECIALIZED_DATA_TEMP_DISABLED = true;
 
 const toResidenceAgencyLabel = (wardName: string) => (
@@ -1456,9 +1457,17 @@ const DangKyThuongTruPage: React.FC = () => {
                                 </td>
                                 <td className="dktt-doc-cell-center">
                                   {requirement.templateAvailable ? (
-                                    <button type="button" className="dktt-doc-icon-btn" title="Tải file mẫu">
+                                    <a
+                                      className="dktt-doc-icon-btn"
+                                      href={CT01_TEMPLATE_URL}
+                                      download
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      title="Tải file mẫu"
+                                      aria-label="Tải file mẫu"
+                                    >
                                       <FileDown size={14} />
-                                    </button>
+                                    </a>
                                   ) : (
                                     <span className="dktt-table-placeholder">-</span>
                                   )}
