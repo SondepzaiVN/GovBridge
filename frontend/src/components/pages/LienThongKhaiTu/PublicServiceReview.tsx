@@ -23,17 +23,17 @@ interface ReviewTab {
 const REVIEW_TABS: ReviewTab[] = [
   {
     title: "Tờ khai đăng ký khai tử",
-    url: "/lien-thong-khai-tu/tokhai_khaitu.pdf",
+    url: "/lien-thong-khai-tu/to_khai_dang_ky_khai_tu.pdf",
     pageCount: 2,
   },
   {
     title: "Tờ khai thay đổi thông tin cư trú (CT01)",
-    url: "/lien-thong-khai-tu/tokhai_xoa_dang_ky_thuong_tru.pdf",
+    url: "/lien-thong-khai-tu/mau_ct01.pdf",
     pageCount: 2,
   },
   {
     title: "Tờ khai đề nghị hỗ trợ chi phí mai táng",
-    url: "/lien-thong-khai-tu/tokhai_mai_tang_phi.pdf",
+    url: "/lien-thong-khai-tu/to_khai_ho_tro_chi_phi_mai_tang.pdf",
     pageCount: 3,
   },
 ];
