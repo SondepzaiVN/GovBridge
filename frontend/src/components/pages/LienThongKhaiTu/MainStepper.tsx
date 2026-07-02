@@ -38,14 +38,14 @@ const MainStepper: React.FC = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "#fff", minHeight: "100vh", paddingBottom: "40px", overflow: "hidden" }}>
+    <div className="ltkt-page-shell">
       {/* Header màu xanh của cổng DVC (Mockup) */}
 
       {/* Thanh Stepper */}
       <StepHeader currentStep={currentStep} />
 
       {/* Nội dung thay đổi theo Step */}
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 20px" }}>
+      <div className="ltkt-step-content">
         {renderStepContent()}
       </div>
     </div>
