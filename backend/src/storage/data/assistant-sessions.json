@@ -159,6 +159,123 @@
       ]
     },
     {
+      "id": "275a3121-b858-4b7e-bb14-fec9a8c7ce53",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_356b08fd-4714-4249-9d0b-376832636c40",
+          "sessionId": "knowledge_2844fcc7-89f1-4e4e-aceb-01b4452a7056"
+        }
+      },
+      "createdAt": "2026-07-02T00:54:09.896Z",
+      "updatedAt": "2026-07-02T03:35:00.565Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T00:54:09.896Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello! How can I assist you today?",
+          "createdAt": "2026-07-02T00:54:09.896Z"
+        },
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T01:15:03.719Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị, em là trợ lý ảo của VNPT AI.\n\nHiện tại, hệ thống của em đang cung cấp thông tin chi tiết về các quy trình thủ tục hành chính phổ biến như:\n- **Xác nhận thông tin về cư trú** (Mã thủ tục: 1.010041): Thực hiện qua Công an cấp xã hoặc trực tuyến qua VNeID/Cổng Dịch vụ công.\n- **Đăng ký khai tử** (Mã thủ tục: 1.000656): Thực hiện tại Ủy ban nhân dân cấp xã hoặc qua hình thức trực tuyến, có thể liên thông với các thủ tục xóa đăng ký thường trú và giải quyết trợ cấp mai táng, tử tuất.\n\nAnh/chị đang cần tìm hiểu chi tiết về quy trình của thủ tục hành chính cụ thể nào để em có thể hỗ trợ thông tin chính xác nhất ạ?",
+          "createdAt": "2026-07-02T01:15:03.719Z"
+        },
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T01:34:29.420Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị, em là trợ lý ảo của VNPT AI.\n\nEm đã nhận được yêu cầu tìm hiểu về thủ tục **Đăng ký thường trú** (Mã thủ tục: 1.004222). Dưới đây là các thông tin chính:\n\n**1. Thông tin chung về thủ tục**\n- **Tên thủ tục:** Đăng ký thường trú.\n- **Mã thủ tục:** 1.004222.\n- **Cơ quan có thẩm quyền:** Công an cấp xã.\n- **Đối tượng thực hiện:** Công dân Việt Nam và người Việt Nam định cư ở nước ngoài có nhu cầu đăng ký thường trú tại Việt Nam.\n- **Mục đích:** Xác lập nơi thường trú để phục vụ quản lý cư trú.\n\n**2. Hình thức thực hiện**\n- **Trực tuyến:** Qua Cổng Dịch vụ công quốc gia hoặc ứng dụng VNeID.\n- **Trực tiếp:** Nộp hồ sơ tại Công an cấp xã.\n\n**3. Hồ sơ cần chuẩn bị**\n- Tờ khai thay đổi thông tin cư trú (Mẫu CT01).\n- Giấy tờ chứng minh chỗ ở hợp pháp (nếu chưa có từ cơ sở dữ liệu).\n- Giấy tờ chứng minh quan hệ nhân thân (nếu đăng ký theo quan hệ gia đình).\n\n**4. Thời hạn và lệ phí**\n- **Thời hạn giải quyết:** 07 ngày làm việc.\n- **Lệ phí:** 10.000 đồng/lần trực tuyến và 20.000 đồng/lần trực tiếp (trừ trường hợp miễn).\n\nAnh/chị cần thêm thông tin gì cụ thể hơn không ạ?",
+          "createdAt": "2026-07-02T01:34:29.420Z"
+        },
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T01:50:41.621Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị! Em có thể giúp gì cho anh/chị hôm nay?",
+          "createdAt": "2026-07-02T01:50:41.621Z"
+        },
+        {
+          "role": "user",
+          "content": "Đăng ký khai sinh",
+          "createdAt": "2026-07-02T01:56:53.066Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để đăng ký khai sinh, anh/chị cần cung cấp một số thông tin và chuẩn bị hồ sơ theo quy định. Dưới đây là thông tin chi tiết về thủ tục này:",
+          "createdAt": "2026-07-02T01:56:53.066Z"
+        },
+        {
+          "role": "user",
+          "content": "Thử lại",
+          "createdAt": "2026-07-02T02:04:25.060Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị! Để giúp em hỗ trợ anh/chị về quy trình đăng ký khai sinh một cách chính xác nhất, em xin phép làm rõ một chút về tình trạng hồ sơ hiện tại của anh/chị nhé:\n\n1. **Anh/chị đang muốn thử lại ở giai đoạn nào?**\n   * Mới bắt đầu điền thông tin trên Cổng Dịch vụ công/VNeID và chưa nộp?\n   * Hồ sơ đã nộp nhưng bị **trả lại** do thiếu giấy tờ hoặc sai thông tin?\n   * Hay anh/chị muốn xem lại toàn bộ các bước từ đầu để đảm bảo không bỏ sót gì?\n\n2. **Nếu hồ sơ đã bị trả lại:** Anh/chị đã nhận được thông báo cụ thể về lý do (ví dụ: sai họ tên trẻ, thiếu giấy chứng sinh, sai thông tin cha/mẹ...) chưa ạ?\n\nTheo quy định, nếu hồ sơ bị trả lại, anh/chị **không cần nộp lại từ đầu** mà chỉ cần truy cập vào mục \"Quản lý hồ sơ\" trên hệ thống, sửa đổi thông tin hoặc tải lên giấy tờ bổ sung theo yêu cầu cụ thể đã ghi trong thông báo.\n\nAnh/chị vui lòng cho em biết lý do hoặc tình trạng hiện tại của hồ sơ để em hướng dẫn chi tiết các bước tiếp theo ạ?",
+          "createdAt": "2026-07-02T02:04:25.060Z"
+        },
+        {
+          "role": "user",
+          "content": "quy trình làm giấy khai sinh",
+          "createdAt": "2026-07-02T02:05:32.470Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị,\n\nEm xin gửi đến anh/chị quy trình chi tiết để thực hiện thủ tục **Đăng ký khai sinh** dựa trên các quy định hiện hành, bao gồm cả hình thức trực tuyến qua Dịch vụ công liên thông và trực tiếp.\n\n**1. Quy trình thực hiện (Hình thức liên thông điện tử - Ưu tiên)**\n- **Bước 1: Truy cập và chọn dịch vụ**  \n  * Người yêu cầu truy cập **Cổng Dịch vụ công quốc gia** hoặc ứng dụng **VNeID**.  \n  * Chọn mục \"Dịch vụ công liên thông khai sinh, khai tử\".  \n  * Lựa chọn nhóm thủ tục liên thông phù hợp (ví dụ: Liên thông 3 thủ tục: Đăng ký khai sinh + Đăng ký thường trú + Cấp thẻ BHYT).  \n  * *Lưu ý:* Khi kê khai, anh/chị cần chọn đúng cơ quan thực hiện (UBND cấp xã nơi cha hoặc mẹ cư trú; trường hợp có yếu tố nước ngoài có thể thuộc cấp huyện).\n\n- **Bước 2: Nộp hồ sơ và nhận thông báo**  \n  * Hệ thống tiếp nhận hồ sơ đăng ký khai sinh.  \n  * Người dân điền thông tin theo mẫu hộ tịch điện tử, tải lên các giấy tờ cần thiết (Giấy chứng sinh, giấy tờ chứng minh chỗ ở hợp pháp, giấy tờ chứng minh quan hệ nếu có).  \n  * Hệ thống thông báo hẹn trả kết quả qua Cổng Dịch vụ công, ứng dụng VNeID và tin nhắn SMS.\n\n- **Bước 3: Giải quyết đăng ký khai sinh**  \n  * Công chức hộ tịch thực hiện giải quyết ngay trong ngày làm việc.  \n  * Trường hợp cần xác minh các nội dung trong tờ khai, thời hạn giải quyết không quá **03 ngày làm việc**.\n\n- **Bước 4: Thực hiện các thủ tục liên thông (Tự động)**  \n  * Sau khi cấp **Giấy chứng sinh** (hoặc Trích lục khai sinh), hệ thống sẽ tự động chuyển dữ liệu đến Hệ thống quản lý cư trú để thực hiện đăng ký thường trú cho trẻ và cấp thẻ BHYT cho trẻ dưới 6 tuổi.\n  * Kết quả điện tử có giá trị pháp lý tương đương bản giấy.\n\n**2. Quy trình thực hiện (Hình thức trực tiếp)**  \nNếu anh/chị lựa chọn nộp hồ sơ trực tiếp tại UBND cấp xã/huyện:\n- **Bước 1:** Chuẩn bị hồ sơ gồm: Giấy chứng sinh, giấy tờ chứng minh chỗ ở hợp pháp, giấy tờ tùy thân của cha/mẹ.\n- **Bước 2:** Nộp hồ sơ tại bộ phận \"Một cửa\" của UBND cấp xã/huyện có thẩm quyền.\n- **Bước 3:** Cán bộ tiếp nhận kiểm tra hồ sơ. Nếu đầy đủ, hợp lệ sẽ tiếp nhận và hẹn trả kết quả (thường trong 01 ngày làm việc, hoặc ngay trong ngày nếu nộp trước 15h).\n- **Bước 4:** Đến nhận Giấy khai sinh theo thời gian đã hẹn.\n\n**3. Chi phí và Lệ phí**  \n- Việc đăng ký khai sinh là **miễn phí**.  \n- Phí cấp bản sao trích lục (nếu có yêu cầu) sẽ được thu theo quy định của HĐND tỉnh nơi thực hiện thủ tục.\n\n**4. Thời gian giải quyết**  \n- **Không quá 01 ngày làm việc** kể từ khi nhận được hồ sơ hợp lệ.\n- Trong trường hợp cần xác minh: **Không quá 03 ngày làm việc**.\n\nAnh/chị có cần em hướng dẫn chi tiết về cách điền thông tin trên ứng dụng VNeID hoặc danh sách các giấy tờ cụ thể cần chuẩn bị cho trường hợp cụ thể của gia đình mình không ạ?",
+          "createdAt": "2026-07-02T02:05:32.470Z"
+        },
+        {
+          "role": "user",
+          "content": "hello",
+          "createdAt": "2026-07-02T02:31:52.583Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị! Có điều gì em có thể giúp anh/chị hôm nay không?",
+          "createdAt": "2026-07-02T02:31:52.583Z"
+        },
+        {
+          "role": "user",
+          "content": "Cấp lại CCCD",
+          "createdAt": "2026-07-02T03:01:02.173Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị,\n\nEm xin hướng dẫn chi tiết quy trình thực hiện thủ tục **Cấp lại Căn cước công dân (CCCD)** cho công dân Việt Nam trong các trường hợp CCCD bị mất, hỏng hoặc thay đổi thông tin.\n\n**1. Hồ sơ cần chuẩn bị**\n- **Tờ khai cấp lại CCCD:** Theo mẫu quy định hiện hành.\n- **CCCD cũ:** Nếu CCCD bị hỏng hoặc thay đổi thông tin (cần nộp lại CCCD cũ). Trường hợp bị mất thì không cần nộp.\n- **Giấy tờ chứng minh lý do cấp lại:** (Ví dụ: biên bản của công an xác nhận CCCD bị mất, hoặc giấy tờ chứng minh sự thay đổi thông tin nếu có).\n- *Lưu ý:* Nếu thực hiện trực tuyến, anh/chị cần có tài khoản định danh điện tử mức độ 2 trên ứng dụng **VNeID**.\n\n**2. Hình thức thực hiện**\n- **Trực tuyến:** Thực hiện qua ứng dụng **VNeID** hoặc **Cổng Dịch vụ công** (quốc gia hoặc của Bộ Công an).\n- **Trực tiếp:** Nộp hồ sơ tại **Công an cấp huyện** nơi anh/chị thường trú hoặc tạm trú.\n\n**3. Quy trình thực hiện chi tiết**\n- **Đối với hình thức trực tuyến:**\n    - **Bước 1:** Đăng nhập vào ứng dụng VNeID hoặc Cổng Dịch vụ công.\n    - **Bước 2:** Chọn thủ tục \"Cấp lại CCCD\" và khai báo thông tin cá nhân, lý do cấp lại.\n    - **Bước 3:** Tải lên các giấy tờ cần thiết (nếu có) theo yêu cầu hệ thống.\n    - **Bước 4:** Chọn hình thức nhận kết quả (nhận tại công an, qua bưu điện hoặc nhận điện tử nếu được hỗ trợ).\n    - **Bước 5:** Thanh toán lệ phí trực tuyến và nộp hồ sơ.\n    - **Bước 6:** Theo dõi trạng thái xử lý hồ sơ trên hệ thống. Khi có thông báo, anh/chị đến nhận CCCD mới hoặc nhận qua đường bưu điện.\n\n- **Đối với hình thức trực tiếp:**\n    - **Bước 1:** Mang hồ sơ đến Công an cấp huyện.\n    - **Bước 2:** Cán bộ tiếp nhận, kiểm tra hồ sơ và hướng dẫn anh/chị điền tờ khai.\n    - **Bước 3:** Chụp ảnh, lấy dấu vân tay và đo các chỉ số cơ thể (nếu cần thiết).\n    - **Bước 4:** Nộp lệ phí và nhận Phiếu tiếp nhận hồ sơ.\n    - **Bước 5:** Đến nhận CCCD mới theo thời gian hẹn trên Phiếu.\n\n**4. Thời gian và lệ phí**\n- **Thời gian giải quyết:** Thông thường từ **07 đến 15 ngày làm việc** kể từ ngày nhận đủ hồ sơ hợp lệ.\n- **Lệ phí:** **30.000 đồng/lần** (theo quy định hiện hành).\n\n**5. Lưu ý quan trọng**\n- Trong thời gian chờ nhận CCCD mới, anh/chị vẫn có thể sử dụng CCCD cũ (nếu còn hạn và không bị hỏng nặng) hoặc các giấy tờ khác để chứng minh danh tính trong các giao dịch cần thiết.\n- Nếu CCCD bị mất, anh/chị nên làm thủ tục cấp lại ngay để tránh bị người khác lợi dụng.\n\nAnh/chị đang muốn thực hiện thủ tục này theo hình thức trực tuyến hay trực tiếp để em có thể hướng dẫn cụ thể hơn về các bước kỹ thuật hoặc chuẩn bị giấy tờ cho trường hợp của mình ạ?",
+          "createdAt": "2026-07-02T03:01:02.173Z"
+        },
+        {
+          "role": "user",
+          "content": "Hello",
+          "createdAt": "2026-07-02T03:35:00.565Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị! Em có thể giúp gì cho anh/chị về quy trình cấp lại Căn cước công dân (CCCD) không? Nếu anh/chị có câu hỏi cụ thể hay cần thông tin chi tiết, xin hãy cho em biết!",
+          "createdAt": "2026-07-02T03:35:00.565Z"
+        }
+      ]
+    },
+    {
       "id": "10e5c1cc-96f5-4c8e-9386-00554d84d013",
       "currentRoute": "/",
       "state": {
