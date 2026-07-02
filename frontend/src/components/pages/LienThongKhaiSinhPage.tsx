@@ -664,7 +664,6 @@ const LienThongKhaiSinhPage: React.FC = () => {
                 type="button"
                 className={`ltks-step ${state}`}
                 key={step.title}
-                onClick={() => goToStep(stepNo)}
                 role="tab"
                 aria-selected={stepNo === currentStep}
               >
