@@ -24,6 +24,13 @@ interface TTSApiResult {
     useBrowserFallback: boolean;
 }
 
+interface STTApiResult {
+    provider: 'mock' | 'vnpt';
+    transcript: string;
+    confidence: number | null;
+    audioDuration: number | null;
+}
+
 const CHAT_SESSION_KEY = 'gov-bridge-chat-session-id';
 let currentRoute = '/';
 let recentOcrFacts: Record<string, string> = {};
@@ -53,7 +60,7 @@ export const smartbotService = {
                 method: 'DELETE',
             });
         } catch (error) {
-            console.warn('[Assistant] Không thể xóa session ở backend:', error);
+            console.warn('[Assistant] Cannot clear backend session:', error);
         }
     },
     getBackendInfo: () => 'Express Backend API',
@@ -80,68 +87,176 @@ export const smartbotService = {
     },
 };
 
-interface SpeechRecognitionEventLike {
-    resultIndex: number;
-    results: ArrayLike<{
-        isFinal: boolean;
-        0: { transcript: string };
-    }>;
+interface ActiveVoiceCapture {
+    stream: MediaStream;
+    audioContext: AudioContext;
+    source: MediaStreamAudioSourceNode;
+    processor: ScriptProcessorNode;
+    chunks: Float32Array[];
+    sampleRate: number;
+    callback: (transcript: string, isFinal: boolean) => void;
+    onSilence?: () => void;
+    hasSpeech: boolean;
+    silenceStartedAt: number | null;
+    autoStopping: boolean;
+    speechSampleCount: number;
+    maxRms: number;
 }
 
-interface SpeechRecognitionLike {
-    lang: string;
-    continuous: boolean;
-    interimResults: boolean;
-    onresult: ((event: SpeechRecognitionEventLike) => void) | null;
-    onerror: (() => void) | null;
-    onend: (() => void) | null;
-    start: () => void;
-    stop: () => void;
-}
+let activeCapture: ActiveVoiceCapture | null = null;
+const SPEECH_RMS_THRESHOLD = 0.018;
+const SILENCE_END_MS = 1200;
+const MAX_UTTERANCE_MS = 15000;
+const MIN_SPEECH_MS = 300;
 
-type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
-let activeRecognition: SpeechRecognitionLike | null = null;
+const mergeAudioChunks = (chunks: Float32Array[]): Float32Array => {
+    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+    const samples = new Float32Array(totalLength);
+    let offset = 0;
+    chunks.forEach((chunk) => {
+        samples.set(chunk, offset);
+        offset += chunk.length;
+    });
+    return samples;
+};
+
+const writeString = (view: DataView, offset: number, value: string) => {
+    for (let index = 0; index < value.length; index += 1) {
+        view.setUint8(offset + index, value.charCodeAt(index));
+    }
+};
+
+const encodeWav = (samples: Float32Array, sampleRate: number): Blob => {
+    const bytesPerSample = 2;
+    const buffer = new ArrayBuffer(44 + samples.length * bytesPerSample);
+    const view = new DataView(buffer);
+
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, 36 + samples.length * bytesPerSample, true);
+    writeString(view, 8, 'WAVE');
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * bytesPerSample, true);
+    view.setUint16(32, bytesPerSample, true);
+    view.setUint16(34, 16, true);
+    writeString(view, 36, 'data');
+    view.setUint32(40, samples.length * bytesPerSample, true);
+
+    let offset = 44;
+    samples.forEach((sample) => {
+        const clamped = Math.max(-1, Math.min(1, sample));
+        view.setInt16(offset, clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff, true);
+        offset += bytesPerSample;
+    });
+
+    return new Blob([buffer], { type: 'audio/wav' });
+};
 
 export const sttService = {
-    startListening: async (callback: (transcript: string, isFinal: boolean) => void) => {
-        const speechWindow = window as typeof window & {
-            SpeechRecognition?: SpeechRecognitionConstructor;
-            webkitSpeechRecognition?: SpeechRecognitionConstructor;
-        };
-        const Recognition = speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
-
-        if (!Recognition) {
-            throw new Error('Trình duyệt không hỗ trợ nhận dạng giọng nói.');
+    startListening: async (
+        callback: (transcript: string, isFinal: boolean) => void,
+        options: { onSilence?: () => void } = {},
+    ) => {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            throw new Error('Trình duyệt không hỗ trợ thu âm microphone.');
         }
 
-        activeRecognition?.stop();
-        const recognition = new Recognition();
-        activeRecognition = recognition;
-        recognition.lang = 'vi-VN';
-        recognition.continuous = false;
-        recognition.interimResults = true;
-        recognition.onresult = (event) => {
-            let interim = '';
-            let final = '';
-            for (let index = event.resultIndex; index < event.results.length; index += 1) {
-                const result = event.results[index];
-                if (!result) continue;
-                if (result.isFinal) final += result[0].transcript;
-                else interim += result[0].transcript;
+        await sttService.stopListening();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaStreamSource(stream);
+        const processor = audioContext.createScriptProcessor(4096, 1, 1);
+        const chunks: Float32Array[] = [];
+        const startedAt = performance.now();
+
+        processor.onaudioprocess = (event) => {
+            const input = new Float32Array(event.inputBuffer.getChannelData(0));
+            chunks.push(input);
+
+            const capture = activeCapture;
+            if (!capture || capture.autoStopping || !capture.onSilence) return;
+
+            let sum = 0;
+            for (let index = 0; index < input.length; index += 1) {
+                sum += input[index] * input[index];
             }
-            callback((final || interim).trim(), Boolean(final));
+            const rms = Math.sqrt(sum / input.length);
+            const now = performance.now();
+            capture.maxRms = Math.max(capture.maxRms, rms);
+
+            if (rms >= SPEECH_RMS_THRESHOLD) {
+                capture.hasSpeech = true;
+                capture.speechSampleCount += input.length;
+                capture.silenceStartedAt = null;
+                return;
+            }
+
+            if (capture.hasSpeech) {
+                capture.silenceStartedAt ??= now;
+                if (now - capture.silenceStartedAt >= SILENCE_END_MS) {
+                    capture.autoStopping = true;
+                    capture.onSilence();
+                }
+                return;
+            }
+
+            if (now - startedAt >= MAX_UTTERANCE_MS) {
+                capture.autoStopping = true;
+                capture.onSilence();
+            }
         };
-        recognition.onerror = () => {
-            activeRecognition = null;
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+        activeCapture = {
+            stream,
+            audioContext,
+            source,
+            processor,
+            chunks,
+            sampleRate: audioContext.sampleRate,
+            callback,
+            onSilence: options.onSilence,
+            hasSpeech: false,
+            silenceStartedAt: null,
+            autoStopping: false,
+            speechSampleCount: 0,
+            maxRms: 0,
         };
-        recognition.onend = () => {
-            activeRecognition = null;
-        };
-        recognition.start();
     },
-    stopListening: () => {
-        activeRecognition?.stop();
-        activeRecognition = null;
+    stopListening: async (): Promise<string> => {
+        const capture = activeCapture;
+        if (!capture) return '';
+        activeCapture = null;
+
+        capture.processor.disconnect();
+        capture.source.disconnect();
+        capture.stream.getTracks().forEach((track) => track.stop());
+        await capture.audioContext.close().catch(() => undefined);
+
+        const speechMs = (capture.speechSampleCount / capture.sampleRate) * 1000;
+        if (speechMs < MIN_SPEECH_MS) {
+            console.info('[STT] Skip transcription because captured speech is too short.', {
+                speechMs: Math.round(speechMs),
+                maxRms: Number(capture.maxRms.toFixed(4)),
+            });
+            return '';
+        }
+
+        const audioBlob = encodeWav(mergeAudioChunks(capture.chunks), capture.sampleRate);
+        const formData = new FormData();
+        formData.append('audioFile', audioBlob, `recording-${Date.now()}.wav`);
+        formData.append('clientSession', crypto.randomUUID());
+
+        const result = await apiClient<STTApiResult>('/speech/stt', {
+            method: 'POST',
+            body: formData,
+        });
+        const transcript = result.transcript.trim();
+        if (transcript) capture.callback(transcript, true);
+        return transcript;
     },
 };
 
@@ -180,11 +295,11 @@ export const ttsService = {
             await new Promise<void>((resolve, reject) => {
                 activeAudio = new Audio(result.audioUrl!);
                 activeAudio.onended = () => resolve();
-                activeAudio.onerror = () => reject(new Error('Không phát được âm thanh từ backend.'));
+                activeAudio.onerror = () => reject(new Error('Không phát được audio từ backend.'));
                 activeAudio.play().catch(reject);
             });
         } catch (error) {
-            console.warn('[TTS] Backend không khả dụng, dùng giọng đọc trình duyệt:', error);
+            console.warn('[TTS] Backend unavailable, using browser fallback:', error);
             await speakWithBrowser(text);
         } finally {
             activeAudio = null;

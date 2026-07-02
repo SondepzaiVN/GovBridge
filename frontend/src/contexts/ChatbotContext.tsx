@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
+﻿import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
 import type { ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
 import { smartbotService } from '../api/aiServices';
 import { ttsService } from '../api/aiServices';
+import { ApiClientError } from '../api/client';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
 
@@ -77,7 +78,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const [enableVoiceResponse, setEnableVoiceResponse] = React.useState(false);
   const messageIdCounter = useRef(0);
 
-  // Dùng ref để tránh stale closure trong event handlers
+  // Dùng ref để tránh stale closure trong event handlers.
   const onNavigateRef = useRef(onNavigate);
   const onFillFormRef = useRef(onFillForm);
   const enableVoiceRef = useRef(enableVoiceResponse);
@@ -93,13 +94,13 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
 
-  // Update smartbot với route hiện tại
+  // Update smartbot với route hiện tại.
   useEffect(() => {
     smartbotService.setCurrentRoute(currentRoute);
   }, [currentRoute]);
 
   // ============================================================
-  // Hàm thêm message từ bot vào chat (dùng nội bộ)
+  // Hàm thêm message từ bot vào chat.
   // ============================================================
   const addBotMessage = useCallback((
     content: string,
@@ -127,7 +128,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   }, []);
 
   // ============================================================
-  // ✅ Event-Driven: Lắng nghe tất cả AgentEvent từ agentEventBus
+  // Event-driven: lắng nghe tất cả AgentEvent từ agentEventBus.
   // ============================================================
   useEffect(() => {
     const handleAgentEvent = (event: AgentEvent) => {
@@ -138,7 +139,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
         case 'HIGHLIGHT_ELEMENT':
           addBotMessage(event.message, 'text', undefined, event.suggestions);
-          // Cập nhật state để UIHighlighter (legacy path) cũng hoạt động
+          // Cập nhật state để UIHighlighter legacy path cũng hoạt động.
           if (window.innerWidth <= 768) {
             setTimeout(() => {
               dispatch({ type: 'CLOSE' });
@@ -172,7 +173,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
         case 'NAVIGATE':
           addBotMessage(event.message, 'navigation-confirm', undefined, event.suggestions);
-          // Đặt pending navigation — user confirm thì mới navigate
+          // Đặt pending navigation, user confirm thì mới navigate.
           dispatch({
             type: 'SET_PENDING_NAV',
             payload: { route: event.route, serviceName: event.serviceName },
@@ -204,23 +205,17 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       }
     };
 
-    // Đăng ký wildcard listener — bắt tất cả events
+    // Đăng ký wildcard listener để bắt tất cả events.
     agentEventBus.on('*', handleAgentEvent);
     return () => agentEventBus.off('*', handleAgentEvent);
   }, [addBotMessage]);
 
   // ============================================================
-  // handleAIResponse — vẫn hỗ trợ backward compat (mock/VNPT path)
-  // Khi dùng OpenAI Tool Calling, event đã được emit qua agentEventBus
-  // nên ChatbotContext chỉ cần hiển thị message (không re-process intent)
+  // handleAIResponse vẫn hỗ trợ backward compatibility cho mock/VNPT path.
+  // Khi dùng OpenAI Tool Calling, event đã được emit qua agentEventBus.
   // ============================================================
   const handleAIResponse = useCallback((response: AIResponse) => {
-    // Nếu OpenAI Tool Calling đã emit event (và listener đã xử lý),
-    // response này chỉ cần hiển thị message vào chat mà không trigger thêm action
-    // Để tránh duplicate, chúng ta chỉ xử lý khi không phải Tool Calling path
-    // (Tool Calling path đã được xử lý bởi agentEventBus listener ở trên)
-
-    // Legacy path: mock / VNPT (không emit event) → xử lý trực tiếp
+    // Legacy path: mock/VNPT không emit event thì xử lý trực tiếp.
     const msg: ChatMessage = {
       id: createMessageId(),
       role: 'bot',
@@ -274,7 +269,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   }, []);
 
   // ============================================================
-  // sendMessage — điểm vào chính
+  // sendMessage là điểm vào chính.
   // ============================================================
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
@@ -302,11 +297,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       }
     } catch (err) {
       console.error('Send message error:', err);
+      const message = err instanceof ApiClientError
+        ? err.message + (err.code ? ' (' + err.code + ')' : '')
+        : 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!';
       const errMsg: ChatMessage = {
         id: createMessageId(),
         role: 'bot',
         type: 'text',
-        content: 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại! 🙏',
+        content: message,
         timestamp: new Date(),
         suggestions: ['Thử lại', 'Tôi cần hỗ trợ'],
       };
@@ -325,7 +323,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           id: createMessageId(),
           role: 'bot',
           type: 'text',
-          content: 'Xin chào! Tôi là **Trợ lý AI Dịch Vụ Công**\n\nTôi có thể giúp bạn:\n• 📝 Tư vấn thủ tục hành chính\n• ✍️ Tự động điền form từ giọng nói\n• 📷 Đọc thông tin từ ảnh CCCD\n• 💡 Chỉ dẫn vị trí các nút trên trang\n\nBạn cần hỗ trợ gì hôm nay?',
+          content: 'Xin chào! Tôi là **Trợ lý AI Dịch Vụ Công**\n\nTôi có thể giúp bạn:\n- Tư vấn thủ tục hành chính\n- Tự động điền form từ giọng nói\n- Đọc thông tin từ ảnh CCCD\n- Chỉ dẫn vị trí các nút trên trang\n\nBạn cần hỗ trợ gì hôm nay?',
           timestamp: new Date(),
           suggestions: ['Đăng ký khai sinh', 'Làm hộ khẩu mới', 'Cấp lại CCCD', 'Đăng ký kết hôn'],
         };
@@ -347,7 +345,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         id: createMessageId(),
         role: 'bot',
         type: 'text',
-        content: `Đã chuyển đến trang **${state.pendingNavigation.serviceName}**! ✅\n\nBạn có thể bắt đầu điền thông tin. Tôi sẵn sàng hỗ trợ!`,
+        content: `Đã chuyển đến trang **${state.pendingNavigation.serviceName}**!\n\nBạn có thể bắt đầu điền thông tin. Tôi sẵn sàng hỗ trợ!`,
         timestamp: new Date(),
         suggestions: ['Điền bằng giọng nói', 'Upload ảnh CCCD', 'Hướng dẫn điền form'],
       };

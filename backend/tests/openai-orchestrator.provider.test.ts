@@ -54,6 +54,9 @@ const toolCallResponse = (
               caseSuggestion: null,
               followUpQuestion: null,
               fieldExplanation: null,
+              navigationRoute: null,
+              highlightElementId: null,
+              nextStepRequested: false,
               suggestions: [],
             }),
           }],
@@ -90,6 +93,9 @@ const orchestratorResponse = (
         caseSuggestion: null,
         followUpQuestion: null,
         fieldExplanation: null,
+        navigationRoute: null,
+        highlightElementId: null,
+        nextStepRequested: false,
         suggestions: [],
       }),
     }],
@@ -259,6 +265,58 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
         fields: { hoTen: 'Nguyễn Thị Lan' },
       }),
     ]);
+  });
+
+  it('sends schema-backed form values to OpenAI runtime context', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      orchestratorResponse('Mình đã thấy thông tin bạn đã nhập.'),
+    ]);
+    const knowledge = new MockKnowledgeProvider();
+
+    await request(createOpenAiTestApp(client, knowledge))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Còn thiếu gì không?',
+        currentRoute: '/ho-khau',
+        formValues: {
+          hoTen: 'Nguyen Van An',
+          cccd: '012345678901',
+          unknownFrontendOnlyField: 'must not be sent',
+        },
+      })
+      .expect(200);
+
+    const instructions = String(client.requests[0]?.instructions);
+    expect(instructions).toContain('"knownFields":{"hoTen":"Nguyen Van An","cccd":"012345678901"}');
+    expect(instructions).not.toContain('knownFieldIds');
+    expect(instructions).not.toContain('unknownFrontendOnlyField');
+  });
+
+  it('does not call KnowledgeProvider when OpenAI asks for a tool on small talk', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      toolCallResponse(JSON.stringify({
+        question: 'Xin chào',
+        knowledgeType: 'procedure_identification',
+        procedureHint: null,
+        selectedCaseHint: null,
+        fieldContext: null,
+        locality: null,
+      })),
+    ]);
+    const knowledge = new MockKnowledgeProvider();
+
+    const response = await request(createOpenAiTestApp(client, knowledge))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Xin chào',
+        currentRoute: '/',
+      })
+      .expect(200);
+
+    expect(knowledge.requests).toEqual([]);
+    expect(response.body.data.response.intent).toBe('CHAT');
+    expect(response.body.data.response.message).toContain('Xin chào');
+    expect(response.body.data.actions).toEqual([]);
   });
 
   it('rejects an unregistered tool name without calling KnowledgeProvider', async () => {
