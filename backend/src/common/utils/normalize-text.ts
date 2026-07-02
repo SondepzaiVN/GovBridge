@@ -5,4 +5,5 @@ export const normalizeText = (value: string): string =>
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'D')
     .toLowerCase()
+    .replace(/[^\w\s]/g, '')
     .trim();

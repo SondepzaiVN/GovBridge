@@ -7,6 +7,7 @@ import type {
   AssistantToolContext,
   ExtractedFact,
 } from './assistant.types.js';
+import { NextStepTool } from './tools/next-step.tool.js';
 
 const MIN_FILL_CONFIDENCE = 0.8;
 type ConfirmFillAction = Extract<AgentAction, { type: 'REQUEST_CONFIRM_FILL' }>;
@@ -36,11 +37,11 @@ const normalizePhone = (value: string): string => {
 };
 
 const findField = (fact: ExtractedFact, fields: ProcedureField[]): ProcedureField | null => {
-  const normalizedHint = normalizeText(fact.fieldHint);
+  const normalizedHint = normalizeText(fact.fieldHint).replace(/\s+/g, '');
   return fields.find((field) =>
     field.id === fact.fieldHint
-    || normalizeText(field.id) === normalizedHint
-    || normalizeText(field.label) === normalizedHint,
+    || normalizeText(field.id).replace(/\s+/g, '') === normalizedHint
+    || normalizeText(field.label).replace(/\s+/g, '') === normalizedHint,
   ) ?? null;
 };
 
@@ -144,13 +145,95 @@ export const planAssistantResult = (
   providerResult: OrchestratorFinalResult,
 ): AssistantResult => {
   const understanding = providerResult.understanding;
-  if (!understanding || !context.currentProcedure) {
+  if (!understanding) {
     return {
       response: providerResult.response,
       actions: providerResult.actions,
     };
   }
 
+  let finalIntent = providerResult.response.intent;
+  let finalMessage = providerResult.response.message;
+  let finalSuggestions = providerResult.response.suggestions;
+  let finalData = providerResult.response.data;
+  const actions = [...providerResult.actions];
+
+  // 1. Handle Navigation
+  if (understanding.navigationRoute) {
+    const targetProcedure = context.procedures.find((p) => p.route === understanding.navigationRoute);
+    if (targetProcedure) {
+      actions.push({
+        type: 'NAVIGATE',
+        route: targetProcedure.route,
+        serviceName: targetProcedure.name,
+        message: finalMessage,
+      });
+      finalIntent = 'NAVIGATE';
+      finalData = { ...finalData, route: targetProcedure.route, serviceName: targetProcedure.name };
+      // Nếu đã chuyển trang, không cần xử lý điền form cũ
+      return {
+        response: { 
+          intent: finalIntent, 
+          message: finalMessage, 
+          ...(finalData ? { data: finalData } : {}),
+          ...(finalSuggestions ? { suggestions: finalSuggestions } : {}),
+        },
+        actions,
+      };
+    }
+  }
+
+  // 1.5 Handle Highlight
+  if (understanding.highlightElementId) {
+    actions.push({
+      type: 'HIGHLIGHT_ELEMENT',
+      elementId: understanding.highlightElementId,
+      message: finalMessage,
+    });
+    finalIntent = 'HIGHLIGHT';
+    finalData = { ...finalData, elementId: understanding.highlightElementId };
+    return {
+      response: { 
+        intent: finalIntent, 
+        message: finalMessage, 
+        ...(finalData ? { data: finalData } : {}),
+        ...(finalSuggestions ? { suggestions: finalSuggestions } : {}),
+      },
+      actions,
+    };
+  }
+
+  // Nếu không có procedure hiện tại thì không thể next step hay fill form
+  if (!context.currentProcedure) {
+    const followUp = understanding.followUpQuestion?.trim();
+    if (followUp) {
+      finalIntent = 'CLARIFY';
+      finalMessage = `${finalMessage.trim()}\n\n${followUp}`.trim();
+    }
+    return {
+      response: { 
+        intent: finalIntent, 
+        message: finalMessage, 
+        ...(finalData ? { data: finalData } : {}),
+        ...(finalSuggestions ? { suggestions: finalSuggestions } : {}),
+      },
+      actions,
+    };
+  }
+
+  // 2. Handle Next Step
+  if (understanding.nextStepRequested) {
+    const nextStepTool = new NextStepTool();
+    const nextResult = nextStepTool.execute(context);
+    if (nextResult.response.intent === 'VALIDATE') {
+      return nextResult; // Lỗi validate thì dừng ngay
+    } else {
+      actions.push(...nextResult.actions);
+      finalSuggestions = mergeSuggestions(finalSuggestions, nextResult.response.suggestions);
+    }
+  }
+
+  // 3. Handle Form Fill
   const fields: Record<string, string> = {};
   const fieldLabels: Record<string, string> = {};
 
@@ -167,37 +250,29 @@ export const planAssistantResult = (
 
   if (Object.keys(fields).length > 0) {
     const action = createConfirmAction(context, fields, fieldLabels);
-    const suggestions = mergeSuggestions(
-      providerResult.response.suggestions,
-      action.suggestions,
-    );
-    return {
-      response: {
-        intent: 'CLARIFY',
-        message: providerResult.responseProvenance === 'knowledge_composer'
-          ? mergeConfirmationMessage(
-              providerResult.response.message,
-              action.message,
-            )
-          : action.message,
-        data: { fields, fieldLabels, previousValues: action.previousValues },
-        ...(suggestions ? { suggestions } : {}),
-      },
-      actions: [action],
-    };
+    finalSuggestions = mergeSuggestions(finalSuggestions, action.suggestions);
+    finalIntent = 'CLARIFY';
+    finalMessage = providerResult.responseProvenance === 'knowledge_composer'
+      ? mergeConfirmationMessage(finalMessage, action.message)
+      : action.message;
+    finalData = { ...finalData, fields, fieldLabels, previousValues: action.previousValues };
+    actions.push(action);
+  } else {
+    // 4. Handle followUp (nếu không có form fill)
+    const followUp = understanding.followUpQuestion?.trim();
+    if (followUp) {
+      finalIntent = 'CLARIFY';
+      finalMessage = `${finalMessage.trim()}\n\n${followUp}`.trim();
+    }
   }
-
-  const followUp = understanding.followUpQuestion?.trim();
-  const message = followUp
-    ? `${providerResult.response.message.trim()}\n\n${followUp}`.trim()
-    : providerResult.response.message;
 
   return {
     response: {
-      ...providerResult.response,
-      intent: followUp ? 'CLARIFY' : providerResult.response.intent,
-      message,
+      intent: finalIntent,
+      message: finalMessage,
+      ...(finalData ? { data: finalData } : {}),
+      ...(finalSuggestions ? { suggestions: finalSuggestions } : {}),
     },
-    actions: providerResult.actions,
+    actions,
   };
 };
