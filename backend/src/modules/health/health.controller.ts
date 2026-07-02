@@ -3,6 +3,7 @@ import { sendSuccess } from '../../common/http/response.js';
 
 interface HealthOptions {
   assistantProvider: string;
+  knowledgeProvider: string;
   ocrProvider: string;
   ttsProvider: string;
 }
@@ -20,6 +21,8 @@ export class HealthController {
       storage: 'json-file',
       providers: {
         assistant: this.options.assistantProvider,
+        orchestrator: this.options.assistantProvider,
+        knowledge: this.options.knowledgeProvider,
         ocr: this.options.ocrProvider,
         tts: this.options.ttsProvider,
       },
