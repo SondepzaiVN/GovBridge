@@ -683,7 +683,10 @@ const LienThongKhaiSinhPage: React.FC = () => {
         <form className={`ltks-form ltks-form-step-${currentStep}`} onSubmit={(event) => event.preventDefault()} noValidate>
           <div className="ltks-form-body">
             {current.sections.map((section) => (
-              <section className="ltks-section" key={section.title}>
+              <section
+                className={`ltks-section${section.sameArea && isSameRegistrationArea ? ' same-area-locked' : ''}`}
+                key={section.title}
+              >
                 {!section.reviewTabs && !section.hideTitle && (
                   <div className="ltks-section-title">
                     <h3>{section.title}</h3>

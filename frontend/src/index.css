@@ -8013,6 +8013,14 @@ a:hover {
     overflow: hidden;
 }
 
+.ltkt-form-frame .ltkt-form-card > div {
+    margin-bottom: 15px !important;
+}
+
+.ltkt-form-frame .ltkt-form-card > div:last-child {
+    margin-bottom: 0 !important;
+}
+
 .ltkt-form-frame .ltkt-form-card > div:has(> h3) {
     min-height: 42px;
     margin: 0 -20px 18px !important;
@@ -8113,12 +8121,16 @@ a:hover {
     align-items: center;
     gap: 8px;
     color: #333;
-    font-size: 14px;
+    font-size: 0.79rem;
     font-weight: 600;
     line-height: 1.35;
     justify-self: start;
     text-align: left;
     white-space: nowrap;
+}
+
+.ltks-app-page .ltks-section.same-area-locked {
+    opacity: 0.72;
 }
 
 .ltks-app-page .ltks-inline-check input {
