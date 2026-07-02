@@ -7249,6 +7249,23 @@ a:hover {
     font-size: 0.86rem;
 }
 
+.tamtru-doc-table .dktt-doc-name strong {
+    color: #111827;
+    font-size: 0.77rem;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.tamtru-table-note {
+    margin-top: 8px;
+}
+
+.tamtru-upload-case-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .tamtru-doc-table input[type='checkbox'] {
     width: 18px;
     height: 18px;
