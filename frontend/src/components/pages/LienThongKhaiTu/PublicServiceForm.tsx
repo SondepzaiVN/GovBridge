@@ -150,6 +150,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
   // --- GIAO DIỆN CHÍNH ---
   return (
     <div
+      className="ltkt-public-service-form"
       style={{
         maxWidth: "960px",
         margin: "20px auto",
@@ -161,6 +162,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
       }}
     >
       {/* KHỐI 1: KHAI TỬ */}
+      <section className="ltkt-form-card">
       <div
         style={{ display: "flex", alignItems: "center", marginBottom: "25px" }}
       >
@@ -278,6 +280,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           Cơ quan thực hiện <span style={{ color: "red" }}>*</span>
         </label>
         <div
+          className="ltkt-agency-display"
           style={{
             padding: "8px 0",
             fontSize: "15px",
@@ -287,8 +290,10 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           {khaituAgency}
         </div>
       </div>
+      </section>
 
       {/* KHỐI 2: THƯỜNG TRÚ */}
+      <section className="ltkt-form-card">
       <div
         style={{
           display: "flex",
@@ -443,6 +448,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           Cơ quan thực hiện <span style={{ color: "red" }}>*</span>
         </label>
         <div
+          className="ltkt-agency-display"
           style={{
             padding: "8px 0",
             fontSize: "15px",
@@ -452,8 +458,10 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           {thuongtruAgency}
         </div>
       </div>
+      </section>
 
       {/* KHỐI 3: MAI TÁNG PHÍ */}
+      <section className="ltkt-form-card">
       <div
         style={{ display: "flex", alignItems: "center", marginBottom: "25px" }}
       >
@@ -724,6 +732,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
                 Cơ quan thực hiện <span style={{ color: "red" }}>*</span>
               </label>
               <div
+                className="ltkt-agency-display"
                 style={{
                   padding: "8px 0",
                   fontSize: "15px",
@@ -735,6 +744,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             </div>
           </>
         ))}
+      </section>
 
       {/* FOOTER BUTTONS */}
       <div
