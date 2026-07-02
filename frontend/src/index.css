@@ -8270,6 +8270,11 @@ a:hover {
     border-color: #d71920;
 }
 
+.ltks-app-page .ltks-step:not(.active):not(.done) {
+    background: #e3e3e3;
+    border-color: #e3e3e3;
+}
+
 .ltks-app-page .ltks-step span {
     margin: 0 0 4px;
     color: #24272c;
