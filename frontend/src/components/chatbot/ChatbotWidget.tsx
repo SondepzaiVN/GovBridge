@@ -217,15 +217,6 @@ const ChatbotWidget: React.FC = () => {
                                 >
                                     <ChevronDown size={18} />
                                 </button>
-                                <button
-                                    className="chatbot-panel-control chatbot-panel-control--close"
-                                    type="button"
-                                    onClick={handleClose}
-                                    title="Đóng"
-                                    aria-label="Đóng chatbot"
-                                >
-                                    <X size={16} />
-                                </button>
                             </div>
                             {state.messages.length === 0 ? (
                                 <WelcomeState />
