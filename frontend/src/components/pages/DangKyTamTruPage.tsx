@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bot, ChevronRight, FileText, HelpCircle, Home, Save, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Bot, ChevronDown, ChevronRight, ChevronUp, FileDown, FileText, HelpCircle, Home, Paperclip, Plus, Save, Send, Trash2 } from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import {
     dateFormatOptions,
@@ -634,18 +634,23 @@ const DangKyTamTruPage: React.FC = () => {
                     </Section>
 
                     <Section number={5} title="NHỮNG THÀNH VIÊN TRONG HỘ GIA ĐÌNH CÙNG THAY ĐỔI">
+                        <div className="dktt-table-caption">
+                            <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none' }}>
+                                Những thành viên trong hộ gia đình cùng thay đổi
+                            </div>
+                            <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
+                        </div>
                         <div className="dktt-member-table-wrapper">
                             <table className="dktt-member-table tamtru-member-table">
                                 <thead>
                                     <tr>
                                         <th className="col-action">Thao tác</th>
                                         <th className="col-stt">STT</th>
-                                        <th>Họ và tên <span className="req">*</span></th>
-                                        <th>Định dạng ngày sinh</th>
-                                        <th>Ngày sinh <span className="req">*</span></th>
-                                        <th>Giới tính <span className="req">*</span></th>
-                                        <th>Số ĐDCN <span className="req">*</span></th>
-                                        <th>Quan hệ với chủ hộ <span className="req">*</span></th>
+                                        <th>Họ và tên <span className="req">(*)</span></th>
+                                        <th>Ngày sinh <span className="req">(*)</span></th>
+                                        <th>Giới tính <span className="req">(*)</span></th>
+                                        <th>Số ĐDCN (CCCD) <span className="req">(*)</span></th>
+                                        <th>Quan hệ với chủ hộ <span className="req">(*)</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -663,23 +668,18 @@ const DangKyTamTruPage: React.FC = () => {
                                                 )}
                                             </td>
                                             <td className="col-stt">{index + 1}</td>
-                                            <td><input className="dktt-table-input" value={member.fullName} onChange={(event) => updateMember(member.id, { fullName: event.target.value })} /></td>
-                                            <td>
-                                                <select className="dktt-table-select" value={member.dateFormat} onChange={(event) => updateMember(member.id, { dateFormat: event.target.value })}>
-                                                    {dateFormatOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                                                </select>
-                                            </td>
+                                            <td><input className="dktt-table-input" value={member.fullName} placeholder="Họ và tên" onChange={(event) => updateMember(member.id, { fullName: event.target.value })} /></td>
                                             <td><input className="dktt-table-input" type="date" value={member.dateOfBirth} onChange={(event) => updateMember(member.id, { dateOfBirth: event.target.value })} /></td>
                                             <td>
                                                 <select className="dktt-table-select" value={member.gender} onChange={(event) => updateMember(member.id, { gender: event.target.value })}>
-                                                    <option value="">Chọn</option>
+                                                    <option value="">-- Chọn --</option>
                                                     {genderOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                                                 </select>
                                             </td>
-                                            <td><input className="dktt-table-input" maxLength={12} value={member.citizenId} onChange={(event) => updateMember(member.id, { citizenId: event.target.value })} /></td>
+                                            <td><input className="dktt-table-input" maxLength={12} value={member.citizenId} placeholder="12 chữ số" onChange={(event) => updateMember(member.id, { citizenId: event.target.value })} /></td>
                                             <td>
                                                 <select className="dktt-table-select" value={member.relationshipWithHead} onChange={(event) => updateMember(member.id, { relationshipWithHead: event.target.value })}>
-                                                    <option value="">Chọn</option>
+                                                    <option value="">-- Chọn --</option>
                                                     {relationshipOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                                                 </select>
                                             </td>
@@ -688,18 +688,39 @@ const DangKyTamTruPage: React.FC = () => {
                                 </tbody>
                             </table>
                         </div>
+                        <p className="dktt-note tamtru-table-note">
+                            Bảng này chỉ cần khai khi có thêm nhân khẩu cùng thay đổi tạm trú. Nếu đã nhập một dòng thì cần điền đủ toàn bộ cột bắt buộc của dòng đó.
+                        </p>
                     </Section>
 
                     <Section number={6} title="HỒ SƠ ĐÍNH KÈM">
-                        <p className="dktt-note">Vui lòng đính kèm các tệp hình ảnh về các loại giấy tờ sau để giúp cơ quan chức năng xác minh và giải quyết nhanh hồ sơ của ông/bà.</p>
+                        <div className="dktt-upload-summary">
+                            <p className="dktt-note" style={{ marginBottom: 8 }}>
+                                Vui lòng đính kèm các tệp hình ảnh về các loại giấy tờ sau để giúp cơ quan chức năng xác minh và giải quyết nhanh hồ sơ của ông/bà.
+                            </p>
+                            <p className="dktt-upload-meta">
+                                Mỗi thời điểm áp dụng một trường hợp hồ sơ. Các giấy tờ bắt buộc luôn được giữ ở trạng thái chọn; các giấy tờ có thể khai thác CSDL chuyên ngành thì không bắt buộc tải file lên.
+                            </p>
+                        </div>
                         <div className="dktt-upload-case-list">
                             {dossierCases.map((dossierCase) => {
                                 const isOpen = activeDossierCaseId === dossierCase.id;
                                 return (
                                     <div key={dossierCase.id} className={`dktt-upload-case${isOpen ? ' open' : ''}`}>
                                         <button type="button" className="dktt-upload-case-header" onClick={() => setActiveDossierCaseId(dossierCase.id)}>
-                                            <span>{dossierCase.title}</span>
-                                            <input type="radio" checked={form.selectedDossierCaseId === dossierCase.id} onChange={() => selectDossierCase(dossierCase.id)} />
+                                            <div className="dktt-upload-case-title">
+                                                <span className="dktt-upload-case-bullet">-</span>
+                                                <span>{dossierCase.title}</span>
+                                            </div>
+                                            <div className="tamtru-upload-case-controls">
+                                                <input
+                                                    type="radio"
+                                                    checked={form.selectedDossierCaseId === dossierCase.id}
+                                                    onClick={(event) => event.stopPropagation()}
+                                                    onChange={() => selectDossierCase(dossierCase.id)}
+                                                />
+                                                {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                            </div>
                                         </button>
                                         {isOpen && (
                                             <div className="dktt-upload-case-body">
@@ -707,16 +728,16 @@ const DangKyTamTruPage: React.FC = () => {
                                                     <table className="dktt-member-table dktt-doc-table tamtru-doc-table">
                                                         <thead>
                                                             <tr>
-                                                                <th>STT</th>
-                                                                <th>Chọn</th>
-                                                                <th>Tên giấy tờ</th>
-                                                                <th>Loại giấy tờ</th>
-                                                                <th>Tải file mẫu</th>
-                                                                <th>Khai thác CSDL chuyên ngành / Biểu mẫu điện tử</th>
-                                                                <th>Đính kèm</th>
-                                                                <th>Số lượng</th>
-                                                                <th>Ghi chú</th>
-                                                                <th>Thao tác</th>
+                                                                <th className="dktt-doc-col-stt">STT</th>
+                                                                <th className="dktt-doc-col-pick" />
+                                                                <th className="dktt-doc-col-name">Tên giấy tờ</th>
+                                                                <th className="dktt-doc-col-kind">Loại giấy tờ</th>
+                                                                <th className="dktt-doc-col-template">Tải file mẫu</th>
+                                                                <th className="dktt-doc-col-specialized">Khai thác CSDL chuyên ngành/ Biểu mẫu điện tử</th>
+                                                                <th className="dktt-doc-col-attach">Đính kèm</th>
+                                                                <th className="dktt-doc-col-quantity">Số lượng</th>
+                                                                <th className="dktt-doc-col-note">Ghi chú</th>
+                                                                <th className="dktt-doc-col-action">Thao tác</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -724,16 +745,52 @@ const DangKyTamTruPage: React.FC = () => {
                                                                 const draft = form.attachmentDrafts[document.id];
                                                                 return (
                                                                     <tr key={document.id}>
-                                                                        <td>{index + 1}</td>
-                                                                        <td><input type="checkbox" checked={draft?.checked || false} onChange={(event) => updateAttachment(document.id, { checked: event.target.checked })} /></td>
-                                                                        <td>{document.name}{document.required && <span className="required"> *</span>}</td>
-                                                                        <td>{document.kind}</td>
-                                                                        <td><button type="button" className="dktt-doc-icon-btn">Mẫu</button></td>
-                                                                        <td><span className="dktt-doc-chip">Không áp dụng</span></td>
-                                                                        <td>{draft?.fileName || 'Chưa chọn file'}</td>
-                                                                        <td><input className="dktt-table-input" value={draft?.quantity || document.quantity} onChange={(event) => updateAttachment(document.id, { quantity: event.target.value })} /></td>
-                                                                        <td><input className="dktt-table-input" value={draft?.note || ''} onChange={(event) => updateAttachment(document.id, { note: event.target.value })} /></td>
-                                                                        <td><button type="button" className="dktt-doc-icon-btn" onClick={() => updateAttachment(document.id, { checked: true, fileName: `${document.id}-demo.pdf`, quantity: draft?.quantity || document.quantity })}>Chọn file</button></td>
+                                                                        <td className="dktt-doc-cell-center dktt-doc-cell-stt">{index + 1}</td>
+                                                                        <td className="dktt-doc-cell-center dktt-doc-cell-pick">
+                                                                            <input className="dktt-doc-checkbox" type="checkbox" checked={draft?.checked || false} onChange={(event) => updateAttachment(document.id, { checked: event.target.checked })} disabled={document.required} />
+                                                                        </td>
+                                                                        <td>
+                                                                            <div className="dktt-doc-name">
+                                                                                <strong>
+                                                                                    {document.name}
+                                                                                    {document.required && <span className="req"> *</span>}
+                                                                                </strong>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <select className="dktt-table-select dktt-doc-select" value={document.kind} disabled>
+                                                                                <option value={document.kind}>{document.kind}</option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td className="dktt-doc-cell-center">
+                                                                            <button type="button" className="dktt-doc-icon-btn" title="Tải file mẫu">
+                                                                                <FileDown size={14} />
+                                                                            </button>
+                                                                        </td>
+                                                                        <td><span className="dktt-table-placeholder">Không áp dụng</span></td>
+                                                                        <td>
+                                                                            <label className="dktt-doc-attach">
+                                                                                <input
+                                                                                    type="file"
+                                                                                    accept="image/png,image/jpeg,application/pdf"
+                                                                                    onChange={(event) => updateAttachment(document.id, { checked: true, fileName: event.target.files?.[0]?.name || '', quantity: draft?.quantity || document.quantity })}
+                                                                                />
+                                                                                <Paperclip size={14} />
+                                                                                <span>{draft?.fileName || 'Chọn file'}</span>
+                                                                            </label>
+                                                                        </td>
+                                                                        <td><input className="dktt-table-input dktt-doc-qty-input" value={draft?.quantity || document.quantity} onChange={(event) => updateAttachment(document.id, { quantity: event.target.value })} /></td>
+                                                                        <td><input className="dktt-table-input dktt-doc-note-input" value={draft?.note || ''} placeholder="Ghi chú" onChange={(event) => updateAttachment(document.id, { note: event.target.value })} /></td>
+                                                                        <td className="dktt-doc-cell-center">
+                                                                            <label className="dktt-doc-icon-btn" title="Thêm tệp đính kèm">
+                                                                                <input
+                                                                                    type="file"
+                                                                                    accept="image/png,image/jpeg,application/pdf"
+                                                                                    onChange={(event) => updateAttachment(document.id, { checked: true, fileName: event.target.files?.[0]?.name || `${document.id}-demo.pdf`, quantity: draft?.quantity || document.quantity })}
+                                                                                />
+                                                                                <Plus size={14} />
+                                                                            </label>
+                                                                        </td>
                                                                     </tr>
                                                                 );
                                                             })}
