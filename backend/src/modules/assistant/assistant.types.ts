@@ -1,4 +1,5 @@
 import type { Procedure } from '../procedures/procedure.types.js';
+import type { KnowledgeSessionIdentity } from './knowledge.types.js';
 
 export type AIIntent = 'CHAT' | 'FILL_FORM' | 'NAVIGATE' | 'HIGHLIGHT' | 'VALIDATE' | 'OCR_CONFIRM' | 'CLARIFY';
 
@@ -88,8 +89,9 @@ export interface AssistantUnderstanding {
   fieldExplanation: FieldExplanation | null;
 }
 
-export interface AssistantProviderResult extends AssistantResult {
+export interface OrchestratorFinalResult extends AssistantResult {
   understanding?: AssistantUnderstanding;
+  responseProvenance?: 'orchestrator' | 'knowledge_composer';
 }
 
 export interface AssistantFormContext {
@@ -106,6 +108,13 @@ export interface AssistantSessionState {
   formSnapshot: Record<string, string>;
   candidateCases: CaseSuggestion[];
   recentFacts: ExtractedFact[];
+  confirmedCase?: ConfirmedProcedureCase;
+  knowledgeSession?: KnowledgeSessionIdentity;
+}
+
+export interface ConfirmedProcedureCase {
+  id: string;
+  procedureId: string;
 }
 
 export interface AssistantToolContext {
@@ -122,10 +131,5 @@ export interface AssistantToolContext {
 export interface AssistantTool {
   readonly name: string;
   canHandle(context: AssistantToolContext): boolean;
-  execute(context: AssistantToolContext): Promise<AssistantResult> | AssistantResult;
-}
-
-export interface AssistantProvider {
-  readonly name: string;
-  sendMessage(context: AssistantToolContext, history: ConversationMessage[]): Promise<AssistantProviderResult>;
+  execute(context: AssistantToolContext): Promise<OrchestratorFinalResult> | OrchestratorFinalResult;
 }

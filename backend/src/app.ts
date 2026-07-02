@@ -8,16 +8,20 @@ import { errorHandler } from './common/middleware/error-handler.js';
 import { notFoundHandler } from './common/middleware/not-found.js';
 import { requestId } from './common/middleware/request-id.js';
 import { env } from './config/env.js';
+import { OpenAiOrchestratorProvider } from './integrations/openai/openai-orchestrator.provider.js';
+import { HttpOpenAiResponsesClient } from './integrations/openai/openai-responses.client.js';
 import { VnptOcrProvider } from './integrations/vnpt/vnpt-ocr.provider.js';
 import { VnptTtsProvider } from './integrations/vnpt/vnpt-tts.provider.js';
+import { VnptAgenticKnowledgeProvider } from './integrations/vnpt/vnpt-agentic-knowledge.provider.js';
 import { ApplicationRepository } from './modules/applications/application.repository.js';
 import { ApplicationService } from './modules/applications/application.service.js';
 import { AssistantSessionRepository } from './modules/assistant/assistant.repository.js';
 import { AssistantService } from './modules/assistant/assistant.service.js';
-import { MockAssistantProvider } from './modules/assistant/providers/mock-assistant.provider.js';
-import { VnptSmartbotProvider } from './integrations/vnpt/vnpt-smartbot.provider.js';
+import type { KnowledgeProvider } from './modules/assistant/knowledge.types.js';
+import type { OrchestratorProvider } from './modules/assistant/orchestrator.types.js';
+import { MockKnowledgeProvider } from './modules/assistant/providers/mock-knowledge.provider.js';
+import { MockOrchestratorProvider } from './modules/assistant/providers/mock-orchestrator.provider.js';
 import { buildAssistantTools } from './modules/assistant/tools/index.js';
-import type { AssistantProvider } from './modules/assistant/assistant.types.js';
 import { IdentityService } from './modules/identity/identity.service.js';
 import { MockOcrProvider } from './modules/identity/providers/mock-ocr.provider.js';
 import { ProcedureRepository } from './modules/procedures/procedure.repository.js';
@@ -33,7 +37,8 @@ export interface CreateAppOptions {
   corsOrigins?: string[];
   ocrProvider?: IdentityOcrProvider;
   ttsProvider?: TtsProvider;
-  assistantProvider?: AssistantProvider;
+  orchestratorProvider?: OrchestratorProvider;
+  knowledgeProvider?: KnowledgeProvider;
 }
 
 export const createApp = (options: CreateAppOptions = {}): Express => {
@@ -63,26 +68,47 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
     })
     : new MockTtsProvider());
 
-  const assistantProvider = options.assistantProvider ?? (env.ASSISTANT_PROVIDER === 'vnpt'
-    ? new VnptSmartbotProvider({
-        url: env.VNPT_SMARTBOT_URL,
-        accessToken: env.VNPT_SMARTBOT_ACCESS_TOKEN,
-        tokenId: env.VNPT_SMARTBOT_TOKEN_ID,
-        tokenKey: env.VNPT_SMARTBOT_TOKEN_KEY,
-        botId: env.VNPT_SMARTBOT_BOT_ID,
+  const orchestratorProvider = options.orchestratorProvider ?? (
+    env.ORCHESTRATOR_PROVIDER === 'openai'
+      ? new OpenAiOrchestratorProvider({
+          client: new HttpOpenAiResponsesClient({
+            baseUrl: env.OPENAI_BASE_URL,
+            apiKey: env.OPENAI_API_KEY,
+            timeoutMs: env.OPENAI_TIMEOUT_MS,
+          }),
+          model: env.OPENAI_MODEL,
+          maxOutputTokens: env.OPENAI_MAX_TOKENS,
+          temperature: env.OPENAI_TEMPERATURE,
+        })
+      : new MockOrchestratorProvider(buildAssistantTools())
+  );
+  const knowledgeProvider = options.knowledgeProvider ?? (env.KNOWLEDGE_PROVIDER === 'vnpt'
+    ? new VnptAgenticKnowledgeProvider({
+        url: env.VNPT_AGENTIC_URL,
+        accessToken: env.VNPT_AGENTIC_ACCESS_TOKEN,
+        tokenId: env.VNPT_AGENTIC_TOKEN_ID,
+        tokenKey: env.VNPT_AGENTIC_TOKEN_KEY,
+        botId: env.VNPT_AGENTIC_BOT_ID,
+        timeoutMs: env.VNPT_AGENTIC_TIMEOUT_MS,
       })
-    : new MockAssistantProvider(buildAssistantTools()));
+    : new MockKnowledgeProvider());
 
   const procedureService = new ProcedureService(procedures);
   const apiRouter = createApiRouter({
     procedureService,
     applicationService: new ApplicationService(applications, procedures),
-    assistantService: new AssistantService(sessions, procedures, assistantProvider),
+    assistantService: new AssistantService(
+      sessions,
+      procedures,
+      orchestratorProvider,
+      knowledgeProvider,
+    ),
     identityService: new IdentityService(ocrProvider),
     speechService: new SpeechService(ttsProvider),
     uploadMaxMb: env.UPLOAD_MAX_MB,
     providerNames: {
-      assistant: env.ASSISTANT_PROVIDER,
+      assistant: orchestratorProvider.name,
+      knowledge: knowledgeProvider.name,
       ocr: ocrProvider.name,
       tts: ttsProvider.name,
     },
