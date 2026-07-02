@@ -16,7 +16,6 @@ import {
     MessageSquareText,
     Phone,
     RotateCcw,
-    Search,
     Send,
     UserRound,
     X,
@@ -27,33 +26,19 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
-
-type ApplicationStatus = 'Chờ tiếp nhận' | 'Đang xử lý' | 'Đã tiếp nhận' | 'Đã từ chối' | 'Đã phê duyệt';
-
-type Application = {
-    id: string;
-    procedure: string;
-    applicant: string;
-    citizenId: string;
-    phone: string;
-    email: string;
-    submittedAt: string;
-    dueDate: string;
-    channel: string;
-    status: ApplicationStatus;
-    documents: Array<{ name: string; state: 'Đã có' | 'Cần kiểm tra' }>;
-    message?: string;
-    caseNote?: string;
-    officerNote?: string;
-    details?: Record<string, string>;
-    attachments?: AttachmentMetadata[];
-};
+import {
+    filterOfficerApplications,
+    normalizeOfficerApplication,
+    type OfficerApplication as Application,
+    type OfficerApplicationFilters,
+    type OfficerApplicationStatus as ApplicationStatus,
+} from '../../utils/officerApplicationFilters';
 
 type ConfirmAction = 'accept' | 'reject' | 'process' | 'approve' | null;
 
 const STORAGE_KEY = 'officerApplications';
 
-const INITIAL_APPLICATIONS: Application[] = [
+const RAW_INITIAL_APPLICATIONS = [
     {
         id: 'GOV-2026-000184',
         procedure: 'Xác nhận thông tin về cư trú',
@@ -86,7 +71,7 @@ const INITIAL_APPLICATIONS: Application[] = [
         submittedAt: '02/07/2026 08:42',
         dueDate: '07/07/2026',
         channel: 'VNeID',
-        status: 'Đang xử lý',
+        status: 'Đang xử lí',
         documents: [
             { name: 'Tờ khai CT01', state: 'Đã có' },
             { name: 'Ý kiến chủ hộ', state: 'Đã có' },
@@ -134,12 +119,17 @@ const INITIAL_APPLICATIONS: Application[] = [
     },
 ];
 
+const INITIAL_APPLICATIONS: Application[] = RAW_INITIAL_APPLICATIONS.map((application, index) => (
+    normalizeOfficerApplication(application, `GOV-MOCK-${index + 1}`)
+));
+
 const statusClassName = (status: ApplicationStatus) => {
     if (status === 'Chờ tiếp nhận') return 'pending';
-    if (status === 'Đang xử lý') return 'processing';
+    if (status === 'Đang xử lí') return 'processing';
     if (status === 'Đã tiếp nhận') return 'accepted';
     if (status === 'Đã phê duyệt') return 'approved';
-    return 'rejected';
+    if (status === 'Đã từ chối') return 'rejected';
+    return 'missing';
 };
 
 const OfficerDashboardPage: React.FC = () => {
@@ -148,22 +138,10 @@ const OfficerDashboardPage: React.FC = () => {
         try {
             const stored = window.localStorage.getItem(STORAGE_KEY);
             if (stored) {
-                const parsed = JSON.parse(stored) as Application[];
-                const normalized = parsed.map(app => {
-                    const validStatuses = ['Chờ tiếp nhận', 'Đang xử lý', 'Đã tiếp nhận', 'Đã từ chối', 'Đã phê duyệt'];
-                    const safeStatus = validStatuses.includes(app.status) ? app.status : 'Chờ tiếp nhận';
-                    return {
-                        ...app,
-                        status: safeStatus as ApplicationStatus,
-                        procedure: app.procedure || 'Điền thiếu',
-                        details: app.details || {},
-                        message: app.message || '',
-                        caseNote: app.caseNote || '',
-                        officerNote: app.officerNote || '',
-                        documents: app.documents || [],
-                        attachments: app.attachments || [],
-                    };
-                });
+                const parsed = JSON.parse(stored) as unknown;
+                const normalized = Array.isArray(parsed)
+                    ? parsed.map((app, index) => normalizeOfficerApplication(app, `GOV-LOCAL-${index + 1}`))
+                    : [];
                 const storedIds = new Set(normalized.map(a => a.id));
                 const initialsToAdd = INITIAL_APPLICATIONS.filter(a => !storedIds.has(a.id));
                 return [...normalized, ...initialsToAdd];
@@ -174,14 +152,13 @@ const OfficerDashboardPage: React.FC = () => {
         return INITIAL_APPLICATIONS;
     });
     const [selectedId, setSelectedId] = useState(INITIAL_APPLICATIONS[0].id);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'Tất cả' | ApplicationStatus>('Tất cả');
+    const [statusFilter, setStatusFilter] = useState<OfficerApplicationFilters['status']>('Tất cả');
     const [returnReason, setReturnReason] = useState('');
     const [message, setMessage] = useState('');
     const [reasonError, setReasonError] = useState('');
     const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
     const [toast, setToast] = useState('');
-    const [officerNote, setOfficerNote] = useState('');
+    const [officerNoteDrafts, setOfficerNoteDrafts] = useState<Record<string, string>>({});
     const [previewFile, setPreviewFile] = useState<{
         fileName: string;
         mimeType: string;
@@ -190,42 +167,19 @@ const OfficerDashboardPage: React.FC = () => {
         attachment: AttachmentMetadata;
     } | null>(null);
 
-    const filteredApplications = useMemo(() => {
-        const normalizedQuery = searchQuery.trim().toLocaleLowerCase('vi');
-        return applications.filter((application) => {
-            const matchesStatus = statusFilter === 'Tất cả' || application.status === statusFilter;
-            const matchesQuery = !normalizedQuery || [
-                application.id,
-                application.applicant,
-                application.procedure,
-                application.citizenId,
-                application.phone
-            ].some(field => field?.toLocaleLowerCase('vi').includes(normalizedQuery));
-            return matchesStatus && matchesQuery;
-        });
-    }, [applications, statusFilter, searchQuery]);
-
-    React.useEffect(() => {
-        if (filteredApplications.length > 0) {
-            const isSelectedInView = filteredApplications.some(app => app.id === selectedId);
-            if (!isSelectedInView) {
-                setSelectedId(filteredApplications[0].id);
-                setReturnReason('');
-                setMessage('');
-                setReasonError('');
-            }
-        }
-    }, [filteredApplications, selectedId]);
-
-    React.useEffect(() => {
-        const app = applications.find(a => a.id === selectedId);
-        setOfficerNote(app?.officerNote || '');
-    }, [selectedId, applications]);
+    const filteredApplications = useMemo(() => filterOfficerApplications(
+        applications,
+        { status: statusFilter },
+    ), [applications, statusFilter]);
+    const selectedApplication = filteredApplications.find((application) => application.id === selectedId)
+        ?? filteredApplications[0]
+        ?? applications[0];
+    const officerNote = officerNoteDrafts[selectedApplication.id] ?? selectedApplication.officerNote;
 
     const handleSaveOfficerNote = () => {
         setApplications((current) => {
             const newApps = current.map((application) => (
-                application.id === selectedId ? { ...application, officerNote } : application
+                application.id === selectedApplication.id ? { ...application, officerNote } : application
             ));
             window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newApps));
             return newApps;
@@ -296,8 +250,6 @@ const OfficerDashboardPage: React.FC = () => {
         setPreviewFile(null);
     };
 
-    const selectedApplication = applications.find((application) => application.id === selectedId) ?? applications[0];
-
     const formatFileName = (name: string) => {
         if (!name) return '';
         if (name.length > 30) {
@@ -310,7 +262,7 @@ const OfficerDashboardPage: React.FC = () => {
 
     const counts = useMemo(() => ({
         pending: applications.filter((application) => application.status === 'Chờ tiếp nhận').length,
-        processing: applications.filter((application) => application.status === 'Đang xử lý').length,
+        processing: applications.filter((application) => application.status === 'Đang xử lí').length,
         accepted: applications.filter((application) => application.status === 'Đã tiếp nhận').length,
         rejected: applications.filter((application) => application.status === 'Đã từ chối').length,
         approved: applications.filter((application) => application.status === 'Đã phê duyệt').length,
@@ -318,6 +270,15 @@ const OfficerDashboardPage: React.FC = () => {
 
     const selectApplication = (id: string) => {
         setSelectedId(id);
+        setReturnReason('');
+        setMessage('');
+        setReasonError('');
+    };
+
+    const applyStatusFilter = (status: OfficerApplicationFilters['status']) => {
+        setStatusFilter(status);
+        const firstMatch = filterOfficerApplications(applications, { status })[0];
+        if (firstMatch) setSelectedId(firstMatch.id);
         setReturnReason('');
         setMessage('');
         setReasonError('');
@@ -336,7 +297,7 @@ const OfficerDashboardPage: React.FC = () => {
         if (!confirmAction) return;
         const nextStatus: ApplicationStatus = 
             confirmAction === 'accept' ? 'Đã tiếp nhận' :
-            confirmAction === 'process' ? 'Đang xử lý' :
+            confirmAction === 'process' ? 'Đang xử lí' :
             confirmAction === 'approve' ? 'Đã phê duyệt' : 'Đã từ chối';
             
         setApplications((current) => {
@@ -366,12 +327,12 @@ const OfficerDashboardPage: React.FC = () => {
                     <strong>Xử lý hồ sơ</strong>
                 </div>
                 <nav>
-                    <button type="button" className={statusFilter === 'Tất cả' ? 'active' : ''} onClick={() => setStatusFilter('Tất cả')}><LayoutDashboard size={17} /> Tổng quan</button>
-                    <button type="button" className={statusFilter === 'Chờ tiếp nhận' ? 'active' : ''} onClick={() => setStatusFilter('Chờ tiếp nhận')}><Inbox size={17} /> Hồ sơ chờ tiếp nhận <span>{counts.pending}</span></button>
-                    <button type="button" className={statusFilter === 'Đang xử lý' ? 'active' : ''} onClick={() => setStatusFilter('Đang xử lý')}><FileClock size={17} /> Hồ sơ đang xử lý <span>{counts.processing}</span></button>
-                    <button type="button" className={statusFilter === 'Đã tiếp nhận' ? 'active' : ''} onClick={() => setStatusFilter('Đã tiếp nhận')}><FileCheck2 size={17} /> Hồ sơ đã tiếp nhận <span>{counts.accepted}</span></button>
-                    <button type="button" className={statusFilter === 'Đã phê duyệt' ? 'active' : ''} onClick={() => setStatusFilter('Đã phê duyệt')}><CheckCircle2 size={17} /> Hồ sơ đã phê duyệt <span>{counts.approved}</span></button>
-                    <button type="button" className={statusFilter === 'Đã từ chối' ? 'active' : ''} onClick={() => setStatusFilter('Đã từ chối')}><XCircle size={17} /> Hồ sơ đã từ chối <span>{counts.rejected}</span></button>
+                    <button type="button" className={statusFilter === 'Tất cả' ? 'active' : ''} onClick={() => applyStatusFilter('Tất cả')}><LayoutDashboard size={17} /> Tất cả hồ sơ <span>{applications.length}</span></button>
+                    <button type="button" className={statusFilter === 'Chờ tiếp nhận' ? 'active' : ''} onClick={() => applyStatusFilter('Chờ tiếp nhận')}><Inbox size={17} /> Hồ sơ chờ tiếp nhận <span>{counts.pending}</span></button>
+                    <button type="button" className={statusFilter === 'Đang xử lí' ? 'active' : ''} onClick={() => applyStatusFilter('Đang xử lí')}><FileClock size={17} /> Hồ sơ đang xử lí <span>{counts.processing}</span></button>
+                    <button type="button" className={statusFilter === 'Đã tiếp nhận' ? 'active' : ''} onClick={() => applyStatusFilter('Đã tiếp nhận')}><FileCheck2 size={17} /> Hồ sơ đã tiếp nhận <span>{counts.accepted}</span></button>
+                    <button type="button" className={statusFilter === 'Đã phê duyệt' ? 'active' : ''} onClick={() => applyStatusFilter('Đã phê duyệt')}><CheckCircle2 size={17} /> Hồ sơ đã phê duyệt <span>{counts.approved}</span></button>
+                    <button type="button" className={statusFilter === 'Đã từ chối' ? 'active' : ''} onClick={() => applyStatusFilter('Đã từ chối')}><XCircle size={17} /> Hồ sơ đã từ chối <span>{counts.rejected}</span></button>
                 </nav>
                 <div className="officer-sidebar-user">
                     <UserRound size={18} />
@@ -391,31 +352,13 @@ const OfficerDashboardPage: React.FC = () => {
 
                 <section className="officer-summary" aria-label="Thống kê hồ sơ">
                     <article><Inbox size={19} /><div><strong>{counts.pending}</strong><span>Chờ tiếp nhận</span></div></article>
-                    <article><FileClock size={19} /><div><strong>{counts.processing}</strong><span>Đang xử lý</span></div></article>
+                    <article><FileClock size={19} /><div><strong>{counts.processing}</strong><span>Đang xử lí</span></div></article>
                     <article><CheckCircle2 size={19} /><div><strong>{counts.accepted}</strong><span>Đã tiếp nhận</span></div></article>
                     <article><AlertTriangle size={19} /><div><strong>1</strong><span>Sắp đến hạn</span></div></article>
                 </section>
 
                 <section className="officer-workspace">
                     <div className="officer-list-pane">
-                        <div className="officer-list-toolbar">
-                            <div className="officer-search-box">
-                                <Search size={17} />
-                                <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Tìm mã hồ sơ, người nộp, thủ tục..." aria-label="Tìm kiếm hồ sơ" />
-                            </div>
-                            <label>
-                                <span className="sr-only">Lọc trạng thái</span>
-                                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as 'Tất cả' | ApplicationStatus)}>
-                                    <option>Tất cả</option>
-                                    <option>Chờ tiếp nhận</option>
-                                    <option>Đang xử lý</option>
-                                    <option>Đã tiếp nhận</option>
-                                    <option>Đã phê duyệt</option>
-                                    <option>Đã từ chối</option>
-                                </select>
-                            </label>
-                        </div>
-
                         <div className="officer-table-wrap">
                             <table className="officer-application-table">
                                 <thead><tr><th>Hồ sơ</th><th>Người nộp</th><th>Hạn xử lý</th><th>Trạng thái</th><th aria-label="Thao tác" /></tr></thead>
@@ -431,7 +374,7 @@ const OfficerDashboardPage: React.FC = () => {
                                     ))}
                                 </tbody>
                             </table>
-                            {filteredApplications.length === 0 && <div className="officer-empty"><Files size={28} /><span>Không tìm thấy hồ sơ phù hợp.</span></div>}
+                            {filteredApplications.length === 0 && <div className="officer-empty"><Files size={28} /><span>Không có hồ sơ phù hợp</span><button type="button" onClick={() => applyStatusFilter('Tất cả')}>Xóa bộ lọc</button></div>}
                         </div>
                     </div>
 
@@ -528,7 +471,10 @@ const OfficerDashboardPage: React.FC = () => {
                                 <h3><FileText size={17} /> Lưu ý hồ sơ</h3>
                                 <textarea 
                                     value={officerNote}
-                                    onChange={(event) => setOfficerNote(event.target.value)}
+                                    onChange={(event) => setOfficerNoteDrafts((current) => ({
+                                        ...current,
+                                        [selectedApplication.id]: event.target.value,
+                                    }))}
                                     placeholder="Nhập lưu ý nội bộ cho hồ sơ này..."
                                     maxLength={1000}
                                 />
@@ -577,7 +523,7 @@ const OfficerDashboardPage: React.FC = () => {
                                     <button type="button" className="officer-accept-button" onClick={() => setConfirmAction('process')}><Settings size={17} /> Bắt đầu xử lý</button>
                                 </>
                             )}
-                            {selectedApplication.status === 'Đang xử lý' && (
+                            {selectedApplication.status === 'Đang xử lí' && (
                                 <>
                                     <button type="button" className="officer-reject-button" onClick={requestReject}><XCircle size={17} /> Từ chối hồ sơ</button>
                                     <button type="button" className="officer-accept-button" onClick={() => setConfirmAction('approve')}><CheckCircle2 size={17} /> Phê duyệt hồ sơ</button>
@@ -605,7 +551,7 @@ const OfficerDashboardPage: React.FC = () => {
                         </h2>
                         <p>
                             {confirmAction === 'accept' ? `Hồ sơ ${selectedApplication.id} sẽ được ghi nhận đã tiếp nhận và chuyển sang bước xử lý chuyên môn.` : 
-                             confirmAction === 'process' ? `Hồ sơ ${selectedApplication.id} sẽ được chuyển sang trạng thái đang xử lý.` :
+                             confirmAction === 'process' ? `Hồ sơ ${selectedApplication.id} sẽ được chuyển sang trạng thái đang xử lí.` :
                              confirmAction === 'approve' ? `Hồ sơ ${selectedApplication.id} sẽ được ghi nhận là Đã phê duyệt và thông báo đến người nộp.` :
                              `Hồ sơ ${selectedApplication.id} sẽ bị từ chối và trả lại cho ${selectedApplication.applicant}.`}
                         </p>
