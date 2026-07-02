@@ -4,6 +4,7 @@ import { HealthController } from './health.controller.js';
 
 export const createHealthRouter = (options: {
   assistantProvider: string;
+  knowledgeProvider: string;
   ocrProvider: string;
   ttsProvider: string;
 }): Router => {
