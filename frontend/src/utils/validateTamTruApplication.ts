@@ -18,6 +18,7 @@ export interface TamTruAttachmentDraft {
     fileName: string;
     quantity: string;
     note: string;
+    file?: File;
 }
 
 export interface TamTruApplicationData {

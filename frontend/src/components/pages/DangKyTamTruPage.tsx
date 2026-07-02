@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bot, ChevronRight, FileText, HelpCircle, Home, Save, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Bot, FileText, Home, Save, Send, Trash2, ChevronRight, HelpCircle } from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
+import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
+import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import {
     dateFormatOptions,
     dossierCases,
@@ -380,12 +382,52 @@ const DangKyTamTruPage: React.FC = () => {
         return result;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const result = runReview();
         if (result.status === 'INVALID') {
             showToast('Hồ sơ còn lỗi bắt buộc. Vui lòng xem phần AI rà soát.');
             return;
         }
+
+        const extractedDocs: DashboardDocument[] = [];
+        const allFilesToUpload: File[] = [];
+        Object.values(form.attachmentDrafts).forEach((draft) => {
+            if (draft.checked) {
+                if (draft.fileName) {
+                    extractedDocs.push({ name: draft.fileName, state: 'Đã có' });
+                } else {
+                    extractedDocs.push({ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' });
+                }
+                if (draft.file) {
+                    allFilesToUpload.push(draft.file);
+                }
+            }
+        });
+
+        const attachments = await Promise.all(allFilesToUpload.map(file => saveAttachmentFile(file)));
+
+        saveApplicationToDashboard({
+            procedure: 'Đăng ký tạm trú',
+            applicant: form.fullName || '',
+            citizenId: form.citizenId || '',
+            phone: form.phoneNumber || '',
+            email: form.email || '',
+            documents: extractedDocs,
+            message: form.requestContent || 'Điền thiếu',
+            caseNote: 'Tạm trú',
+            details: {
+                'Tỉnh/Thành phố tạm trú': form.temporaryCityCode || '',
+                'Phường/Xã tạm trú': form.temporaryVillageCode || '',
+                'Địa chỉ tạm trú': form.temporaryAddress || '',
+                'Đến ngày': form.temporaryUntilDate || '',
+                'Chủ hộ': form.householderName || '',
+                'Quan hệ với chủ hộ': form.householderRelationship || '',
+                'Trường hợp': form.procedureCaseCode || '',
+                'Cơ quan thực hiện': form.receiveOrgAddress || '',
+            },
+            attachments,
+        });
+
         showToast('Đã nộp hồ sơ demo. GovBridge sẽ chuyển hồ sơ sang bước xử lý mô phỏng.');
     };
 
@@ -732,7 +774,22 @@ const DangKyTamTruPage: React.FC = () => {
                                                                         <td>{draft?.fileName || 'Chưa chọn file'}</td>
                                                                         <td><input className="dktt-table-input" value={draft?.quantity || document.quantity} onChange={(event) => updateAttachment(document.id, { quantity: event.target.value })} /></td>
                                                                         <td><input className="dktt-table-input" value={draft?.note || ''} onChange={(event) => updateAttachment(document.id, { note: event.target.value })} /></td>
-                                                                        <td><button type="button" className="dktt-doc-icon-btn" onClick={() => updateAttachment(document.id, { checked: true, fileName: `${document.id}-demo.pdf`, quantity: draft?.quantity || document.quantity })}>Chọn file</button></td>
+                                                                        <td>
+                                                                            <input
+                                                                                type="file"
+                                                                                id={`tamtru-file-${document.id}`}
+                                                                                style={{ display: 'none' }}
+                                                                                onChange={(event) => {
+                                                                                    const file = event.target.files?.[0];
+                                                                                    if (file) {
+                                                                                        updateAttachment(document.id, { checked: true, fileName: file.name, file: file, quantity: draft?.quantity || document.quantity });
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                            <button type="button" className="dktt-doc-icon-btn" onClick={() => window.document.getElementById(`tamtru-file-${document.id}`)?.click()}>
+                                                                                Chọn file
+                                                                            </button>
+                                                                        </td>
                                                                     </tr>
                                                                 );
                                                             })}

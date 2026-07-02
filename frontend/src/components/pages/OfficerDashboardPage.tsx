@@ -21,10 +21,14 @@ import {
     UserRound,
     X,
     XCircle,
+    Settings,
+    Download,
+    Eye,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
+import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
 
-type ApplicationStatus = 'Chờ tiếp nhận' | 'Đang xử lý' | 'Đã tiếp nhận' | 'Đã từ chối';
+type ApplicationStatus = 'Chờ tiếp nhận' | 'Đang xử lý' | 'Đã tiếp nhận' | 'Đã từ chối' | 'Đã phê duyệt';
 
 type Application = {
     id: string;
@@ -38,9 +42,16 @@ type Application = {
     channel: string;
     status: ApplicationStatus;
     documents: Array<{ name: string; state: 'Đã có' | 'Cần kiểm tra' }>;
+    message?: string;
+    caseNote?: string;
+    officerNote?: string;
+    details?: Record<string, string>;
+    attachments?: AttachmentMetadata[];
 };
 
-type ConfirmAction = 'accept' | 'reject' | null;
+type ConfirmAction = 'accept' | 'reject' | 'process' | 'approve' | null;
+
+const STORAGE_KEY = 'officerApplications';
 
 const INITIAL_APPLICATIONS: Application[] = [
     {
@@ -55,9 +66,14 @@ const INITIAL_APPLICATIONS: Application[] = [
         channel: 'Cổng dịch vụ công',
         status: 'Chờ tiếp nhận',
         documents: [
-            { name: 'Tờ khai thay đổi thông tin cư trú', state: 'Đã có' },
-            { name: 'Bản chụp Căn cước công dân', state: 'Đã có' },
-            { name: 'Giấy tờ chứng minh chỗ ở hợp pháp', state: 'Cần kiểm tra' },
+            { name: 'Tờ khai thay đổi thông tin cư trú.pdf', state: 'Đã có' },
+            { name: 'Bản chụp Căn cước công dân.jpeg', state: 'Đã có' },
+            { name: 'Giấy tờ chứng minh chỗ ở hợp pháp.docx', state: 'Cần kiểm tra' },
+        ],
+        attachments: [
+            { id: 'mock-4', fileName: 'Tờ khai thay đổi thông tin cư trú.pdf', mimeType: 'application/pdf', size: 1024000, storageKey: 'mock-key-4', submittedAt: '02/07/2026' },
+            { id: 'mock-5', fileName: 'Bản chụp Căn cước công dân.jpeg', mimeType: 'image/jpeg', size: 512000, storageKey: 'mock-key-5', submittedAt: '02/07/2026' },
+            { id: 'mock-6', fileName: 'Giấy tờ chứng minh chỗ ở hợp pháp.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', size: 2048000, storageKey: 'mock-key-6', submittedAt: '02/07/2026' },
         ],
     },
     {
@@ -91,6 +107,9 @@ const INITIAL_APPLICATIONS: Application[] = [
             { name: 'Tờ khai CT01', state: 'Đã có' },
             { name: 'Hợp đồng thuê nhà', state: 'Cần kiểm tra' },
         ],
+        attachments: [
+            { id: 'mock-1', fileName: 'Tờ khai CT01', mimeType: 'application/pdf', size: 1024000, storageKey: 'mock-key-1', submittedAt: '02/07/2026' }
+        ],
     },
     {
         id: 'GOV-2026-000151',
@@ -108,6 +127,10 @@ const INITIAL_APPLICATIONS: Application[] = [
             { name: 'Tờ khai đăng ký cư trú', state: 'Đã có' },
             { name: 'Tờ khai tham gia BHYT', state: 'Đã có' },
         ],
+        attachments: [
+            { id: 'mock-2', fileName: 'Tờ khai đăng ký khai sinh', mimeType: 'application/pdf', size: 1536000, storageKey: 'mock-key-2', submittedAt: '01/07/2026' },
+            { id: 'mock-3', fileName: 'Tờ khai đăng ký cư trú', mimeType: 'application/pdf', size: 850000, storageKey: 'mock-key-3', submittedAt: '01/07/2026' },
+        ],
     },
 ];
 
@@ -115,12 +138,41 @@ const statusClassName = (status: ApplicationStatus) => {
     if (status === 'Chờ tiếp nhận') return 'pending';
     if (status === 'Đang xử lý') return 'processing';
     if (status === 'Đã tiếp nhận') return 'accepted';
+    if (status === 'Đã phê duyệt') return 'approved';
     return 'rejected';
 };
 
 const OfficerDashboardPage: React.FC = () => {
     const { user } = useAuth();
-    const [applications, setApplications] = useState(INITIAL_APPLICATIONS);
+    const [applications, setApplications] = useState<Application[]>(() => {
+        try {
+            const stored = window.localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const parsed = JSON.parse(stored) as Application[];
+                const normalized = parsed.map(app => {
+                    const validStatuses = ['Chờ tiếp nhận', 'Đang xử lý', 'Đã tiếp nhận', 'Đã từ chối', 'Đã phê duyệt'];
+                    const safeStatus = validStatuses.includes(app.status) ? app.status : 'Chờ tiếp nhận';
+                    return {
+                        ...app,
+                        status: safeStatus as ApplicationStatus,
+                        procedure: app.procedure || 'Điền thiếu',
+                        details: app.details || {},
+                        message: app.message || '',
+                        caseNote: app.caseNote || '',
+                        officerNote: app.officerNote || '',
+                        documents: app.documents || [],
+                        attachments: app.attachments || [],
+                    };
+                });
+                const storedIds = new Set(normalized.map(a => a.id));
+                const initialsToAdd = INITIAL_APPLICATIONS.filter(a => !storedIds.has(a.id));
+                return [...normalized, ...initialsToAdd];
+            }
+        } catch {
+            // ignore
+        }
+        return INITIAL_APPLICATIONS;
+    });
     const [selectedId, setSelectedId] = useState(INITIAL_APPLICATIONS[0].id);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'Tất cả' | ApplicationStatus>('Tất cả');
@@ -129,8 +181,14 @@ const OfficerDashboardPage: React.FC = () => {
     const [reasonError, setReasonError] = useState('');
     const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
     const [toast, setToast] = useState('');
-
-    const selectedApplication = applications.find((application) => application.id === selectedId) ?? applications[0];
+    const [officerNote, setOfficerNote] = useState('');
+    const [previewFile, setPreviewFile] = useState<{
+        fileName: string;
+        mimeType: string;
+        url: string;
+        type: 'pdf' | 'image' | 'docx' | 'unknown';
+        attachment: AttachmentMetadata;
+    } | null>(null);
 
     const filteredApplications = useMemo(() => {
         const normalizedQuery = searchQuery.trim().toLocaleLowerCase('vi');
@@ -138,19 +196,124 @@ const OfficerDashboardPage: React.FC = () => {
             const matchesStatus = statusFilter === 'Tất cả' || application.status === statusFilter;
             const matchesQuery = !normalizedQuery || [
                 application.id,
-                application.procedure,
                 application.applicant,
+                application.procedure,
                 application.citizenId,
-            ].some((value) => value.toLocaleLowerCase('vi').includes(normalizedQuery));
+                application.phone
+            ].some(field => field?.toLocaleLowerCase('vi').includes(normalizedQuery));
             return matchesStatus && matchesQuery;
         });
-    }, [applications, searchQuery, statusFilter]);
+    }, [applications, statusFilter, searchQuery]);
+
+    React.useEffect(() => {
+        if (filteredApplications.length > 0) {
+            const isSelectedInView = filteredApplications.some(app => app.id === selectedId);
+            if (!isSelectedInView) {
+                setSelectedId(filteredApplications[0].id);
+                setReturnReason('');
+                setMessage('');
+                setReasonError('');
+            }
+        }
+    }, [filteredApplications, selectedId]);
+
+    React.useEffect(() => {
+        const app = applications.find(a => a.id === selectedId);
+        setOfficerNote(app?.officerNote || '');
+    }, [selectedId, applications]);
+
+    const handleSaveOfficerNote = () => {
+        setApplications((current) => {
+            const newApps = current.map((application) => (
+                application.id === selectedId ? { ...application, officerNote } : application
+            ));
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newApps));
+            return newApps;
+        });
+        setToast('Đã lưu lưu ý hồ sơ');
+        setTimeout(() => setToast(''), 2600);
+    };
+
+    const handleDownloadAttachment = async (attachment: AttachmentMetadata) => {
+        try {
+            if (!attachment.storageKey) {
+                alert('Không tìm thấy dữ liệu tệp (thiếu storage key).');
+                return;
+            }
+            const blob = await getAttachmentFile(attachment.storageKey);
+            if (!blob) {
+                alert('Tệp tin không tồn tại trong hệ thống (có thể do đã bị xoá).');
+                return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = attachment.fileName || 'tep-dinh-kem';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (err) {
+            console.error(err);
+            alert('Có lỗi xảy ra khi tải xuống tệp tin.');
+        }
+    };
+
+    const handlePreviewAttachment = async (attachment: AttachmentMetadata) => {
+        try {
+            if (!attachment.storageKey) {
+                alert('Không tìm thấy dữ liệu tệp (thiếu storage key).');
+                return;
+            }
+
+            const blob = await getAttachmentFile(attachment.storageKey);
+            if (!blob) {
+                alert('Tệp tin không tồn tại trong hệ thống (có thể do đã bị xoá).');
+                return;
+            }
+            const url = URL.createObjectURL(blob);
+            
+            const isDocx = attachment.mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || attachment.fileName.toLowerCase().endsWith('.docx');
+            const type = isDocx ? 'docx' : (attachment.mimeType.startsWith('image/') ? 'image' : (attachment.mimeType === 'application/pdf' ? 'pdf' : 'unknown'));
+
+            setPreviewFile({
+                fileName: attachment.fileName,
+                mimeType: attachment.mimeType,
+                url,
+                type,
+                attachment
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Có lỗi xảy ra khi xem tệp tin.');
+        }
+    };
+
+    const handleClosePreview = () => {
+        if (previewFile?.url) {
+            URL.revokeObjectURL(previewFile.url);
+        }
+        setPreviewFile(null);
+    };
+
+    const selectedApplication = applications.find((application) => application.id === selectedId) ?? applications[0];
+
+    const formatFileName = (name: string) => {
+        if (!name) return '';
+        if (name.length > 30) {
+            const parts = name.split('.');
+            const ext = parts.length > 1 ? `.${parts[parts.length - 1]}` : '';
+            return `Tệp tải lên${ext}`;
+        }
+        return name;
+    };
 
     const counts = useMemo(() => ({
         pending: applications.filter((application) => application.status === 'Chờ tiếp nhận').length,
         processing: applications.filter((application) => application.status === 'Đang xử lý').length,
         accepted: applications.filter((application) => application.status === 'Đã tiếp nhận').length,
         rejected: applications.filter((application) => application.status === 'Đã từ chối').length,
+        approved: applications.filter((application) => application.status === 'Đã phê duyệt').length,
     }), [applications]);
 
     const selectApplication = (id: string) => {
@@ -171,13 +334,24 @@ const OfficerDashboardPage: React.FC = () => {
 
     const completeAction = () => {
         if (!confirmAction) return;
-        const nextStatus: ApplicationStatus = confirmAction === 'accept' ? 'Đã tiếp nhận' : 'Đã từ chối';
-        setApplications((current) => current.map((application) => (
-            application.id === selectedApplication.id ? { ...application, status: nextStatus } : application
-        )));
-        setToast(confirmAction === 'accept'
-            ? `Đã xác nhận nộp hồ sơ ${selectedApplication.id}.`
-            : `Đã từ chối nhận hồ sơ ${selectedApplication.id}.`);
+        const nextStatus: ApplicationStatus = 
+            confirmAction === 'accept' ? 'Đã tiếp nhận' :
+            confirmAction === 'process' ? 'Đang xử lý' :
+            confirmAction === 'approve' ? 'Đã phê duyệt' : 'Đã từ chối';
+            
+        setApplications((current) => {
+            const newApps = current.map((application) => (
+                application.id === selectedApplication.id ? { ...application, status: nextStatus } : application
+            ));
+            localStorage.setItem('officerApplications', JSON.stringify(newApps));
+            return newApps;
+        });
+
+        if (confirmAction === 'accept') setToast(`Đã tiếp nhận hồ sơ ${selectedApplication.id}.`);
+        else if (confirmAction === 'process') setToast(`Đã bắt đầu xử lý hồ sơ ${selectedApplication.id}.`);
+        else if (confirmAction === 'approve') setToast(`Đã phê duyệt hồ sơ ${selectedApplication.id}.`);
+        else setToast(`Đã từ chối hồ sơ ${selectedApplication.id}.`);
+
         setConfirmAction(null);
         setReturnReason('');
         setMessage('');
@@ -192,11 +366,12 @@ const OfficerDashboardPage: React.FC = () => {
                     <strong>Xử lý hồ sơ</strong>
                 </div>
                 <nav>
-                    <button type="button"><LayoutDashboard size={17} /> Tổng quan</button>
-                    <button type="button" className="active"><Inbox size={17} /> Hồ sơ chờ tiếp nhận <span>{counts.pending}</span></button>
-                    <button type="button"><FileClock size={17} /> Hồ sơ đang xử lý <span>{counts.processing}</span></button>
-                    <button type="button"><FileCheck2 size={17} /> Hồ sơ đã tiếp nhận <span>{counts.accepted}</span></button>
-                    <button type="button"><XCircle size={17} /> Hồ sơ đã từ chối <span>{counts.rejected}</span></button>
+                    <button type="button" className={statusFilter === 'Tất cả' ? 'active' : ''} onClick={() => setStatusFilter('Tất cả')}><LayoutDashboard size={17} /> Tổng quan</button>
+                    <button type="button" className={statusFilter === 'Chờ tiếp nhận' ? 'active' : ''} onClick={() => setStatusFilter('Chờ tiếp nhận')}><Inbox size={17} /> Hồ sơ chờ tiếp nhận <span>{counts.pending}</span></button>
+                    <button type="button" className={statusFilter === 'Đang xử lý' ? 'active' : ''} onClick={() => setStatusFilter('Đang xử lý')}><FileClock size={17} /> Hồ sơ đang xử lý <span>{counts.processing}</span></button>
+                    <button type="button" className={statusFilter === 'Đã tiếp nhận' ? 'active' : ''} onClick={() => setStatusFilter('Đã tiếp nhận')}><FileCheck2 size={17} /> Hồ sơ đã tiếp nhận <span>{counts.accepted}</span></button>
+                    <button type="button" className={statusFilter === 'Đã phê duyệt' ? 'active' : ''} onClick={() => setStatusFilter('Đã phê duyệt')}><CheckCircle2 size={17} /> Hồ sơ đã phê duyệt <span>{counts.approved}</span></button>
+                    <button type="button" className={statusFilter === 'Đã từ chối' ? 'active' : ''} onClick={() => setStatusFilter('Đã từ chối')}><XCircle size={17} /> Hồ sơ đã từ chối <span>{counts.rejected}</span></button>
                 </nav>
                 <div className="officer-sidebar-user">
                     <UserRound size={18} />
@@ -235,6 +410,7 @@ const OfficerDashboardPage: React.FC = () => {
                                     <option>Chờ tiếp nhận</option>
                                     <option>Đang xử lý</option>
                                     <option>Đã tiếp nhận</option>
+                                    <option>Đã phê duyệt</option>
                                     <option>Đã từ chối</option>
                                 </select>
                             </label>
@@ -259,8 +435,9 @@ const OfficerDashboardPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <aside className="officer-detail-pane" aria-label="Chi tiết hồ sơ">
-                        <div className="officer-detail-heading">
+                    {filteredApplications.length > 0 && (
+                        <aside className="officer-detail-pane" aria-label="Chi tiết hồ sơ">
+                            <div className="officer-detail-heading">
                             <div><span>Chi tiết hồ sơ</span><h2>{selectedApplication.id}</h2></div>
                             <span className={`officer-status ${statusClassName(selectedApplication.status)}`}>{selectedApplication.status}</span>
                         </div>
@@ -278,13 +455,92 @@ const OfficerDashboardPage: React.FC = () => {
                                 </dl>
                             </section>
 
+                            {selectedApplication.details && Object.keys(selectedApplication.details).length > 0 && (
+                                <section className="officer-detail-section">
+                                    <h3><FileText size={17} /> Chi tiết bổ sung</h3>
+                                    <dl className="officer-info-grid">
+                                        {Object.entries(selectedApplication.details).map(([key, value]) => (
+                                            <div key={key}><dt>{key}</dt><dd>{value}</dd></div>
+                                        ))}
+                                    </dl>
+                                </section>
+                            )}
+
+                            {(selectedApplication.message || selectedApplication.caseNote) && (
+                                <section className="officer-detail-section">
+                                    <h3><MessageSquareText size={17} /> Ghi chú từ người nộp</h3>
+                                    <dl className="officer-info-grid">
+                                        {selectedApplication.message && <div><dt>Lời nhắn</dt><dd>{selectedApplication.message}</dd></div>}
+                                        {selectedApplication.caseNote && <div><dt>Lưu ý</dt><dd>{selectedApplication.caseNote}</dd></div>}
+                                    </dl>
+                                </section>
+                            )}
+
                             <section className="officer-detail-section">
-                                <h3><Files size={17} /> Thành phần hồ sơ</h3>
-                                <ul className="officer-document-list">
-                                    {selectedApplication.documents.map((document) => (
-                                        <li key={document.name}><FileText size={16} /><span>{document.name}</span><small className={document.state === 'Đã có' ? 'complete' : 'review'}>{document.state}</small></li>
-                                    ))}
-                                </ul>
+                                <h3><Files size={17} /> Thành phần hồ sơ đính kèm</h3>
+                                {(selectedApplication.documents || []).length > 0 ? (
+                                    <ul className="officer-document-list officer-attachment-list">
+                                        {(selectedApplication.documents || []).map((document, index) => {
+                                            const attachment = Array.isArray(selectedApplication.attachments) 
+                                                ? selectedApplication.attachments.find(a => a.fileName === document.name)
+                                                : undefined;
+                                            
+                                            return (
+                                                <li key={`${document.name}-${index}`} className="officer-attachment-item">
+                                                    <div className="officer-attachment-info">
+                                                        <FileText size={16} />
+                                                        <div className="officer-attachment-text">
+                                                            {attachment ? (
+                                                                <span className="officer-attachment-name clickable" onClick={() => handlePreviewAttachment(attachment)}>
+                                                                    {formatFileName(document.name)}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="officer-attachment-name">
+                                                                    {formatFileName(document.name)}
+                                                                </span>
+                                                            )}
+                                                            <small style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                                                <span className={document.state === 'Đã có' ? 'complete' : 'review'}>{document.state}</span>
+                                                                {attachment?.size ? <span>• {(attachment.size / 1024).toFixed(1)} KB</span> : null}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                    {attachment && (
+                                                        <div className="officer-attachment-actions">
+                                                            <button type="button" className="officer-attachment-btn" onClick={() => handlePreviewAttachment(attachment)}>
+                                                                <Eye size={14} /> Xem
+                                                            </button>
+                                                            <button type="button" className="officer-attachment-btn" onClick={() => handleDownloadAttachment(attachment)}>
+                                                                <Download size={14} /> Tải về
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <p style={{ color: 'var(--gray-500)', fontSize: '13px' }}>Không có thành phần hồ sơ nào.</p>
+                                )}
+                            </section>
+
+                            <section className="officer-detail-section officer-response-section">
+                                <h3><FileText size={17} /> Lưu ý hồ sơ</h3>
+                                <textarea 
+                                    value={officerNote}
+                                    onChange={(event) => setOfficerNote(event.target.value)}
+                                    placeholder="Nhập lưu ý nội bộ cho hồ sơ này..."
+                                    maxLength={1000}
+                                />
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                                    <button 
+                                        type="button" 
+                                        className="officer-attachment-btn"
+                                        onClick={handleSaveOfficerNote}
+                                    >
+                                        <Check size={14} /> Lưu lưu ý
+                                    </button>
+                                </div>
                             </section>
 
                             <section className="officer-detail-section">
@@ -309,10 +565,27 @@ const OfficerDashboardPage: React.FC = () => {
                         </div>
 
                         <div className="officer-detail-actions">
-                            <button type="button" className="officer-reject-button" onClick={requestReject}><XCircle size={17} /> Từ chối nhận hồ sơ</button>
-                            <button type="button" className="officer-accept-button" onClick={() => setConfirmAction('accept')}><FileCheck2 size={17} /> Xác nhận nộp hồ sơ</button>
+                            {selectedApplication.status === 'Chờ tiếp nhận' && (
+                                <>
+                                    <button type="button" className="officer-reject-button" onClick={requestReject}><XCircle size={17} /> Từ chối nhận hồ sơ</button>
+                                    <button type="button" className="officer-accept-button" onClick={() => setConfirmAction('accept')}><FileCheck2 size={17} /> Tiếp nhận hồ sơ</button>
+                                </>
+                            )}
+                            {selectedApplication.status === 'Đã tiếp nhận' && (
+                                <>
+                                    <button type="button" className="officer-reject-button" onClick={requestReject}><XCircle size={17} /> Từ chối nhận hồ sơ</button>
+                                    <button type="button" className="officer-accept-button" onClick={() => setConfirmAction('process')}><Settings size={17} /> Bắt đầu xử lý</button>
+                                </>
+                            )}
+                            {selectedApplication.status === 'Đang xử lý' && (
+                                <>
+                                    <button type="button" className="officer-reject-button" onClick={requestReject}><XCircle size={17} /> Từ chối hồ sơ</button>
+                                    <button type="button" className="officer-accept-button" onClick={() => setConfirmAction('approve')}><CheckCircle2 size={17} /> Phê duyệt hồ sơ</button>
+                                </>
+                            )}
                         </div>
                     </aside>
+                    )}
                 </section>
             </main>
 
@@ -321,22 +594,73 @@ const OfficerDashboardPage: React.FC = () => {
                     <section className="officer-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="officer-confirm-title">
                         <button type="button" className="officer-modal-close" onClick={() => setConfirmAction(null)} aria-label="Đóng"><X size={18} /></button>
                         <div className={`officer-confirm-icon ${confirmAction}`}>
-                            {confirmAction === 'accept' ? <FileCheck2 size={26} /> : <AlertTriangle size={26} />}
+                            {confirmAction === 'accept' ? <FileCheck2 size={26} /> : 
+                             confirmAction === 'process' ? <Settings size={26} /> : 
+                             confirmAction === 'approve' ? <CheckCircle2 size={26} /> : <AlertTriangle size={26} />}
                         </div>
-                        <h2 id="officer-confirm-title">{confirmAction === 'accept' ? 'Xác nhận nộp hồ sơ?' : 'Từ chối nhận hồ sơ?'}</h2>
-                        <p>{confirmAction === 'accept'
-                            ? `Hồ sơ ${selectedApplication.id} sẽ được ghi nhận đã tiếp nhận và chuyển sang bước xử lý chuyên môn.`
-                            : `Hồ sơ ${selectedApplication.id} sẽ được trả lại cho ${selectedApplication.applicant}.`}</p>
+                        <h2 id="officer-confirm-title">
+                            {confirmAction === 'accept' ? 'Tiếp nhận hồ sơ?' : 
+                             confirmAction === 'process' ? 'Bắt đầu xử lý?' : 
+                             confirmAction === 'approve' ? 'Phê duyệt hồ sơ?' : 'Từ chối nhận hồ sơ?'}
+                        </h2>
+                        <p>
+                            {confirmAction === 'accept' ? `Hồ sơ ${selectedApplication.id} sẽ được ghi nhận đã tiếp nhận và chuyển sang bước xử lý chuyên môn.` : 
+                             confirmAction === 'process' ? `Hồ sơ ${selectedApplication.id} sẽ được chuyển sang trạng thái đang xử lý.` :
+                             confirmAction === 'approve' ? `Hồ sơ ${selectedApplication.id} sẽ được ghi nhận là Đã phê duyệt và thông báo đến người nộp.` :
+                             `Hồ sơ ${selectedApplication.id} sẽ bị từ chối và trả lại cho ${selectedApplication.applicant}.`}
+                        </p>
                         {confirmAction === 'reject' && <div className="officer-confirm-reason"><strong>Lý do trả về</strong><span>{returnReason}</span>{message && <><strong>Tin nhắn kèm theo</strong><span>{message}</span></>}</div>}
                         <div className="officer-modal-actions">
                             <button type="button" onClick={() => setConfirmAction(null)}>Hủy</button>
-                            <button type="button" className={confirmAction === 'accept' ? 'accept' : 'reject'} onClick={completeAction}>{confirmAction === 'accept' ? <><Send size={16} /> Xác nhận nộp</> : <><XCircle size={16} /> Xác nhận từ chối</>}</button>
+                            <button type="button" className={confirmAction === 'reject' ? 'reject' : 'accept'} onClick={completeAction}>
+                                {confirmAction === 'accept' ? <><Send size={16} /> Xác nhận tiếp nhận</> : 
+                                 confirmAction === 'process' ? <><Settings size={16} /> Xác nhận xử lý</> : 
+                                 confirmAction === 'approve' ? <><CheckCircle2 size={16} /> Xác nhận phê duyệt</> : 
+                                 <><XCircle size={16} /> Xác nhận từ chối</>}
+                            </button>
                         </div>
                     </section>
                 </div>
             )}
 
             {toast && <div className="officer-toast" role="status"><CheckCircle2 size={18} /> {toast}</div>}
+
+            {previewFile && (
+                <div className="officer-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) handleClosePreview(); }}>
+                    <section className="officer-preview-modal" role="dialog" aria-modal="true" aria-labelledby="officer-preview-title">
+                        <div className="officer-preview-header">
+                            <h2 id="officer-preview-title">{previewFile.fileName}</h2>
+                            <button type="button" className="officer-modal-close" onClick={handleClosePreview} aria-label="Đóng" style={{ position: 'relative', top: 0, right: 0 }}><X size={18} /></button>
+                        </div>
+                        
+                        <div className="officer-preview-content">
+                            {previewFile.type === 'pdf' && (
+                                <iframe src={previewFile.url} title={previewFile.fileName} />
+                            )}
+                            {previewFile.type === 'image' && (
+                                <img src={previewFile.url} alt={previewFile.fileName} />
+                            )}
+                            {previewFile.type === 'docx' && (
+                                <div className="officer-preview-fallback">
+                                    <p>Không thể xem trước DOCX trực tiếp. Vui lòng tải xuống để xem.</p>
+                                </div>
+                            )}
+                            {previewFile.type === 'unknown' && (
+                                <div className="officer-preview-fallback">
+                                    <p>Không hỗ trợ xem trước định dạng tệp này. Vui lòng tải xuống để xem.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="officer-modal-actions">
+                            <button type="button" onClick={handleClosePreview}>Đóng</button>
+                            <button type="button" className="accept" onClick={() => handleDownloadAttachment(previewFile.attachment)}>
+                                <Download size={16} /> Tải xuống
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
         </div>
     );
 };

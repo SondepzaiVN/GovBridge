@@ -6,6 +6,8 @@ import { useForm } from '../../contexts/FormContext';
 import { FormFieldInput } from './ServicePageLayout';
 import type { FormField } from '../../types';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
+import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
+import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import {
   buildOptions,
   compareDates,
@@ -77,6 +79,7 @@ interface UploadRequirementDraft {
   quantity: string;
   note: string;
   fileNames: string[];
+  files: File[];
   useSpecializedData: boolean;
 }
 
@@ -88,6 +91,7 @@ const createUploadDraft = (requirement: ResidenceDocumentRequirement): UploadReq
   quantity: requirement.required ? '1' : '',
   note: '',
   fileNames: [],
+  files: [],
   useSpecializedData: false,
 });
 
@@ -289,8 +293,7 @@ const DangKyThuongTruPage: React.FC = () => {
   const resultMethod = formState.values.hinhThucNhanKQ || '';
   const isFirstRegistration = procedureCase === 'lan_dau';
   const isNewHousehold = registrationMode === 'lap_ho_moi';
-  const isIdentityAutofilled = declareMode === 'self'
-    && ['hoTen', 'ngaySinh', 'gioiTinh', 'cccd'].every((fieldId) => !!formState.values[fieldId]);
+  const isIdentityAutofilled = false; // Disabled auto-lock for demo to allow manual typing
   const uploadCases = useMemo(
     () => getResidenceDocumentCases({ isNewHousehold, isOverseasDossier }),
     [isNewHousehold, isOverseasDossier],
@@ -741,6 +744,7 @@ const DangKyThuongTruPage: React.FC = () => {
       checked: true,
       useSpecializedData: checked,
       fileNames: checked ? [] : getUploadDraft(caseId, requirement).fileNames,
+      files: checked ? [] : getUploadDraft(caseId, requirement).files,
       quantity: getUploadDraft(caseId, requirement).quantity || '1',
     });
   };
@@ -748,10 +752,11 @@ const DangKyThuongTruPage: React.FC = () => {
   const updateUploadFiles = (
     caseId: string,
     requirement: ResidenceDocumentRequirement,
-    files: FileList | null,
+    inputFiles: FileList | null,
     mode: 'replace' | 'append' = 'replace',
   ) => {
-    const nextNames = Array.from(files || []).map((file) => file.name);
+    const nextFiles = Array.from(inputFiles || []);
+    const nextNames = nextFiles.map((file) => file.name);
     const currentDraft = getUploadDraft(caseId, requirement);
     patchUploadDraft(caseId, requirement, {
       checked: true,
@@ -759,6 +764,9 @@ const DangKyThuongTruPage: React.FC = () => {
       fileNames: mode === 'append'
         ? [...currentDraft.fileNames, ...nextNames]
         : nextNames,
+      files: mode === 'append'
+        ? [...currentDraft.files, ...nextFiles]
+        : nextFiles,
       quantity: currentDraft.quantity || '1',
     });
   };
@@ -1662,7 +1670,7 @@ const DangKyThuongTruPage: React.FC = () => {
     return !error;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errorSections = new Set<string>();
     setUploadValidationMessage('');
 
@@ -1885,6 +1893,49 @@ const DangKyThuongTruPage: React.FC = () => {
       alert('Vui lòng kiểm tra lại các trường đang hiển thị trong biểu mẫu đăng ký thường trú.');
       return;
     }
+
+    const allFilesToUpload: File[] = [];
+    Object.values(uploadDrafts).forEach((draft) => {
+      if (draft.checked && draft.files && draft.files.length > 0) {
+        allFilesToUpload.push(...draft.files);
+      }
+    });
+
+    const attachments = await Promise.all(allFilesToUpload.map(file => saveAttachmentFile(file)));
+
+    const extractedDocs: DashboardDocument[] = [];
+    Object.values(uploadDrafts).forEach((draft) => {
+      if (draft.checked) {
+        if (draft.fileNames.length > 0) {
+          draft.fileNames.forEach((name) => extractedDocs.push({ name, state: 'Đã có' }));
+        } else if (draft.useSpecializedData) {
+          extractedDocs.push({ name: 'Dữ liệu chuyên ngành', state: 'Đã có' });
+        } else {
+          extractedDocs.push({ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' });
+        }
+      }
+    });
+
+    saveApplicationToDashboard({
+      procedure: 'Đăng ký thường trú',
+      applicant: formState.values.hoTen || '',
+      citizenId: formState.values.cccd || '',
+      phone: formState.values.sdt || '',
+      email: formState.values.email || '',
+      documents: extractedDocs,
+      attachments,
+      message: 'Xin chào bộ phận tiếp nhận. Tôi đã nộp đầy đủ hồ sơ theo yêu cầu.',
+      details: {
+        'Tỉnh/Thành phố đề nghị': formState.values.tinhThanhDN || '',
+        'Quận/Huyện đề nghị': formState.values.quanHuyenDN || '',
+        'Phường/Xã đề nghị': formState.values.xaPhuongDN || '',
+        'Địa chỉ hiện tại': formState.values.ct02DiaChiVN || '',
+        'Cơ quan tiếp nhận': formState.values.coQuanDKCT || '',
+        'Chủ hộ': formState.values.hoTenChuHo || '',
+        'Quan hệ với chủ hộ': formState.values.quanHeVoiChuHo || '',
+        'Lý do/Trường hợp': formState.values.truongHop || '',
+      }
+    });
 
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 5000);

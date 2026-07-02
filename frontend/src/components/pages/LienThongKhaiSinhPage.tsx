@@ -2,6 +2,9 @@ import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw } from 'lucide-react';
 import { useForm } from '../../contexts/FormContext';
+import { saveApplicationToDashboard } from '../../utils/dashboardSync';
+import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { provinces, getKhaiSinhAgencyName, getResidenceAgencyName, getBhytAgencyName, useWards } from '../../hooks/useAdministrativeUnits';
 
 type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
 
@@ -81,8 +84,8 @@ const residenceCaseOptions = [
 ];
 
 const genderOptions = ['Nam', 'Nữ'];
-const provinceOptions = ['Thành phố Hà Nội', 'Thành phố Cần Thơ', 'Thành phố Hồ Chí Minh', 'Thành phố Đà Nẵng'];
-const wardOptions = ['Phường Cái Khế', 'Phường Cửa Nam', 'Phường Hàng Bạc', 'Phường Bến Nghé'];
+
+
 const countryOptions = ['Cộng hòa XHCN Việt Nam'];
 const nationalityOptions = ['Việt Nam'];
 const ethnicityOptions = ['Kinh', 'Tày', 'Thái', 'Mường', 'Khác'];
@@ -135,7 +138,7 @@ const reviewTabs: ReviewTab[] = [
   },
 ];
 
-const steps: LinkedStep[] = [
+const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
   {
     title: 'Lựa chọn cơ quan thực hiện',
     shortTitle: 'Lựa chọn cơ quan thực hiện',
@@ -144,8 +147,8 @@ const steps: LinkedStep[] = [
         title: 'Cơ quan thực hiện đăng ký khai sinh',
         fields: [
           { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: birthTypeOptions },
-          { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
-          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, value: 'Phường Cái Khế' },
+          { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinces },
+          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: opts.wardsKhaiSinh },
           { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
           { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: birthCaseOptions },
         ],
@@ -154,8 +157,8 @@ const steps: LinkedStep[] = [
         title: 'Cơ quan thực hiện đăng ký thường trú',
         sameArea: true,
         fields: [
-          { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
-          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, value: 'Phường Cái Khế' },
+          { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinces },
+          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: opts.wardsThuongTru },
           { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
           { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: residenceCaseOptions },
         ],
@@ -184,8 +187,8 @@ const steps: LinkedStep[] = [
           { id: 'ltks_noiCapNguoiYeuCau', label: 'Nơi cấp', type: 'text', required: true, span: 6 },
           { id: 'ltks_loaiCuTruNguoiYeuCau', label: 'Loại cư trú', type: 'select', required: true, span: 6, options: residenceTypeOptions },
           { id: 'ltks_quocGiaNguoiYeuCau', label: 'Quốc gia', type: 'select', required: true, span: 6, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
-          { id: 'ltks_tinhNguoiYeuCau', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 6, options: provinceOptions },
-          { id: 'ltks_phuongNguoiYeuCau', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: wardOptions },
+          { id: 'ltks_tinhNguoiYeuCau', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 6, options: provinces },
+          { id: 'ltks_phuongNguoiYeuCau', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: opts.wardsNguoiYeuCau },
           { id: 'ltks_chiTietNguoiYeuCau', label: 'Chi tiết', type: 'text', required: true, wide: true },
           { id: 'ltks_quanHeVoiTre', label: 'Quan hệ với người được khai sinh', type: 'select', required: true, span: 3, options: requesterRelationOptions },
           { id: 'ltks_quanHeVoiTreKhac', label: 'Quan hệ với người được khai sinh (khác)', type: 'text', span: 3 },
@@ -206,8 +209,8 @@ const steps: LinkedStep[] = [
           { id: 'ltks_ngaySinhTre', label: 'Ngày tháng năm sinh', type: 'date', required: true, span: 4 },
           { id: 'ltks_ngaySinhBangChu', label: 'Ghi bằng chữ', type: 'text', required: true, span: 8 },
           { id: 'ltks_quocGiaNoiSinh', label: 'Quốc gia', type: 'select', required: true, span: 4, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
-          { id: 'ltks_tinhNoiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 4, options: provinceOptions },
-          { id: 'ltks_phuongNoiSinh', label: 'Phường/Xã', type: 'select', required: true, span: 4, options: wardOptions },
+          { id: 'ltks_tinhNoiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 4, options: provinces },
+          { id: 'ltks_phuongNoiSinh', label: 'Phường/Xã', type: 'select', required: true, span: 4, options: opts.wardsNoiSinh },
           { id: 'ltks_chiTietNoiSinh', label: 'Chi tiết', type: 'text', wide: true },
           { id: 'ltks_gioiTinhTre', label: 'Giới tính', type: 'select', required: true, span: 4, options: genderOptions },
           { id: 'ltks_quocTichTre', label: 'Quốc tịch', type: 'select', required: true, span: 4, options: nationalityOptions, value: 'Việt Nam' },
@@ -219,8 +222,8 @@ const steps: LinkedStep[] = [
         title: 'Quê quán',
         fields: [
           { id: 'ltks_quocGiaQueQuan', label: 'Quốc gia', type: 'select', required: true, span: 4, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
-          { id: 'ltks_tinhQueQuan', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 4, options: provinceOptions },
-          { id: 'ltks_phuongQueQuan', label: 'Phường/Xã', type: 'select', span: 4, options: wardOptions },
+          { id: 'ltks_tinhQueQuan', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 4, options: provinces },
+          { id: 'ltks_phuongQueQuan', label: 'Phường/Xã', type: 'select', span: 4, options: opts.wardsQueQuan },
           { id: 'ltks_chiTietQueQuan', label: 'Chi tiết', type: 'text', span: 8 },
           { id: 'ltks_soLuongBanSao', label: 'Số lượng', type: 'text', span: 4, value: '1' },
         ],
@@ -242,8 +245,8 @@ const steps: LinkedStep[] = [
           { id: 'ltks_noiCapHoChieuMe', label: 'Nơi cấp hộ chiếu', type: 'text', span: 4 },
           { id: 'ltks_loaiCuTruMe', label: 'Loại cư trú', type: 'select', required: true, span: 6, options: residenceTypeOptions },
           { id: 'ltks_quocGiaMe', label: 'Quốc gia', type: 'select', required: true, span: 6, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
-          { id: 'ltks_tinhMe', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 6, options: provinceOptions },
-          { id: 'ltks_phuongMe', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: wardOptions },
+          { id: 'ltks_tinhMe', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 6, options: provinces },
+          { id: 'ltks_phuongMe', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: opts.wardsMe },
           { id: 'ltks_chiTietMe', label: 'Chi tiết', type: 'text', wide: true },
         ],
       },
@@ -265,8 +268,8 @@ const steps: LinkedStep[] = [
           { id: 'ltks_noiCapHoChieuCha', label: 'Nơi cấp hộ chiếu', type: 'text', span: 4 },
           { id: 'ltks_loaiCuTruCha', label: 'Loại cư trú', type: 'select', required: true, span: 4, options: residenceTypeOptions },
           { id: 'ltks_quocGiaCha', label: 'Quốc gia', type: 'select', required: true, span: 4, options: countryOptions, value: 'Cộng hòa XHCN Việt Nam' },
-          { id: 'ltks_tinhCha', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 4, options: provinceOptions },
-          { id: 'ltks_phuongCha', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: wardOptions },
+          { id: 'ltks_tinhCha', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 4, options: provinces },
+          { id: 'ltks_phuongCha', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: opts.wardsCha },
           { id: 'ltks_chiTietCha', label: 'Chi tiết', type: 'text', wide: true },
         ],
       },
@@ -313,8 +316,8 @@ const steps: LinkedStep[] = [
       {
         title: 'Nơi đề nghị đăng ký thường trú',
         fields: [
-          { id: 'ltks_tinhDangKyThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 6, options: provinceOptions },
-          { id: 'ltks_phuongDangKyThuongTru', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: wardOptions },
+          { id: 'ltks_tinhDangKyThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, span: 6, options: provinces },
+          { id: 'ltks_phuongDangKyThuongTru', label: 'Phường/Xã', type: 'select', required: true, span: 6, options: opts.wardsDangKyThuongTru },
           { id: 'ltks_chiTietDangKyThuongTru', label: 'Chi tiết', type: 'text', required: true, wide: true },
         ],
       },
@@ -382,19 +385,74 @@ const steps: LinkedStep[] = [
   },
 ];
 
-const parseStep = (stepSlug?: string) => {
-  const match = stepSlug?.match(/^buoc-(\d+)$/);
-  const step = match ? Number(match[1]) : 1;
-  return Math.min(Math.max(step, 1), steps.length);
-};
+
 
 const LienThongKhaiSinhPage: React.FC = () => {
+  const { formState, setFieldValue, setFieldError, touchField, resetForm } = useForm();
+  
+  const { wardOptions: wardsKhaiSinh } = useWards(formState.values.ltks_tinhKhaiSinh);
+  const { wardOptions: wardsThuongTru } = useWards(formState.values.ltks_tinhThuongTru);
+  const { wardOptions: wardsNguoiYeuCau } = useWards(formState.values.ltks_tinhNguoiYeuCau);
+  const { wardOptions: wardsNoiSinh } = useWards(formState.values.ltks_tinhNoiSinh);
+  const { wardOptions: wardsQueQuan } = useWards(formState.values.ltks_tinhQueQuan);
+  const { wardOptions: wardsMe } = useWards(formState.values.ltks_tinhMe);
+  const { wardOptions: wardsCha } = useWards(formState.values.ltks_tinhCha);
+  const { wardOptions: wardsDangKyThuongTru } = useWards(formState.values.ltks_tinhDangKyThuongTru);
+
+  const steps = React.useMemo(() => getSteps({
+    wardsKhaiSinh,
+    wardsThuongTru,
+    wardsNguoiYeuCau,
+    wardsNoiSinh,
+    wardsQueQuan,
+    wardsMe,
+    wardsCha,
+    wardsDangKyThuongTru
+  }), [
+    wardsKhaiSinh, wardsThuongTru, wardsNguoiYeuCau, wardsNoiSinh,
+    wardsQueQuan, wardsMe, wardsCha, wardsDangKyThuongTru
+  ]);
+
+  const handleChangeField = (fieldId: string, value: string) => {
+    setFieldValue(fieldId, value);
+    
+    // Cascade Reset logic
+    if (fieldId === 'ltks_tinhKhaiSinh') {
+      setFieldValue('ltks_phuongKhaiSinh', '');
+      setFieldValue('ltks_coQuanDangKyKhaiSinh', '');
+      setFieldValue('ltks_coQuanCapBhyt', '');
+    }
+    if (fieldId === 'ltks_phuongKhaiSinh') {
+      setFieldValue('ltks_coQuanDangKyKhaiSinh', getKhaiSinhAgencyName(value));
+      setFieldValue('ltks_coQuanCapBhyt', getBhytAgencyName(value));
+    }
+    
+    if (fieldId === 'ltks_tinhThuongTru') {
+      setFieldValue('ltks_phuongThuongTru', '');
+      setFieldValue('ltks_coQuanDangKyThuongTru', '');
+    }
+    if (fieldId === 'ltks_phuongThuongTru') {
+      setFieldValue('ltks_coQuanDangKyThuongTru', getResidenceAgencyName(value));
+    }
+
+    if (fieldId === 'ltks_tinhNguoiYeuCau') setFieldValue('ltks_phuongNguoiYeuCau', '');
+    if (fieldId === 'ltks_tinhNoiSinh') setFieldValue('ltks_phuongNoiSinh', '');
+    if (fieldId === 'ltks_tinhQueQuan') setFieldValue('ltks_phuongQueQuan', '');
+    if (fieldId === 'ltks_tinhMe') setFieldValue('ltks_phuongMe', '');
+    if (fieldId === 'ltks_tinhCha') setFieldValue('ltks_phuongCha', '');
+    if (fieldId === 'ltks_tinhDangKyThuongTru') setFieldValue('ltks_phuongDangKyThuongTru', '');
+  };
+
   const navigate = useNavigate();
   const { stepSlug } = useParams();
-  const { formState, setFieldValue, setFieldError, touchField, resetForm } = useForm();
+  const parseStep = (slug?: string) => {
+    const match = slug?.match(/^buoc-(\d+)$/);
+    return Math.min(Math.max(match ? Number(match[1]) : 1, 1), steps.length);
+  };
+
   const [submitError, setSubmitError] = React.useState('');
   const [activeReviewTab, setActiveReviewTab] = React.useState(0);
-
+  const [uploadedFiles, setUploadedFiles] = React.useState<Record<string, File>>({});
   const currentStep = parseStep(stepSlug);
   const current = steps[currentStep - 1];
 
@@ -418,9 +476,59 @@ const LienThongKhaiSinhPage: React.FC = () => {
     return isValid;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     setSubmitError('');
     if (!validateStep()) return;
+
+    if (currentStep === 5) {
+      // Build payload for submission
+      const payload = {
+        ...formState.values,
+        message: 'Điền thiếu',
+        caseNote: 'Điền thiếu',
+        attachments: {
+          step4Files: Object.entries(uploadedFiles).map(([id, file]) => ({
+            fieldName: id,
+            fileName: file.name,
+            file: file,
+            size: file.size,
+            type: file.type,
+          })),
+        },
+      };
+
+      const payloadAny = payload as any;
+      const babyName = [payloadAny.ltks_hoTre, payloadAny.ltks_chuDemTre, payloadAny.ltks_tenTre].filter(Boolean).join(' ');
+      const attachments = await Promise.all(
+        Object.values(uploadedFiles).map(file => saveAttachmentFile(file))
+      );
+
+      saveApplicationToDashboard({
+        procedure: 'Liên thông khai sinh, thường trú, BHYT',
+        applicant: payloadAny.ltks_hoTenNguoiYeuCau || '',
+        citizenId: payloadAny.ltks_soDinhDanhNguoiYeuCau || '',
+        phone: payloadAny.ltks_sdtNguoiYeuCau || '',
+        email: payloadAny.ltks_emailNguoiYeuCau || '',
+        documents: payload.attachments.step4Files.length 
+          ? payload.attachments.step4Files.map((f: any) => ({ name: f.fileName, state: 'Đã có' as const }))
+          : [],
+        attachments,
+        message: payload.message,
+        caseNote: payload.caseNote,
+        details: {
+          'Tên trẻ khai sinh': babyName || '',
+          'Ngày sinh': payloadAny.ltks_ngaySinhTre || '',
+          'Quan hệ với người yêu cầu': payloadAny.ltks_quanHeVoiTre || '',
+          'Cơ quan đăng ký khai sinh': payloadAny.ltks_coQuanDangKyKhaiSinh || '',
+        }
+      });
+
+      console.log('SUBMIT PAYLOAD:', payload);
+      // Simulate successful submission and go to completion step
+      goToStep(6);
+      return;
+    }
+
     if (currentStep < steps.length) {
       goToStep(currentStep + 1);
     }
@@ -509,13 +617,17 @@ const LienThongKhaiSinhPage: React.FC = () => {
                         field={field}
                         value={formState.values[field.id] ?? field.value ?? ''}
                         error={formState.errors[field.id]}
-                        onChange={(value) => setFieldValue(field.id, value)}
+                        onChange={(value) => handleChangeField(field.id, value)}
                       />
                     ))}
                   </div>
                 )}
                 {section.uploads && (
-                  <UploadDocumentsTable uploads={section.uploads} />
+                  <UploadDocumentsTable
+                    uploads={section.uploads}
+                    files={uploadedFiles}
+                    onFileChange={(title, file) => setUploadedFiles(prev => ({ ...prev, [title]: file }))}
+                  />
                 )}
                 {section.resultOptions && (
                   <ResultOptionsPanel
@@ -876,7 +988,11 @@ const ResultOptionsPanel: React.FC<ResultOptionsPanelProps> = ({ values, onChang
   );
 };
 
-const UploadDocumentsTable: React.FC<{ uploads: UploadDocument[] }> = ({ uploads }) => (
+const UploadDocumentsTable: React.FC<{
+  uploads: UploadDocument[],
+  files: Record<string, File>,
+  onFileChange: (title: string, file: File) => void
+}> = ({ uploads, files, onFileChange }) => (
   <div className="ltks-upload-table-wrap">
     <table className="ltks-upload-table">
       <thead>
@@ -898,9 +1014,22 @@ const UploadDocumentsTable: React.FC<{ uploads: UploadDocument[] }> = ({ uploads
             </td>
             <td className="copies">{upload.copies}</td>
             <td className="file">
-              <button type="button" className="ltks-file-button">
+              <input
+                type="file"
+                id={`upload-${index}`}
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) onFileChange(upload.title, file);
+                }}
+              />
+              <button
+                type="button"
+                className="ltks-file-button"
+                onClick={() => document.getElementById(`upload-${index}`)?.click()}
+              >
                 <Paperclip size={20} />
-                Chọn tệp tin
+                {files[upload.title] ? files[upload.title].name : 'Chọn tệp tin'}
               </button>
             </td>
             <td className="template">
