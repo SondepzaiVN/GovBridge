@@ -8600,7 +8600,7 @@ a:hover {
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
-    overflow: hidden;
+    /* Removed overflow: hidden so dropdowns aren't clipped */
 }
 
 .ltkt-form-frame .ltkt-form-card > div {
@@ -8617,6 +8617,8 @@ a:hover {
     padding: 8px 20px !important;
     background: rgba(255, 241, 184, 0.52) !important;
     border-bottom: 2px solid #d71920;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 .ltkt-form-frame .ltkt-form-card > div:has(> h3) > div {
