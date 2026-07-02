@@ -2,9 +2,11 @@ import React, { Suspense, lazy } from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ChatbotProvider } from './contexts/ChatbotContext';
 import { FormProvider, useForm } from './contexts/FormContext';
+import { AuthProvider } from './contexts/AuthContext';
 import ChatbotWidget, { ChatbotFAB } from './components/chatbot/ChatbotWidget';
 import UIHighlighter from './components/overlay/UIHighlighter';
 import Header from './components/layout/Header';
+import RequireRole from './components/auth/RequireRole';
 import './index.css';
 
 // Lazy-load pages
@@ -17,6 +19,9 @@ const KetHonPage = lazy(() => import('./components/pages/KetHonPage'));
 const LienThongKhaiSinhPage = lazy(() => import('./components/pages/LienThongKhaiSinhPage'));
 const LienThongKhaiTuPage = lazy(() => import('./components/pages/LienThongKhaiTuPage'));
 const XacNhanCuTruPage = lazy(() => import('./components/pages/XacNhanCuTruPage'));
+const LoginPage = lazy(() => import('./components/pages/LoginPage'));
+const CitizenDashboardPage = lazy(() => import('./components/pages/CitizenDashboardPage'));
+const OfficerDashboardPage = lazy(() => import('./components/pages/OfficerDashboardPage'));
 
 // Loading fallback
 const PageLoader = () => (
@@ -52,6 +57,8 @@ const AppInner: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { fillFields, formState } = useForm();
+    const isAuthenticationPage = location.pathname === '/dang-nhap';
+    const isOfficerPage = location.pathname === '/can-bo';
 
     const handleNavigate = (route: string) => {
         navigate(route);
@@ -68,13 +75,18 @@ const AppInner: React.FC = () => {
             currentRoute={location.pathname}
             formValues={formState.values}
         >
-            {/* Global overlay & chatbot */}
-            <UIHighlighter />
-            <ChatbotFAB />
-            <ChatbotWidget />
-
-            {/* App shell */}
-            <Header />
+            {!isAuthenticationPage && (
+                <>
+                    <UIHighlighter />
+                    {!isOfficerPage && (
+                        <>
+                            <ChatbotFAB />
+                            <ChatbotWidget />
+                        </>
+                    )}
+                    <Header />
+                </>
+            )}
 
             <main>
                 <Suspense fallback={<PageLoader />}>
@@ -91,6 +103,15 @@ const AppInner: React.FC = () => {
                         <Route path="/lien-thong-khai-sinh/:stepSlug" element={<LienThongKhaiSinhPage />} />
                         <Route path="/lien-thong-khai-tu" element={<LienThongKhaiTuPage />} />
                         <Route path="/xac-nhan-cu-tru" element={<XacNhanCuTruPage />} />
+                        <Route path="/dang-nhap" element={<LoginPage />} />
+                        <Route
+                            path="/nguoi-dan"
+                            element={<RequireRole role="nguoi-dan"><CitizenDashboardPage /></RequireRole>}
+                        />
+                        <Route
+                            path="/can-bo"
+                            element={<RequireRole role="can-bo"><OfficerDashboardPage /></RequireRole>}
+                        />
                         {/* Fallback */}
                         <Route path="*" element={<HomePage />} />
                     </Routes>
@@ -106,9 +127,11 @@ const AppInner: React.FC = () => {
 const App: React.FC = () => {
     return (
         <Router>
-            <FormProvider>
-                <AppInner />
-            </FormProvider>
+            <AuthProvider>
+                <FormProvider>
+                    <AppInner />
+                </FormProvider>
+            </AuthProvider>
         </Router>
     );
 };
