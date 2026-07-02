@@ -3,11 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { Search, ChevronRight, ArrowRight } from 'lucide-react';
 import { PUBLIC_SERVICES } from '../../data/services';
 
-const FEATURED_SERVICE_ORDER = [
-    'ho-khau',
-    'xac-nhan-cu-tru',
-    'khai-sinh',
-];
+const FEATURED_SERVICE_ORDER = ['ho-khau', 'dang-ky-tam-tru', 'xac-nhan-cu-tru', 'khai-sinh', 'cccd', 'ket-hon'];
 
 const getFeaturedRank = (service: (typeof PUBLIC_SERVICES)[number]) => {
     const rankById = FEATURED_SERVICE_ORDER.indexOf(service.id);

@@ -1,114 +1,114 @@
 {
-  "schemaVersion": 1,
-  "sessions": [
-    {
-      "id": "27c47bbb-41f0-4ff8-8713-0df519eb7e19",
-      "currentRoute": "/ho-khau",
-      "state": {
-        "formSnapshot": {
-          "thuTuc": "dktt",
-          "loaiDKTT": "lap_ho_moi"
-        },
-        "candidateCases": [],
-        "recentFacts": []
-      },
-      "createdAt": "2026-07-02T05:01:45.592Z",
-      "updatedAt": "2026-07-02T05:07:30.679Z",
-      "messages": [
+    "schemaVersion": 1,
+    "sessions": [
         {
-          "role": "user",
-          "content": "đăng ký tạm trú như nào",
-          "createdAt": "2026-07-02T05:01:45.592Z"
+            "id": "27c47bbb-41f0-4ff8-8713-0df519eb7e19",
+            "currentRoute": "/ho-khau",
+            "state": {
+                "formSnapshot": {
+                    "thuTuc": "dktt",
+                    "loaiDKTT": "lap_ho_moi"
+                },
+                "candidateCases": [],
+                "recentFacts": []
+            },
+            "createdAt": "2026-07-02T05:01:45.592Z",
+            "updatedAt": "2026-07-02T05:07:30.679Z",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "đăng ký tạm trú như nào",
+                    "createdAt": "2026-07-02T05:01:45.592Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+                    "createdAt": "2026-07-02T05:01:45.592Z"
+                },
+                {
+                    "role": "user",
+                    "content": "hii",
+                    "createdAt": "2026-07-02T05:02:22.495Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+                    "createdAt": "2026-07-02T05:02:22.495Z"
+                },
+                {
+                    "role": "user",
+                    "content": "bạn là ai?",
+                    "createdAt": "2026-07-02T05:02:31.435Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+                    "createdAt": "2026-07-02T05:02:31.435Z"
+                },
+                {
+                    "role": "user",
+                    "content": "đăng ký thường trú",
+                    "createdAt": "2026-07-02T05:06:49.347Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+                    "createdAt": "2026-07-02T05:06:49.347Z"
+                },
+                {
+                    "role": "user",
+                    "content": "đăng ký tạm trú",
+                    "createdAt": "2026-07-02T05:07:02.958Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+                    "createdAt": "2026-07-02T05:07:02.958Z"
+                },
+                {
+                    "role": "user",
+                    "content": "đăng ký thường trú lập hộ mới và vào hộ đã có là gì",
+                    "createdAt": "2026-07-02T05:07:30.679Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+                    "createdAt": "2026-07-02T05:07:30.679Z"
+                }
+            ]
         },
         {
-          "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T05:01:45.592Z"
-        },
-        {
-          "role": "user",
-          "content": "hii",
-          "createdAt": "2026-07-02T05:02:22.495Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T05:02:22.495Z"
-        },
-        {
-          "role": "user",
-          "content": "bạn là ai?",
-          "createdAt": "2026-07-02T05:02:31.435Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T05:02:31.435Z"
-        },
-        {
-          "role": "user",
-          "content": "đăng ký thường trú",
-          "createdAt": "2026-07-02T05:06:49.347Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-02T05:06:49.347Z"
-        },
-        {
-          "role": "user",
-          "content": "đăng ký tạm trú",
-          "createdAt": "2026-07-02T05:07:02.958Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-02T05:07:02.958Z"
-        },
-        {
-          "role": "user",
-          "content": "đăng ký thường trú lập hộ mới và vào hộ đã có là gì",
-          "createdAt": "2026-07-02T05:07:30.679Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-02T05:07:30.679Z"
+            "id": "e389b48d-c4b2-44c0-87d8-1c1434633cd7",
+            "currentRoute": "/khai-sinh",
+            "state": {
+                "formSnapshot": {},
+                "candidateCases": [],
+                "recentFacts": []
+            },
+            "createdAt": "2026-07-01T15:15:21.878Z",
+            "updatedAt": "2026-07-01T17:58:17.822Z",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": "hello",
+                    "createdAt": "2026-07-01T15:15:21.878Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Bạn đang ở thủ tục **Đăng ký Khai Sinh**. Mình có thể giải thích giấy tờ, quy trình, chỉ bước tiếp theo hoặc điền field theo dạng fieldId: giá trị.",
+                    "createdAt": "2026-07-01T15:15:21.878Z"
+                },
+                {
+                    "role": "user",
+                    "content": "đăng ký tạm trú là gì",
+                    "createdAt": "2026-07-01T17:58:17.822Z"
+                },
+                {
+                    "role": "assistant",
+                    "content": "Mình tìm thấy thủ tục **Đăng ký Khai Sinh**. Bạn có muốn chuyển đến trang này không?",
+                    "createdAt": "2026-07-01T17:58:17.822Z"
+                }
+            ]
         }
-      ]
-    },
-    {
-      "id": "e389b48d-c4b2-44c0-87d8-1c1434633cd7",
-      "currentRoute": "/khai-sinh",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [],
-        "recentFacts": []
-      },
-      "createdAt": "2026-07-01T15:15:21.878Z",
-      "updatedAt": "2026-07-01T17:58:17.822Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "hello",
-          "createdAt": "2026-07-01T15:15:21.878Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn đang ở thủ tục **Đăng ký Khai Sinh**. Mình có thể giải thích giấy tờ, quy trình, chỉ bước tiếp theo hoặc điền field theo dạng fieldId: giá trị.",
-          "createdAt": "2026-07-01T15:15:21.878Z"
-        },
-        {
-          "role": "user",
-          "content": "đăng ký tạm trú là gì",
-          "createdAt": "2026-07-01T17:58:17.822Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy thủ tục **Đăng ký Khai Sinh**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-01T17:58:17.822Z"
-        }
-      ]
-    }
-  ]
+    ]
 }
