@@ -2,7 +2,7 @@ import { normalizeText } from '../../common/utils/normalize-text.js';
 import type { ProcedureField } from '../procedures/procedure.types.js';
 import type {
   AgentAction,
-  AssistantProviderResult,
+  OrchestratorFinalResult,
   AssistantResult,
   AssistantToolContext,
   ExtractedFact,
@@ -118,9 +118,30 @@ const createConfirmAction = (
   };
 };
 
+const mergeSuggestions = (
+  primary: string[] | undefined,
+  secondary: string[] | undefined,
+): string[] | undefined => {
+  const suggestions = [...new Set([
+    ...(primary ?? []),
+    ...(secondary ?? []),
+  ])].slice(0, 3);
+  return suggestions.length > 0 ? suggestions : undefined;
+};
+
+const mergeConfirmationMessage = (
+  finalMessage: string,
+  confirmationMessage: string,
+): string => {
+  const composed = finalMessage.trim();
+  if (!composed) return confirmationMessage;
+  if (composed.includes(confirmationMessage)) return composed;
+  return `${composed}\n\n${confirmationMessage}`;
+};
+
 export const planAssistantResult = (
   context: AssistantToolContext,
-  providerResult: AssistantProviderResult,
+  providerResult: OrchestratorFinalResult,
 ): AssistantResult => {
   const understanding = providerResult.understanding;
   if (!understanding || !context.currentProcedure) {
@@ -146,12 +167,21 @@ export const planAssistantResult = (
 
   if (Object.keys(fields).length > 0) {
     const action = createConfirmAction(context, fields, fieldLabels);
+    const suggestions = mergeSuggestions(
+      providerResult.response.suggestions,
+      action.suggestions,
+    );
     return {
       response: {
         intent: 'CLARIFY',
-        message: action.message,
+        message: providerResult.responseProvenance === 'knowledge_composer'
+          ? mergeConfirmationMessage(
+              providerResult.response.message,
+              action.message,
+            )
+          : action.message,
         data: { fields, fieldLabels, previousValues: action.previousValues },
-        ...(action.suggestions ? { suggestions: action.suggestions } : {}),
+        ...(suggestions ? { suggestions } : {}),
       },
       actions: [action],
     };

@@ -6,7 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { MockOcrProvider } from '../src/modules/identity/providers/mock-ocr.provider.js';
 import { MockTtsProvider } from '../src/modules/speech/providers/mock-tts.provider.js';
-import type { AssistantProvider } from '../src/modules/assistant/assistant.types.js';
+import type { OrchestratorProvider } from '../src/modules/assistant/orchestrator.types.js';
+import { MockKnowledgeProvider } from '../src/modules/assistant/providers/mock-knowledge.provider.js';
 
 let dataDirectory: string;
 
@@ -14,6 +15,7 @@ const createTestApp = () => createApp({
   dataDirectory,
   ocrProvider: new MockOcrProvider(),
   ttsProvider: new MockTtsProvider(),
+  knowledgeProvider: new MockKnowledgeProvider(),
 });
 
 beforeEach(async () => {
@@ -32,6 +34,7 @@ describe('Gov Bridge API', () => {
     const response = await request(createTestApp()).get('/api/v1/health').expect(200);
     expect(response.body.success).toBe(true);
     expect(response.body.data.storage).toBe('json-file');
+    expect(response.body.data.providers.knowledge).toBe('mock-knowledge');
   });
 
   it('returns the multi-step procedure definition', async () => {
@@ -115,50 +118,53 @@ describe('Gov Bridge API', () => {
     }));
   });
 
-  it('validates VNPT facts in backend and requests confirmation before filling', async () => {
-    const assistantProvider: AssistantProvider = {
+  it('validates orchestrator facts in backend and requests confirmation before filling', async () => {
+    const orchestratorProvider: OrchestratorProvider = {
       name: 'structured-test',
-      async sendMessage() {
+      async orchestrate() {
         return {
-          response: {
-            intent: 'CHAT',
-            message: 'Mình đã nhận được thông tin bạn cung cấp.',
-          },
-          actions: [],
-          understanding: {
-            facts: [
-              {
-                fieldHint: 'hoTen',
-                value: 'Nguyễn Thị Lan',
-                confidence: 0.98,
-                source: 'chat',
-              },
-              {
-                fieldHint: 'sdtCoQuan',
-                value: '0901234567',
-                confidence: 0.99,
-                source: 'chat',
-              },
-              {
-                fieldHint: 'fieldKhongTonTai',
-                value: 'không hợp lệ',
-                confidence: 0.99,
-                source: 'inference',
-              },
-              {
-                fieldHint: 'gioiTinh',
-                value: 'Nữ',
-                confidence: 0.99,
-                source: 'inference',
-              },
-            ],
-            caseSuggestion: {
-              id: 'vao_ho_da_co',
-              confidence: 0.75,
-              reason: 'Người dùng nói muốn nhập khẩu về nhà chồng.',
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: 'Mình đã nhận được thông tin bạn cung cấp.',
             },
-            followUpQuestion: null,
-            fieldExplanation: null,
+            actions: [],
+            understanding: {
+              facts: [
+                {
+                  fieldHint: 'hoTen',
+                  value: 'Nguyễn Thị Lan',
+                  confidence: 0.98,
+                  source: 'chat',
+                },
+                {
+                  fieldHint: 'sdtCoQuan',
+                  value: '0901234567',
+                  confidence: 0.99,
+                  source: 'chat',
+                },
+                {
+                  fieldHint: 'fieldKhongTonTai',
+                  value: 'không hợp lệ',
+                  confidence: 0.99,
+                  source: 'inference',
+                },
+                {
+                  fieldHint: 'gioiTinh',
+                  value: 'Nữ',
+                  confidence: 0.99,
+                  source: 'inference',
+                },
+              ],
+              caseSuggestion: {
+                id: 'vao_ho_da_co',
+                confidence: 0.75,
+                reason: 'Người dùng nói muốn nhập khẩu về nhà chồng.',
+              },
+              followUpQuestion: null,
+              fieldExplanation: null,
+            },
           },
         };
       },
@@ -168,7 +174,8 @@ describe('Gov Bridge API', () => {
       dataDirectory,
       ocrProvider: new MockOcrProvider(),
       ttsProvider: new MockTtsProvider(),
-      assistantProvider,
+      orchestratorProvider,
+      knowledgeProvider: new MockKnowledgeProvider(),
     })).post('/api/v1/assistant/messages').send({
       message: 'Tôi tên Nguyễn Thị Lan',
       currentRoute: '/ho-khau',
