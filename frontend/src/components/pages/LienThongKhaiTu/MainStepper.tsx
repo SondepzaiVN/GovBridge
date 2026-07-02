@@ -38,14 +38,30 @@ const MainStepper: React.FC = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "#fff", minHeight: "100vh", paddingBottom: "40px", overflow: "hidden" }}>
+    <div className="ltkt-page-shell">
       {/* Header màu xanh của cổng DVC (Mockup) */}
 
       {/* Thanh Stepper */}
       <StepHeader currentStep={currentStep} />
 
+      <div className="ltkt-step-content ltkt-standard-notices">
+        <div className="dktt-ai-hint" data-highlight-id="ai-hint">
+          <span className="dktt-ai-hint-icon">
+            <img src="/logo_Gov_Bridge.jpg" alt="AI" />
+          </span>
+          <span>
+            <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
+            form bằng <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
+          </span>
+        </div>
+
+        <div className="dktt-required-note">
+          <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
+        </div>
+      </div>
+
       {/* Nội dung thay đổi theo Step */}
-      <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 20px" }}>
+      <div className="ltkt-step-content">
         {renderStepContent()}
       </div>
     </div>

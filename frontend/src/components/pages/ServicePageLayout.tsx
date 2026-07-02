@@ -248,7 +248,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
   });
 
   return (
-    <div className="main-content animate-slide-up">
+    <div className="main-content dktt-main-content service-standard-page animate-slide-up">
       {/* Breadcrumb */}
       <nav className="breadcrumb" aria-label="Breadcrumb">
         <Link to="/">
@@ -294,32 +294,24 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
               </div>
             </div>
 
+            <div className="dktt-ai-hint" data-highlight-id="ai-hint">
+              <span className="dktt-ai-hint-icon">
+                <img src="/logo_Gov_Bridge.jpg" alt="AI" />
+              </span>
+              <span>
+                <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự
+                động điền form bằng <strong>giọng nói</strong> hoặc{" "}
+                <strong>ảnh CCCD</strong>.
+              </span>
+            </div>
+
+            <div className="dktt-required-note">
+              <strong>Ghi chú:</strong> Các thông tin có dấu{" "}
+              <span className="red">(*)</span> là thông tin bắt buộc phải nhập
+            </div>
+
             {/* Form body */}
             <form className="form-body" onSubmit={handleSubmit} noValidate>
-              {/* AI autofill hint */}
-              <div
-                style={{
-                  background: "#FFF3EE",
-                  border: "1px solid #C8441A",
-                  borderRadius: "var(--radius-md)",
-                  padding: "12px 16px",
-                  marginBottom: 24,
-                  fontSize: "0.8375rem",
-                  color: "#8B1A1A",
-                  display: "flex",
-                  gap: 8,
-                  alignItems: "center",
-                }}
-                data-highlight-id="ai-hint"
-              >
-                <span style={{ display: 'flex', alignItems: 'center' }}><img src="/logo_Gov_Bridge.jpg" alt="AI" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover', border: '1px solid #C8441A' }} /></span>
-                <span>
-                  <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự
-                  động điền form bằng <strong>giọng nói</strong> hoặc{" "}
-                  <strong>ảnh CCCD</strong>!
-                </span>
-              </div>
-
               {/* Form fields */}
               <div className="form-grid">
                 {service.fields.map((field) => (
