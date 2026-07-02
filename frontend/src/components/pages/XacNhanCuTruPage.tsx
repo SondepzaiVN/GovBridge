@@ -251,7 +251,7 @@ const createAgencyFields = (
 ];
 
 const procedureFields: FieldConfig[] = [
-  { id: 'procedure', label: 'Thủ tục', kind: 'select', required: true, placeholder: 'Thủ tục', options: procedureOptions },
+  { id: 'procedure', label: 'Thủ tục', kind: 'select', required: true, placeholder: 'Thủ tục', options: procedureOptions, readOnly: true },
   { id: 'caseType', label: 'Trường hợp', kind: 'select', required: true, placeholder: 'Chọn', options: caseOptions },
 ];
 

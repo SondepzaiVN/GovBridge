@@ -7674,6 +7674,15 @@ a:hover {
     min-width: 0;
 }
 
+.tamtru-page .form-input:disabled,
+.tamtru-page .form-select:disabled,
+.tamtru-page .form-textarea:disabled {
+    color: #4e5359;
+    background-color: #f3f3f3;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
 .tamtru-toolbar {
     display: flex;
     justify-content: flex-end;
