@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bot, ChevronRight, FileText, HelpCircle, Home, Plus, Save, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Bot, ChevronRight, FileText, HelpCircle, Home, Save, Send, Trash2 } from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import {
     dateFormatOptions,
@@ -542,7 +542,10 @@ const DangKyTamTruPage: React.FC = () => {
 
             <div className="dktt-ai-hint">
                 <span className="dktt-ai-hint-icon"><img src="/logo_Gov_Bridge.jpg" alt="AI" /></span>
-                <span><strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI để tự động điền form bằng giọng nói hoặc ảnh CCCD.</span>
+                <span>
+                    <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
+                    form bằng <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
+                </span>
             </div>
 
             <div className="dktt-required-note">
@@ -634,20 +637,31 @@ const DangKyTamTruPage: React.FC = () => {
                             <table className="dktt-member-table tamtru-member-table">
                                 <thead>
                                     <tr>
-                                        <th>STT</th>
+                                        <th className="col-action">Thao tác</th>
+                                        <th className="col-stt">STT</th>
                                         <th>Họ và tên <span className="req">*</span></th>
                                         <th>Định dạng ngày sinh</th>
                                         <th>Ngày sinh <span className="req">*</span></th>
                                         <th>Giới tính <span className="req">*</span></th>
                                         <th>Số ĐDCN <span className="req">*</span></th>
                                         <th>Quan hệ với chủ hộ <span className="req">*</span></th>
-                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {form.householdMembers.map((member, index) => (
                                         <tr key={member.id}>
-                                            <td>{index + 1}</td>
+                                            <td className="col-action">
+                                                {index === 0 ? (
+                                                    <button type="button" className="dktt-btn-add" onClick={addMember} title="Thêm thành viên">
+                                                        +
+                                                    </button>
+                                                ) : (
+                                                    <button type="button" className="dktt-btn-remove" onClick={() => removeMember(member.id)} title="Xóa dòng">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
+                                            </td>
+                                            <td className="col-stt">{index + 1}</td>
                                             <td><input className="dktt-table-input" value={member.fullName} onChange={(event) => updateMember(member.id, { fullName: event.target.value })} /></td>
                                             <td>
                                                 <select className="dktt-table-select" value={member.dateFormat} onChange={(event) => updateMember(member.id, { dateFormat: event.target.value })}>
@@ -668,21 +682,11 @@ const DangKyTamTruPage: React.FC = () => {
                                                     {relationshipOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                                                 </select>
                                             </td>
-                                            <td>
-                                                {form.householdMembers.length > 1 ? (
-                                                    <button type="button" className="dktt-btn-remove" onClick={() => removeMember(member.id)} title="Xóa dòng">
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                ) : <span className="dktt-table-placeholder">-</span>}
-                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
-                        <button type="button" className="dktt-btn-add tamtru-add-doc" onClick={addMember}>
-                            <Plus size={16} /> Thêm thành viên
-                        </button>
                     </Section>
 
                     <Section number={6} title="HỒ SƠ ĐÍNH KÈM">
