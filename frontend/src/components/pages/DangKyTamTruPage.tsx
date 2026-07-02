@@ -25,6 +25,8 @@ import {
     type TamTruReviewResult,
 } from '../../utils/validateTamTruApplication';
 
+const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
+
 const addYears = (date: Date, years: number) => {
     const next = new Date(date);
     next.setFullYear(next.getFullYear() + years);
@@ -775,9 +777,17 @@ const DangKyTamTruPage: React.FC = () => {
                                                                         </td>
                                                                         <td className="dktt-doc-cell-center">
                                                                             {document.templateAvailable ? (
-                                                                                <button type="button" className="dktt-doc-icon-btn" title="Tải file mẫu">
+                                                                                <a
+                                                                                    className="dktt-doc-icon-btn"
+                                                                                    href={CT01_TEMPLATE_URL}
+                                                                                    download
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    title="Tải file mẫu"
+                                                                                    aria-label="Tải file mẫu"
+                                                                                >
                                                                                     <FileDown size={14} />
-                                                                                </button>
+                                                                                </a>
                                                                             ) : (
                                                                                 <span className="dktt-table-placeholder">-</span>
                                                                             )}
