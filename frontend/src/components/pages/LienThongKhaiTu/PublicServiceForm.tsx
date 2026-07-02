@@ -66,14 +66,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
   }, []);
 
   useEffect(() => {
-    if (!khaituProvince) {
-      setKhaituWardOptions([]);
-      setIsLoadingKhaituWards(false);
-      return;
-    }
+    if (!khaituProvince) return;
 
     const controller = new AbortController();
-    setIsLoadingKhaituWards(true);
 
     administrativeUnitService
       .getWards(khaituProvince, controller.signal)
@@ -90,14 +85,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
   }, [khaituProvince]);
 
   useEffect(() => {
-    if (!rawThuongtruProvince) {
-      setThuongtruWardOptions([]);
-      setIsLoadingThuongtruWards(false);
-      return;
-    }
+    if (!rawThuongtruProvince) return;
 
     const controller = new AbortController();
-    setIsLoadingThuongtruWards(true);
 
     administrativeUnitService
       .getWards(rawThuongtruProvince, controller.signal)
@@ -114,14 +104,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
   }, [rawThuongtruProvince]);
 
   useEffect(() => {
-    if (!maitangProvince) {
-      setMaitangWardOptions([]);
-      setIsLoadingMaitangWards(false);
-      return;
-    }
+    if (!maitangProvince) return;
 
     const controller = new AbortController();
-    setIsLoadingMaitangWards(true);
 
     administrativeUnitService
       .getWards(maitangProvince, controller.signal)
@@ -219,6 +204,8 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             onChange={(e) => {
               setKhaituProvince(e.target.value);
               setKhaituWard("");
+              setKhaituWardOptions([]);
+              setIsLoadingKhaituWards(Boolean(e.target.value));
             }}
             style={{
               width: "100%",
@@ -382,6 +369,8 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             onChange={(e) => {
               setRawThuongtruProvince(e.target.value);
               setRawThuongtruWard("");
+              setThuongtruWardOptions([]);
+              setIsLoadingThuongtruWards(Boolean(e.target.value));
             }}
             style={{
               width: "100%",
@@ -661,6 +650,8 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
                   onChange={(e) => {
                     setMaitangProvince(e.target.value);
                     setMaitangWard("");
+                    setMaitangWardOptions([]);
+                    setIsLoadingMaitangWards(Boolean(e.target.value));
                   }}
                   style={{
                     width: "100%",
