@@ -6,7 +6,6 @@ import { quickValidate, validateForm } from "../../utils/validator";
 import { ChevronRight, Home } from "lucide-react";
 import { applicationService } from "../../api/applicationService";
 import { ApiClientError } from "../../api/client";
-import ProcedureAiSupportCard from "./ProcedureAiSupportCard";
 
 // ============================================================
 // Reusable form field renderer
@@ -482,8 +481,6 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
               </div>
             </div>
           </div>
-
-          <ProcedureAiSupportCard />
         </aside>
       </div>
     </div>
