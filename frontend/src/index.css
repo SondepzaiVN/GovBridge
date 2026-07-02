@@ -8971,3 +8971,122 @@ a:hover {
 .ltkt-form-frame input[type="radio"] {
     border-radius: 50% !important;
 }
+
+/* ============================================================
+   RESPONSIVE SAFETY PASS — procedure pages
+   ============================================================ */
+@media (max-width: 768px) {
+    .dktt-main-content,
+    .tamtru-page,
+    .xctt-page,
+    .ltks-app-page .ltks-main {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .dktt-section-header,
+    .xctt-section-header,
+    .ltks-app-page .ltks-section-title,
+    .ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child),
+    .ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3),
+    .ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+        gap: 8px;
+        padding-right: 12px !important;
+        padding-left: 12px !important;
+    }
+
+    .ltks-app-page .ltks-inline-check {
+        grid-column: 1 / -1;
+        grid-row: auto;
+        justify-self: start;
+        white-space: normal;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card > div[style*="display: flex"] {
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card > div[style*="width: 50%"] {
+        width: 100% !important;
+    }
+
+    .ltks-pdf-toolbar {
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 10px;
+    }
+
+    .ltks-pdf-toolbar-group {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .ltks-pdf-toolbar-group.center {
+        justify-content: center;
+    }
+
+    .ltks-pdf-toolbar-group strong {
+        min-width: 0;
+    }
+
+    .ltks-pdf-panel {
+        min-height: 520px;
+    }
+
+    .ltks-pdf-canvas {
+        padding: 12px;
+        overflow: auto;
+    }
+
+    .ltks-pdf-frame-shell,
+    .ltks-pdf-frame {
+        min-height: 520px;
+    }
+
+    .dktt-member-table-wrapper,
+    .ltks-upload-table-wrap,
+    .xctt-family-table-wrap {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .xctt-attachment-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 420px) {
+    .dktt-page-header,
+    .xctt-title-row,
+    .ltks-app-page .ltks-section-title {
+        overflow-wrap: anywhere;
+    }
+
+    .ltks-stepper {
+        grid-template-columns: 1fr;
+    }
+
+    .ltks-pdf-tabs button {
+        min-width: 180px;
+        white-space: normal;
+    }
+
+    .xctt-page {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+}
