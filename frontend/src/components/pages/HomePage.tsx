@@ -3,15 +3,32 @@ import { NavLink } from 'react-router-dom';
 import { Search, ChevronRight, ArrowRight } from 'lucide-react';
 import { PUBLIC_SERVICES } from '../../data/services';
 
+const FEATURED_SERVICE_ORDER = [
+    'ho-khau',
+    'xac-nhan-cu-tru',
+    'khai-sinh',
+];
+
+const getFeaturedRank = (service: (typeof PUBLIC_SERVICES)[number]) => {
+    const rankById = FEATURED_SERVICE_ORDER.indexOf(service.id);
+    if (rankById !== -1) return rankById;
+
+    const rankByRoute = FEATURED_SERVICE_ORDER.findIndex((key) => service.route.includes(key));
+    return rankByRoute === -1 ? FEATURED_SERVICE_ORDER.length : rankByRoute;
+};
+
 const HomePage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
 
-    const filteredServices = PUBLIC_SERVICES.filter(
-        (s) =>
-            !searchQuery ||
-            s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.keywords.some((k) => k.includes(searchQuery.toLowerCase())),
-    );
+    const filteredServices = PUBLIC_SERVICES.map((service, index) => ({ service, index }))
+        .filter(
+            ({ service }) =>
+                !searchQuery ||
+                service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                service.keywords.some((keyword) => keyword.includes(searchQuery.toLowerCase())),
+        )
+        .sort((a, b) => getFeaturedRank(a.service) - getFeaturedRank(b.service) || a.index - b.index)
+        .map(({ service }) => service);
 
     return (
         <div className="main-content animate-fade-in">
