@@ -7036,3 +7036,236 @@ a:hover {
     height: 26px;
     stroke-width: 1.8;
 }
+
+/* ============================================================
+   DANG KY TAM TRU
+   ============================================================ */
+
+.tamtru-page {
+    max-width: 1440px;
+}
+
+.tamtru-shell {
+    display: block;
+}
+
+.tamtru-form {
+    min-width: 0;
+}
+
+.tamtru-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0 0 14px;
+}
+
+.tamtru-choice-notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.tamtru-choice-notes label {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border: 1px solid #e5d9b8;
+    border-radius: 6px;
+    background: #fffdf3;
+    padding: 12px;
+    cursor: pointer;
+}
+
+.tamtru-choice-notes input {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    accent-color: #d71920;
+}
+
+.tamtru-choice-notes strong,
+.tamtru-choice-notes small {
+    display: block;
+}
+
+.tamtru-choice-notes small {
+    margin-top: 4px;
+    color: #5b6472;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.tamtru-radio-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 28px;
+    margin: 0 0 18px;
+}
+
+.tamtru-radio-line label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #292d34;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.tamtru-radio-line input {
+    width: 18px;
+    height: 18px;
+    accent-color: #d71920;
+}
+
+.tamtru-doc-table th,
+.tamtru-doc-table td {
+    font-size: 0.86rem;
+}
+
+.tamtru-doc-table input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    accent-color: #d71920;
+}
+
+.tamtru-add-doc {
+    width: auto;
+    margin-top: 14px;
+    padding: 9px 14px;
+}
+
+.tamtru-tag {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    border: 1px solid #b8bec8;
+    border-radius: 4px;
+    background: #f1f3f5;
+    color: #292d34;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.tamtru-review {
+    margin: 18px 0 0;
+    border: 1px solid #d7dce3;
+    border-radius: 8px;
+    background: #fff;
+    padding: 18px;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.tamtru-help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff3ee;
+    color: #c8441a;
+    cursor: pointer;
+}
+
+.tamtru-help-text {
+    display: block;
+    margin-top: 6px;
+    color: #6b4b00;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.tamtru-member-table {
+    min-width: 1160px;
+}
+
+.tamtru-review.valid {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.tamtru-review.need_review {
+    border-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.tamtru-review.invalid {
+    border-color: #d71920;
+    background: #fff5f5;
+}
+
+.tamtru-review-head {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+.tamtru-review-head strong,
+.tamtru-review-head span {
+    display: block;
+}
+
+.tamtru-review-head span {
+    color: #5b6472;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.tamtru-review h2 {
+    margin: 0 0 14px;
+    color: #1f2937;
+    font-size: 1.08rem;
+}
+
+.tamtru-review-item {
+    border-top: 1px solid rgba(31, 41, 55, 0.14);
+    padding: 12px 0;
+}
+
+.tamtru-review-item strong {
+    color: #1f2937;
+    font-size: 0.88rem;
+}
+
+.tamtru-review-item p {
+    margin: 4px 0;
+    color: #4b5565;
+    font-size: 0.82rem;
+}
+
+.tamtru-review-item span,
+.tamtru-suggestion {
+    color: #0f5132;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+    .tamtru-choice-notes {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .tamtru-toolbar {
+        justify-content: stretch;
+    }
+
+    .tamtru-toolbar .btn,
+    .tamtru-add-doc {
+        width: 100%;
+    }
+
+    .tamtru-radio-line {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
