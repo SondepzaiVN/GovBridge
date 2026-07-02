@@ -16,6 +16,7 @@ import {
     resultMethods,
 } from '../../data/tamTruMockData';
 import type { FormFieldOption } from '../../types';
+import ProcedureAiSupportCard from './ProcedureAiSupportCard';
 import {
     validateTamTruApplication,
     type TamTruApplicationData,
@@ -826,6 +827,8 @@ const DangKyTamTruPage: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            <ProcedureAiSupportCard className="procedure-ai-support-wide" />
 
             {toast && <div className="dktt-toast" role="alert">{toast}</div>}
         </div>

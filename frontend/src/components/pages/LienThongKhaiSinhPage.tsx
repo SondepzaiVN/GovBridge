@@ -4,6 +4,7 @@ import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Pri
 import { useForm } from '../../contexts/FormContext';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import type { FormFieldOption } from '../../types';
+import ProcedureAiSupportCard from './ProcedureAiSupportCard';
 
 type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
 
@@ -781,6 +782,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
             </div>
           )}
         </form>
+        <ProcedureAiSupportCard className="procedure-ai-support-wide" />
       </main>
     </LienThongShell>
   );

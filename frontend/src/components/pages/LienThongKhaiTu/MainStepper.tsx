@@ -6,6 +6,7 @@ import PublicServiceReview from "./PublicServiceReview";
 import PublicServiceAttachments from "./PublicServiceAttachments";
 import PublicServiceResultOptions from "./PublicServiceResultOptions";
 import PublicServiceComplete from "./PublicServiceComplete";
+import ProcedureAiSupportCard from "../ProcedureAiSupportCard";
 
 const MainStepper: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -63,6 +64,7 @@ const MainStepper: React.FC = () => {
             {renderStepContent()}
           </div>
         </form>
+        <ProcedureAiSupportCard className="procedure-ai-support-wide" />
       </main>
     </div>
   );
