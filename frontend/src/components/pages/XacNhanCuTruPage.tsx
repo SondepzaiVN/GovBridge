@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Calendar, ChevronUp, FileText, Home, Paperclip, Plus, Save, Send, X } from 'lucide-react';
+import { ArrowLeft, Calendar, ChevronRight, ChevronDown, ChevronUp, FileText, Home, Paperclip, Plus, Save, Send, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import { SERVICE_MAP } from '../../data/services';
@@ -14,6 +14,8 @@ interface FieldConfig {
   options?: string[];
   span?: 1 | 2 | 3;
   readOnly?: boolean;
+  disabled?: boolean;
+  isAutofilled?: boolean;
 }
 
 interface FamilyMember {
@@ -232,7 +234,7 @@ const getResidenceAgencyOptions = (wardName: string): string[] => (
 );
 
 const getWardFieldPlaceholder = (provinceName: string, isLoading: boolean): string => {
-  if (!provinceName) return 'Chọn tỉnh/thành phố trước';
+  if (!provinceName) return 'Chọn';
   return isLoading ? 'Đang tải...' : 'Chọn';
 };
 
@@ -244,8 +246,8 @@ const createAgencyFields = (
 ): FieldConfig[] => [
   { id: 'provinceAgency', label: 'Tỉnh/ Thành phố', kind: 'select', required: true, placeholder: 'Chọn', options: provinces },
   { id: 'wardAgency', label: 'Xã/Phường/Đặc khu', kind: 'select', required: true, placeholder: getWardFieldPlaceholder(selectedProvince, isLoading), options: wardOptions },
-  { id: 'residenceAgency', label: 'Cơ quan đăng ký cư trú', kind: 'select', required: true, placeholder: 'Chọn', options: getResidenceAgencyOptions(selectedWard) },
-  { id: 'agencyPhone', label: 'Số điện thoại', kind: 'text', readOnly: true, placeholder: '0292 3894 939' },
+  { id: 'residenceAgency', label: 'Cơ quan đăng ký cư trú', kind: 'select', required: true, placeholder: 'Chọn', options: getResidenceAgencyOptions(selectedWard), readOnly: true, isAutofilled: !!selectedWard },
+  { id: 'agencyPhone', label: 'Số điện thoại cơ quan', kind: 'text', readOnly: true, placeholder: '0292 3894 939', isAutofilled: true },
 ];
 
 const procedureFields: FieldConfig[] = [
@@ -437,9 +439,11 @@ const XacNhanCuTruPage: React.FC = () => {
     <div className="xctt-page">
       <div className="xctt-breadcrumb">
         <Home size={16} />
-        <span>Trang chủ</span>
-        <span>/</span>
-        <strong>Hồ sơ Xác nhận thông tin về cư trú</strong>
+        <span className="breadcrumb-link">Trang chủ</span>
+        <ChevronRight size={13} className="breadcrumb-sep" />
+        <span className="breadcrumb-link">Cư trú</span>
+        <ChevronRight size={13} className="breadcrumb-sep" />
+        <strong aria-current="page">Hồ sơ Xác nhận thông tin về cư trú</strong>
       </div>
 
       <div className="xctt-title-row">
@@ -464,35 +468,43 @@ const XacNhanCuTruPage: React.FC = () => {
         <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
       </p>
 
-      <XcttSection id="agency" title="CƠ QUAN THỰC HIỆN" open={openSections.agency} onToggle={toggleSection}>
-        <FieldGrid fields={agencyFields} values={values} errors={errors} onChange={setFieldValue} />
+      <XcttSection id="agency" number={1} title="CƠ QUAN THỰC HIỆN" open={openSections.agency} onToggle={toggleSection}>
+        <FieldGrid fields={agencyFields} values={values} errors={errors} onChange={setFieldValue} columns={4} />
       </XcttSection>
 
-      <XcttSection id="procedure" title="THỦ TỤC HÀNH CHÍNH YÊU CẦU" open={openSections.procedure} onToggle={toggleSection}>
+      <XcttSection id="procedure" number={2} title="THỦ TỤC HÀNH CHÍNH YÊU CẦU" open={openSections.procedure} onToggle={toggleSection}>
         <FieldGrid fields={procedureFields} values={values} errors={errors} onChange={setFieldValue} />
       </XcttSection>
 
-      <XcttSection id="applicant" title="THÔNG TIN NGƯỜI XÁC NHẬN THÔNG TIN VỀ CƯ TRÚ" open={openSections.applicant} onToggle={toggleSection}>
-        <div className="xctt-radio-stack">
-          <label>
-            <input type="radio" checked={declareMode === 'self'} onChange={() => setDeclareMode('self')} />
-            Người khai thông tin là người Xác nhận thông tin về cư trú (tự động điền các thông tin của chủ tài khoản được lấy từ dữ liệu dân cư)
-          </label>
-          <label>
-            <input type="radio" checked={declareMode === 'proxy'} onChange={() => setDeclareMode('proxy')} />
-            Khai hộ (yêu cầu khai đúng các trường thông tin có trong cơ sở dữ liệu quốc gia về dân cư của người được khai hộ)
-          </label>
+      <XcttSection id="applicant" number={3} title="THÔNG TIN NGƯỜI XÁC NHẬN THÔNG TIN VỀ CƯ TRÚ" open={openSections.applicant} onToggle={toggleSection}>
+        <div className="dktt-choice-group" style={{ marginBottom: 20 }}>
+          <div className="dktt-choice-grid">
+            <label className="dktt-choice-card">
+              <input type="radio" checked={declareMode === 'self'} onChange={() => setDeclareMode('self')} />
+              <span>
+                <strong>Người khai là người xác nhận thông tin về cư trú</strong>
+                <small>Tự động điền các thông tin của chủ tài khoản được lấy từ dữ liệu dân cư.</small>
+              </span>
+            </label>
+            <label className="dktt-choice-card">
+              <input type="radio" checked={declareMode === 'proxy'} onChange={() => setDeclareMode('proxy')} />
+              <span>
+                <strong>Khai hộ</strong>
+                <small>Cho phép nhập tay đầy đủ thông tin người được khai hộ để đối chiếu với dữ liệu dân cư.</small>
+              </span>
+            </label>
+          </div>
         </div>
         <ApplicantFieldGrid fields={applicantFields} values={values} errors={errors} onChange={setFieldValue} />
-        <FamilyMemberTable members={members} errors={errors} onAdd={() => setMembers((current) => [...current, createMember(current.length + 1)])} onChange={updateMember} />
+        <FamilyMemberTable members={members} errors={errors} onAdd={() => setMembers((current) => [...current, createMember(current.length + 1)])} onRemove={(id) => setMembers((current) => current.filter((m) => m.id !== id))} onChange={updateMember} />
       </XcttSection>
 
-      <XcttSection id="request" title="THÔNG TIN ĐỀ NGHỊ" open={openSections.request} onToggle={toggleSection}>
-        <h3 className="xctt-subtitle">Nơi đề nghị đăng ký thường trú <span>(*)</span></h3>
+      <XcttSection id="request" number={4} title="THÔNG TIN ĐỀ NGHỊ" open={openSections.request} onToggle={toggleSection}>
+        <h3 className="xctt-subtitle">Nơi đề nghị xác nhận thông tin về cư trú <span>(*)</span></h3>
         <FieldGrid fields={requestFields} values={values} errors={errors} onChange={setFieldValue} />
       </XcttSection>
 
-      <XcttSection id="attachment" title="TRƯỜNG HỢP VÀ HỒ SƠ ĐÍNH KÈM(*)" open={openSections.attachment} onToggle={toggleSection}>
+      <XcttSection id="attachment" number={5} title="TRƯỜNG HỢP VÀ HỒ SƠ ĐÍNH KÈM(*)" open={openSections.attachment} onToggle={toggleSection}>
         <p className="xctt-upload-intro">Vui lòng chọn trường hợp và đính kèm các tập tin hình ảnh về các loại giấy tờ sau để giúp cơ quan chức năng xác minh và giải quyết hồ sơ của ông/bà</p>
         <div className="xctt-attachment-row">
           <FileText size={20} />
@@ -506,7 +518,7 @@ const XacNhanCuTruPage: React.FC = () => {
         </div>
       </XcttSection>
 
-      <XcttSection id="notification" title="THÔNG TIN NHẬN THÔNG BÁO TÌNH TRẠNG HỒ SƠ, KẾT QUẢ GIẢI QUYẾT HỒ SƠ" open={openSections.notification} onToggle={toggleSection}>
+      <XcttSection id="notification" number={6} title="THÔNG TIN NHẬN THÔNG BÁO TÌNH TRẠNG HỒ SƠ, KẾT QUẢ GIẢI QUYẾT HỒ SƠ" open={openSections.notification} onToggle={toggleSection}>
         <div className="xctt-notification-fields">
           <MockTagSelect label="Hình thức nhận thông báo" value={values.notificationMethod || notificationReceiveOptions[1]} onClear={() => setFieldValue('notificationMethod', '')} />
           <FieldControl field={{ id: 'resultMethod', label: 'Hình thức nhận kết quả', kind: 'select', options: resultReceiveOptions }} value={values.resultMethod || resultReceiveOptions[2]} error={errors.resultMethod} onChange={(value) => setFieldValue('resultMethod', value)} />
@@ -609,20 +621,38 @@ const XacNhanCuTruPage: React.FC = () => {
 
 interface SectionProps {
   id: string;
+  number: number;
   title: string;
   open: boolean;
   onToggle: (id: string) => void;
   children: React.ReactNode;
 }
 
-const XcttSection: React.FC<SectionProps> = ({ id, title, open, onToggle, children }) => (
-  <section className={`xctt-section xctt-section-${id} ${open ? 'open' : ''}`}>
-    <button type="button" className="xctt-section-header" onClick={() => onToggle(id)} aria-expanded={open}>
-      <span>{title}</span>
-      <ChevronUp size={24} />
-    </button>
-    {open && <div className="xctt-section-body">{children}</div>}
-  </section>
+const XcttSection: React.FC<SectionProps> = ({ id, number, title, open, onToggle, children }) => (
+  <div className={`dktt-section${open ? ' open' : ''}`} id={`section-${id}`}>
+    <div
+      className="dktt-section-header"
+      onClick={() => onToggle(id)}
+      role="button"
+      tabIndex={0}
+      aria-expanded={open}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onToggle(id);
+        }
+      }}
+    >
+      <div className="dktt-section-header-left">
+        <span className="dktt-section-number">{number}</span>
+        <h3 className="dktt-section-title">{title}</h3>
+      </div>
+      <ChevronDown size={20} className="dktt-section-chevron" />
+    </div>
+    <div className="dktt-section-body">
+      {children}
+    </div>
+  </div>
 );
 
 const FieldGrid: React.FC<{
@@ -720,24 +750,29 @@ const FieldControl: React.FC<{
     </label>
     {field.kind === 'select' ? (
       <div className="xctt-select-shell">
-        <select id={field.id} value={value} onChange={(event) => onChange(event.target.value)} disabled={field.readOnly}>
+        <select id={field.id} value={value} onChange={(event) => onChange(event.target.value)} disabled={field.readOnly || field.disabled}>
           <option value="">{field.placeholder || 'Chọn'}</option>
           {(field.options || []).map((option) => (
             <option value={option} key={option}>{option}</option>
           ))}
         </select>
-        {value && !field.readOnly && (
+        {value && !field.readOnly && !field.disabled && (
           <button type="button" className="xctt-select-clear" aria-label={`Xóa ${field.label}`} onClick={() => onChange('')}>
             <X size={16} />
           </button>
         )}
       </div>
     ) : field.kind === 'textarea' ? (
-      <textarea id={field.id} value={value} placeholder={field.placeholder} onChange={(event) => onChange(event.target.value)} />
+      <textarea id={field.id} value={value} placeholder={field.placeholder} disabled={field.readOnly || field.disabled} onChange={(event) => onChange(event.target.value)} />
     ) : (
-      <input id={field.id} type={field.kind} value={field.readOnly ? field.placeholder || value : value} placeholder={field.placeholder} readOnly={field.readOnly} onChange={(event) => onChange(event.target.value)} />
+      <input id={field.id} type={field.kind} value={field.readOnly ? field.placeholder || value : value} placeholder={field.placeholder} readOnly={field.readOnly} disabled={field.readOnly || field.disabled} onChange={(event) => onChange(event.target.value)} />
     )}
     {error && <p className="xctt-error">{error}</p>}
+    {field.isAutofilled && !error && (
+      <span className="form-hint" style={{ color: "var(--accent)", fontSize: "13px", marginTop: "4px", display: "block" }}>
+        ✓ Đã tự động điền
+      </span>
+    )}
   </div>
 );
 
@@ -745,72 +780,114 @@ const FamilyMemberTable: React.FC<{
   members: FamilyMember[];
   errors: Record<string, string>;
   onAdd: () => void;
+  onRemove: (id: number) => void;
   onChange: (id: number, key: keyof Omit<FamilyMember, 'id'>, value: string) => void;
-}> = ({ members, errors, onAdd, onChange }) => (
-  <div className="xctt-family">
-    <h3>Những thành viên trong hộ gia đình cùng thay đổi</h3>
-    <div className="xctt-family-table-wrap">
-      <table className="xctt-family-table">
-        <colgroup>
-          <col className="xctt-family-col-action" />
-          <col className="xctt-family-col-index" />
-          <col className="xctt-family-col-name" />
-          <col className="xctt-family-col-birth" />
-          <col className="xctt-family-col-gender" />
-          <col className="xctt-family-col-id" />
-          <col className="xctt-family-col-relation" />
-        </colgroup>
+}> = ({ members, errors, onAdd, onRemove, onChange }) => (
+  <div style={{ marginTop: 28 }}>
+    <div className="dktt-table-caption">
+      <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none' }}>
+        Những thành viên trong hộ gia đình cùng thay đổi
+      </div>
+      <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
+    </div>
+    <div className="dktt-member-table-wrapper">
+      <table className="dktt-member-table">
         <thead>
           <tr>
-            <th>Thao tác</th>
-            <th>STT</th>
-            <th>Họ và tên <span>(*)</span></th>
-            <th>Ngày sinh <span>(*)</span></th>
-            <th>Giới tính <span>(*)</span></th>
-            <th>Số ĐDCN (CCCD) <span>(*)</span></th>
-            <th>Quan hệ với chủ hộ <span>(*)</span></th>
+            <th className="col-action">Thao tác</th>
+            <th className="col-stt">STT</th>
+            <th>Họ và tên <span className="req">(*)</span></th>
+            <th>Ngày sinh <span className="req">(*)</span></th>
+            <th>Giới tính <span className="req">(*)</span></th>
+            <th>Số ĐDCN (CCCD) <span className="req">(*)</span></th>
+            <th>Quan hệ với chủ hộ <span className="req">(*)</span></th>
           </tr>
         </thead>
         <tbody>
-          {members.map((member, index) => (
-            <tr key={member.id}>
-              <td>
-                {index === 0 && (
-                  <button type="button" className="xctt-add-row" onClick={onAdd} aria-label="Thêm thành viên">
-                    <Plus size={22} />
-                  </button>
-                )}
-              </td>
-              <td>{index + 1}</td>
-              <td><TableInput value={member.hoTen} error={errors[`member-${member.id}-hoTen`]} onChange={(value) => onChange(member.id, 'hoTen', value)} /></td>
-              <td><TableInput value={member.ngaySinh} error={errors[`member-${member.id}-ngaySinh`]} onChange={(value) => onChange(member.id, 'ngaySinh', value)} /></td>
-              <td><TableSelect value={member.gioiTinh} options={genderOptions} error={errors[`member-${member.id}-gioiTinh`]} onChange={(value) => onChange(member.id, 'gioiTinh', value)} /></td>
-              <td><TableInput value={member.cccd} error={errors[`member-${member.id}-cccd`]} onChange={(value) => onChange(member.id, 'cccd', value)} /></td>
-              <td><TableSelect value={member.quanHe} options={relationOptions} error={errors[`member-${member.id}-quanHe`]} onChange={(value) => onChange(member.id, 'quanHe', value)} /></td>
-            </tr>
-          ))}
+          {members.map((member, index) => {
+            const errorStyle = (field: keyof Omit<FamilyMember, 'id'>) => (
+              errors[`member-${member.id}-${field}`] ? { borderColor: 'var(--danger)', background: 'var(--danger-subtle)' } : {}
+            );
+
+            return (
+              <tr key={member.id}>
+                <td className="col-action">
+                  {index === 0 ? (
+                    <button type="button" className="dktt-btn-add" onClick={onAdd} title="Thêm thành viên">
+                      +
+                    </button>
+                  ) : (
+                    <button type="button" className="dktt-btn-remove" onClick={() => onRemove(member.id)} title="Xóa dòng này">
+                      ✕
+                    </button>
+                  )}
+                </td>
+                <td className="col-stt">{index + 1}</td>
+                <td>
+                  <input
+                    className="dktt-table-input"
+                    type="text"
+                    value={member.hoTen}
+                    onChange={(event) => onChange(member.id, 'hoTen', event.target.value)}
+                    placeholder="Họ và tên"
+                    style={errorStyle('hoTen')}
+                  />
+                </td>
+                <td>
+                  <input
+                    className="dktt-table-input"
+                    type="date"
+                    value={member.ngaySinh}
+                    onChange={(event) => onChange(member.id, 'ngaySinh', event.target.value)}
+                    style={errorStyle('ngaySinh')}
+                  />
+                </td>
+                <td>
+                  <select
+                    className="dktt-table-select"
+                    value={member.gioiTinh}
+                    onChange={(event) => onChange(member.id, 'gioiTinh', event.target.value)}
+                    style={errorStyle('gioiTinh')}
+                  >
+                    <option value="">-- Chọn --</option>
+                    {genderOptions.map((gender) => (
+                      <option key={gender} value={gender}>{gender}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <input
+                    className="dktt-table-input"
+                    type="text"
+                    maxLength={12}
+                    value={member.cccd}
+                    onChange={(event) => onChange(member.id, 'cccd', event.target.value)}
+                    placeholder="12 chữ số"
+                    style={errorStyle('cccd')}
+                  />
+                </td>
+                <td>
+                  <select
+                    className="dktt-table-select"
+                    value={member.quanHe}
+                    onChange={(event) => onChange(member.id, 'quanHe', event.target.value)}
+                    style={errorStyle('quanHe')}
+                  >
+                    <option value="">-- Chọn --</option>
+                    {relationOptions.map((rel) => (
+                      <option key={rel} value={rel}>{rel}</option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
-  </div>
-);
-
-const TableInput: React.FC<{ type?: string; value: string; error?: string; onChange: (value: string) => void }> = ({ type = 'text', value, error, onChange }) => (
-  <div className="xctt-table-control">
-    <input type={type} value={value} onChange={(event) => onChange(event.target.value)} />
-    {error && <small className="xctt-error">{error}</small>}
-  </div>
-);
-
-const TableSelect: React.FC<{ value: string; options: string[]; error?: string; onChange: (value: string) => void }> = ({ value, options, error, onChange }) => (
-  <div className="xctt-table-control">
-    <select value={value} onChange={(event) => onChange(event.target.value)}>
-      <option value="">Chọn</option>
-      {options.map((option) => (
-        <option value={option} key={option}>{option}</option>
-      ))}
-    </select>
-    {error && <small className="xctt-error">{error}</small>}
+    <p className="dktt-note" style={{ marginTop: 8 }}>
+      Bảng này chỉ cần khai khi có thêm nhân khẩu cùng thay đổi thường trú. Nếu đã nhập một dòng thì cần điền đủ toàn bộ cột bắt buộc của dòng đó.
+    </p>
   </div>
 );
 

@@ -48,7 +48,7 @@ const createInitialAttachments = (): Record<string, TamTruAttachmentDraft> => {
             if (drafts[document.id]) return;
             drafts[document.id] = {
                 documentId: document.id,
-                checked: false,
+                checked: document.required,
                 fileName: '',
                 quantity: document.quantity,
                 note: '',
@@ -121,8 +121,8 @@ const requiredFields = new Set([
 const fieldLabels: Record<string, string> = {
     receiveCityCode: 'Tỉnh/Thành phố',
     receiveVillageCode: 'Xã/Phường/Đặc khu',
-    receiveOrgAddress: 'Cơ quan thực hiện',
-    receiveOrgPhone: 'Số điện thoại',
+    receiveOrgAddress: 'Cơ quan đăng ký cư trú',
+    receiveOrgPhone: 'Số điện thoại cơ quan',
     procedureTypeCode: 'Thủ tục',
     procedureCaseCode: 'Trường hợp',
     fullName: 'Họ và tên',
@@ -479,6 +479,7 @@ const DangKyTamTruPage: React.FC = () => {
         maxLength?: number,
         readOnly = false,
         helpId?: string,
+        isAutofilled = false,
     ) => (
         <div className="form-group">
             <label className="form-label" htmlFor={field}>
@@ -497,6 +498,11 @@ const DangKyTamTruPage: React.FC = () => {
                 onChange={(event) => updateField(field, event.target.value as never)}
             />
             {helpId && renderHelpText(helpId)}
+            {isAutofilled && (
+                <span className="form-hint" style={{ color: "var(--accent)" }}>
+                    ✓ Đã tự động điền
+                </span>
+            )}
         </div>
     );
 
@@ -506,6 +512,7 @@ const DangKyTamTruPage: React.FC = () => {
         placeholder = '-- Chọn --',
         helpId?: string,
         onChange?: (value: string) => void,
+        disabled = false,
     ) => (
         <div className="form-group">
             <label className="form-label" htmlFor={field}>
@@ -516,6 +523,7 @@ const DangKyTamTruPage: React.FC = () => {
                 id={field}
                 className="form-select"
                 value={String(form[field])}
+                disabled={disabled}
                 onChange={(event) => onChange ? onChange(event.target.value) : updateField(field, event.target.value as never)}
             >
                 <option value="">{placeholder}</option>
@@ -534,7 +542,9 @@ const DangKyTamTruPage: React.FC = () => {
             <nav className="breadcrumb" aria-label="Breadcrumb">
                 <Link to="/"><Home size={13} /> Trang chủ</Link>
                 <ChevronRight size={13} className="breadcrumb-sep" />
-                <span>Hồ sơ Đăng ký tạm trú</span>
+                <span className="breadcrumb-link">Cư trú</span>
+                <ChevronRight size={13} className="breadcrumb-sep" />
+                <span aria-current="page">Đăng ký tạm trú</span>
             </nav>
 
             <div className="dktt-page-header">
@@ -569,11 +579,11 @@ const DangKyTamTruPage: React.FC = () => {
                 <div className="tamtru-form">
                     <Section number={1} title="CƠ QUAN THỰC HIỆN">
                         {administrativeError && <p className="form-error-msg" role="alert">{administrativeError}</p>}
-                        <div className="dktt-form-row cols-2">
+                        <div className="dktt-form-row">
                             {renderSelect('receiveCityCode', provinceOptions, 'Chọn', undefined, handleReceiveProvinceChange)}
-                            {renderSelect('receiveVillageCode', receiveWardOptions, 'Chọn', undefined, handleReceiveWardChange)}
-                            {renderInput('receiveOrgAddress', 'text', 'Cơ quan thực hiện', undefined, true)}
-                            {renderInput('receiveOrgPhone', 'text', 'Số điện thoại', undefined, true)}
+                            {renderSelect('receiveVillageCode', receiveWardOptions, 'Chọn', undefined, handleReceiveWardChange, !form.receiveCityCode)}
+                            {renderInput('receiveOrgAddress', 'text', 'Cơ quan đăng ký cư trú', undefined, true, undefined, !!form.receiveOrgAddress)}
+                            {renderInput('receiveOrgPhone', 'text', 'Số điện thoại cơ quan', undefined, true, undefined, !!form.receiveOrgPhone)}
                         </div>
                     </Section>
 
@@ -617,7 +627,7 @@ const DangKyTamTruPage: React.FC = () => {
                     <Section number={4} title="THÔNG TIN ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ">
                         <div className="dktt-form-row cols-2">
                             {renderSelect('temporaryCityCode', provinceOptions, 'Chọn', undefined, handleTemporaryProvinceChange)}
-                            {renderSelect('temporaryVillageCode', temporaryWardOptions, 'Chọn', undefined, handleTemporaryWardChange)}
+                            {renderSelect('temporaryVillageCode', temporaryWardOptions, 'Chọn', undefined, handleTemporaryWardChange, !form.temporaryCityCode)}
                             <div className="form-group full-width">
                                 <label className="form-label" htmlFor="temporaryAddress">{fieldLabels.temporaryAddress} <span className="required">*</span></label>
                                 <textarea id="temporaryAddress" className="form-textarea" placeholder="Địa chỉ đăng ký tạm trú" value={form.temporaryAddress} onChange={(event) => updateField('temporaryAddress', event.target.value)} />
@@ -764,9 +774,13 @@ const DangKyTamTruPage: React.FC = () => {
                                                                             </select>
                                                                         </td>
                                                                         <td className="dktt-doc-cell-center">
-                                                                            <button type="button" className="dktt-doc-icon-btn" title="Tải file mẫu">
-                                                                                <FileDown size={14} />
-                                                                            </button>
+                                                                            {document.templateAvailable ? (
+                                                                                <button type="button" className="dktt-doc-icon-btn" title="Tải file mẫu">
+                                                                                    <FileDown size={14} />
+                                                                                </button>
+                                                                            ) : (
+                                                                                <span className="dktt-table-placeholder">-</span>
+                                                                            )}
                                                                         </td>
                                                                         <td><span className="dktt-table-placeholder">Không áp dụng</span></td>
                                                                         <td>

@@ -149,8 +149,8 @@ const steps: LinkedStep[] = [
         fields: [
           { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: birthTypeOptions },
           { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
-          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, value: 'Phường Cái Khế' },
-          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
+          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, placeholder: '-- Chọn --' },
+          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, placeholder: '-- Chọn --' },
           { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: birthCaseOptions },
         ],
       },
@@ -159,8 +159,8 @@ const steps: LinkedStep[] = [
         sameArea: true,
         fields: [
           { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
-          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, value: 'Phường Cái Khế' },
-          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
+          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, placeholder: '-- Chọn --' },
+          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, placeholder: '-- Chọn --' },
           { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: residenceCaseOptions },
         ],
       },
@@ -572,7 +572,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
       const provinceValue = formState.values[provinceFieldId] ?? fieldDefaults.get(provinceFieldId) ?? '';
       return {
         ...field,
-        options: provinceValue ? wardOptionsByProvinceField[provinceFieldId] ?? [] : [],
+        options: provinceValue ? (wardOptionsByProvinceField[provinceFieldId] ?? []) : [],
         disabled: !provinceValue
           || Boolean(loadingWardFields[provinceFieldId])
           || (isSameRegistrationArea && field.id === 'ltks_phuongThuongTru'),
@@ -996,7 +996,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       setActiveOption(options[Math.max(currentIndex - 1, 0)]);
     } else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      if (isOpen) selectOption(activeOption || options[0]);
+      if (isOpen) {
+        selectOption(activeOption === '-- Chọn --' || !activeOption ? '' : activeOption);
+      }
       setIsOpen(!isOpen);
     } else if (event.key === 'Escape') {
       setIsOpen(false);

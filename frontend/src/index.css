@@ -6360,6 +6360,18 @@ a:hover {
     opacity: 1;
 }
 
+.ltkt-public-service-form input:disabled,
+.ltkt-public-service-form select:disabled,
+.ltkt-public-service-form textarea:disabled,
+.ltkt-public-service-form input[readonly],
+.ltkt-public-service-form select[readonly],
+.ltkt-public-service-form textarea[readonly] {
+    background-color: #f1f3f5 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-color: #dee2e6 !important;
+}
+
 .dktt-sub-title {
     margin: 18px 0 11px;
     padding-bottom: 6px;
@@ -7208,7 +7220,6 @@ a:hover {
 
 /* HAR alignment: dichvucong.dancuquocgia.gov.vn residence form */
 .xctt-page {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.42857143;
     color: #333;
@@ -7229,7 +7240,6 @@ a:hover {
 }
 
 .xctt-title-row h1 {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 32px;
     font-weight: 700;
     line-height: 1.2;
@@ -8385,6 +8395,19 @@ a:hover {
 .ltks-app-page .ltks-select-trigger:focus {
     border-color: #d71920;
     box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1);
+}
+
+.ltks-app-page .ltks-field input:disabled,
+.ltks-app-page .ltks-field select:disabled,
+.ltks-app-page .ltks-field textarea:disabled,
+.ltks-app-page .ltks-select-trigger:disabled,
+.ltks-app-page .ltks-field input[readonly],
+.ltks-app-page .ltks-field select[readonly],
+.ltks-app-page .ltks-field textarea[readonly] {
+    background-color: #f1f3f5;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #dee2e6;
 }
 
 .ltks-app-page .ltks-actions {
