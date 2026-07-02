@@ -6596,6 +6596,63 @@ a:hover {
     border-radius: 6px;
 }
 
+.procedure-ai-support-card {
+    margin-top: 22px;
+}
+
+.procedure-ai-support-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.procedure-ai-support-logo img {
+    width: 44px;
+    height: 44px;
+    padding: 2px;
+    object-fit: cover;
+    background: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.procedure-ai-support-title {
+    margin-bottom: 6px;
+    font-size: 0.9375rem;
+    font-weight: 700;
+}
+
+.procedure-ai-support-card p {
+    margin: 0 0 12px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+.procedure-ai-support-tip {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.procedure-ai-support-tip img {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin: 0 4px;
+    object-fit: cover;
+    vertical-align: middle;
+    border: 1px solid #fff;
+    border-radius: 50%;
+}
+
+.procedure-ai-support-wide {
+    width: 100%;
+}
+
 @media (max-width: 1100px) {
     .dktt-service-sidebar {
         grid-template-columns: 1fr;
@@ -7671,6 +7728,23 @@ a:hover {
     font-size: 0.86rem;
 }
 
+.tamtru-doc-table .dktt-doc-name strong {
+    color: #111827;
+    font-size: 0.77rem;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.tamtru-table-note {
+    margin-top: 8px;
+}
+
+.tamtru-upload-case-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .tamtru-doc-table input[type='checkbox'] {
     width: 18px;
     height: 18px;
@@ -8336,13 +8410,180 @@ a:hover {
 
 .ltkt-page-shell {
     overflow: hidden;
-    padding: 22px 0 72px;
+    padding: 0;
 }
 
-.ltkt-step-content {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 24px;
+.ltkt-standard-notices {
+    margin-bottom: 18px;
+}
+
+.ltkt-form-frame > .ltks-form-body > div {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+    overflow: visible;
+}
+
+.ltkt-form-frame > .ltks-form-body > div > div {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.ltkt-form-frame > .ltks-form-body > div > div:has(> h3) {
+    min-height: 42px;
+    margin: 0 0 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920;
+}
+
+.ltkt-form-frame > .ltks-form-body > div > div:has(> h3) > div {
+    background-color: transparent !important;
+}
+
+.ltkt-form-frame > .ltks-form-body > div > div:not(:has(> h3)) + div:has(> h3) {
+    margin-top: 28px !important;
+}
+
+.ltkt-form-frame h3 {
+    color: #303238 !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    white-space: normal !important;
+}
+
+.ltkt-form-frame label {
+    color: #30343a !important;
+    font-size: 0.79rem !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+}
+
+.ltkt-form-frame input,
+.ltkt-form-frame select,
+.ltkt-form-frame textarea {
+    min-height: 38px;
+    padding: 8px 11px !important;
+    color: #30343a !important;
+    background-color: #fff !important;
+    border: 1px solid #cfd3d8 !important;
+    border-radius: 3px !important;
+    font-size: 0.84rem !important;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.025);
+}
+
+.ltkt-form-frame .ltkt-agency-display {
+    min-height: 38px;
+    margin-top: 5px;
+    padding: 8px 11px !important;
+    color: #30343a !important;
+    background-color: #fff !important;
+    border: 1px solid #cfd3d8 !important;
+    border-radius: 3px !important;
+    font-size: 0.84rem !important;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.025);
+}
+
+.ltkt-form-frame input[type="checkbox"],
+.ltkt-form-frame input[type="radio"] {
+    min-height: auto;
+    width: 16px !important;
+    height: 16px !important;
+    padding: 0 !important;
+    border-radius: 2px !important;
+    box-shadow: none;
+}
+
+.ltkt-form-frame button {
+    min-height: 40px;
+    padding: 10px 22px !important;
+    border-radius: 4px !important;
+    font-size: 0.83rem !important;
+    font-weight: 700 !important;
+}
+
+.ltkt-form-frame button:not([class]) {
+    color: #fff !important;
+    background: #d71920 !important;
+    border: 1px solid #d71920 !important;
+}
+
+.ltkt-form-frame > .ltks-form-body > div > div:last-child > button:first-child {
+    color: #b9141a !important;
+    background: #fff !important;
+    border-color: #d71920 !important;
+}
+
+.ltkt-form-frame table {
+    overflow: hidden;
+    border-collapse: collapse;
+    border-radius: 8px;
+}
+
+.ltkt-form-frame th {
+    background: rgba(255, 241, 184, 0.52) !important;
+    color: #303238 !important;
+}
+
+.ltkt-form-frame td,
+.ltkt-form-frame th {
+    border-color: #dedfe1 !important;
+}
+
+.ltkt-form-frame h4 {
+    color: #303238 !important;
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+}
+
+.ltkt-form-frame [style*="background-color: rgb(255, 255, 255)"],
+.ltkt-form-frame [style*="background-color: #fff"] {
+    background-color: #fff !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: inherit !important;
+}
+
+.ltkt-form-frame .ltkt-form-card {
+    display: block;
+    margin-bottom: 22px;
+    padding: 0 20px 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
+    overflow: hidden;
+}
+
+.ltkt-form-frame .ltkt-form-card > div {
+    margin-bottom: 15px !important;
+}
+
+.ltkt-form-frame .ltkt-form-card > div:last-child {
+    margin-bottom: 0 !important;
+}
+
+.ltkt-form-frame .ltkt-form-card > div:has(> h3) {
+    min-height: 42px;
+    margin: 0 -20px 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920;
+}
+
+.ltkt-form-frame .ltkt-form-card > div:has(> h3) > div {
+    background-color: transparent !important;
 }
 
 .ltkt-page-shell input,
@@ -8424,4 +8665,46 @@ a:hover {
         padding-right: 12px;
         padding-left: 12px;
     }
+}
+
+.ltks-app-page .ltks-inline-check {
+    display: flex;
+    grid-column: 3;
+    grid-row: 1;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+    font-size: 0.79rem;
+    font-weight: 600;
+    line-height: 1.35;
+    justify-self: start;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.ltks-app-page .ltks-section.same-area-locked {
+    opacity: 0.72;
+}
+
+.ltks-app-page .ltks-inline-check input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #8b2611;
+}
+
+.ltkt-form-frame > .ltks-form-body > div > div:not(:first-child):has(> h3) {
+    margin-top: 28px !important;
+}
+
+.dktt-actions,
+.xctt-actions,
+.ltks-app-page .ltks-actions {
+    justify-content: center;
+}
+
+.service-standard-page .btn-submit {
+    display: flex;
+    margin-right: auto;
+    margin-left: auto;
 }

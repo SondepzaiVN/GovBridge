@@ -1,25 +1,6 @@
-import React, { useState } from "react";
-
-// 1. ĐỊNH NGHĨA KIỂU DỮ LIỆU (INTERFACES)
-interface ProvinceData {
-  provinceCode: string;
-  provinceName: string;
-  wards: string[];
-}
-
-// 2. DỮ LIỆU GIẢ LẬP (MOCK DATA)
-const DATA_HANH_CHINH: ProvinceData[] = [
-  {
-    provinceCode: "92",
-    provinceName: "Thành phố Cần Thơ",
-    wards: ["Phường Tân An", "Phường An Phú", "Phường Xuân Khánh"],
-  },
-  {
-    provinceCode: "01",
-    provinceName: "Thành phố Hà Nội",
-    wards: ["Phường Hàng Trống", "Phường Tràng Tiền", "Phường Đồng Xuân"],
-  },
-];
+import React, { useEffect, useState } from "react";
+import { administrativeUnitService } from "../../../api/administrativeUnitService";
+import type { FormFieldOption } from "../../../types";
 
 const DOI_TUONG_MAI_TANG_PHI: string[] = [
   "Đối tượng được hưởng trợ cấp mai táng phí theo quy định của Luật BHXH",
@@ -33,6 +14,15 @@ interface PublicServiceFormProps {
 }
 
 const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
+  const [provinceOptions, setProvinceOptions] = useState<FormFieldOption[]>([]);
+  const [khaituWardOptions, setKhaituWardOptions] = useState<FormFieldOption[]>([]);
+  const [thuongtruWardOptions, setThuongtruWardOptions] = useState<FormFieldOption[]>([]);
+  const [maitangWardOptions, setMaitangWardOptions] = useState<FormFieldOption[]>([]);
+  const [isLoadingProvinces, setIsLoadingProvinces] = useState<boolean>(true);
+  const [isLoadingKhaituWards, setIsLoadingKhaituWards] = useState<boolean>(false);
+  const [isLoadingThuongtruWards, setIsLoadingThuongtruWards] = useState<boolean>(false);
+  const [isLoadingMaitangWards, setIsLoadingMaitangWards] = useState<boolean>(false);
+
   // --- STATE KHỐI 1: ĐĂNG KÝ KHAI TỬ ---
   const [khaituProvince, setKhaituProvince] = useState<string>("");
   const [khaituWard, setKhaituWard] = useState<string>("");
@@ -58,12 +48,79 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
   const [maitangWard, setMaitangWard] = useState<string>("");
   const maitangAgency = maitangWard ? `UBND ${maitangWard}` : "";
 
-  // Lấy danh sách xã/phường dựa theo tỉnh được chọn
-  const getWardsList = (provinceCode: string): string[] => {
-    return (
-      DATA_HANH_CHINH.find((p) => p.provinceCode === provinceCode)?.wards || []
-    );
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+
+    administrativeUnitService
+      .getProvinces(controller.signal)
+      .then(setProvinceOptions)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setProvinceOptions([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingProvinces(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!khaituProvince) return;
+
+    const controller = new AbortController();
+
+    administrativeUnitService
+      .getWards(khaituProvince, controller.signal)
+      .then(setKhaituWardOptions)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setKhaituWardOptions([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingKhaituWards(false);
+      });
+
+    return () => controller.abort();
+  }, [khaituProvince]);
+
+  useEffect(() => {
+    if (!rawThuongtruProvince) return;
+
+    const controller = new AbortController();
+
+    administrativeUnitService
+      .getWards(rawThuongtruProvince, controller.signal)
+      .then(setThuongtruWardOptions)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setThuongtruWardOptions([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingThuongtruWards(false);
+      });
+
+    return () => controller.abort();
+  }, [rawThuongtruProvince]);
+
+  useEffect(() => {
+    if (!maitangProvince) return;
+
+    const controller = new AbortController();
+
+    administrativeUnitService
+      .getWards(maitangProvince, controller.signal)
+      .then(setMaitangWardOptions)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setMaitangWardOptions([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingMaitangWards(false);
+      });
+
+    return () => controller.abort();
+  }, [maitangProvince]);
 
   const toggleMaitangDoiTuong = (dt: string) => {
     setMaitangDoiTuong((prev) => {
@@ -93,6 +150,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
   // --- GIAO DIỆN CHÍNH ---
   return (
     <div
+      className="ltkt-public-service-form"
       style={{
         maxWidth: "960px",
         margin: "20px auto",
@@ -104,6 +162,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
       }}
     >
       {/* KHỐI 1: KHAI TỬ */}
+      <section className="ltkt-form-card">
       <div
         style={{ display: "flex", alignItems: "center", marginBottom: "25px" }}
       >
@@ -143,9 +202,12 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           <select
             id="khaitu-province"
             value={khaituProvince}
+            disabled={isLoadingProvinces}
             onChange={(e) => {
               setKhaituProvince(e.target.value);
               setKhaituWard("");
+              setKhaituWardOptions([]);
+              setIsLoadingKhaituWards(Boolean(e.target.value));
             }}
             style={{
               width: "100%",
@@ -161,9 +223,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             }}
           >
             <option value="">-- Chọn --</option>
-            {DATA_HANH_CHINH.map((p) => (
-              <option key={p.provinceCode} value={p.provinceCode}>
-                {p.provinceName}
+            {provinceOptions.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
               </option>
             ))}
           </select>
@@ -182,7 +244,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           <select
             id="khaitu-ward"
             value={khaituWard}
-            disabled={!khaituProvince}
+            disabled={!khaituProvince || isLoadingKhaituWards}
             onChange={(e) => setKhaituWard(e.target.value)}
             style={{
               width: "100%",
@@ -198,9 +260,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             }}
           >
             <option value="">-- Chọn --</option>
-            {getWardsList(khaituProvince).map((w) => (
-              <option key={w} value={w}>
-                {w}
+            {khaituWardOptions.map((w) => (
+              <option key={w.value} value={w.label}>
+                {w.label}
               </option>
             ))}
           </select>
@@ -218,6 +280,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           Cơ quan thực hiện <span style={{ color: "red" }}>*</span>
         </label>
         <div
+          className="ltkt-agency-display"
           style={{
             padding: "8px 0",
             fontSize: "15px",
@@ -227,8 +290,10 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           {khaituAgency}
         </div>
       </div>
+      </section>
 
       {/* KHỐI 2: THƯỜNG TRÚ */}
+      <section className="ltkt-form-card">
       <div
         style={{
           display: "flex",
@@ -305,10 +370,12 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           <select
             id="thuongtru-province"
             value={thuongtruProvince}
-            disabled={isSameLocation}
+            disabled={isSameLocation || isLoadingProvinces}
             onChange={(e) => {
               setRawThuongtruProvince(e.target.value);
               setRawThuongtruWard("");
+              setThuongtruWardOptions([]);
+              setIsLoadingThuongtruWards(Boolean(e.target.value));
             }}
             style={{
               width: "100%",
@@ -324,9 +391,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             }}
           >
             <option value="">-- Chọn --</option>
-            {DATA_HANH_CHINH.map((p) => (
-              <option key={p.provinceCode} value={p.provinceCode}>
-                {p.provinceName}
+            {provinceOptions.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
               </option>
             ))}
           </select>
@@ -345,7 +412,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           <select
             id="thuongtru-ward"
             value={thuongtruWard}
-            disabled={isSameLocation || !thuongtruProvince}
+            disabled={isSameLocation || !thuongtruProvince || isLoadingThuongtruWards}
             onChange={(e) => setRawThuongtruWard(e.target.value)}
             style={{
               width: "100%",
@@ -361,9 +428,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             }}
           >
             <option value="">-- Chọn --</option>
-            {getWardsList(thuongtruProvince).map((w) => (
-              <option key={w} value={w}>
-                {w}
+            {(isSameLocation ? khaituWardOptions : thuongtruWardOptions).map((w) => (
+              <option key={w.value} value={w.label}>
+                {w.label}
               </option>
             ))}
           </select>
@@ -381,6 +448,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           Cơ quan thực hiện <span style={{ color: "red" }}>*</span>
         </label>
         <div
+          className="ltkt-agency-display"
           style={{
             padding: "8px 0",
             fontSize: "15px",
@@ -390,8 +458,10 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
           {thuongtruAgency}
         </div>
       </div>
+      </section>
 
       {/* KHỐI 3: MAI TÁNG PHÍ */}
+      <section className="ltkt-form-card">
       <div
         style={{ display: "flex", alignItems: "center", marginBottom: "25px" }}
       >
@@ -584,9 +654,12 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
                 <select
                   id="maitang-province"
                   value={maitangProvince}
+                  disabled={isLoadingProvinces}
                   onChange={(e) => {
                     setMaitangProvince(e.target.value);
                     setMaitangWard("");
+                    setMaitangWardOptions([]);
+                    setIsLoadingMaitangWards(Boolean(e.target.value));
                   }}
                   style={{
                     width: "100%",
@@ -602,9 +675,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
                   }}
                 >
                   <option value="">-- Chọn --</option>
-                  {DATA_HANH_CHINH.map((p) => (
-                    <option key={p.provinceCode} value={p.provinceCode}>
-                      {p.provinceName}
+                  {provinceOptions.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
                     </option>
                   ))}
                 </select>
@@ -623,7 +696,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
                 <select
                   id="maitang-ward"
                   value={maitangWard}
-                  disabled={!maitangProvince}
+                  disabled={!maitangProvince || isLoadingMaitangWards}
                   onChange={(e) => setMaitangWard(e.target.value)}
                   style={{
                     width: "100%",
@@ -639,9 +712,9 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
                   }}
                 >
                   <option value="">-- Chọn --</option>
-                  {getWardsList(maitangProvince).map((w) => (
-                    <option key={w} value={w}>
-                      {w}
+                  {maitangWardOptions.map((w) => (
+                    <option key={w.value} value={w.label}>
+                      {w.label}
                     </option>
                   ))}
                 </select>
@@ -659,6 +732,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
                 Cơ quan thực hiện <span style={{ color: "red" }}>*</span>
               </label>
               <div
+                className="ltkt-agency-display"
                 style={{
                   padding: "8px 0",
                   fontSize: "15px",
@@ -670,6 +744,7 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
             </div>
           </>
         ))}
+      </section>
 
       {/* FOOTER BUTTONS */}
       <div

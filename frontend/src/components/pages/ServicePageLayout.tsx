@@ -6,6 +6,7 @@ import { quickValidate, validateForm } from "../../utils/validator";
 import { ChevronRight, Home } from "lucide-react";
 import { applicationService } from "../../api/applicationService";
 import { ApiClientError } from "../../api/client";
+import ProcedureAiSupportCard from "./ProcedureAiSupportCard";
 
 // ============================================================
 // Reusable form field renderer
@@ -482,49 +483,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
             </div>
           </div>
 
-          {/* AI assistant prompt */}
-          <div
-            style={{
-              background: "linear-gradient(135deg, #8B1A1A, #C8441A)",
-              color: "white",
-              borderRadius: "var(--radius-lg)",
-              padding: "20px",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><img src="/logo_Gov_Bridge.jpg" alt="AI" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.9)', padding: 2, background: 'white' }} /></div>
-            <div
-              style={{
-                fontWeight: 700,
-                marginBottom: 6,
-                fontSize: "0.9375rem",
-              }}
-            >
-              Cần hỗ trợ?
-            </div>
-            <p
-              style={{
-                fontSize: "0.8rem",
-                opacity: 0.9,
-                lineHeight: 1.5,
-                marginBottom: 12,
-              }}
-            >
-              Trợ lý AI sẵn sàng điền form tự động từ giọng nói hoặc ảnh CCCD
-              của bạn!
-            </p>
-            <div
-              style={{
-                background: "rgba(255,255,255,0.15)",
-                borderRadius: "var(--radius-sm)",
-                padding: "8px 12px",
-                fontSize: "0.8rem",
-                border: "1px solid rgba(255,255,255,0.25)",
-              }}
-            >
-              👉 Nhấn nút <img src="/logo_Gov_Bridge.jpg" alt="AI" style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', verticalAlign: 'middle', margin: '0 4px', display: 'inline-block', border: '1px solid white' }} /> góc phải màn hình
-            </div>
-          </div>
+          <ProcedureAiSupportCard />
         </aside>
       </div>
     </div>

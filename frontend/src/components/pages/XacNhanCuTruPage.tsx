@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Calendar, ChevronUp, FileText, Home, Paperclip, Plus, Save, Send, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
+import ProcedureAiSupportCard from './ProcedureAiSupportCard';
 
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
 
@@ -534,6 +535,8 @@ const XacNhanCuTruPage: React.FC = () => {
           Nộp hồ sơ
         </button>
       </div>
+
+      <ProcedureAiSupportCard className="procedure-ai-support-wide" />
 
       {showSuccess && (
         <div className="xctt-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="xctt-success-title">
