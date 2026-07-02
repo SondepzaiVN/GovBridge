@@ -33,6 +33,9 @@ export class FormFillTool implements AssistantTool {
         caseSuggestion: null,
         followUpQuestion: null,
         fieldExplanation: null,
+        navigationRoute: null,
+        highlightElementId: null,
+        nextStepRequested: false,
       },
     };
   }

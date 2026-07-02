@@ -51,6 +51,9 @@ const userUnderstandingSnapshotSchema = z.object({
   caseSuggestion: caseSuggestionSchema,
   followUpQuestion: z.string().trim().min(1).max(1_000).nullable(),
   fieldExplanation: fieldExplanationSchema,
+  navigationRoute: z.string().trim().min(1).max(200).nullable(),
+  highlightElementId: z.string().trim().min(1).max(200).nullable(),
+  nextStepRequested: z.boolean().default(false),
 }).strict();
 
 const orchestratorOutputSchema = z.object({
@@ -60,6 +63,9 @@ const orchestratorOutputSchema = z.object({
   caseSuggestion: caseSuggestionSchema,
   followUpQuestion: z.string().trim().min(1).max(1_000).nullable(),
   fieldExplanation: fieldExplanationSchema,
+  navigationRoute: z.string().trim().min(1).max(200).nullable(),
+  highlightElementId: z.string().trim().min(1).max(200).nullable(),
+  nextStepRequested: z.boolean().default(false),
   suggestions: z.array(z.string().trim().min(1).max(80)).max(3),
 }).strict();
 
@@ -118,6 +124,9 @@ const orchestratorOutputJsonSchema = {
         { type: 'null' },
       ],
     },
+    navigationRoute: { type: ['string', 'null'] },
+    highlightElementId: { type: ['string', 'null'] },
+    nextStepRequested: { type: 'boolean' },
     suggestions: {
       type: 'array',
       items: { type: 'string' },
@@ -131,6 +140,9 @@ const orchestratorOutputJsonSchema = {
     'caseSuggestion',
     'followUpQuestion',
     'fieldExplanation',
+    'navigationRoute',
+    'highlightElementId',
+    'nextStepRequested',
     'suggestions',
   ],
   additionalProperties: false,
@@ -230,6 +242,9 @@ RANH GIỚI PROVENANCE
 QUY TẮC OUTPUT
 - facts chỉ chứa giá trị xuất hiện rõ trong tin nhắn hiện tại; confidence >= 0.8 chỉ khi chắc chắn.
 - fieldHint chỉ dùng field id trong currentProcedure.fields. Backend sẽ kiểm tra lại trước khi tạo REQUEST_CONFIRM_FILL.
+- Nếu người dùng muốn điều hướng (chuyển trang, đăng ký thủ tục mới), hãy điền 'route' tương ứng (từ procedureCatalog) vào 'navigationRoute'.
+- Nếu người dùng muốn chuyển sang bước tiếp theo của biểu mẫu hiện tại, hãy đặt 'nextStepRequested' là true.
+- Nếu người dùng hỏi vị trí một phần tử hoặc yêu cầu hướng dẫn thao tác, hãy điền ID của phần tử đó vào 'highlightElementId'. Dùng các ID chung như: 'submit-btn', 'search-btn', 'search-bar', 'login-btn', hoặc ID của ô nhập liệu trong currentProcedure.fields.
 - Không tuyên bố đã tự điền, đã điều hướng hoặc đã nộp hồ sơ.
 - Trả đúng JSON theo response schema; không markdown/code fence bao quanh JSON.
 
@@ -328,22 +343,30 @@ const emptyUserUnderstanding = (): UserUnderstandingSnapshot => ({
   caseSuggestion: null,
   followUpQuestion: null,
   fieldExplanation: null,
+  navigationRoute: null,
+  highlightElementId: null,
+  nextStepRequested: false,
 });
 
 const groundedUserUnderstanding = (
   request: OrchestratorRequest,
   parsed: z.infer<typeof orchestratorOutputSchema>,
 ): UserUnderstandingSnapshot => {
+  const normalizedMessage = request.context.normalizedMessage;
   const facts = parsed.facts.filter((fact) => {
-    if (fact.source !== 'chat' || !fact.evidence) return false;
-    return request.context.normalizedMessage.includes(normalizeText(fact.value))
-      && request.context.normalizedMessage.includes(normalizeText(fact.evidence));
+    if (fact.source !== 'chat') return false;
+    const valueWords = normalizeText(fact.value).split(/\s+/).filter(Boolean);
+    if (valueWords.length === 0) return false;
+    return valueWords.every(word => normalizedMessage.includes(word));
   });
   return {
     facts,
     caseSuggestion: parsed.caseSuggestion,
     followUpQuestion: parsed.followUpQuestion,
     fieldExplanation: parsed.fieldExplanation,
+    navigationRoute: parsed.navigationRoute ?? null,
+    highlightElementId: parsed.highlightElementId ?? null,
+    nextStepRequested: parsed.nextStepRequested,
   };
 };
 
@@ -360,6 +383,9 @@ const toAssistantUnderstanding = (
   caseSuggestion: snapshot.caseSuggestion,
   followUpQuestion: snapshot.followUpQuestion,
   fieldExplanation: snapshot.fieldExplanation,
+  navigationRoute: snapshot.navigationRoute,
+  highlightElementId: snapshot.highlightElementId,
+  nextStepRequested: snapshot.nextStepRequested,
 });
 
 const parseOrchestratorOutput = (
@@ -488,6 +514,8 @@ const toComposerFinalResult = (
       ...userUnderstanding,
       followUpQuestion: null,
       fieldExplanation: null,
+      navigationRoute: null,
+      nextStepRequested: false,
     }),
     responseProvenance: 'knowledge_composer',
   };
