@@ -8200,3 +8200,15 @@ a:hover {
 .ltkt-form-frame > .ltks-form-body > div > div:not(:first-child):has(> h3) {
     margin-top: 28px !important;
 }
+
+.dktt-actions,
+.xctt-actions,
+.ltks-app-page .ltks-actions {
+    justify-content: center;
+}
+
+.service-standard-page .btn-submit {
+    display: flex;
+    margin-right: auto;
+    margin-left: auto;
+}
