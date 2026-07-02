@@ -310,6 +310,12 @@ a:hover {
     flex: 1;
 }
 
+.header-nav-item {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
 .header-nav-link {
     color: rgba(255, 255, 255, 0.92);
     text-decoration: none;
@@ -335,6 +341,60 @@ a:hover {
     color: #ffe082;
     background: rgba(0, 0, 0, 0.2);
     text-decoration: none;
+    border-bottom-color: #ffe082;
+}
+
+.header-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: calc(var(--z-header) + 1);
+    width: max-content;
+    min-width: 240px;
+    max-width: min(320px, calc(100vw - 32px));
+    padding: 8px;
+    background: white;
+    border: 1px solid rgba(200, 68, 26, 0.18);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition:
+        opacity var(--transition-fast),
+        transform var(--transition-fast),
+        visibility var(--transition-fast);
+}
+
+.header-nav-item:hover .header-dropdown,
+.header-nav-item:focus-within .header-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.header-dropdown-link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 0.8375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-decoration: none;
+    white-space: normal;
+}
+
+.header-dropdown-link:hover,
+.header-dropdown-link.active {
+    background: #fff3ee;
+    color: #a33515;
+    text-decoration: none;
+}
+
+.header-nav-item:has(.header-dropdown-link.active) > .header-nav-link {
+    color: #ffe082;
+    background: rgba(0, 0, 0, 0.2);
     border-bottom-color: #ffe082;
 }
 
@@ -372,6 +432,12 @@ a:hover {
     background: rgba(0, 0, 0, 0.2);
     color: #ffe082;
     text-decoration: none;
+}
+
+.mobile-nav-link-child {
+    padding-left: 40px;
+    font-size: 0.8375rem;
+    background: rgba(0, 0, 0, 0.08);
 }
 
 /* Legacy btn-header (keep for compatibility) */
