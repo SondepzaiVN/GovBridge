@@ -1,10 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
+﻿import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useChatbot } from "../../contexts/ChatbotContext";
 import { ocrService, smartbotService, sttService } from "../../api/aiServices";
 import { Mic, MicOff, Send, Camera } from "lucide-react";
 
 interface ChatInputProps {
-  onSend: (text: string) => void;
+  onSend: (text: string) => void | Promise<void>;
   disabled?: boolean;
   variant?: "panel" | "bar";
   autoFocus?: boolean;
@@ -20,13 +20,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onFocusInput,
   onBeforeSend,
 }) => {
-  const { state, dispatch, handleAIResponse } = useChatbot();
+  const { state, dispatch, handleAIResponse, setEnableVoiceResponse } = useChatbot();
   const [inputValue, setInputValue] = useState("");
   const [interimText, setInterimText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const voiceConversationRef = useRef(false);
+  const stateRef = useRef(state);
   const [showCameraMenu, setShowCameraMenu] = useState(false);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -59,36 +65,88 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  // Voice recording toggle
-  const toggleRecording = async () => {
-    if (state.isListening) {
-      sttService.stopListening();
+  const finishVoiceUtterance = useCallback(async () => {
+    if (!stateRef.current.isListening) return;
+    let shouldClearSttLoading = true;
+    try {
       dispatch({ type: "SET_LISTENING", payload: false });
-      // Send whatever was captured
-      const finalText = inputValue.trim() || interimText.trim();
+      dispatch({ type: "SET_LOADING", payload: true });
+      const transcript = (await sttService.stopListening()).trim();
+      const finalText = transcript || inputValue.trim() || interimText.trim();
       if (finalText) {
-        onSend(finalText);
+        setEnableVoiceResponse(true);
         setInputValue("");
         setInterimText("");
+        dispatch({ type: "SET_LOADING", payload: false });
+        shouldClearSttLoading = false;
+        await onSend(finalText);
       }
-    } else {
-      dispatch({ type: "SET_LISTENING", payload: true });
-      setInterimText("");
-      setInputValue("");
-
-      try {
-        await sttService.startListening((transcript: string, isFinal: boolean) => {
-          if (isFinal) {
-            setInputValue(transcript);
-            setInterimText("");
-          } else {
-            setInterimText(transcript);
-          }
-        });
-      } catch (error) {
-        console.warn("[ChatInput Voice] Voice input unavailable, using mock listening state:", error);
-      }
+    } catch (error) {
+      voiceConversationRef.current = false;
+      console.warn("[ChatInput Voice] STT failed:", error);
+      handleAIResponse({
+        intent: "CHAT",
+        message: error instanceof Error
+          ? `Không thể nhận dạng giọng nói: ${error.message}`
+          : "Không thể nhận dạng giọng nói. Vui lòng thử lại.",
+        suggestions: ["Thử lại", "Nhập bằng bàn phím"],
+      });
+    } finally {
+      if (shouldClearSttLoading) dispatch({ type: "SET_LOADING", payload: false });
     }
+  }, [dispatch, handleAIResponse, inputValue, interimText, onSend, setEnableVoiceResponse]);
+
+  const startVoiceListening = useCallback(async () => {
+    if (!voiceConversationRef.current || stateRef.current.isListening || stateRef.current.isLoading || stateRef.current.isSpeaking) return;
+    dispatch({ type: "SET_LISTENING", payload: true });
+    setInterimText("");
+    setInputValue("");
+
+    try {
+      await sttService.startListening((transcript: string, isFinal: boolean) => {
+        if (isFinal) {
+          setInputValue(transcript);
+          setInterimText("");
+        } else {
+          setInterimText(transcript);
+        }
+      }, { onSilence: finishVoiceUtterance });
+    } catch (error) {
+      dispatch({ type: "SET_LISTENING", payload: false });
+      voiceConversationRef.current = false;
+      console.warn("[ChatInput Voice] Voice input unavailable:", error);
+      handleAIResponse({
+        intent: "CHAT",
+        message: error instanceof Error
+          ? `Không thể bật microphone: ${error.message}`
+          : "Không thể bật microphone. Vui lòng kiểm tra quyền truy cập.",
+        suggestions: ["Thử lại", "Nhập bằng bàn phím"],
+      });
+    }
+  }, [dispatch, finishVoiceUtterance, handleAIResponse]);
+
+  useEffect(() => {
+    if (!voiceConversationRef.current || state.isListening || state.isLoading || state.isSpeaking) return;
+    const timer = window.setTimeout(() => {
+      void startVoiceListening();
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [state.isListening, state.isLoading, state.isSpeaking, startVoiceListening]);
+
+  // Voice recording toggle
+  const toggleRecording = async () => {
+    if (voiceConversationRef.current || state.isListening) {
+      voiceConversationRef.current = false;
+      if (state.isListening) {
+        dispatch({ type: "SET_LISTENING", payload: false });
+        await sttService.stopListening().catch(() => "");
+      }
+      return;
+    }
+
+    voiceConversationRef.current = true;
+    setEnableVoiceResponse(true);
+    await startVoiceListening();
   };
 
   // OCR image upload
@@ -101,7 +159,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       id: `msg_${Date.now()}`,
       role: "user" as const,
       type: "image" as const,
-      content: `📷 Đã gửi ảnh: ${file.name}`,
+      content: `Đã gửi ảnh: ${file.name}`,
       timestamp: new Date(),
     };
     dispatch({ type: "ADD_MESSAGE", payload: userMsg });
@@ -112,7 +170,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       id: `msg_${Date.now()}_proc`,
       role: "bot" as const,
       type: "text" as const,
-      content: "🔍 Đang đọc thông tin từ ảnh CCCD...",
+      content: "Đang đọc thông tin từ ảnh CCCD...",
       timestamp: new Date(),
     };
     dispatch({ type: "ADD_MESSAGE", payload: processingMsg });
@@ -130,12 +188,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
       handleAIResponse({
         intent: "OCR_CONFIRM",
         message:
-          "Tôi đã đọc được thông tin từ CCCD của bạn! 📋\n\nVui lòng kiểm tra lại thông tin bên dưới trước khi xác nhận điền vào form:",
+          "Tôi đã đọc được thông tin từ CCCD của bạn!\n\nVui lòng kiểm tra lại thông tin bên dưới trước khi xác nhận điền vào form:",
         data: { cccdInfo },
         suggestions: [
           "Xác nhận và điền vào form",
           "Thông tin cần sửa lại",
-          "Huỷ",
+          "Hủy",
         ],
       });
     } catch (err) {

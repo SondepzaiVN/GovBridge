@@ -17,8 +17,20 @@ import {
 } from '../../modules/assistant/tools/query-procedure-knowledge.tool.js';
 import type { OpenAiResponsesClient } from './openai-responses.client.js';
 
-const MAX_HISTORY_MESSAGES = 6;
+const MAX_HISTORY_MESSAGES = 4;
+const MAX_OPENAI_FIELD_VALUE_LENGTH = 500;
 const OPENAI_CONTINUATION_PROVIDER = 'openai-responses';
+const SMALL_TALK_MESSAGES = new Set([
+  'xin chao',
+  'chao',
+  'hello',
+  'hi',
+  'cam on',
+  'thanks',
+  'thank you',
+  'tam biet',
+  'bye',
+]);
 
 export interface OpenAiOrchestratorOptions {
   client: OpenAiResponsesClient;
@@ -162,6 +174,34 @@ const composerOutputJsonSchema = {
   additionalProperties: false,
 } as const;
 
+const isSmallTalkOnly = (normalizedMessage: string): boolean => {
+  const compact = normalizedMessage.replace(/[!?.\s]+$/gu, '').trim();
+  return SMALL_TALK_MESSAGES.has(compact);
+};
+
+const smallTalkResult = (): OrchestratorFinalResult => ({
+  response: {
+    intent: 'CHAT',
+    message: 'Xin chào! Mình có thể hỗ trợ bạn tra cứu thủ tục hành chính, giấy tờ cần chuẩn bị, cách điền hồ sơ hoặc chuyển đến dịch vụ phù hợp.',
+    suggestions: [
+      'Tư vấn thủ tục khai sinh',
+      'Cần chuẩn bị giấy tờ gì?',
+      'Hướng dẫn đăng ký thường trú',
+    ],
+  },
+  actions: [],
+  understanding: {
+    facts: [],
+    caseSuggestion: null,
+    followUpQuestion: null,
+    fieldExplanation: null,
+    navigationRoute: null,
+    highlightElementId: null,
+    nextStepRequested: false,
+  },
+  responseProvenance: 'orchestrator',
+});
+
 const responseSchema = z.object({
   id: z.string().trim().min(1),
   output: z.array(z.unknown()),
@@ -192,6 +232,10 @@ const continuationSchema = z.object({
 
 const buildOrchestratorInstructions = (request: OrchestratorRequest): string => {
   const { context } = request;
+  const knownFields = Object.fromEntries(
+    Object.entries(context.formContext.knownFields)
+      .map(([fieldId, value]) => [fieldId, value.slice(0, MAX_OPENAI_FIELD_VALUE_LENGTH)]),
+  );
   const currentProcedure = context.currentProcedure
     ? {
         id: context.currentProcedure.id,
@@ -221,7 +265,7 @@ const buildOrchestratorInstructions = (request: OrchestratorRequest): string => 
       name: procedure.name,
       route: procedure.route,
     })),
-    knownFieldIds: Object.keys(context.formContext.knownFields),
+    knownFields,
     missingRequiredFields: context.formContext.missingRequiredFields,
   };
 
@@ -231,6 +275,7 @@ NHIỆM VỤ
 - Hiểu intent, trích xuất fact mà người dùng thực sự nói, đề xuất field/case và trả lời nội dung UI chắc chắn từ schema.
 - Chỉ gọi ${QUERY_PROCEDURE_KNOWLEDGE_TOOL} khi cần kiến thức thủ tục: điều kiện, giấy tờ, biểu mẫu, quy trình, nơi/cách nộp, cơ quan tiếp nhận, thời hạn, phí, kết quả, căn cứ pháp lý, thuật ngữ, trường hợp đặc biệt hoặc so sánh.
 - Không gọi tool khi người dùng chỉ cung cấp giá trị form, xác nhận/từ chối, yêu cầu điều hướng/highlight, tải file/OCR, hỏi trạng thái dữ liệu vừa nhập hoặc hỏi nội dung đã có chắc chắn trong schema UI.
+- Không gọi tool cho chào hỏi, cảm ơn, tạm biệt hoặc câu xã giao không chứa câu hỏi thủ tục.
 - Không tự trả lời điều kiện, giấy tờ, phí, thời hạn hoặc căn cứ pháp lý bằng trí nhớ. Khi cần các nội dung đó phải gọi tool.
 - Nếu tin nhắn vừa hỏi kiến thức vừa cung cấp dữ liệu form, gọi tool cho phần kiến thức và chỉ trích xuất fact từ chính lời người dùng.
 - Khi gọi tool cho tin nhắn hỗn hợp, đồng thời trả message JSON theo response schema để lưu userUnderstanding trước khi có KnowledgeResult.
@@ -615,6 +660,9 @@ export class OpenAiOrchestratorProvider implements OrchestratorProvider {
       .map((item) => item.data);
 
     if (functionCalls.length > 0) {
+      if (isSmallTalkOnly(request.context.normalizedMessage)) {
+        return { kind: 'final', result: smallTalkResult() };
+      }
       if (request.knowledge) {
         throw new AppError(
           502,

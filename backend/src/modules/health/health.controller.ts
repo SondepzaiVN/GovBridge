@@ -5,6 +5,7 @@ interface HealthOptions {
   assistantProvider: string;
   knowledgeProvider: string;
   ocrProvider: string;
+  sttProvider: string;
   ttsProvider: string;
 }
 
@@ -24,6 +25,7 @@ export class HealthController {
         orchestrator: this.options.assistantProvider,
         knowledge: this.options.knowledgeProvider,
         ocr: this.options.ocrProvider,
+        stt: this.options.sttProvider,
         tts: this.options.ttsProvider,
       },
     });

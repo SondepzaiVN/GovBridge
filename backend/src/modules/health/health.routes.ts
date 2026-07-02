@@ -6,6 +6,7 @@ export const createHealthRouter = (options: {
   assistantProvider: string;
   knowledgeProvider: string;
   ocrProvider: string;
+  sttProvider: string;
   ttsProvider: string;
 }): Router => {
   const router = Router();
