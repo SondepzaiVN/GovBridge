@@ -449,8 +449,18 @@ const XacNhanCuTruPage: React.FC = () => {
         <p>Số hồ sơ -</p>
       </div>
 
-      <p className="xctt-note">
-        <strong>Ghi chú:</strong> Các thông tin có dấu <span>(*)</span> là thông tin bắt buộc phải nhập
+      <div className="dktt-ai-hint" data-highlight-id="ai-hint">
+        <span className="dktt-ai-hint-icon">
+          <img src="/logo_Gov_Bridge.jpg" alt="AI" />
+        </span>
+        <span>
+          <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
+          form bằng <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
+        </span>
+      </div>
+
+      <p className="dktt-required-note xctt-note">
+        <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
       </p>
 
       <XcttSection id="agency" title="CƠ QUAN THỰC HIỆN" open={openSections.agency} onToggle={toggleSection}>

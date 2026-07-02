@@ -11,6 +11,7 @@ import './index.css';
 const HomePage = lazy(() => import('./components/pages/HomePage'));
 const KhaiSinhPage = lazy(() => import('./components/pages/KhaiSinhPage'));
 const DangKyThuongTruPage = lazy(() => import('./components/pages/DangKyThuongTruPage'));
+const DangKyTamTruPage = lazy(() => import('./components/pages/DangKyTamTruPage'));
 const CCCDPage = lazy(() => import('./components/pages/CCCDPage'));
 const KetHonPage = lazy(() => import('./components/pages/KetHonPage'));
 const LienThongKhaiSinhPage = lazy(() => import('./components/pages/LienThongKhaiSinhPage'));
@@ -81,6 +82,9 @@ const AppInner: React.FC = () => {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/khai-sinh" element={<KhaiSinhPage />} />
                         <Route path="/ho-khau" element={<DangKyThuongTruPage />} />
+                        <Route path="/dang-ky-thuong-tru" element={<DangKyThuongTruPage />} />
+                        <Route path="/tam-tru" element={<DangKyTamTruPage />} />
+                        <Route path="/dang-ky-tam-tru" element={<DangKyTamTruPage />} />
                         <Route path="/cccd" element={<CCCDPage />} />
                         <Route path="/ket-hon" element={<KetHonPage />} />
                         <Route path="/lien-thong-khai-sinh" element={<LienThongKhaiSinhPage />} />

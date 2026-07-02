@@ -457,6 +457,20 @@ const LienThongKhaiSinhPage: React.FC = () => {
           })}
         </div>
 
+        <div className="dktt-ai-hint" data-highlight-id="ai-hint">
+          <span className="dktt-ai-hint-icon">
+            <img src="/logo_Gov_Bridge.jpg" alt="AI" />
+          </span>
+          <span>
+            <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
+            form bằng <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
+          </span>
+        </div>
+
+        <div className="dktt-required-note">
+          <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
+        </div>
+
         <form className={`ltks-form ltks-form-step-${currentStep}`} onSubmit={(event) => event.preventDefault()} noValidate>
           <div className="ltks-form-body">
             {current.sections.map((section) => (

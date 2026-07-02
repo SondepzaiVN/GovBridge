@@ -48,20 +48,46 @@ const Header: React.FC = () => {
                         >
                             <Home size={15} />
                         </NavLink>
-                        <NavLink
-                            to="/khai-sinh"
-                            className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                            data-highlight-id="nav-khai-sinh"
-                        >
-                            Hộ Tịch <ChevronDown size={13} />
-                        </NavLink>
-                        <NavLink
-                            to="/ho-khau"
-                            className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
-                            data-highlight-id="nav-ho-khau"
-                        >
-                            Cư Trú <ChevronDown size={13} />
-                        </NavLink>
+                        <div className="header-nav-item has-dropdown">
+                            <NavLink
+                                to="/khai-sinh"
+                                className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                                data-highlight-id="nav-khai-sinh"
+                            >
+                                Hộ Tịch <ChevronDown size={13} />
+                            </NavLink>
+                            <div className="header-dropdown" role="menu" aria-label="Dịch vụ hộ tịch">
+                                <NavLink to="/khai-sinh" className="header-dropdown-link" role="menuitem">
+                                    Đăng ký khai sinh
+                                </NavLink>
+                                <NavLink to="/lien-thong-khai-sinh" className="header-dropdown-link" role="menuitem">
+                                    Liên thông khai sinh
+                                </NavLink>
+                                <NavLink to="/lien-thong-khai-tu" className="header-dropdown-link" role="menuitem">
+                                    Liên thông khai tử
+                                </NavLink>
+                            </div>
+                        </div>
+                        <div className="header-nav-item has-dropdown">
+                            <NavLink
+                                to="/ho-khau"
+                                className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                                data-highlight-id="nav-ho-khau"
+                            >
+                                Cư Trú <ChevronDown size={13} />
+                            </NavLink>
+                            <div className="header-dropdown" role="menu" aria-label="Dịch vụ cư trú">
+                                <NavLink to="/ho-khau" className="header-dropdown-link" role="menuitem">
+                                    Đăng ký thường trú
+                                </NavLink>
+                                <NavLink to="/dang-ky-tam-tru" className="header-dropdown-link" role="menuitem">
+                                    Đăng ký tạm trú
+                                </NavLink>
+                                <NavLink to="/xac-nhan-cu-tru" className="header-dropdown-link" role="menuitem">
+                                    Hồ sơ xác nhận thông tin cư trú
+                                </NavLink>
+                            </div>
+                        </div>
                         <NavLink
                             to="/cccd"
                             className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
@@ -99,10 +125,38 @@ const Header: React.FC = () => {
                         Trang Chủ
                     </NavLink>
                     <NavLink to="/khai-sinh" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
-                        Khai Sinh
+                        Đăng ký khai sinh
+                    </NavLink>
+                    <NavLink
+                        to="/lien-thong-khai-sinh"
+                        className="mobile-nav-link mobile-nav-link-child"
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        Liên thông khai sinh
+                    </NavLink>
+                    <NavLink
+                        to="/lien-thong-khai-tu"
+                        className="mobile-nav-link mobile-nav-link-child"
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        Liên thông khai tử
                     </NavLink>
                     <NavLink to="/ho-khau" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
-                        Hộ Khẩu
+                        Đăng ký thường trú
+                    </NavLink>
+                    <NavLink
+                        to="/dang-ky-tam-tru"
+                        className="mobile-nav-link mobile-nav-link-child"
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        Đăng ký tạm trú
+                    </NavLink>
+                    <NavLink
+                        to="/xac-nhan-cu-tru"
+                        className="mobile-nav-link mobile-nav-link-child"
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        Hồ sơ xác nhận thông tin cư trú
                     </NavLink>
                     <NavLink to="/cccd" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
                         Căn Cước
