@@ -1,4 +1,5 @@
 _tmp_*
+node_modules/
 
 ref/
 .codex-work/

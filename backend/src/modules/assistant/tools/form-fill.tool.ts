@@ -1,4 +1,4 @@
-import type { AssistantProviderResult, AssistantTool, AssistantToolContext } from '../assistant.types.js';
+import type { AssistantTool, AssistantToolContext, OrchestratorFinalResult } from '../assistant.types.js';
 import { escapeRegExp } from './tool-utils.js';
 
 const extractFields = (context: AssistantToolContext): Record<string, string> => {
@@ -16,7 +16,7 @@ export class FormFillTool implements AssistantTool {
   readonly name = 'form-fill';
   canHandle(context: AssistantToolContext): boolean { return Object.keys(extractFields(context)).length > 0; }
 
-  execute(context: AssistantToolContext): AssistantProviderResult {
+  execute(context: AssistantToolContext): OrchestratorFinalResult {
     const fields = extractFields(context);
     const message = 'Mình đã nhận ' + Object.keys(fields).length + ' trường thông tin từ nội dung bạn gửi.';
     const suggestions = ['Kiểm tra thông tin', 'Tiếp tục bước tiếp theo'];

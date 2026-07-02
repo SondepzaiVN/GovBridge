@@ -1,0 +1,17 @@
+{
+  "name": "govbridge-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root package.json để quản lý và chạy song song Frontend & Backend trong 1 lệnh",
+  "scripts": {
+    "dev": "concurrently -k -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
+    "start": "concurrently -k -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run start --prefix backend\" \"npm run preview --prefix frontend\"",
+    "test": "npm run test --prefix backend",
+    "lint": "npm run lint --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
