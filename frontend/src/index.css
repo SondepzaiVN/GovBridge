@@ -1297,7 +1297,9 @@ a:hover {
         border: 1px solid rgba(200, 68, 26, 0.2);
         border-radius: 24px;
         background: rgba(255, 255, 255, 0.94);
-        box-shadow: 0 14px 38px rgba(15, 23, 42, 0.13), 0 5px 16px rgba(200, 68, 26, 0.1);
+        box-shadow:
+            0 14px 38px rgba(15, 23, 42, 0.13),
+            0 5px 16px rgba(200, 68, 26, 0.1);
         backdrop-filter: blur(10px);
         transform: translateX(-50%);
         animation: desktop-chat-bar-in 0.45s ease both;
@@ -1438,11 +1440,13 @@ a:hover {
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.58);
+        border: 1px solid #e5e7eb;
         border-radius: 26px;
-        background: rgba(255, 255, 255, 0.9);
-        box-shadow: 0 24px 80px rgba(15, 23, 42, 0.18), 0 10px 28px rgba(15, 23, 42, 0.1);
-        backdrop-filter: blur(10px);
+        background: #ffffff;
+        box-shadow:
+            0 24px 80px rgba(15, 23, 42, 0.18),
+            0 10px 28px rgba(15, 23, 42, 0.1);
+        backdrop-filter: none;
         transform-origin: center bottom;
         pointer-events: auto;
     }
@@ -1494,7 +1498,10 @@ a:hover {
 
     .chatbot-overlay-panel .chatbot-messages {
         padding: 58px 24px 14px;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(248, 250, 252, 0.58));
+        margin: 0 0 14px;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
         scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
         scrollbar-width: thin;
     }
@@ -1509,19 +1516,43 @@ a:hover {
     }
 
     .chatbot-overlay-panel .message-wrapper.bot .message-bubble {
-        background: rgba(255, 255, 255, 0.96);
-        border-color: rgba(226, 232, 240, 0.95);
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        color: #111827;
+        line-height: 1.6;
+        padding: 14px 18px;
+        text-shadow: none;
     }
 
     .chatbot-overlay-panel .message-bubble {
         max-width: min(680px, 82%);
         padding: 12px 15px;
         font-size: 0.9rem;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+        word-break: normal;
     }
 
     .chatbot-overlay-panel .message-wrapper.user .message-bubble {
         background: linear-gradient(135deg, #b01920, #e87722);
+        width: fit-content;
+        min-width: 72px;
+        max-width: min(70%, 520px);
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+        word-break: normal;
+    }
+
+    .chatbot-overlay-panel .message-wrapper > div:not(.message-avatar) {
+        max-width: min(720px, 88%) !important;
+    }
+
+    .chatbot-overlay-panel .message-wrapper.user > div:not(.message-avatar) {
+        align-items: flex-end;
+        max-width: 100% !important;
+        width: 100%;
     }
 
     .chatbot-overlay-panel .chatbot-input-area {
@@ -1543,7 +1574,9 @@ a:hover {
 
     .chatbot-overlay-panel .chatbot-input-row.is-recording {
         border-color: rgba(239, 68, 68, 0.35);
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.08), 0 8px 24px rgba(15, 23, 42, 0.08);
+        box-shadow:
+            0 0 0 3px rgba(239, 68, 68, 0.08),
+            0 8px 24px rgba(15, 23, 42, 0.08);
     }
 
     .chatbot-overlay-panel .chatbot-input-field {
@@ -1584,7 +1617,7 @@ a:hover {
         gap: 16px;
         padding: 58px 42px 24px;
         text-align: center;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(248, 250, 252, 0.58));
+        background: transparent;
     }
 
     .chatbot-welcome-icon {
@@ -5677,188 +5710,188 @@ a:hover {
 
     .ltks-step,
     .ltks-step:last-child {
-    width: auto;
-    height: 100px;
-    min-width: 0;
-    flex-basis: auto;
-}
+        width: auto;
+        height: 100px;
+        min-width: 0;
+        flex-basis: auto;
+    }
 
-.ltks-step::before,
-.ltks-step::after {
-    display: none;
-}
+    .ltks-step::before,
+    .ltks-step::after {
+        display: none;
+    }
 
-.ltks-portal,
-.ltks-topbar,
-.ltks-main {
-    width: 100%;
-    max-width: none;
-}
+    .ltks-portal,
+    .ltks-topbar,
+    .ltks-main {
+        width: 100%;
+        max-width: none;
+    }
 
-.ltks-portal {
-    min-height: 148px;
-    padding: 24px 12px 30px;
-}
+    .ltks-portal {
+        min-height: 148px;
+        padding: 24px 12px 30px;
+    }
 
-.ltks-portal h1 {
-    max-width: calc(100% - 28px);
-    font-size: 1.45rem;
-}
+    .ltks-portal h1 {
+        max-width: calc(100% - 28px);
+        font-size: 1.45rem;
+    }
 
-.ltks-topbar {
-    border-radius: 0;
-    height: 56px;
-}
+    .ltks-topbar {
+        border-radius: 0;
+        height: 56px;
+    }
 
-.ltks-top-actions {
-    max-width: calc(100% - 46px);
-    flex: 1 1 auto;
-}
+    .ltks-top-actions {
+        max-width: calc(100% - 46px);
+        flex: 1 1 auto;
+    }
 
-.ltks-top-actions select {
-    flex: 1 1 0;
-    width: 0;
-    min-width: 0;
-    max-width: none;
-    font-size: 0.82rem;
-    padding-right: 18px;
-}
+    .ltks-top-actions select {
+        flex: 1 1 0;
+        width: 0;
+        min-width: 0;
+        max-width: none;
+        font-size: 0.82rem;
+        padding-right: 18px;
+    }
 
-.ltks-main {
-    padding: 22px 14px 96px;
-}
+    .ltks-main {
+        padding: 22px 14px 96px;
+    }
 
-.ltks-landing {
-    padding: 20px 14px 110px;
-}
+    .ltks-landing {
+        padding: 20px 14px 110px;
+    }
 
-.ltks-landing-title {
-    margin-bottom: 24px;
-    font-size: 1rem;
-}
+    .ltks-landing-title {
+        margin-bottom: 24px;
+        font-size: 1rem;
+    }
 
-.ltks-service-grid {
-    width: 100%;
-    gap: 14px;
-}
+    .ltks-service-grid {
+        width: 100%;
+        gap: 14px;
+    }
 
-.ltks-service-card {
-    min-height: 92px;
-    grid-template-columns: 58px minmax(0, 1fr);
-    gap: 14px;
-    padding: 12px 14px;
-    border-radius: 8px;
-}
+    .ltks-service-card {
+        min-height: 92px;
+        grid-template-columns: 58px minmax(0, 1fr);
+        gap: 14px;
+        padding: 12px 14px;
+        border-radius: 8px;
+    }
 
-.ltks-service-card.featured {
-    box-shadow: none;
-}
+    .ltks-service-card.featured {
+        box-shadow: none;
+    }
 
-.ltks-service-icon {
-    width: 58px;
-    height: 58px;
-}
+    .ltks-service-icon {
+        width: 58px;
+        height: 58px;
+    }
 
-.ltks-service-icon svg {
-    width: 34px;
-    height: 34px;
-}
+    .ltks-service-icon svg {
+        width: 34px;
+        height: 34px;
+    }
 
-.ltks-service-card.featured .ltks-service-icon svg {
-    width: 48px;
-    height: 48px;
-}
+    .ltks-service-card.featured .ltks-service-icon svg {
+        width: 48px;
+        height: 48px;
+    }
 
-.ltks-service-text {
-    font-size: 0.94rem;
-}
+    .ltks-service-text {
+        font-size: 0.94rem;
+    }
 
-.ltks-breadcrumb {
-    margin-bottom: 22px;
-    font-size: 0.86rem;
-    white-space: normal;
-    overflow: visible;
-}
+    .ltks-breadcrumb {
+        margin-bottom: 22px;
+        font-size: 0.86rem;
+        white-space: normal;
+        overflow: visible;
+    }
 
-.ltks-breadcrumb a {
-    flex: 0 0 auto;
-}
+    .ltks-breadcrumb a {
+        flex: 0 0 auto;
+    }
 
-.ltks-step,
-.ltks-step:last-child {
-    min-height: 96px;
-}
+    .ltks-step,
+    .ltks-step:last-child {
+        min-height: 96px;
+    }
 
-.ltks-step span {
-    font-size: 1.55rem;
-}
+    .ltks-step span {
+        font-size: 1.55rem;
+    }
 
-.ltks-step strong {
-    font-size: 0.74rem;
-}
+    .ltks-step strong {
+        font-size: 0.74rem;
+    }
 
-.ltks-actions {
-    flex-direction: column;
-    align-items: stretch;
-}
+    .ltks-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-.ltks-form-body {
-    padding: 18px 16px 10px;
-}
+    .ltks-form-body {
+        padding: 18px 16px 10px;
+    }
 
-.ltks-section-title {
-    grid-template-columns: 1fr;
-    gap: 8px;
-}
+    .ltks-section-title {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
 
-.ltks-section-title::after {
-    display: none;
-}
+    .ltks-section-title::after {
+        display: none;
+    }
 
-.ltks-inline-check {
-    grid-column: auto;
-    grid-row: auto;
-    white-space: normal;
-}
+    .ltks-inline-check {
+        grid-column: auto;
+        grid-row: auto;
+        white-space: normal;
+    }
 
-.ltks-section h3 {
-    font-size: 0.98rem;
-    align-items: flex-start;
-}
+    .ltks-section h3 {
+        font-size: 0.98rem;
+        align-items: flex-start;
+    }
 
-.ltks-grid {
-    grid-template-columns: 1fr;
-    gap: 13px;
-}
+    .ltks-grid {
+        grid-template-columns: 1fr;
+        gap: 13px;
+    }
 
-.ltks-field,
-.ltks-field.wide {
-    grid-column: auto;
-}
+    .ltks-field,
+    .ltks-field.wide {
+        grid-column: auto;
+    }
 
-.ltks-upload-item {
-    grid-template-columns: 1fr;
-}
+    .ltks-upload-item {
+        grid-template-columns: 1fr;
+    }
 
-.ltks-review div {
-    grid-template-columns: 1fr;
-}
+    .ltks-review div {
+        grid-template-columns: 1fr;
+    }
 
-.ltks-review strong {
-    border-bottom: 1px solid #ddd5d8;
-}
+    .ltks-review strong {
+        border-bottom: 1px solid #ddd5d8;
+    }
 
-.ltks-actions {
-    padding: 16px;
-}
+    .ltks-actions {
+        padding: 16px;
+    }
 
-.ltks-btn {
-    width: 100%;
-}
+    .ltks-btn {
+        width: 100%;
+    }
 
-.ltks-footer {
-    font-size: 0.85rem;
-}
+    .ltks-footer {
+        font-size: 0.85rem;
+    }
 }
 
 .dktt-empty-state {
@@ -7109,7 +7142,7 @@ a:hover {
 
 /* HAR alignment: dichvucong.dancuquocgia.gov.vn residence form */
 .xctt-page {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.42857143;
     color: #333;
@@ -7130,7 +7163,7 @@ a:hover {
 }
 
 .xctt-title-row h1 {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 32px;
     font-weight: 700;
     line-height: 1.2;
@@ -7196,7 +7229,7 @@ a:hover {
     border-radius: 4px;
     color: #555;
     padding: 6px 12px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.42857143;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
@@ -7345,7 +7378,7 @@ a:hover {
     min-height: 44px;
     border-radius: 6px;
     padding: 6px 18px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 18px;
     font-weight: 700;
     line-height: 1.42857143;
@@ -7521,7 +7554,7 @@ a:hover {
     background-color: #fff;
     color: #202938;
     padding: 6px 10px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: clamp(14px, 1.1vw, 22px);
     line-height: 1.2;
     box-shadow: none;
