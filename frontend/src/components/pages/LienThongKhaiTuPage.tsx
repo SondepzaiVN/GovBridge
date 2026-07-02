@@ -3,7 +3,7 @@ import MainStepper from './LienThongKhaiTu/MainStepper';
 
 const LienThongKhaiTuPage: React.FC = () => {
     return (
-        <div>
+        <div className="ltkt-route-page">
             <MainStepper />
         </div>
     );

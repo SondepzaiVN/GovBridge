@@ -7335,3 +7335,614 @@ a:hover {
         gap: 10px;
     }
 }
+
+/* ============================================================
+   PROCEDURE PAGES — align remaining forms with DKTT standard
+   ============================================================ */
+.service-standard-page .service-page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+}
+
+.service-standard-page .form-section {
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.service-standard-page .form-section-header {
+    position: relative;
+    padding: 0 0 10px;
+    margin-bottom: 14px;
+    color: #272a2f;
+    background: transparent;
+    border-bottom: 1px solid #d7d7d7;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.service-standard-page .form-section-header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 92px;
+    height: 2px;
+    background: #d71920;
+}
+
+.service-standard-page .form-section-title {
+    margin: 0 0 5px;
+    color: #24272c;
+    font-size: 1.45rem;
+    font-weight: 650;
+    letter-spacing: 0;
+}
+
+.service-standard-page .form-section-subtitle {
+    color: #6c737c;
+    font-size: 0.8rem;
+    opacity: 1;
+}
+
+.service-standard-page .form-body {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
+}
+
+.service-standard-page [data-highlight-id='ai-hint'] {
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 18px !important;
+    color: #5d4a1f !important;
+    background: #fffaf0 !important;
+    border: 1px solid #ebdfbd !important;
+    border-radius: 5px !important;
+    font-size: 0.8rem !important;
+    line-height: 1.45 !important;
+}
+
+.service-standard-page .form-grid {
+    gap: 15px 18px;
+}
+
+.service-standard-page .form-group {
+    gap: 5px;
+}
+
+.service-standard-page .form-label {
+    color: #30343a;
+    font-size: 0.79rem;
+    font-weight: 600;
+}
+
+.service-standard-page .form-input,
+.service-standard-page .form-select,
+.service-standard-page .form-textarea {
+    min-height: 38px;
+    padding: 8px 11px;
+    color: #30343a;
+    background-color: #fff;
+    border: 1px solid #cfd3d8;
+    border-radius: 3px;
+    font-size: 0.84rem;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.025);
+}
+
+.service-standard-page .form-input:focus,
+.service-standard-page .form-select:focus,
+.service-standard-page .form-textarea:focus {
+    border-color: #d71920;
+    box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1);
+}
+
+.service-standard-page .btn-submit {
+    width: auto;
+    min-width: 142px;
+    min-height: 40px;
+    margin-left: auto;
+    padding: 10px 22px;
+    color: #fff;
+    background: #d71920;
+    border-color: #d71920;
+    border-radius: 4px;
+    font-size: 0.83rem;
+    box-shadow: none;
+}
+
+.service-standard-page .btn-submit:hover {
+    background: #b9141a;
+    border-color: #b9141a;
+    transform: none;
+}
+
+.service-standard-page .service-sidebar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.service-standard-page .sidebar-info-card {
+    border-color: #ddd;
+    border-radius: 6px;
+}
+
+.service-standard-page .sidebar-info-card-header {
+    padding: 11px 14px;
+    background: rgba(255, 241, 184, 0.52);
+    border-bottom: 2px solid #d71920;
+}
+
+.service-standard-page .sidebar-info-card-title {
+    color: #33363b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+}
+
+.service-standard-page .sidebar-info-card-body {
+    padding: 14px;
+}
+
+.xctt-page {
+    max-width: 1440px;
+    padding: 22px 24px 72px;
+    color: #2f3136;
+    background: transparent;
+}
+
+.xctt-breadcrumb {
+    margin-bottom: 18px;
+    color: #69727d;
+    font-size: 0.8375rem;
+}
+
+.xctt-title-row {
+    position: relative;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #d7d7d7;
+}
+
+.xctt-title-row::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 92px;
+    height: 2px;
+    background: #d71920;
+}
+
+.xctt-title-row span {
+    display: none;
+}
+
+.xctt-title-row h1 {
+    color: #24272c;
+    font-size: 1.45rem;
+    font-weight: 650;
+    letter-spacing: 0;
+}
+
+.xctt-title-row p {
+    color: #6c737c;
+    font-size: 0.8rem;
+}
+
+.xctt-note {
+    margin-bottom: 14px;
+    color: #4d5258;
+    font-size: 0.78rem;
+}
+
+.xctt-section {
+    margin-bottom: 18px;
+    background: #fff;
+    border: 0;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
+}
+
+.xctt-section-header {
+    min-height: 42px;
+    padding: 8px 20px;
+    color: #303238;
+    background: rgba(255, 241, 184, 0.52);
+    border-bottom: 2px solid #d71920;
+}
+
+.xctt-section-header span {
+    color: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.xctt-section-body {
+    padding: 20px;
+}
+
+.xctt-grid,
+.xctt-grid.cols-4,
+.xctt-notification-fields {
+    gap: 15px 18px;
+}
+
+.xctt-field label,
+.xctt-family h3,
+.xctt-subtitle {
+    color: #30343a;
+    font-size: 0.79rem;
+    font-weight: 600;
+}
+
+.xctt-field input,
+.xctt-field select,
+.xctt-field textarea,
+.xctt-family-table input,
+.xctt-family-table select,
+.xctt-tag-select {
+    min-height: 38px;
+    color: #30343a;
+    background-color: #fff;
+    border: 1px solid #cfd3d8;
+    border-radius: 3px;
+    font-size: 0.84rem;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.025);
+}
+
+.xctt-field input:focus,
+.xctt-field select:focus,
+.xctt-field textarea:focus,
+.xctt-family-table input:focus,
+.xctt-family-table select:focus {
+    border-color: #d71920;
+    box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1);
+}
+
+.xctt-radio-stack label,
+.xctt-pledge,
+.xctt-upload-intro {
+    color: #4d5258;
+    font-size: 0.82rem;
+}
+
+.xctt-radio-stack input[type='radio'],
+.xctt-pledge input {
+    accent-color: #d71920;
+}
+
+.xctt-family-table th {
+    color: #3d4147;
+    background: #fff8d8;
+    border-bottom: 1px solid #e4d8a4;
+}
+
+.xctt-family-table-wrap,
+.xctt-attachment-row {
+    border-color: #ded9c5;
+    border-radius: 4px;
+}
+
+.xctt-actions {
+    gap: 12px;
+    padding: 10px 0 26px;
+}
+
+.xctt-btn {
+    min-width: 142px;
+    min-height: 40px;
+    padding: 10px 22px;
+    border-radius: 4px;
+    font-size: 0.83rem;
+    box-shadow: none;
+}
+
+.xctt-btn.primary,
+.xctt-upload-btn {
+    color: #fff;
+    background: #d71920;
+    border-color: #d71920;
+}
+
+.xctt-btn.secondary {
+    color: #b9141a;
+    background: #fff;
+    border-color: #d71920;
+}
+
+.xctt-btn.ghost {
+    color: #4d5258;
+    background: #fff;
+    border-color: #cfd3d8;
+}
+
+.ltks-app-page {
+    background: var(--bg-primary);
+    color: #2f3136;
+    font-family: inherit;
+}
+
+.ltks-app-page .ltks-main {
+    width: auto;
+    max-width: 1440px;
+    padding: 22px 24px 72px;
+}
+
+.ltks-app-page .ltks-breadcrumb {
+    padding-bottom: 18px;
+    color: #69727d;
+    font-size: 0.8375rem;
+}
+
+.ltks-app-page .ltks-stepper {
+    gap: 10px;
+    padding: 0 0 18px;
+}
+
+.ltks-app-page .ltks-step {
+    width: auto;
+    min-width: 140px;
+    height: auto;
+    min-height: 72px;
+    flex: 1 0 140px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #dedfe1;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(32, 35, 40, 0.1);
+}
+
+.ltks-app-page .ltks-step::before,
+.ltks-app-page .ltks-step::after {
+    display: none;
+}
+
+.ltks-app-page .ltks-step.active,
+.ltks-app-page .ltks-step.done {
+    background: rgba(255, 241, 184, 0.52);
+    border-color: #d71920;
+}
+
+.ltks-app-page .ltks-step span {
+    margin: 0 0 4px;
+    color: #24272c;
+    font-size: 1rem;
+    letter-spacing: 0;
+}
+
+.ltks-app-page .ltks-step strong {
+    color: #303238;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.ltks-app-page .ltks-form {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.ltks-app-page .ltks-form-body,
+.ltks-app-page .ltks-form-step-2 .ltks-form-body,
+.ltks-app-page .ltks-form-step-4 .ltks-form-body,
+.ltks-app-page .ltks-form-step-5 .ltks-form-body {
+    padding: 0;
+}
+
+.ltks-app-page .ltks-section {
+    margin-bottom: 18px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
+}
+
+.ltks-app-page .ltks-section + .ltks-section,
+.ltks-app-page .ltks-form-step-2 .ltks-section + .ltks-section {
+    margin-top: 18px;
+}
+
+.ltks-app-page .ltks-section-title,
+.ltks-app-page .ltks-form-step-2 .ltks-section-title {
+    min-height: 42px;
+    grid-template-columns: auto minmax(80px, 1fr) auto;
+    gap: 12px;
+    padding: 8px 20px;
+    margin: 0;
+    background: rgba(255, 241, 184, 0.52);
+    border-bottom: 2px solid #d71920;
+}
+
+.ltks-app-page .ltks-section-title::after,
+.ltks-app-page .ltks-form-step-2 .ltks-section-title::after {
+    display: none;
+}
+
+.ltks-app-page .ltks-section h3,
+.ltks-app-page .ltks-form-step-2 .ltks-section h3 {
+    color: #303238;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.ltks-app-page .ltks-note {
+    margin: 14px 20px 0;
+    color: #4d5258;
+    font-size: 0.8rem;
+}
+
+.ltks-app-page .ltks-grid,
+.ltks-app-page .ltks-form-step-1 .ltks-grid,
+.ltks-app-page .ltks-form-step-2 .ltks-grid {
+    gap: 15px 18px;
+    padding: 20px;
+}
+
+.ltks-app-page .ltks-field label,
+.ltks-app-page .ltks-form-step-1 .ltks-field label,
+.ltks-app-page .ltks-form-step-2 .ltks-field label {
+    color: #30343a;
+    font-size: 0.79rem;
+    font-weight: 600;
+}
+
+.ltks-app-page .ltks-field input,
+.ltks-app-page .ltks-field select,
+.ltks-app-page .ltks-field textarea,
+.ltks-app-page .ltks-select-trigger,
+.ltks-app-page .ltks-form-step-1 .ltks-field input,
+.ltks-app-page .ltks-form-step-1 .ltks-field select,
+.ltks-app-page .ltks-form-step-1 .ltks-field textarea,
+.ltks-app-page .ltks-form-step-1 .ltks-select-trigger,
+.ltks-app-page .ltks-form-step-2 .ltks-field input,
+.ltks-app-page .ltks-form-step-2 .ltks-field textarea,
+.ltks-app-page .ltks-form-step-2 .ltks-select-trigger {
+    min-height: 38px;
+    padding: 8px 11px;
+    color: #30343a;
+    background-color: #fff;
+    border: 1px solid #cfd3d8;
+    border-radius: 3px;
+    font-size: 0.84rem;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.025);
+}
+
+.ltks-app-page .ltks-field input:focus,
+.ltks-app-page .ltks-field textarea:focus,
+.ltks-app-page .ltks-select-trigger:focus {
+    border-color: #d71920;
+    box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1);
+}
+
+.ltks-app-page .ltks-actions {
+    gap: 12px;
+    padding: 10px 0 26px;
+}
+
+.ltks-app-page .ltks-btn {
+    min-width: 142px;
+    min-height: 40px;
+    padding: 10px 22px;
+    border-radius: 4px;
+    font-size: 0.83rem;
+    box-shadow: none;
+}
+
+.ltks-app-page .ltks-btn.primary {
+    color: #fff;
+    background: #d71920;
+    border-color: #d71920;
+}
+
+.ltks-app-page .ltks-btn.ghost,
+.ltks-app-page .ltks-btn.secondary {
+    color: #b9141a;
+    background: #fff;
+    border: 1px solid #d71920;
+}
+
+.ltkt-route-page,
+.ltkt-page-shell {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: #2f3136;
+    font-family: inherit;
+}
+
+.ltkt-page-shell {
+    overflow: hidden;
+    padding: 22px 0 72px;
+}
+
+.ltkt-step-content {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.ltkt-page-shell input,
+.ltkt-page-shell select,
+.ltkt-page-shell textarea {
+    max-width: 100%;
+    border-color: #cfd3d8 !important;
+    border-radius: 3px !important;
+    font-family: inherit;
+}
+
+.ltkt-page-shell input:focus,
+.ltkt-page-shell select:focus,
+.ltkt-page-shell textarea:focus {
+    outline: 0;
+    border-color: #d71920 !important;
+    box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1) !important;
+}
+
+.ltkt-page-shell button {
+    font-family: inherit;
+}
+
+@media (max-width: 1100px) {
+    .service-standard-page .service-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .ltks-app-page .ltks-step {
+        flex-basis: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    .service-standard-page .form-section-title,
+    .xctt-title-row h1 {
+        font-size: 1.08rem;
+    }
+
+    .service-standard-page .form-body,
+    .xctt-section-body,
+    .ltks-app-page .ltks-grid,
+    .ltks-app-page .ltks-form-step-1 .ltks-grid,
+    .ltks-app-page .ltks-form-step-2 .ltks-grid {
+        padding: 14px 12px;
+    }
+
+    .service-standard-page .service-sidebar,
+    .xctt-grid,
+    .xctt-grid.cols-4,
+    .xctt-notification-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .xctt-field.span-2,
+    .xctt-field.span-3,
+    .ltks-app-page .ltks-form-step-2 .ltks-field,
+    .ltks-app-page .ltks-form-step-2 .ltks-field.span-3,
+    .ltks-app-page .ltks-form-step-2 .ltks-field.span-4,
+    .ltks-app-page .ltks-form-step-2 .ltks-field.span-6,
+    .ltks-app-page .ltks-form-step-2 .ltks-field.span-8 {
+        grid-column: 1 / -1;
+    }
+
+    .xctt-actions,
+    .ltks-app-page .ltks-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .xctt-btn,
+    .ltks-app-page .ltks-btn,
+    .service-standard-page .btn-submit {
+        width: 100%;
+    }
+
+    .ltks-app-page .ltks-main,
+    .ltkt-step-content {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+}

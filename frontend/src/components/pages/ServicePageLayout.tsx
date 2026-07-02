@@ -248,7 +248,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
   });
 
   return (
-    <div className="main-content animate-slide-up">
+    <div className="main-content dktt-main-content service-standard-page animate-slide-up">
       {/* Breadcrumb */}
       <nav className="breadcrumb" aria-label="Breadcrumb">
         <Link to="/">
