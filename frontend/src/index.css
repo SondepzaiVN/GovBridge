@@ -8550,6 +8550,24 @@ a:hover {
     border: 1px solid #d71920 !important;
 }
 
+.ltkt-form-frame .ltks-pdf-toolbar button,
+.ltkt-form-frame .ltks-pdf-toolbar a {
+    width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
+    color: #f1f1f1 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame .ltks-pdf-toolbar button:hover,
+.ltkt-form-frame .ltks-pdf-toolbar a:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
 .ltkt-form-frame > .ltks-form-body > div > div:last-child > button:first-child {
     color: #b9141a !important;
     background: #fff !important;
