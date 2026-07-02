@@ -2,115 +2,111 @@
   "schemaVersion": 1,
   "sessions": [
     {
-      "id": "eecbe544-482f-4f4f-93a8-dc5db243946c",
-      "currentRoute": "/",
+      "id": "27c47bbb-41f0-4ff8-8713-0df519eb7e19",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi"
+        },
+        "candidateCases": [],
+        "recentFacts": []
+      },
+      "createdAt": "2026-07-02T05:01:45.592Z",
+      "updatedAt": "2026-07-02T05:07:30.679Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "đăng ký tạm trú như nào",
+          "createdAt": "2026-07-02T05:01:45.592Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-07-02T05:01:45.592Z"
+        },
+        {
+          "role": "user",
+          "content": "hii",
+          "createdAt": "2026-07-02T05:02:22.495Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-07-02T05:02:22.495Z"
+        },
+        {
+          "role": "user",
+          "content": "bạn là ai?",
+          "createdAt": "2026-07-02T05:02:31.435Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
+          "createdAt": "2026-07-02T05:02:31.435Z"
+        },
+        {
+          "role": "user",
+          "content": "đăng ký thường trú",
+          "createdAt": "2026-07-02T05:06:49.347Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-02T05:06:49.347Z"
+        },
+        {
+          "role": "user",
+          "content": "đăng ký tạm trú",
+          "createdAt": "2026-07-02T05:07:02.958Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-02T05:07:02.958Z"
+        },
+        {
+          "role": "user",
+          "content": "đăng ký thường trú lập hộ mới và vào hộ đã có là gì",
+          "createdAt": "2026-07-02T05:07:30.679Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy thủ tục **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-02T05:07:30.679Z"
+        }
+      ]
+    },
+    {
+      "id": "e389b48d-c4b2-44c0-87d8-1c1434633cd7",
+      "currentRoute": "/khai-sinh",
       "state": {
         "formSnapshot": {},
         "candidateCases": [],
         "recentFacts": []
       },
-      "createdAt": "2026-06-30T04:43:59.493Z",
-      "updatedAt": "2026-06-30T05:31:11.954Z",
+      "createdAt": "2026-07-01T15:15:21.878Z",
+      "updatedAt": "2026-07-01T17:58:17.822Z",
       "messages": [
         {
           "role": "user",
-          "content": "hi",
-          "createdAt": "2026-06-30T04:52:31.673Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, tôi là VNPT-Smartbot. Tôi có thể hỗ trợ bạn thông tin về các thủ tục hành chính liên quan đến hộ tịch (khai sinh, khai tử), đăng ký cư trú và các văn bản pháp lý liên quan dựa trên dữ liệu hiện có.\n\nBạn vui lòng đặt câu hỏi cụ thể để tôi có thể hỗ trợ tốt nhất nhé!",
-          "createdAt": "2026-06-30T04:52:31.673Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới có con thì giờ sao ta, đăng kí thường trú sao",
-          "createdAt": "2026-06-30T04:54:39.740Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin lỗi, mình chưa thể xử lý yêu cầu này lúc này.",
-          "createdAt": "2026-06-30T04:54:39.740Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới có con thì giờ đăng kí thường trú sao",
-          "createdAt": "2026-06-30T04:55:17.395Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin lỗi, mình chưa thể xử lý yêu cầu này lúc này.",
-          "createdAt": "2026-06-30T04:55:17.395Z"
-        },
-        {
-          "role": "user",
-          "content": "alo",
-          "createdAt": "2026-06-30T04:56:04.476Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, tôi là VNPT-Smartbot. Tôi có thể hỗ trợ bạn những thông tin gì liên quan đến các thủ tục hành chính về hộ tịch, đăng ký cư trú, bảo hiểm xã hội hoặc các quy định pháp lý khác dựa trên dữ liệu hiện có?",
-          "createdAt": "2026-06-30T04:56:04.476Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi muốn hỏi về đăng kí thường trú",
-          "createdAt": "2026-06-30T04:56:23.025Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin lỗi, mình chưa thể xử lý yêu cầu này lúc này.",
-          "createdAt": "2026-06-30T04:56:23.025Z"
-        },
-        {
-          "role": "user",
-          "content": "thủ tục khai sinh",
-          "createdAt": "2026-06-30T05:11:02.640Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, dựa trên các thông tin được cung cấp, dưới đây là chi tiết về **thủ tục đăng ký khai sinh**, đặc biệt tập trung vào thủ tục liên thông cho trẻ em dưới 6 tuổi và các trường hợp chung:\n\n### 1. Tên thủ tục và Cơ quan thực hiện\n*   **Tên thủ tục:** Liên thông thủ tục hành chính về đăng ký khai sinh, đăng ký thường trú, cấp thẻ bảo hiểm y tế cho trẻ em dưới 6 tuổi.\n*   **Cơ quan có thẩm quyền giải quyết:** Ủy ban nhân dân cấp xã (thông qua Công chức Tư pháp - Hộ tịch).\n*   **Đối tượng thực hiện:** Công dân Việt Nam.\n\n### 2. Hồ sơ cần chuẩn bị\nHồ sơ bao gồm các giấy tờ sau:\n1.  **Giấy chứng sinh:** Do cơ sở y tế nơi trẻ em sinh ra cấp.\n    *   *Trường hợp sinh ngoài cơ sở y tế:* Thay bằng văn bản xác nhận của người làm chứng. Nếu không có người làm chứng, người đi khai sinh phải làm giấy cam đoan về việc sinh là có thực.\n    *   *Trường hợp trẻ bị bỏ rơi:* Nộp biên bản về việc trẻ em bị bỏ rơi thay cho giấy chứng sinh.\n2.  **Tờ khai đăng ký khai sinh:** Theo mẫu quy định (01 bản chính).\n3.  **Giấy tờ liên quan đến hộ khẩu/thường trú:**\n    *   Phiếu báo thay đổi hộ khẩu, nhân khẩu (theo mẫu quy định).\n    *   Sổ hộ khẩu của cha, mẹ (bản chính) hoặc Sổ hộ khẩu của mẹ/cha (tùy trường hợp đăng ký theo mẹ/cha).\n    *   Trường hợp trẻ không đăng ký thường trú theo cha, mẹ: Cần Sổ hộ khẩu của người nuôi dưỡng, chăm sóc trẻ (bản chính) và bản sao Giấy khai sinh của trẻ.\n4.  **Giấy tờ tham gia BHYT (nếu áp dụng liên thông):** Tờ khai tham gia bảo hiểm y tế, Danh sách đề nghị cấp thẻ bảo hiểm y tế cho trẻ em dưới 6 tuổi của Ủy ban nhân dân cấp xã (theo mẫu quy định).\n\n*Lưu ý:* Không yêu cầu xuất trình Giấy khai sinh đối với trường hợp trẻ em mới sinh đăng ký thường trú lần đầu.\n\n### 3. Trình tự thực hiện\n\n**Bước 1: Nộp hồ sơ**\n*   Người có yêu cầu nộp hồ sơ tại **Bộ phận tiếp nhận và trả kết quả** theo cơ chế \"Một cửa\" của **Ủy ban nhân dân cấp xã**.\n\n**Bước 2: Tiếp nhận và xử lý hồ sơ**\n*   Cán bộ, công chức tiếp nhận kiểm tra hồ sơ:\n    *   Nếu đầy đủ, hợp lệ: Tiếp nhận, tạm thu lệ phí (nếu có), viết giấy nhận hồ sơ, hẹn trả kết quả.\n    *   Nếu thiếu/sai sót: Hướng dẫn bổ sung hoàn thiện hồ sơ.\n    *   Nếu không thuộc thẩm quyền: Giải thích và hướng dẫn đến cơ quan có thẩm quyền.\n*   **Công chức Tư pháp - Hộ tịch cấp xã** sẽ đăng ký khai sinh cho trẻ em ngay trong ngày tiếp nhận hồ sơ.\n\n**Bước 3: Chuyển hồ sơ liên thông (sau khi đã đăng ký khai sinh)**\nSau khi cấp Giấy khai sinh, cán bộ phụ trách sẽ lập hồ sơ chuyển sang các cơ quan khác để thực hiện các thủ tục liên thông:\n*   **Đăng ký thường trú:** Chuyển hồ sơ cho cơ quan Công an có thẩm quyền (Công an xã/thị trấn nếu ở địa bàn huyện; Công an cấp huyện nếu ở thị xã, thành phố...).\n*   **Cấp thẻ BHYT:** Chuyển hồ sơ cho Bảo hiểm xã hội cấp huyện.\n\n**Bước 4: Xử lý bởi các cơ quan phối hợp**\n*   **Cơ quan Công an:** Kiểm tra hồ sơ, thực hiện đăng ký thường trú (trong thời hạn 15 ngày).\n*   **Bảo hiểm xã hội:** Kiểm tra hồ sơ, cấp Thẻ bảo hiểm y tế (trong thời hạn 10 ngày).\n*   Các cơ quan này chuyển kết quả về lại Ủy ban nhân dân cấp xã.\n\n**Bước 5: Trả kết quả**\n*   Bộ phận tiếp nhận và trả kết quả tại UBND cấp xã trả kết quả (Giấy khai sinh, kết quả đăng ký thường trú, Thẻ BHYT) cho người có yêu cầu.\n*   Khi trả Giấy khai sinh, công chức Tư pháp - Hộ tịch ghi vào Sổ đăng ký khai sinh và yêu cầu người nhận ký tên xác nhận.\n\n### 4. Thời hạn giải quyết\n*   **Thời hạn tối đa:** Không quá **20 ngày làm việc** kể từ ngày nộp đủ hồ sơ (đối với thủ tục liên thông).\n*   **Kéo dài thời gian:**\n    *   Thêm không quá 02 ngày làm việc nếu hồ sơ cần hoàn thiện thông tin theo yêu cầu của Công an/BHXH.\n    *   Thêm không quá 05 ngày làm việc đối với các xã cách xa trụ sở cơ quan BHXH/Công an cấp huyện từ 50 km trở lên, giao thông khó khăn và chưa kết nối Internet.\n*   *Lưu ý:* Đối với riêng việc đăng ký khai sinh (không tính liên thông), công chức Tư pháp - Hộ tịch thực hiện ngay trong ngày tiếp nhận hồ sơ.\n\n### 5. Phí và Lệ phí\n*   Thủ tục đăng ký khai sinh: **Miễn phí**.\n*   Lệ phí đăng ký thường trú: Có thể được tạm thu khi tiếp nhận hồ sơ (theo quy định).\n\nNếu bạn cần hỗ trợ thêm về mẫu đơn hoặc các trường hợp cụ thể khác, vui lòng hỏi thêm nhé!",
-          "createdAt": "2026-06-30T05:11:02.640Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi muốn hỏi về đăng kí thường trú",
-          "createdAt": "2026-06-30T05:11:45.417Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin lỗi, mình chưa thể xử lý yêu cầu này lúc này.",
-          "createdAt": "2026-06-30T05:11:45.417Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi muốn hỏi về đăng kí thường trú",
-          "createdAt": "2026-06-30T05:11:50.259Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin lỗi, mình chưa thể xử lý yêu cầu này lúc này.",
-          "createdAt": "2026-06-30T05:11:50.259Z"
-        },
-        {
-          "role": "user",
-          "content": "đăng kí thường trú",
-          "createdAt": "2026-06-30T05:12:06.554Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin lỗi, mình chưa thể xử lý yêu cầu này lúc này.",
-          "createdAt": "2026-06-30T05:12:06.554Z"
-        },
-        {
-          "role": "user",
           "content": "hello",
-          "createdAt": "2026-06-30T05:31:11.954Z"
+          "createdAt": "2026-07-01T15:15:21.878Z"
         },
         {
           "role": "assistant",
-          "content": "Xin lỗi, mình chưa thể xử lý yêu cầu này lúc này.",
-          "createdAt": "2026-06-30T05:31:11.954Z"
+          "content": "Bạn đang ở thủ tục **Đăng ký Khai Sinh**. Mình có thể giải thích giấy tờ, quy trình, chỉ bước tiếp theo hoặc điền field theo dạng fieldId: giá trị.",
+          "createdAt": "2026-07-01T15:15:21.878Z"
+        },
+        {
+          "role": "user",
+          "content": "đăng ký tạm trú là gì",
+          "createdAt": "2026-07-01T17:58:17.822Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy thủ tục **Đăng ký Khai Sinh**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-01T17:58:17.822Z"
         }
       ]
     }
