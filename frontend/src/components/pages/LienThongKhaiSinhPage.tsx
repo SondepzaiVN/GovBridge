@@ -416,6 +416,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
   const [wardOptionsByProvinceField, setWardOptionsByProvinceField] = React.useState<Record<string, string[]>>({});
   const [loadingWardFields, setLoadingWardFields] = React.useState<Record<string, boolean>>({});
   const [isLoadingProvinces, setIsLoadingProvinces] = React.useState(true);
+  const [isSameRegistrationArea, setIsSameRegistrationArea] = React.useState(true);
 
   const currentStep = parseStep(stepSlug);
   const current = steps[currentStep - 1];
@@ -508,19 +509,59 @@ const LienThongKhaiSinhPage: React.FC = () => {
     });
   }, [fieldDefaults, formState.values, setFieldValue, wardOptionsByProvinceField]);
 
+  React.useEffect(() => {
+    if (!isSameRegistrationArea) return;
+
+    const birthProvince = formState.values.ltks_tinhKhaiSinh ?? fieldDefaults.get('ltks_tinhKhaiSinh') ?? '';
+    const birthWard = formState.values.ltks_phuongKhaiSinh ?? fieldDefaults.get('ltks_phuongKhaiSinh') ?? '';
+
+    if (formState.values.ltks_tinhThuongTru !== birthProvince) {
+      setFieldValue('ltks_tinhThuongTru', birthProvince);
+    }
+    if (formState.values.ltks_phuongThuongTru !== birthWard) {
+      setFieldValue('ltks_phuongThuongTru', birthWard);
+    }
+  }, [
+    fieldDefaults,
+    formState.values.ltks_phuongKhaiSinh,
+    formState.values.ltks_phuongThuongTru,
+    formState.values.ltks_tinhKhaiSinh,
+    formState.values.ltks_tinhThuongTru,
+    isSameRegistrationArea,
+    setFieldValue,
+  ]);
+
   const goToStep = (step: number) => {
     navigate(`/lien-thong-khai-sinh/buoc-${step}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const getFieldValue = (field: LinkedField) => formState.values[field.id] ?? field.value ?? '';
+  const getAgencyFieldValue = (fieldId: string) => {
+    if (fieldId === 'ltks_coQuanDangKyKhaiSinh') {
+      const ward = formState.values.ltks_phuongKhaiSinh ?? fieldDefaults.get('ltks_phuongKhaiSinh') ?? '';
+      return ward ? `UBND ${ward}` : '';
+    }
+
+    if (fieldId === 'ltks_coQuanDangKyThuongTru') {
+      const ward = formState.values.ltks_phuongThuongTru ?? fieldDefaults.get('ltks_phuongThuongTru') ?? '';
+      return ward ? `Công an ${ward}` : '';
+    }
+
+    if (fieldId === 'ltks_coQuanCapBhyt') {
+      return 'Cơ quan Bảo hiểm xã hội';
+    }
+
+    return undefined;
+  };
+
+  const getFieldValue = (field: LinkedField) => getAgencyFieldValue(field.id) ?? formState.values[field.id] ?? field.value ?? '';
 
   const getResolvedField = (field: LinkedField): LinkedField => {
     if (addressFieldPairs[field.id]) {
       return {
         ...field,
         options: provinceLabels,
-        disabled: isLoadingProvinces,
+        disabled: isLoadingProvinces || (isSameRegistrationArea && field.id === 'ltks_tinhThuongTru'),
       };
     }
 
@@ -530,11 +571,22 @@ const LienThongKhaiSinhPage: React.FC = () => {
       return {
         ...field,
         options: provinceValue ? wardOptionsByProvinceField[provinceFieldId] ?? [] : [],
-        disabled: !provinceValue || Boolean(loadingWardFields[provinceFieldId]),
+        disabled: !provinceValue
+          || Boolean(loadingWardFields[provinceFieldId])
+          || (isSameRegistrationArea && field.id === 'ltks_phuongThuongTru'),
       };
     }
 
     return field;
+  };
+
+  const clearWardOptions = (provinceFieldId: string) => {
+    setWardOptionsByProvinceField((previous) => {
+      if (!previous[provinceFieldId]) return previous;
+      const next = { ...previous };
+      delete next[provinceFieldId];
+      return next;
+    });
   };
 
   const handleFieldChange = (fieldId: string, value: string) => {
@@ -544,10 +596,19 @@ const LienThongKhaiSinhPage: React.FC = () => {
     if (wardFieldId) {
       setFieldValue(wardFieldId, '');
       setFieldError(wardFieldId, '');
-      setWardOptionsByProvinceField((previous) => {
-        const { [fieldId]: _removed, ...rest } = previous;
-        return rest;
-      });
+      clearWardOptions(fieldId);
+    }
+
+    if (isSameRegistrationArea && fieldId === 'ltks_tinhKhaiSinh') {
+      setFieldValue('ltks_tinhThuongTru', value);
+      setFieldValue('ltks_phuongThuongTru', '');
+      setFieldError('ltks_phuongThuongTru', '');
+      clearWardOptions('ltks_tinhThuongTru');
+    }
+
+    if (isSameRegistrationArea && fieldId === 'ltks_phuongKhaiSinh') {
+      setFieldValue('ltks_phuongThuongTru', value);
+      setFieldError('ltks_phuongThuongTru', '');
     }
   };
 
@@ -635,7 +696,19 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     )}
                     {section.sameArea && (
                       <label className="ltks-inline-check">
-                        <input type="checkbox" aria-label="Cùng địa bàn thực hiện đăng ký khai sinh" />
+                        <input
+                          type="checkbox"
+                          checked={isSameRegistrationArea}
+                          aria-label="Cùng địa bàn thực hiện đăng ký khai sinh"
+                          onChange={(event) => {
+                            const checked = event.target.checked;
+                            setIsSameRegistrationArea(checked);
+                            if (checked) {
+                              setFieldValue('ltks_tinhThuongTru', formState.values.ltks_tinhKhaiSinh ?? fieldDefaults.get('ltks_tinhKhaiSinh') ?? '');
+                              setFieldValue('ltks_phuongThuongTru', formState.values.ltks_phuongKhaiSinh ?? fieldDefaults.get('ltks_phuongKhaiSinh') ?? '');
+                            }
+                          }}
+                        />
                         Cùng địa bàn thực hiện đăng ký khai sinh
                       </label>
                     )}

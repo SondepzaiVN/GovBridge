@@ -38,32 +38,32 @@ const MainStepper: React.FC = () => {
   };
 
   return (
-    <div className="ltkt-page-shell">
-      {/* Header màu xanh của cổng DVC (Mockup) */}
+    <div className="ltks-page ltks-app-page ltkt-page-shell animate-slide-up">
+      <main className="ltks-main">
+        <StepHeader currentStep={currentStep} />
 
-      {/* Thanh Stepper */}
-      <StepHeader currentStep={currentStep} />
+        <div className="ltkt-standard-notices">
+          <div className="dktt-ai-hint" data-highlight-id="ai-hint">
+            <span className="dktt-ai-hint-icon">
+              <img src="/logo_Gov_Bridge.jpg" alt="AI" />
+            </span>
+            <span>
+              <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
+              form bằng <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
+            </span>
+          </div>
 
-      <div className="ltkt-step-content ltkt-standard-notices">
-        <div className="dktt-ai-hint" data-highlight-id="ai-hint">
-          <span className="dktt-ai-hint-icon">
-            <img src="/logo_Gov_Bridge.jpg" alt="AI" />
-          </span>
-          <span>
-            <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
-            form bằng <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
-          </span>
+          <div className="dktt-required-note">
+            <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
+          </div>
         </div>
 
-        <div className="dktt-required-note">
-          <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
-        </div>
-      </div>
-
-      {/* Nội dung thay đổi theo Step */}
-      <div className="ltkt-step-content">
-        {renderStepContent()}
-      </div>
+        <form className={`ltks-form ltks-form-step-${currentStep} ltkt-form-frame`} onSubmit={(event) => event.preventDefault()} noValidate>
+          <div className="ltks-form-body">
+            {renderStepContent()}
+          </div>
+        </form>
+      </main>
     </div>
   );
 };
