@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Calendar, ChevronRight, ChevronDown, ChevronUp, FileText, Home, Paperclip, Plus, Save, Send, X } from 'lucide-react';
+import { ArrowLeft, Calendar, ChevronRight, ChevronDown, FileText, Home, Paperclip, Save, Send, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import { SERVICE_MAP } from '../../data/services';
