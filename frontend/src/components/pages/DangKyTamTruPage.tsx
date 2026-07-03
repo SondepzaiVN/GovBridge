@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bot, ChevronDown, ChevronRight, ChevronUp, FileDown, FileText, HelpCircle, Home, Paperclip, Plus, Save, Send, Trash2 } from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
+import { ROUTE_TO_SERVICE_MAP } from '../../data/services';
 import {
     dateFormatOptions,
     dossierCases,
@@ -16,7 +17,6 @@ import {
     resultMethods,
 } from '../../data/tamTruMockData';
 import type { FormFieldOption } from '../../types';
-import ProcedureAiSupportCard from './ProcedureAiSupportCard';
 import {
     validateTamTruApplication,
     type TamTruApplicationData,
@@ -24,6 +24,8 @@ import {
     type TamTruHouseholdMember,
     type TamTruReviewResult,
 } from '../../utils/validateTamTruApplication';
+
+const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
 const addYears = (date: Date, years: number) => {
     const next = new Date(date);
@@ -48,7 +50,7 @@ const createInitialAttachments = (): Record<string, TamTruAttachmentDraft> => {
             if (drafts[document.id]) return;
             drafts[document.id] = {
                 documentId: document.id,
-                checked: false,
+                checked: document.required,
                 fileName: '',
                 quantity: document.quantity,
                 note: '',
@@ -63,7 +65,7 @@ const initialForm: TamTruApplicationData = {
     receiveVillageCode: '',
     receiveOrgAddress: '',
     receiveOrgPhone: '',
-    procedureTypeCode: '',
+    procedureTypeCode: 'dang-ky-tam-tru',
     procedureCaseCode: '',
     registrationMode: '',
     declareMode: 'proxy',
@@ -121,8 +123,8 @@ const requiredFields = new Set([
 const fieldLabels: Record<string, string> = {
     receiveCityCode: 'Tỉnh/Thành phố',
     receiveVillageCode: 'Xã/Phường/Đặc khu',
-    receiveOrgAddress: 'Cơ quan thực hiện',
-    receiveOrgPhone: 'Số điện thoại',
+    receiveOrgAddress: 'Cơ quan đăng ký cư trú',
+    receiveOrgPhone: 'Số điện thoại cơ quan',
     procedureTypeCode: 'Thủ tục',
     procedureCaseCode: 'Trường hợp',
     fullName: 'Họ và tên',
@@ -179,6 +181,7 @@ const agencyNameFromWard = (wardLabel: string) => (wardLabel ? `Công an ${wardL
 
 const DangKyTamTruPage: React.FC = () => {
     const navigate = useNavigate();
+    const service = ROUTE_TO_SERVICE_MAP['/dang-ky-tam-tru'] || { requiredDocs: [], steps: [], processingTime: '', fee: '', category: '' };
     const [form, setForm] = useState<TamTruApplicationData>(initialForm);
     const [provinceOptions, setProvinceOptions] = useState<FormFieldOption[]>([]);
     const [receiveWardOptions, setReceiveWardOptions] = useState<FormFieldOption[]>([]);
@@ -478,6 +481,7 @@ const DangKyTamTruPage: React.FC = () => {
         maxLength?: number,
         readOnly = false,
         helpId?: string,
+        isAutofilled = false,
     ) => (
         <div className="form-group">
             <label className="form-label" htmlFor={field}>
@@ -496,6 +500,11 @@ const DangKyTamTruPage: React.FC = () => {
                 onChange={(event) => updateField(field, event.target.value as never)}
             />
             {helpId && renderHelpText(helpId)}
+            {isAutofilled && (
+                <span className="form-hint" style={{ color: "var(--accent)" }}>
+                    ✓ Đã tự động điền
+                </span>
+            )}
         </div>
     );
 
@@ -505,6 +514,7 @@ const DangKyTamTruPage: React.FC = () => {
         placeholder = '-- Chọn --',
         helpId?: string,
         onChange?: (value: string) => void,
+        disabled = false,
     ) => (
         <div className="form-group">
             <label className="form-label" htmlFor={field}>
@@ -515,6 +525,7 @@ const DangKyTamTruPage: React.FC = () => {
                 id={field}
                 className="form-select"
                 value={String(form[field])}
+                disabled={disabled}
                 onChange={(event) => onChange ? onChange(event.target.value) : updateField(field, event.target.value as never)}
             >
                 <option value="">{placeholder}</option>
@@ -533,7 +544,9 @@ const DangKyTamTruPage: React.FC = () => {
             <nav className="breadcrumb" aria-label="Breadcrumb">
                 <Link to="/"><Home size={13} /> Trang chủ</Link>
                 <ChevronRight size={13} className="breadcrumb-sep" />
-                <span>Hồ sơ Đăng ký tạm trú</span>
+                <span className="breadcrumb-link">Cư trú</span>
+                <ChevronRight size={13} className="breadcrumb-sep" />
+                <span aria-current="page">Đăng ký tạm trú</span>
             </nav>
 
             <div className="dktt-page-header">
@@ -568,17 +581,17 @@ const DangKyTamTruPage: React.FC = () => {
                 <div className="tamtru-form">
                     <Section number={1} title="CƠ QUAN THỰC HIỆN">
                         {administrativeError && <p className="form-error-msg" role="alert">{administrativeError}</p>}
-                        <div className="dktt-form-row cols-2">
+                        <div className="dktt-form-row">
                             {renderSelect('receiveCityCode', provinceOptions, 'Chọn', undefined, handleReceiveProvinceChange)}
-                            {renderSelect('receiveVillageCode', receiveWardOptions, 'Chọn', undefined, handleReceiveWardChange)}
-                            {renderInput('receiveOrgAddress', 'text', 'Cơ quan thực hiện', undefined, true)}
-                            {renderInput('receiveOrgPhone', 'text', 'Số điện thoại', undefined, true)}
+                            {renderSelect('receiveVillageCode', receiveWardOptions, 'Chọn', undefined, handleReceiveWardChange, !form.receiveCityCode)}
+                            {renderInput('receiveOrgAddress', 'text', 'Cơ quan đăng ký cư trú', undefined, true, undefined, !!form.receiveOrgAddress)}
+                            {renderInput('receiveOrgPhone', 'text', 'Số điện thoại cơ quan', undefined, true, undefined, !!form.receiveOrgPhone)}
                         </div>
                     </Section>
 
                     <Section number={2} title="THỦ TỤC HÀNH CHÍNH YÊU CẦU">
                         <div className="dktt-form-row cols-2">
-                            {renderSelect('procedureTypeCode', procedureTypes, '-- Chọn --', 'procedureTypeCode', handleProcedureChange)}
+                            {renderSelect('procedureTypeCode', procedureTypes, '-- Chọn --', 'procedureTypeCode', handleProcedureChange, true)}
                             {renderSelect('procedureCaseCode', procedureCases, '-- Chọn --', 'procedureCaseCode')}
                         </div>
                         {showRegistrationMode && (
@@ -616,7 +629,7 @@ const DangKyTamTruPage: React.FC = () => {
                     <Section number={4} title="THÔNG TIN ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ">
                         <div className="dktt-form-row cols-2">
                             {renderSelect('temporaryCityCode', provinceOptions, 'Chọn', undefined, handleTemporaryProvinceChange)}
-                            {renderSelect('temporaryVillageCode', temporaryWardOptions, 'Chọn', undefined, handleTemporaryWardChange)}
+                            {renderSelect('temporaryVillageCode', temporaryWardOptions, 'Chọn', undefined, handleTemporaryWardChange, !form.temporaryCityCode)}
                             <div className="form-group full-width">
                                 <label className="form-label" htmlFor="temporaryAddress">{fieldLabels.temporaryAddress} <span className="required">*</span></label>
                                 <textarea id="temporaryAddress" className="form-textarea" placeholder="Địa chỉ đăng ký tạm trú" value={form.temporaryAddress} onChange={(event) => updateField('temporaryAddress', event.target.value)} />
@@ -763,9 +776,21 @@ const DangKyTamTruPage: React.FC = () => {
                                                                             </select>
                                                                         </td>
                                                                         <td className="dktt-doc-cell-center">
-                                                                            <button type="button" className="dktt-doc-icon-btn" title="Tải file mẫu">
-                                                                                <FileDown size={14} />
-                                                                            </button>
+                                                                            {document.templateAvailable ? (
+                                                                                <a
+                                                                                    className="dktt-doc-icon-btn"
+                                                                                    href={CT01_TEMPLATE_URL}
+                                                                                    download
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    title="Tải file mẫu"
+                                                                                    aria-label="Tải file mẫu"
+                                                                                >
+                                                                                    <FileDown size={14} />
+                                                                                </a>
+                                                                            ) : (
+                                                                                <span className="dktt-table-placeholder">-</span>
+                                                                            )}
                                                                         </td>
                                                                         <td><span className="dktt-table-placeholder">Không áp dụng</span></td>
                                                                         <td>
@@ -883,9 +908,57 @@ const DangKyTamTruPage: React.FC = () => {
                         </div>
                     )}
                 </div>
-            </div>
+                <aside className="service-sidebar dktt-service-sidebar" aria-label="Thông tin dịch vụ">
+                    <div className="sidebar-info-card">
+                        <div className="sidebar-info-card-header">
+                            <div className="sidebar-info-card-title">Giấy tờ cần chuẩn bị</div>
+                        </div>
+                        <div className="sidebar-info-card-body">
+                            <ul className="info-list">
+                                {(service.requiredDocs || []).map((doc, index) => (
+                                    <li key={index} className="info-list-item">{doc}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
 
-            <ProcedureAiSupportCard className="procedure-ai-support-wide" />
+                    <div className="sidebar-info-card">
+                        <div className="sidebar-info-card-header">
+                            <div className="sidebar-info-card-title">Các bước thực hiện</div>
+                        </div>
+                        <div className="sidebar-info-card-body">
+                            <ol className="steps-list">
+                                {(service.steps || []).map((step, index) => (
+                                    <li key={index}>{step}</li>
+                                ))}
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div className="sidebar-info-card">
+                        <div className="sidebar-info-card-header">
+                            <div className="sidebar-info-card-title">Thông tin dịch vụ</div>
+                        </div>
+                        <div className="sidebar-info-card-body">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Thời gian xử lý</span>
+                                    <strong style={{ color: '#C8441A' }}>{service.processingTime}</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Lệ phí</span>
+                                    <strong style={{ color: 'var(--accent)' }}>{service.fee}</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Danh mục</span>
+                                    <strong>{service.category}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </aside>
+            </div>
 
             {toast && <div className="dktt-toast" role="alert">{toast}</div>}
         </div>

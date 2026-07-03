@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Home, ChevronRight } from "lucide-react";
 import StepHeader from "./StepHeader";
 import PublicServiceForm from "./PublicServiceForm";
 import PublicServiceDeclaration from "./PublicServiceDeclaration";
@@ -6,9 +8,10 @@ import PublicServiceReview from "./PublicServiceReview";
 import PublicServiceAttachments from "./PublicServiceAttachments";
 import PublicServiceResultOptions from "./PublicServiceResultOptions";
 import PublicServiceComplete from "./PublicServiceComplete";
-import ProcedureAiSupportCard from "../ProcedureAiSupportCard";
+import { ROUTE_TO_SERVICE_MAP } from "../../../data/services";
 
 const MainStepper: React.FC = () => {
+  const service = ROUTE_TO_SERVICE_MAP['/lien-thong-khai-tu'] || { requiredDocs: [], steps: [], processingTime: '', fee: '', category: '' };
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   // Hàm chuyển bước (Bạn có thể truyền hàm này vào PublicServiceForm dưới dạng props)
@@ -41,6 +44,19 @@ const MainStepper: React.FC = () => {
   return (
     <div className="ltks-page ltks-app-page ltkt-page-shell animate-slide-up">
       <main className="ltks-main">
+        <nav className="breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">
+            <Home size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+            Trang Chủ
+          </Link>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span>Hộ tịch</span>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+            Liên thông khai tử
+          </span>
+        </nav>
+        
         <StepHeader currentStep={currentStep} />
 
         <div className="ltkt-standard-notices">
@@ -64,7 +80,56 @@ const MainStepper: React.FC = () => {
             {renderStepContent()}
           </div>
         </form>
-        <ProcedureAiSupportCard className="procedure-ai-support-wide" />
+        <aside className="service-sidebar dktt-service-sidebar" aria-label="Thông tin dịch vụ">
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Giấy tờ cần chuẩn bị</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <ul className="info-list">
+                {(service.requiredDocs || []).map((doc, index) => (
+                  <li key={index} className="info-list-item">{doc}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Các bước thực hiện</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <ol className="steps-list">
+                {(service.steps || []).map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Thông tin dịch vụ</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Thời gian xử lý</span>
+                  <strong style={{ color: '#C8441A' }}>{service.processingTime}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Lệ phí</span>
+                  <strong style={{ color: 'var(--accent)' }}>{service.fee}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Danh mục</span>
+                  <strong>{service.category}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </aside>
       </main>
     </div>
   );
