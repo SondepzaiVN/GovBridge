@@ -18,6 +18,19 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
     case 'SET_LOADING': return { ...state, isLoading: action.payload };
     case 'SET_LISTENING': return { ...state, isListening: action.payload };
     case 'SET_SPEAKING': return { ...state, isSpeaking: action.payload };
+    case 'SET_CALL_MODE': return {
+      ...state,
+      isCallMode: action.payload,
+      callStatus: action.payload ? state.callStatus : 'idle',
+      callStatusText: action.payload ? state.callStatusText : null,
+      isListening: action.payload ? state.isListening : false,
+      isSpeaking: action.payload ? state.isSpeaking : false,
+    };
+    case 'SET_CALL_STATUS': return {
+      ...state,
+      callStatus: action.payload.status,
+      callStatusText: action.payload.text ?? null,
+    };
     case 'SET_HIGHLIGHT': return { ...state, highlightedElementId: action.payload };
     case 'SET_PENDING_NAV': return { ...state, pendingNavigation: action.payload };
     case 'SET_CURRENT_SERVICE': return { ...state, currentService: action.payload };
@@ -33,6 +46,9 @@ const initialState: ChatbotState = {
   isLoading: false,
   isListening: false,
   isSpeaking: false,
+  isCallMode: false,
+  callStatus: 'idle',
+  callStatusText: null,
   highlightedElementId: null,
   pendingNavigation: null,
   currentService: null,
@@ -50,8 +66,6 @@ interface ChatbotContextValue {
   clearHighlight: () => void;
   confirmNavigation: () => void;
   cancelNavigation: () => void;
-  enableVoiceResponse: boolean;
-  setEnableVoiceResponse: (v: boolean) => void;
 }
 
 const ChatbotContext = createContext<ChatbotContextValue | null>(null);
@@ -75,19 +89,18 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   formValues,
 }) => {
   const [state, dispatch] = useReducer(chatbotReducer, initialState);
-  const [enableVoiceResponse, setEnableVoiceResponse] = React.useState(false);
   const messageIdCounter = useRef(0);
 
   // Dùng ref để tránh stale closure trong event handlers.
   const onNavigateRef = useRef(onNavigate);
   const onFillFormRef = useRef(onFillForm);
-  const enableVoiceRef = useRef(enableVoiceResponse);
+  const callModeRef = useRef(state.isCallMode);
   const currentRouteRef = useRef(currentRoute);
   const formValuesRef = useRef(formValues);
   useEffect(() => {
     onNavigateRef.current = onNavigate;
     onFillFormRef.current = onFillForm;
-    enableVoiceRef.current = enableVoiceResponse;
+    callModeRef.current = state.isCallMode;
     currentRouteRef.current = currentRoute;
     formValuesRef.current = formValues;
   });
@@ -119,10 +132,16 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     };
     dispatch({ type: 'ADD_MESSAGE', payload: msg });
 
-    // Voice response
-    if (enableVoiceRef.current) {
+    if (callModeRef.current) {
       ttsService.speak(content, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        dispatch({
+          type: 'SET_CALL_STATUS',
+          payload: {
+            status: isPlaying ? 'speaking' : 'idle',
+            text: isPlaying ? 'Trợ lý đang trả lời bằng giọng nói...' : null,
+          },
+        });
       });
     }
   }, []);
@@ -261,9 +280,16 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         break;
     }
 
-    if (enableVoiceRef.current) {
+    if (callModeRef.current) {
       ttsService.speak(response.message, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        dispatch({
+          type: 'SET_CALL_STATUS',
+          payload: {
+            status: isPlaying ? 'speaking' : 'idle',
+            text: isPlaying ? 'Trợ lý đang trả lời bằng giọng nói...' : null,
+          },
+        });
       });
     }
   }, []);
@@ -282,7 +308,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       timestamp: new Date(),
     };
     dispatch({ type: 'ADD_MESSAGE', payload: userMsg });
+
     dispatch({ type: 'SET_LOADING', payload: true });
+    if (callModeRef.current) {
+      dispatch({
+        type: 'SET_CALL_STATUS',
+        payload: { status: 'thinking', text: 'Trợ lý đang suy nghĩ...' },
+      });
+    }
 
     try {
       const result = await smartbotService.sendMessage(text, {
@@ -365,7 +398,6 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     <ChatbotContext.Provider value={{
       state, dispatch, sendMessage, handleAIResponse,
       openChatbot, clearHighlight, confirmNavigation, cancelNavigation,
-      enableVoiceResponse, setEnableVoiceResponse,
     }}>
       {children}
     </ChatbotContext.Provider>

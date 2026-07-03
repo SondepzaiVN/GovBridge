@@ -2077,6 +2077,109 @@ a:hover {
     gap: 8px;
 }
 
+.call-mode-panel {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(196, 68, 26, 0.22);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 247, 237, 0.96), rgba(255, 255, 255, 0.98));
+    box-shadow: 0 8px 20px rgba(196, 68, 26, 0.08);
+}
+
+.call-mode-orb {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background: #c8441a;
+    box-shadow: 0 0 0 4px rgba(196, 68, 26, 0.12);
+}
+
+.call-mode-panel--listening .call-mode-orb,
+.call-mode-panel--connecting .call-mode-orb {
+    animation: callPulse 1.4s infinite ease-in-out;
+}
+
+.call-mode-panel--thinking .call-mode-orb,
+.call-mode-panel--transcribing .call-mode-orb {
+    background: #0f766e;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.call-mode-panel--speaking .call-mode-orb {
+    background: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.call-mode-panel--error .call-mode-orb {
+    background: #dc2626;
+}
+
+.call-mode-copy {
+    min-width: 0;
+}
+
+.call-mode-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #7c2d12;
+}
+
+.call-mode-status {
+    margin-top: 2px;
+    color: #6b7280;
+    font-size: 0.76rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.call-mode-end-btn {
+    border: 1px solid rgba(196, 68, 26, 0.35);
+    border-radius: 999px;
+    background: #fff;
+    color: #c8441a;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 10px;
+}
+
+.call-mode-end-btn:hover {
+    background: #fff7ed;
+}
+
+.call-header-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+@keyframes callPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 4px rgba(196, 68, 26, 0.12);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 7px rgba(196, 68, 26, 0.08);
+    }
+}
+
 .chatbot-input-row.is-recording {
     align-items: center;
     border-color: rgba(239, 68, 68, 0.35);
