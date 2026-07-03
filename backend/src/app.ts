@@ -11,6 +11,7 @@ import { env } from './config/env.js';
 import { OpenAiOrchestratorProvider } from './integrations/openai/openai-orchestrator.provider.js';
 import { HttpOpenAiResponsesClient } from './integrations/openai/openai-responses.client.js';
 import { VnptOcrProvider } from './integrations/vnpt/vnpt-ocr.provider.js';
+import { VnptSttProvider } from './integrations/vnpt/vnpt-stt.provider.js';
 import { VnptTtsProvider } from './integrations/vnpt/vnpt-tts.provider.js';
 import { VnptAgenticKnowledgeProvider } from './integrations/vnpt/vnpt-agentic-knowledge.provider.js';
 import { ApplicationRepository } from './modules/applications/application.repository.js';
@@ -27,8 +28,9 @@ import { MockOcrProvider } from './modules/identity/providers/mock-ocr.provider.
 import { ProcedureRepository } from './modules/procedures/procedure.repository.js';
 import { ProcedureService } from './modules/procedures/procedure.service.js';
 import { MockTtsProvider } from './modules/speech/providers/mock-tts.provider.js';
+import { MockSttProvider } from './modules/speech/providers/mock-stt.provider.js';
 import { SpeechService } from './modules/speech/speech.service.js';
-import type { TtsProvider } from './modules/speech/speech.types.js';
+import type { SttProvider, TtsProvider } from './modules/speech/speech.types.js';
 import type { IdentityOcrProvider } from './modules/identity/identity.types.js';
 import { createApiRouter } from './routes/index.js';
 
@@ -37,6 +39,7 @@ export interface CreateAppOptions {
   corsOrigins?: string[];
   ocrProvider?: IdentityOcrProvider;
   ttsProvider?: TtsProvider;
+  sttProvider?: SttProvider;
   orchestratorProvider?: OrchestratorProvider;
   knowledgeProvider?: KnowledgeProvider;
 }
@@ -67,6 +70,16 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
       tokenKey: env.VNPT_TTS_TOKEN_KEY,
     })
     : new MockTtsProvider());
+
+  const sttProvider: SttProvider = options.sttProvider ?? (env.STT_PROVIDER === 'vnpt'
+    ? new VnptSttProvider({
+      url: env.VNPT_STT_URL,
+      accessToken: env.VNPT_STT_ACCESS_TOKEN,
+      tokenId: env.VNPT_STT_TOKEN_ID,
+      tokenKey: env.VNPT_STT_TOKEN_KEY,
+      timeoutMs: env.VNPT_STT_TIMEOUT_MS,
+    })
+    : new MockSttProvider());
 
   const orchestratorProvider = options.orchestratorProvider ?? (
     env.ORCHESTRATOR_PROVIDER === 'openai'
@@ -104,12 +117,13 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
       knowledgeProvider,
     ),
     identityService: new IdentityService(ocrProvider),
-    speechService: new SpeechService(ttsProvider),
+    speechService: new SpeechService(ttsProvider, sttProvider),
     uploadMaxMb: env.UPLOAD_MAX_MB,
     providerNames: {
       assistant: orchestratorProvider.name,
       knowledge: knowledgeProvider.name,
       ocr: ocrProvider.name,
+      stt: sttProvider.name,
       tts: ttsProvider.name,
     },
   });

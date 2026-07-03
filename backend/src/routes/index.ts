@@ -22,6 +22,7 @@ export interface ApiDependencies {
     assistant: string;
     knowledge: string;
     ocr: string;
+    stt: string;
     tts: string;
   };
 }
@@ -32,12 +33,13 @@ export const createApiRouter = (dependencies: ApiDependencies): Router => {
     assistantProvider: dependencies.providerNames.assistant,
     knowledgeProvider: dependencies.providerNames.knowledge,
     ocrProvider: dependencies.providerNames.ocr,
+    sttProvider: dependencies.providerNames.stt,
     ttsProvider: dependencies.providerNames.tts,
   }));
   router.use('/procedures', createProcedureRouter(dependencies.procedureService));
   router.use('/applications', createApplicationRouter(dependencies.applicationService));
   router.use('/assistant', createAssistantRouter(dependencies.assistantService));
   router.use('/identity', createIdentityRouter(dependencies.identityService, dependencies.uploadMaxMb));
-  router.use('/speech', createSpeechRouter(dependencies.speechService));
+  router.use('/speech', createSpeechRouter(dependencies.speechService, dependencies.uploadMaxMb));
   return router;
 };

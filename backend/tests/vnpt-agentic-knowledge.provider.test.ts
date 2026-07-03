@@ -162,7 +162,7 @@ describe('VnptAgenticKnowledgeProvider', () => {
 
     expect(text).toBe([
       '[NGỮ CẢNH GOVBRIDGE]',
-      'Loại thông tin cần tra cứu: procedure_identification',
+      'Loại thông tin cần tra cứu: xác định thủ tục phù hợp',
       '',
       '[CÂU HỎI CỦA NGƯỜI DÂN]',
       'Tôi mới sinh con thì cần làm thủ tục gì?',

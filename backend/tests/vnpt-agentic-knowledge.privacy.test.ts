@@ -173,7 +173,7 @@ describe('VNPT outbound privacy boundary', () => {
       '[NGỮ CẢNH GOVBRIDGE]',
       'Mã thủ tục: ho-khau',
       'Tên thủ tục: Đăng ký thường trú',
-      'Loại thông tin cần tra cứu: documents',
+      'Loại thông tin cần tra cứu: thành phần hồ sơ',
       'Trường hợp nghiệp vụ: Đăng ký thường trú lập hộ mới',
       'Màn hình hiện tại: bước 2',
       'Trường dữ liệu đang hỏi: Họ tên',

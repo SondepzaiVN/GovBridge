@@ -1,10 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
+﻿import React, { useRef, useEffect, useState } from "react";
 import { useChatbot } from "../../contexts/ChatbotContext";
-import { ocrService, smartbotService, sttService } from "../../api/aiServices";
+import { ocrService, smartbotService } from "../../api/aiServices";
 import { Mic, MicOff, Send, Camera } from "lucide-react";
 
 interface ChatInputProps {
-  onSend: (text: string) => void;
+  onSend: (text: string) => void | Promise<void>;
   disabled?: boolean;
   variant?: "panel" | "bar";
   autoFocus?: boolean;
@@ -22,11 +22,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const { state, dispatch, handleAIResponse } = useChatbot();
   const [inputValue, setInputValue] = useState("");
-  const [interimText, setInterimText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [showCameraMenu, setShowCameraMenu] = useState(false);
+
 
   // Auto-resize textarea
   useEffect(() => {
@@ -48,7 +48,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     onBeforeSend?.();
     onSend(text);
     setInputValue("");
-    setInterimText("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   };
 
@@ -60,35 +59,21 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   // Voice recording toggle
-  const toggleRecording = async () => {
-    if (state.isListening) {
-      sttService.stopListening();
-      dispatch({ type: "SET_LISTENING", payload: false });
-      // Send whatever was captured
-      const finalText = inputValue.trim() || interimText.trim();
-      if (finalText) {
-        onSend(finalText);
-        setInputValue("");
-        setInterimText("");
-      }
-    } else {
-      dispatch({ type: "SET_LISTENING", payload: true });
-      setInterimText("");
-      setInputValue("");
-
-      try {
-        await sttService.startListening((transcript: string, isFinal: boolean) => {
-          if (isFinal) {
-            setInputValue(transcript);
-            setInterimText("");
-          } else {
-            setInterimText(transcript);
-          }
-        });
-      } catch (error) {
-        console.warn("[ChatInput Voice] Voice input unavailable, using mock listening state:", error);
-      }
+  const toggleRecording = () => {
+    if (state.isCallMode || state.isListening) {
+      dispatch({ type: "SET_CALL_MODE", payload: false });
+      dispatch({
+        type: "SET_CALL_STATUS",
+        payload: { status: "idle", text: null },
+      });
+      return;
     }
+
+    dispatch({ type: "SET_CALL_MODE", payload: true });
+    dispatch({
+      type: "SET_CALL_STATUS",
+        payload: { status: "connecting", text: "\u0110ang b\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi..." },
+    });
   };
 
   // OCR image upload
@@ -101,7 +86,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       id: `msg_${Date.now()}`,
       role: "user" as const,
       type: "image" as const,
-      content: `📷 Đã gửi ảnh: ${file.name}`,
+      content: `Đã gửi ảnh: ${file.name}`,
       timestamp: new Date(),
     };
     dispatch({ type: "ADD_MESSAGE", payload: userMsg });
@@ -112,7 +97,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       id: `msg_${Date.now()}_proc`,
       role: "bot" as const,
       type: "text" as const,
-      content: "🔍 Đang đọc thông tin từ ảnh CCCD...",
+      content: "Đang đọc thông tin từ ảnh CCCD...",
       timestamp: new Date(),
     };
     dispatch({ type: "ADD_MESSAGE", payload: processingMsg });
@@ -130,12 +115,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
       handleAIResponse({
         intent: "OCR_CONFIRM",
         message:
-          "Tôi đã đọc được thông tin từ CCCD của bạn! 📋\n\nVui lòng kiểm tra lại thông tin bên dưới trước khi xác nhận điền vào form:",
+          "Tôi đã đọc được thông tin từ CCCD của bạn!\n\nVui lòng kiểm tra lại thông tin bên dưới trước khi xác nhận điền vào form:",
         data: { cccdInfo },
         suggestions: [
           "Xác nhận và điền vào form",
           "Thông tin cần sửa lại",
-          "Huỷ",
+          "Hủy",
         ],
       });
     } catch (err) {
@@ -155,18 +140,46 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const displayValue = state.isListening
-    ? interimText || inputValue
-    : inputValue;
+  const displayValue = inputValue;
+  const showInlineVoiceState = state.isListening && !state.isCallMode;
+
+  const callStatusLabel = state.callStatusText ?? (
+    state.callStatus === "connecting" ? "Đang kết nối VNPT SmartVoice..."
+      : state.callStatus === "listening" ? "Đang lắng nghe..."
+      : state.callStatus === "transcribing" ? "Đang nhận dạng giọng nói..."
+      : state.callStatus === "thinking" ? "Trợ lý đang suy nghĩ..."
+      : state.callStatus === "speaking" ? "Trợ lý đang trả lời..."
+      : state.callStatus === "error" ? "Cuộc gọi gặp lỗi"
+      : "Sẵn sàng lắng nghe"
+  );
 
   return (
-    <div className={`chatbot-input-area chatbot-input-area--${variant}`}>
-      <div className={`chatbot-input-row ${state.isListening ? "is-recording" : ""}`}>
-        {state.isListening ? (
+    <div className={`chatbot-input-area chatbot-input-area--${variant} ${state.isCallMode ? "call-mode" : ""}`}>
+      {state.isCallMode && (
+        <div className={`call-mode-panel call-mode-panel--${state.callStatus}`}>
+          <div className="call-mode-orb" aria-hidden="true">
+            <Mic size={14} />
+          </div>
+          <div className="call-mode-copy">
+            <div className="call-mode-title">Đang trong cuộc gọi với Trợ lý AI</div>
+            <div className="call-mode-status">{callStatusLabel}</div>
+          </div>
+          <button
+            className="call-mode-end-btn"
+            type="button"
+            onClick={toggleRecording}
+            aria-label="Kết thúc cuộc gọi"
+          >
+            Kết thúc
+          </button>
+        </div>
+      )}
+      <div className={`chatbot-input-row ${showInlineVoiceState ? "is-recording" : ""}`}>
+        {showInlineVoiceState ? (
           <div className="voice-input-state">
             <div className="voice-status-left">
               <Mic size={16} />
-              <span>{interimText ? `"${interimText.slice(0, 28)}${interimText.length > 28 ? "..." : ""}"` : "Đang nghe..."}</span>
+              <span>Đang nghe...</span>
             </div>
             <div className="voice-waveform" aria-hidden="true">
               {Array.from({ length: 7 }).map((_, i) => (
@@ -266,11 +279,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <button
             className={`input-action-btn ${state.isListening ? "recording" : ""}`}
             onClick={toggleRecording}
-            title={state.isListening ? "Dừng ghi âm" : "Ghi âm giọng nói"}
-            disabled={disabled || state.isLoading}
-            aria-label={state.isListening ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
+            title={state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
+            disabled={Boolean(disabled && !state.isCallMode)}
+            aria-label={state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
           >
-            {state.isListening ? <MicOff size={16} /> : <Mic size={16} />}
+            {state.isCallMode ? <MicOff size={16} /> : <Mic size={16} />}
           </button>
 
           {/* Send button */}

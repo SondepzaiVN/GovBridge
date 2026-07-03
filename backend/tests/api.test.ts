@@ -6,8 +6,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { MockOcrProvider } from '../src/modules/identity/providers/mock-ocr.provider.js';
 import { MockTtsProvider } from '../src/modules/speech/providers/mock-tts.provider.js';
+import { MockSttProvider } from '../src/modules/speech/providers/mock-stt.provider.js';
 import type { OrchestratorProvider } from '../src/modules/assistant/orchestrator.types.js';
 import { MockKnowledgeProvider } from '../src/modules/assistant/providers/mock-knowledge.provider.js';
+import { MockOrchestratorProvider } from '../src/modules/assistant/providers/mock-orchestrator.provider.js';
+import { buildAssistantTools } from '../src/modules/assistant/tools/index.js';
 
 let dataDirectory: string;
 
@@ -15,6 +18,8 @@ const createTestApp = () => createApp({
   dataDirectory,
   ocrProvider: new MockOcrProvider(),
   ttsProvider: new MockTtsProvider(),
+  sttProvider: new MockSttProvider(),
+  orchestratorProvider: new MockOrchestratorProvider(buildAssistantTools()),
   knowledgeProvider: new MockKnowledgeProvider(),
 });
 
@@ -116,6 +121,20 @@ describe('Gov Bridge API', () => {
       type: 'REQUEST_CONFIRM_FILL',
       fields: { hoTen: 'Nguyễn Thị Lan' },
     }));
+  });
+
+  it('transcribes uploaded speech through the configured STT provider', async () => {
+    const response = await request(createTestApp())
+      .post('/api/v1/speech/stt')
+      .field('clientSession', 'test-client-session')
+      .attach('audioFile', Buffer.from('RIFF....WAVEfmt '), {
+        filename: 'recording.wav',
+        contentType: 'audio/wav',
+      })
+      .expect(200);
+
+    expect(response.body.data.provider).toBe('mock');
+    expect(response.body.data.transcript).toBeTruthy();
   });
 
   it('validates orchestrator facts in backend and requests confirmation before filling', async () => {
