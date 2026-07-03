@@ -407,6 +407,28 @@ a:hover {
     border-bottom-color: #ffe082;
 }
 
+/* Reset native button styles for dropdown parent triggers (Ho Tich, Cu Tru) */
+button.header-nav-link {
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 3px solid transparent;
+    cursor: default;
+    font-family: inherit;
+}
+button.header-nav-link:hover {
+    color: white;
+    background: rgba(0, 0, 0, 0.15);
+    border-bottom-color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+}
+button.header-nav-link.active {
+    color: #ffe082;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom-color: #ffe082;
+}
+
 .header-dropdown {
     position: absolute;
     top: 100%;
@@ -535,6 +557,13 @@ a:hover {
     max-width: 1280px;
     margin: 0 auto;
     width: 100%;
+}
+
+/* Trên desktop, chat bar cố định ở bottom (~62px) + 24px khoảng cách + 20px buffer */
+@media (min-width: 768px) {
+    .main-content {
+        padding-bottom: 110px;
+    }
 }
 
 /* ============================================================
@@ -1419,11 +1448,11 @@ a:hover {
     place-items: center;
     transform: translate(0, 0);
     transition:
-        right 0.46s cubic-bezier(0.22, 1, 0.36, 1),
-        bottom 0.46s cubic-bezier(0.22, 1, 0.36, 1),
-        width 0.32s ease,
-        height 0.32s ease,
-        transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+        right 0.72s cubic-bezier(0.34, 1.2, 0.36, 1),
+        bottom 0.72s cubic-bezier(0.34, 1.2, 0.36, 1),
+        width 0.48s ease,
+        height 0.48s ease,
+        transform 0.72s cubic-bezier(0.34, 1.2, 0.36, 1);
 }
 
 .realtime-voice-control--active {
@@ -1889,6 +1918,9 @@ a:hover {
         border-radius: 0;
         scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
         scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+        will-change: scroll-position;
     }
 
     .chatbot-overlay-panel .chatbot-messages::-webkit-scrollbar {
@@ -1898,6 +1930,11 @@ a:hover {
     .chatbot-overlay-panel .chatbot-messages::-webkit-scrollbar-thumb {
         background: rgba(148, 163, 184, 0.42);
         border-radius: 999px;
+        transition: background 0.2s ease;
+    }
+
+    .chatbot-overlay-panel .chatbot-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.65);
     }
 
     .chatbot-overlay-panel .message-wrapper.bot .message-bubble {
@@ -2223,6 +2260,12 @@ a:hover {
     gap: 12px;
     background: var(--chat-bg);
     scroll-behavior: smooth;
+    /* Momentum scrolling trên iOS/touch */
+    -webkit-overflow-scrolling: touch;
+    /* Ngăn bounce quá mức khi scroll đến đầu/cuối */
+    overscroll-behavior-y: contain;
+    /* Giảm layout thrashing khi scroll */
+    will-change: scroll-position;
 }
 
 .chatbot-messages::-webkit-scrollbar {
@@ -2233,7 +2276,11 @@ a:hover {
 }
 .chatbot-messages::-webkit-scrollbar-thumb {
     background: var(--gray-200);
-    border-radius: 2px;
+    border-radius: 99px;
+    transition: background 0.2s ease;
+}
+.chatbot-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-300);
 }
 
 /* Message bubble */

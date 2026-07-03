@@ -14,28 +14,8 @@
         }
       },
       "createdAt": "2026-07-03T08:06:07.035Z",
-      "updatedAt": "2026-07-03T08:08:49.451Z",
+      "updatedAt": "2026-07-03T09:37:24.934Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "hi",
-          "createdAt": "2026-07-03T08:06:07.035Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin chào! Bạn cần trợ giúp gì về thủ tục hành chính?",
-          "createdAt": "2026-07-03T08:06:07.035Z"
-        },
-        {
-          "role": "user",
-          "content": "hahaaa",
-          "createdAt": "2026-07-03T08:06:17.887Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Có vẻ như bạn đang vui! Nếu bạn có câu hỏi nào về thủ tục hành chính, hãy cho tôi biết nhé!",
-          "createdAt": "2026-07-03T08:06:17.887Z"
-        },
         {
           "role": "user",
           "content": "tôi mới đẻ",
@@ -55,6 +35,86 @@
           "role": "assistant",
           "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
           "createdAt": "2026-07-03T08:08:49.451Z"
+        },
+        {
+          "role": "user",
+          "content": "Alo",
+          "createdAt": "2026-07-03T09:12:44.105Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Xin chào! Có điều gì tôi có thể giúp bạn hôm nay không?",
+          "createdAt": "2026-07-03T09:12:44.105Z"
+        },
+        {
+          "role": "user",
+          "content": "Tạm trú",
+          "createdAt": "2026-07-03T09:12:56.587Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Dưới đây là thông tin về thủ tục **Đăng ký tạm trú**:\n\n### 1. Đăng ký tạm trú là gì?\nTạm trú là việc công dân đăng ký sinh sống có thời hạn tại nơi ngoài nơi thường trú. Thủ tục này áp dụng khi bạn chuyển đến ở tại nhà thuê, nhà mượn, nhà người thân, ký túc xá, cơ sở lưu trú, nơi làm việc có chỗ ở hoặc một chỗ ở hợp pháp khác ngoài nơi thường trú.\n\n### 2. Điều kiện và Hồ sơ cần chuẩn bị:\n- **Chỗ ở hợp pháp** tại địa chỉ muốn đăng ký.\n- Thành phần hồ sơ cụ thể:\n  - **Tờ khai thay đổi thông tin cư trú (Mẫu CT01):** Nếu người đăng ký là người chưa thành niên, phải có ý kiến đồng ý của cha, mẹ hoặc người giám hộ.\n  - **Giấy tờ chứng minh chỗ ở hợp pháp:** Có thể là giấy tờ quyền sử dụng đất, hợp đồng thuê, xác nhận của UBND cấp xã, v.v.\n  - *Lưu ý:* Nếu thông tin chỗ ở đã được khai thác từ cơ sở dữ liệu, bạn không cần nộp lại giấy tờ này.\n\n### 3. Cách thức thực hiện:\n- Thực hiện thủ tục trực tuyến qua:\n  - Cổng Dịch vụ công quốc gia.\n  - Cổng Dịch vụ công Bộ Công an.\n  - Ứng dụng VNeID.\n\n### 4. Thời hạn giải quyết và Kết quả:\n- **Thời hạn giải quyết:** 03 ngày làm việc kể từ ngày nhận đủ hồ sơ hợp lệ.\n- **Kết quả:** Thông tin tạm trú sẽ được cập nhật vào Cơ sở dữ liệu quốc gia về dân cư. Bạn sẽ nhận được thông báo kết quả.\n\nNếu cần hỗ trợ thêm, vui lòng cho tôi biết!",
+          "createdAt": "2026-07-03T09:12:56.587Z"
+        },
+        {
+          "role": "user",
+          "content": "Alo",
+          "createdAt": "2026-07-03T09:27:30.670Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Xin chào! Có điều gì tôi có thể giúp bạn hôm nay không?",
+          "createdAt": "2026-07-03T09:27:30.670Z"
+        },
+        {
+          "role": "user",
+          "content": "đăng ký thường trú",
+          "createdAt": "2026-07-03T09:28:58.182Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
+          "createdAt": "2026-07-03T09:28:58.182Z"
+        },
+        {
+          "role": "user",
+          "content": "Alo alo alo",
+          "createdAt": "2026-07-03T09:30:18.063Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Xin chào! Có điều gì tôi có thể giúp bạn hôm nay không?",
+          "createdAt": "2026-07-03T09:30:18.063Z"
+        },
+        {
+          "role": "user",
+          "content": "Đăng ký tạm trú",
+          "createdAt": "2026-07-03T09:30:30.365Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
+          "createdAt": "2026-07-03T09:30:30.365Z"
+        },
+        {
+          "role": "user",
+          "content": "Alo",
+          "createdAt": "2026-07-03T09:36:08.793Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào anh/chị, tôi có thể hỗ trợ anh/chị tra cứu thông tin về các thủ tục hành chính liên quan đến cư trú và khai sinh.\n\nĐể tư vấn chính xác nhất, anh/chị vui lòng cho biết cụ thể anh/chị đang cần thực hiện thủ tục gì? Ví dụ:\n- Xác nhận thông tin về cư trú (thường trú, tạm trú, tạm vắng...).\n- Đăng ký khai sinh cho trẻ em.\n- Đăng ký tạm trú.\n- Hoặc một nhu cầu khác liên quan đến dịch vụ công.\n\nAnh/chị hãy mô tả ngắn gọn mong muốn của mình để tôi hướng dẫn chi tiết nhé.",
+          "createdAt": "2026-07-03T09:36:08.793Z"
+        },
+        {
+          "role": "user",
+          "content": "đăng ký tạm trú",
+          "createdAt": "2026-07-03T09:37:24.934Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, dưới đây là thông tin chi tiết về thủ tục **Đăng ký tạm trú**:\n\n### 1. Đăng ký tạm trú là gì?\nLà việc công dân đăng ký nơi mình sinh sống trong một thời gian nhất định tại địa điểm ngoài nơi thường trú. Thủ tục này áp dụng khi bạn chuyển đến ở tại nhà thuê, nhà mượn, nhà người thân, ký túc xá, cơ sở lưu trú, nơi làm việc có chỗ ở hoặc bất kỳ chỗ ở hợp pháp nào khác.\n\n### 2. Hồ sơ cần chuẩn bị\n- **Tờ khai thay đổi thông tin cư trú (Mẫu CT01)**: Nếu người đăng ký là người chưa thành niên, cần có ý kiến đồng ý của cha, mẹ hoặc người giám hộ.\n- **Giấy tờ chứng minh chỗ ở hợp pháp**: Tùy thuộc vào loại chỗ ở mà chuẩn bị giấy tờ tương ứng (Giấy chứng nhận quyền sử dụng đất, Hợp đồng thuê/mượn, Giấy giới thiệu của đơn vị quân đội/Công an nếu ở khu vực đóng quân, hoặc xác nhận của chủ cơ sở lưu trú).\n\n### 3. Cách thức thực hiện\nBạn có thể thực hiện thủ tục trực tuyến qua:\n- Cổng Dịch vụ công quốc gia.\n- Cổng Dịch vụ công Bộ Công an.\n- Ứng dụng VNeID.\n\n**Trình tự thực hiện trực tuyến**:\n1. Đăng nhập vào hệ thống bằng tài khoản định danh điện tử (VNeID).\n2. Tìm kiếm và chọn thủ tục \"Đăng ký tạm trú\".\n3. Chọn cơ quan thực hiện là **Công an cấp xã** nơi có chỗ ở tạm trú.\n4. Khai báo thông tin người đề nghị và thông tin chỗ ở.\n5. Đính kèm giấy tờ theo yêu cầu.\n6. Xác nhận và gửi hồ sơ.\n\n### 4. Thời hạn giải quyết\nThời hạn giải quyết là **03 ngày làm việc** kể từ ngày nhận được hồ sơ đầy đủ.\n\n### 5. Kết quả thực hiện\nThông tin tạm trú sẽ được cập nhật vào **Cơ sở dữ liệu quốc gia về dân cư** và **Cơ sở dữ liệu về cư trú**. Bạn sẽ nhận được thông báo kết quả giải quyết thủ tục. Không cấp sổ giấy vật lý cho thủ tục này.",
+          "createdAt": "2026-07-03T09:37:24.934Z"
         }
       ]
     }

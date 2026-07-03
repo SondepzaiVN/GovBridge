@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { ChatbotProvider } from './contexts/ChatbotContext';
 import { FormProvider, useForm } from './contexts/FormContext';
@@ -7,6 +7,8 @@ import ChatbotWidget, { ChatbotFAB } from './components/chatbot/ChatbotWidget';
 import UIHighlighter from './components/overlay/UIHighlighter';
 import Header from './components/layout/Header';
 import RequireRole from './components/auth/RequireRole';
+import RequireAuth from './components/auth/RequireAuth';
+import SplashScreen from './components/layout/SplashScreen';
 import './index.css';
 
 // Lazy-load pages
@@ -92,18 +94,22 @@ const AppInner: React.FC = () => {
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
-                        <Route path="/khai-sinh" element={<KhaiSinhPage />} />
-                        <Route path="/ho-khau" element={<DangKyThuongTruPage />} />
-                        <Route path="/dang-ky-thuong-tru" element={<DangKyThuongTruPage />} />
-                        <Route path="/tam-tru" element={<DangKyTamTruPage />} />
-                        <Route path="/dang-ky-tam-tru" element={<DangKyTamTruPage />} />
-                        <Route path="/cccd" element={<CCCDPage />} />
-                        <Route path="/ket-hon" element={<KetHonPage />} />
-                        <Route path="/lien-thong-khai-sinh" element={<LienThongKhaiSinhPage />} />
-                        <Route path="/lien-thong-khai-sinh/:stepSlug" element={<LienThongKhaiSinhPage />} />
-                        <Route path="/lien-thong-khai-tu" element={<LienThongKhaiTuPage />} />
-                        <Route path="/xac-nhan-cu-tru" element={<XacNhanCuTruPage />} />
                         <Route path="/dang-nhap" element={<LoginPage />} />
+
+                        {/* ── Trang thủ tục: yêu cầu đăng nhập ── */}
+                        <Route path="/khai-sinh" element={<RequireAuth><KhaiSinhPage /></RequireAuth>} />
+                        <Route path="/ho-khau" element={<RequireAuth><DangKyThuongTruPage /></RequireAuth>} />
+                        <Route path="/dang-ky-thuong-tru" element={<RequireAuth><DangKyThuongTruPage /></RequireAuth>} />
+                        <Route path="/tam-tru" element={<RequireAuth><DangKyTamTruPage /></RequireAuth>} />
+                        <Route path="/dang-ky-tam-tru" element={<RequireAuth><DangKyTamTruPage /></RequireAuth>} />
+                        <Route path="/cccd" element={<RequireAuth><CCCDPage /></RequireAuth>} />
+                        <Route path="/ket-hon" element={<RequireAuth><KetHonPage /></RequireAuth>} />
+                        <Route path="/lien-thong-khai-sinh" element={<RequireAuth><LienThongKhaiSinhPage /></RequireAuth>} />
+                        <Route path="/lien-thong-khai-sinh/:stepSlug" element={<RequireAuth><LienThongKhaiSinhPage /></RequireAuth>} />
+                        <Route path="/lien-thong-khai-tu" element={<RequireAuth><LienThongKhaiTuPage /></RequireAuth>} />
+                        <Route path="/xac-nhan-cu-tru" element={<RequireAuth><XacNhanCuTruPage /></RequireAuth>} />
+
+                        {/* ── Dashboard: yêu cầu đúng role ── */}
                         <Route
                             path="/nguoi-dan"
                             element={<RequireRole role="nguoi-dan"><CitizenDashboardPage /></RequireRole>}
@@ -125,14 +131,19 @@ const AppInner: React.FC = () => {
 // Root App
 // ============================================================
 const App: React.FC = () => {
+    const [splashDone, setSplashDone] = useState(false);
+
     return (
-        <Router>
-            <AuthProvider>
-                <FormProvider>
-                    <AppInner />
-                </FormProvider>
-            </AuthProvider>
-        </Router>
+        <>
+            {!splashDone && <SplashScreen onContinue={() => setSplashDone(true)} />}
+            <Router>
+                <AuthProvider>
+                    <FormProvider>
+                        <AppInner />
+                    </FormProvider>
+                </AuthProvider>
+            </Router>
+        </>
     );
 };
 
