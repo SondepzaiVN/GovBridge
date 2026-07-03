@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
     AlertTriangle,
     Check,
@@ -27,101 +27,18 @@ import {
 import { useAuth } from '../../contexts/useAuth';
 import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
 import {
+    DASHBOARD_STORAGE_KEY,
+    INITIAL_DASHBOARD_APPLICATIONS,
+    loadDashboardApplications,
+} from '../../utils/applicationDashboardData';
+import {
     filterOfficerApplications,
-    normalizeOfficerApplication,
     type OfficerApplication as Application,
     type OfficerApplicationFilters,
     type OfficerApplicationStatus as ApplicationStatus,
 } from '../../utils/officerApplicationFilters';
 
 type ConfirmAction = 'accept' | 'reject' | 'process' | 'approve' | null;
-
-const STORAGE_KEY = 'officerApplications';
-
-const RAW_INITIAL_APPLICATIONS = [
-    {
-        id: 'GOV-2026-000184',
-        procedure: 'Xác nhận thông tin về cư trú',
-        applicant: 'Nguyễn Văn An',
-        citizenId: '042206001284',
-        phone: '0912 345 678',
-        email: 'nguyenvanan@example.com',
-        submittedAt: '02/07/2026 09:18',
-        dueDate: '05/07/2026',
-        channel: 'Cổng dịch vụ công',
-        status: 'Chờ tiếp nhận',
-        documents: [
-            { name: 'Tờ khai thay đổi thông tin cư trú.pdf', state: 'Đã có' },
-            { name: 'Bản chụp Căn cước công dân.jpeg', state: 'Đã có' },
-            { name: 'Giấy tờ chứng minh chỗ ở hợp pháp.docx', state: 'Cần kiểm tra' },
-        ],
-        attachments: [
-            { id: 'mock-4', fileName: 'Tờ khai thay đổi thông tin cư trú.pdf', mimeType: 'application/pdf', size: 1024000, storageKey: 'mock-key-4', submittedAt: '02/07/2026' },
-            { id: 'mock-5', fileName: 'Bản chụp Căn cước công dân.jpeg', mimeType: 'image/jpeg', size: 512000, storageKey: 'mock-key-5', submittedAt: '02/07/2026' },
-            { id: 'mock-6', fileName: 'Giấy tờ chứng minh chỗ ở hợp pháp.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', size: 2048000, storageKey: 'mock-key-6', submittedAt: '02/07/2026' },
-        ],
-    },
-    {
-        id: 'GOV-2026-000179',
-        procedure: 'Đăng ký thường trú',
-        applicant: 'Trần Thị Minh Hà',
-        citizenId: '042301009152',
-        phone: '0986 220 114',
-        email: 'minhha@example.com',
-        submittedAt: '02/07/2026 08:42',
-        dueDate: '07/07/2026',
-        channel: 'VNeID',
-        status: 'Đang xử lí',
-        documents: [
-            { name: 'Tờ khai CT01', state: 'Đã có' },
-            { name: 'Ý kiến chủ hộ', state: 'Đã có' },
-        ],
-    },
-    {
-        id: 'GOV-2026-000163',
-        procedure: 'Đăng ký tạm trú',
-        applicant: 'Lê Hoàng Nam',
-        citizenId: '042199006874',
-        phone: '0905 118 226',
-        email: 'hoangnam@example.com',
-        submittedAt: '01/07/2026 15:06',
-        dueDate: '04/07/2026',
-        channel: 'Cổng dịch vụ công',
-        status: 'Chờ tiếp nhận',
-        documents: [
-            { name: 'Tờ khai CT01', state: 'Đã có' },
-            { name: 'Hợp đồng thuê nhà', state: 'Cần kiểm tra' },
-        ],
-        attachments: [
-            { id: 'mock-1', fileName: 'Tờ khai CT01', mimeType: 'application/pdf', size: 1024000, storageKey: 'mock-key-1', submittedAt: '02/07/2026' }
-        ],
-    },
-    {
-        id: 'GOV-2026-000151',
-        procedure: 'Liên thông khai sinh, thường trú, BHYT',
-        applicant: 'Phạm Thu Trang',
-        citizenId: '042203003612',
-        phone: '0934 441 906',
-        email: 'thutrang@example.com',
-        submittedAt: '01/07/2026 10:25',
-        dueDate: '08/07/2026',
-        channel: 'Cổng dịch vụ công',
-        status: 'Đã tiếp nhận',
-        documents: [
-            { name: 'Tờ khai đăng ký khai sinh', state: 'Đã có' },
-            { name: 'Tờ khai đăng ký cư trú', state: 'Đã có' },
-            { name: 'Tờ khai tham gia BHYT', state: 'Đã có' },
-        ],
-        attachments: [
-            { id: 'mock-2', fileName: 'Tờ khai đăng ký khai sinh', mimeType: 'application/pdf', size: 1536000, storageKey: 'mock-key-2', submittedAt: '01/07/2026' },
-            { id: 'mock-3', fileName: 'Tờ khai đăng ký cư trú', mimeType: 'application/pdf', size: 850000, storageKey: 'mock-key-3', submittedAt: '01/07/2026' },
-        ],
-    },
-];
-
-const INITIAL_APPLICATIONS: Application[] = RAW_INITIAL_APPLICATIONS.map((application, index) => (
-    normalizeOfficerApplication(application, `GOV-MOCK-${index + 1}`)
-));
 
 const statusClassName = (status: ApplicationStatus) => {
     if (status === 'Chờ tiếp nhận') return 'pending';
@@ -134,24 +51,8 @@ const statusClassName = (status: ApplicationStatus) => {
 
 const OfficerDashboardPage: React.FC = () => {
     const { user } = useAuth();
-    const [applications, setApplications] = useState<Application[]>(() => {
-        try {
-            const stored = window.localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored) as unknown;
-                const normalized = Array.isArray(parsed)
-                    ? parsed.map((app, index) => normalizeOfficerApplication(app, `GOV-LOCAL-${index + 1}`))
-                    : [];
-                const storedIds = new Set(normalized.map(a => a.id));
-                const initialsToAdd = INITIAL_APPLICATIONS.filter(a => !storedIds.has(a.id));
-                return [...normalized, ...initialsToAdd];
-            }
-        } catch {
-            // ignore
-        }
-        return INITIAL_APPLICATIONS;
-    });
-    const [selectedId, setSelectedId] = useState(INITIAL_APPLICATIONS[0].id);
+    const [applications, setApplications] = useState<Application[]>(loadDashboardApplications);
+    const [selectedId, setSelectedId] = useState(INITIAL_DASHBOARD_APPLICATIONS[0].id);
     const [statusFilter, setStatusFilter] = useState<OfficerApplicationFilters['status']>('Tất cả');
     const [returnReason, setReturnReason] = useState('');
     const [message, setMessage] = useState('');
@@ -176,12 +77,22 @@ const OfficerDashboardPage: React.FC = () => {
         ?? applications[0];
     const officerNote = officerNoteDrafts[selectedApplication.id] ?? selectedApplication.officerNote;
 
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === DASHBOARD_STORAGE_KEY) {
+                setApplications(loadDashboardApplications());
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
     const handleSaveOfficerNote = () => {
         setApplications((current) => {
             const newApps = current.map((application) => (
                 application.id === selectedApplication.id ? { ...application, officerNote } : application
             ));
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(newApps));
+            window.localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(newApps));
             return newApps;
         });
         setToast('Đã lưu lưu ý hồ sơ');
@@ -301,10 +212,21 @@ const OfficerDashboardPage: React.FC = () => {
             confirmAction === 'approve' ? 'Đã phê duyệt' : 'Đã từ chối';
             
         setApplications((current) => {
-            const newApps = current.map((application) => (
-                application.id === selectedApplication.id ? { ...application, status: nextStatus } : application
-            ));
-            localStorage.setItem('officerApplications', JSON.stringify(newApps));
+            const newApps = current.map((application) => {
+                if (application.id === selectedApplication.id) {
+                    const updates: Partial<Application> = { 
+                        status: nextStatus,
+                        statusLabel: nextStatus
+                    };
+                    if (confirmAction === 'reject') {
+                        updates.returnReason = returnReason || 'Điền thiếu';
+                        updates.responseMessage = message || 'Điền thiếu';
+                    }
+                    return { ...application, ...updates };
+                }
+                return application;
+            });
+            localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(newApps));
             return newApps;
         });
 

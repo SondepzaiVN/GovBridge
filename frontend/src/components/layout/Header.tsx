@@ -42,7 +42,7 @@ const Header: React.FC = () => {
                                     <UserRound size={20} />
                                     <span>
                                         <strong>{user.name}</strong>
-                                        <small>{user.role === 'can-bo' ? 'Cán bộ' : 'Người dân'}</small>
+                                        <small>{user.role === 'can-bo' ? 'Cán bộ' : 'Hồ sơ của tôi'}</small>
                                     </span>
                                 </Link>
                                 <button
