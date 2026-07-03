@@ -51,7 +51,6 @@ const FORBIDDEN_PAYLOAD_KEYS = new Set([
   'pendingactions',
   'formschema',
   'assistantcontext',
-  'settings',
   'systemprompt',
   'advanceprompt',
   'history',
@@ -79,9 +78,14 @@ export interface VnptConversationPayload {
   text: string;
   input_channel: 'livechat';
   session_id: string;
-  metadata: {
-    button_variables: [];
+  metadata: Record<string, never>;
+  settings: {
+    enable_chunk_stream: 1;
   };
+  stream: '1';
+  tts_model: 'news';
+  tts_region: 'female_north';
+  user_auth_level: 2;
 }
 
 export class OutboundDataPolicyError extends AppError {
@@ -303,11 +307,16 @@ export const assertSafeVnptOutboundPayload = (
   assertNoForbiddenKeys(payload);
   const exactKeys = Object.keys(payload).sort().join(',');
   if (
-    exactKeys !== 'bot_id,input_channel,metadata,sender_id,session_id,text'
+    exactKeys !== 'bot_id,input_channel,metadata,sender_id,session_id,settings,stream,text,tts_model,tts_region,user_auth_level'
     || payload.input_channel !== 'livechat'
-    || Object.keys(payload.metadata).join(',') !== 'button_variables'
-    || payload.metadata.button_variables.length !== 0
-    || !/^[A-Za-z0-9_-]{8,128}$/u.test(payload.sender_id)
+    || Object.keys(payload.metadata).length !== 0
+    || payload.settings.enable_chunk_stream !== 1
+    || Object.keys(payload.settings).join(',') !== 'enable_chunk_stream'
+    || payload.stream !== '1'
+    || payload.tts_model !== 'news'
+    || payload.tts_region !== 'female_north'
+    || payload.user_auth_level !== 2
+    || !/^(?:[A-Za-z0-9_-]{8,128}|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})$/u.test(payload.sender_id)
     || !/^[A-Za-z0-9_-]{8,128}$/u.test(payload.session_id)
     || payload.text.length > MAX_VNPT_TEXT_LENGTH
     || countExact(payload.text, '[NGỮ CẢNH GOVBRIDGE]') !== 1

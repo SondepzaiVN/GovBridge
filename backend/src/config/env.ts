@@ -27,6 +27,10 @@ const envSchema = z.object({
   VNPT_AGENTIC_TOKEN_KEY: z.string().optional(),
   VNPT_AGENTIC_BOT_ID: z.string().optional(),
   VNPT_AGENTIC_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).default(30_000),
+  VNPT_ASSISTANT_TOKEN: z.string().optional(),
+  VNPT_ASSISTANT_BOT_ID: z.string().default('e0ae8190-769a-11f1-a4d2-f99c9477e903'),
+  VNPT_ASSISTANT_SENDER_ID: z.string().default('team.25@vnptai.io'),
+  VNPT_ASSISTANT_REFERER: z.string().url().default('https://livechat.vnpt.vn/'),
   VNPT_SMARTBOT_URL: z.string().url().default('https://assistant-stream.vnpt.vn/v1/conversation'),
   VNPT_SMARTBOT_ACCESS_TOKEN: z.string().default(''),
   VNPT_SMARTBOT_TOKEN_ID: z.string().default(''),
@@ -87,6 +91,13 @@ export const env = {
   VNPT_AGENTIC_ACCESS_TOKEN: preferNewVnptSetting(
     parsed.data.VNPT_AGENTIC_ACCESS_TOKEN,
     parsed.data.VNPT_SMARTBOT_ACCESS_TOKEN,
+  ),
+  VNPT_ASSISTANT_TOKEN: preferNewVnptSetting(
+    parsed.data.VNPT_ASSISTANT_TOKEN,
+    preferNewVnptSetting(
+      parsed.data.VNPT_AGENTIC_ACCESS_TOKEN,
+      parsed.data.VNPT_SMARTBOT_ACCESS_TOKEN,
+    ),
   ),
   VNPT_AGENTIC_TOKEN_ID: preferNewVnptSetting(
     parsed.data.VNPT_AGENTIC_TOKEN_ID,
