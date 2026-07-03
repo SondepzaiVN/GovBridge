@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import { LogIn, Home, ChevronDown, LogOut, UserPlus, UserRound } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 
 const Header: React.FC = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, logout } = useAuth();
 
     const handleLogout = () => {
@@ -81,8 +82,10 @@ const Header: React.FC = () => {
             </div>
 
             {/* ── Orange navigation bar ── */}
-            <div className="header-nav-bar">
-                <div className="header-nav-inner">
+            {user?.role !== 'can-bo' && (
+                <>
+                    <div className="header-nav-bar">
+                        <div className="header-nav-inner">
                     <nav className="header-nav" role="navigation" aria-label="Menu chính">
                         <NavLink
                             to="/"
@@ -94,13 +97,21 @@ const Header: React.FC = () => {
                             <Home size={15} />
                         </NavLink>
                         <div className="header-nav-item has-dropdown">
-                            <NavLink
-                                to="/khai-sinh"
-                                className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                            <button
+                                type="button"
+                                className={[
+                                    'header-nav-link',
+                                    'header-nav-link--parent',
+                                    ['/khai-sinh', '/lien-thong-khai-sinh', '/lien-thong-khai-tu'].some(
+                                        (p) => location.pathname.startsWith(p)
+                                    ) ? 'active' : '',
+                                ].filter(Boolean).join(' ')}
                                 data-highlight-id="nav-khai-sinh"
+                                aria-haspopup="true"
+                                aria-label="Dịch vụ Hộ Tịch"
                             >
                                 Hộ Tịch <ChevronDown size={13} />
-                            </NavLink>
+                            </button>
                             <div className="header-dropdown" role="menu" aria-label="Dịch vụ hộ tịch">
                                 <NavLink to="/khai-sinh" className="header-dropdown-link" role="menuitem">
                                     Đăng ký khai sinh
@@ -114,13 +125,21 @@ const Header: React.FC = () => {
                             </div>
                         </div>
                         <div className="header-nav-item has-dropdown">
-                            <NavLink
-                                to="/ho-khau"
-                                className={({ isActive }) => `header-nav-link${isActive ? ' active' : ''}`}
+                            <button
+                                type="button"
+                                className={[
+                                    'header-nav-link',
+                                    'header-nav-link--parent',
+                                    ['/ho-khau', '/dang-ky-thuong-tru', '/dang-ky-tam-tru', '/tam-tru', '/xac-nhan-cu-tru'].some(
+                                        (p) => location.pathname.startsWith(p)
+                                    ) ? 'active' : '',
+                                ].filter(Boolean).join(' ')}
                                 data-highlight-id="nav-ho-khau"
+                                aria-haspopup="true"
+                                aria-label="Dịch vụ Cư Trú"
                             >
                                 Cư Trú <ChevronDown size={13} />
-                            </NavLink>
+                            </button>
                             <div className="header-dropdown" role="menu" aria-label="Dịch vụ cư trú">
                                 <NavLink to="/ho-khau" className="header-dropdown-link" role="menuitem">
                                     Đăng ký thường trú
@@ -207,6 +226,8 @@ const Header: React.FC = () => {
                         Kết Hôn
                     </NavLink>
                 </div>
+            )}
+            </>
             )}
         </header>
     );
