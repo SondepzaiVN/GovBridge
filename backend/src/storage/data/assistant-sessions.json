@@ -3,9 +3,19 @@
   "sessions": [
     {
       "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
-      "currentRoute": "/dang-ky-tam-tru",
+      "currentRoute": "/ho-khau",
       "state": {
-        "formSnapshot": {},
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi",
+          "hoTen": "Trần Minh Hùng",
+          "ngaySinh": "2006-03-02",
+          "gioiTinh": "Nam",
+          "danToc": "kinh",
+          "cccd": "093206008464",
+          "sdt": "0793920853",
+          "email": "abc@gmail.com"
+        },
         "candidateCases": [],
         "recentFacts": [
           {
@@ -97,6 +107,18 @@
             "value": "Trần Văn A",
             "confidence": 0.9,
             "source": "chat"
+          },
+          {
+            "fieldHint": "hoTen",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "ngaySinh",
+            "value": "2/3/2006",
+            "confidence": 0.9,
+            "source": "chat"
           }
         ],
         "knowledgeSession": {
@@ -105,107 +127,107 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T21:10:58.738Z",
+      "updatedAt": "2026-07-03T21:46:00.831Z",
       "messages": [
         {
           "role": "user",
-          "content": "chuyển đến trnag đăng ký thường trú",
-          "createdAt": "2026-07-03T21:01:45.623Z"
+          "content": "chuyển đến trang chủ",
+          "createdAt": "2026-07-03T21:42:28.963Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn sẽ được chuyển đến trang chủ.",
+          "createdAt": "2026-07-03T21:42:28.963Z"
+        },
+        {
+          "role": "user",
+          "content": "Thử lại",
+          "createdAt": "2026-07-03T21:43:16.654Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn sẽ được chuyển đến trang chủ.",
+          "createdAt": "2026-07-03T21:43:16.654Z"
+        },
+        {
+          "role": "user",
+          "content": "hi",
+          "createdAt": "2026-07-03T21:43:39.684Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Xin chào! Mình có thể hỗ trợ bạn tra cứu thủ tục hành chính, giấy tờ cần chuẩn bị, cách điền hồ sơ hoặc chuyển đến dịch vụ phù hợp.",
+          "createdAt": "2026-07-03T21:43:39.684Z"
+        },
+        {
+          "role": "user",
+          "content": "bạn là ai",
+          "createdAt": "2026-07-03T21:43:46.191Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình là trợ lý ảo của GovBridge, có nhiệm vụ giúp bạn tìm kiếm thông tin về thủ tục hành chính, giấy tờ cần thiết và quy trình thực hiện. Nếu bạn có câu hỏi cụ thể nào, hãy cho mình biết nhé!",
+          "createdAt": "2026-07-03T21:43:46.191Z"
+        },
+        {
+          "role": "user",
+          "content": "thường trú là gì",
+          "createdAt": "2026-07-03T21:43:57.535Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Đăng ký thường trú là thủ tục hành chính cho phép công dân được ghi vào sổ hộ khẩu tại một địa chỉ nhất định, xác nhận quyền cư trú lâu dài tại địa phương đó. Thủ tục này thường liên quan đến việc cung cấp các giấy tờ như giấy tờ tùy thân, giấy chứng nhận quyền sử dụng đất, hợp đồng mua bán nhà, v.v. để chứng minh nơi cư trú. Nếu bạn cần thông tin chi tiết về quy trình hoặc các giấy tờ cần thiết, hãy cho mình biết!",
+          "createdAt": "2026-07-03T21:43:57.535Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang đăng ký thường trú",
+          "createdAt": "2026-07-03T21:44:18.015Z"
         },
         {
           "role": "assistant",
           "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T21:01:45.623Z"
+          "createdAt": "2026-07-03T21:44:18.015Z"
         },
         {
           "role": "user",
-          "content": "chuyển đến trang đăng ký Tạm trú",
-          "createdAt": "2026-07-03T21:02:37.512Z"
+          "content": "Họ và tên là trần minh hùng",
+          "createdAt": "2026-07-03T21:44:39.917Z"
         },
         {
           "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T21:02:37.512Z"
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T21:44:39.917Z"
         },
         {
           "role": "user",
-          "content": "Thủ tục là gì",
-          "createdAt": "2026-07-03T21:03:32.596Z"
+          "content": "Ngày sinh từ ngày tháng 3/2006",
+          "createdAt": "2026-07-03T21:45:03.267Z"
         },
         {
           "role": "assistant",
-          "content": "Thủ tục là quy trình hoặc các bước mà cá nhân hoặc tổ chức cần thực hiện để hoàn thành một yêu cầu cụ thể liên quan đến hành chính, pháp lý hoặc dịch vụ công. Trong ngữ cảnh bạn đang hỏi, thủ tục có thể liên quan đến việc đăng ký thường trú, tạm trú, hoặc các giao dịch hành chính khác.",
-          "createdAt": "2026-07-03T21:03:32.596Z"
+          "content": "Chào anh/chị,\\n\\nTheo thông tin anh/chị cung cấp, nếu ngày sinh là tháng 3 năm 2006, thì hiện tại anh/chị đã hơn 18 tuổi. Dịch vụ đăng ký thường trú và các thủ tục liên quan chỉ áp dụng cho trẻ em dưới 6 tuổi.\\n\\nVì vậy, trường hợp của anh/chị không thuộc đối tượng áp dụng của thủ tục đăng ký thường trú. Anh/chị vui lòng liên hệ trực tiếp với **Ủy ban Nhân dân cấp xã** nơi cư trú hoặc cơ quan Hộ tịch địa phương để được hướng dẫn cụ thể về các thủ tục hành chính phù hợp khác.",
+          "createdAt": "2026-07-03T21:45:03.267Z"
         },
         {
           "role": "user",
-          "content": "chuyển đến trang cư trú",
-          "createdAt": "2026-07-03T21:07:35.410Z"
+          "content": "thay đổi ngày sinh thành 2/3/2006",
+          "createdAt": "2026-07-03T21:45:51.611Z"
         },
         {
           "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T21:07:35.410Z"
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T21:45:51.611Z"
         },
         {
           "role": "user",
-          "content": "Đến trang cư trú",
-          "createdAt": "2026-07-03T21:07:49.562Z"
+          "content": "một hai ba",
+          "createdAt": "2026-07-03T21:46:00.831Z"
         },
         {
           "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T21:07:49.562Z"
-        },
-        {
-          "role": "user",
-          "content": "Ok",
-          "createdAt": "2026-07-03T21:09:02.243Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T21:09:02.243Z"
-        },
-        {
-          "role": "user",
-          "content": "Tạm trú",
-          "createdAt": "2026-07-03T21:09:27.737Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T21:09:27.737Z"
-        },
-        {
-          "role": "user",
-          "content": "Ok không có gì",
-          "createdAt": "2026-07-03T21:10:36.491Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Nếu bạn cần thêm thông tin hoặc có câu hỏi nào khác, hãy cho mình biết!",
-          "createdAt": "2026-07-03T21:10:36.491Z"
-        },
-        {
-          "role": "user",
-          "content": "Ok",
-          "createdAt": "2026-07-03T21:10:45.996Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Nếu bạn cần hỗ trợ gì thêm, hãy cho tôi biết!",
-          "createdAt": "2026-07-03T21:10:45.996Z"
-        },
-        {
-          "role": "user",
-          "content": "Ok",
-          "createdAt": "2026-07-03T21:10:58.738Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Nếu bạn có câu hỏi cụ thể hoặc cần hỗ trợ về thủ tục hành chính nào, hãy cho tôi biết!",
-          "createdAt": "2026-07-03T21:10:58.738Z"
+          "content": "Bạn đã nhập ngày sinh là 2/3/2006. Nếu thông tin này chính xác, mình sẽ tiến hành cập nhật vào biểu mẫu đăng ký thường trú của bạn. Bạn có muốn tiếp tục không?",
+          "createdAt": "2026-07-03T21:46:00.831Z"
         }
       ]
     },
