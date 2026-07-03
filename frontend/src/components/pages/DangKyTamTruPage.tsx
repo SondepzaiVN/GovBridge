@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bot, FileText, Home, Save, Send, Trash2, ChevronRight, HelpCircle } from 'lucide-react';
+import {
+    ArrowLeft,
+    Bot,
+    ChevronDown,
+    ChevronRight,
+    ChevronUp,
+    FileDown,
+    FileText,
+    HelpCircle,
+    Home,
+    Paperclip,
+    Plus,
+    Save,
+    Send,
+    Trash2,
+} from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
-import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
-import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { ROUTE_TO_SERVICE_MAP } from '../../data/services';
 import {
     dateFormatOptions,
     dossierCases,
@@ -25,6 +39,9 @@ import {
     type TamTruHouseholdMember,
     type TamTruReviewResult,
 } from '../../utils/validateTamTruApplication';
+import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
+import { saveAttachmentFile } from '../../utils/attachmentStorage';
+const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
 const addYears = (date: Date, years: number) => {
     const next = new Date(date);
@@ -49,7 +66,7 @@ const createInitialAttachments = (): Record<string, TamTruAttachmentDraft> => {
             if (drafts[document.id]) return;
             drafts[document.id] = {
                 documentId: document.id,
-                checked: false,
+                checked: document.required,
                 fileName: '',
                 quantity: document.quantity,
                 note: '',
@@ -64,7 +81,7 @@ const initialForm: TamTruApplicationData = {
     receiveVillageCode: '',
     receiveOrgAddress: '',
     receiveOrgPhone: '',
-    procedureTypeCode: '',
+    procedureTypeCode: 'dang-ky-tam-tru',
     procedureCaseCode: '',
     registrationMode: '',
     declareMode: 'proxy',
@@ -122,8 +139,8 @@ const requiredFields = new Set([
 const fieldLabels: Record<string, string> = {
     receiveCityCode: 'Tỉnh/Thành phố',
     receiveVillageCode: 'Xã/Phường/Đặc khu',
-    receiveOrgAddress: 'Cơ quan thực hiện',
-    receiveOrgPhone: 'Số điện thoại',
+    receiveOrgAddress: 'Cơ quan đăng ký cư trú',
+    receiveOrgPhone: 'Số điện thoại cơ quan',
     procedureTypeCode: 'Thủ tục',
     procedureCaseCode: 'Trường hợp',
     fullName: 'Họ và tên',
@@ -149,7 +166,11 @@ const fieldLabels: Record<string, string> = {
     feeDescription: 'Mô tả',
 };
 
-const Section: React.FC<{ number: number; title: string; children: React.ReactNode }> = ({ number, title, children }) => (
+const Section: React.FC<{ number: number; title: string; children: React.ReactNode }> = ({
+    number,
+    title,
+    children,
+}) => (
     <section className="dktt-section open">
         <div className="dktt-section-header">
             <div className="dktt-section-header-left">
@@ -172,14 +193,20 @@ const helpButton = (fieldId: string, activeHelp: string, setActiveHelp: (fieldId
     </button>
 );
 
-const findOptionByName = (options: FormFieldOption[], includes: string[]) => (
-    options.find((option) => includes.every((item) => option.label.toLowerCase().includes(item.toLowerCase()))) || null
-);
+const findOptionByName = (options: FormFieldOption[], includes: string[]) =>
+    options.find((option) => includes.every((item) => option.label.toLowerCase().includes(item.toLowerCase()))) || null;
 
 const agencyNameFromWard = (wardLabel: string) => (wardLabel ? `Công an ${wardLabel}` : '');
 
 const DangKyTamTruPage: React.FC = () => {
     const navigate = useNavigate();
+    const service = ROUTE_TO_SERVICE_MAP['/dang-ky-tam-tru'] || {
+        requiredDocs: [],
+        steps: [],
+        processingTime: '',
+        fee: '',
+        category: '',
+    };
     const [form, setForm] = useState<TamTruApplicationData>(initialForm);
     const [provinceOptions, setProvinceOptions] = useState<FormFieldOption[]>([]);
     const [receiveWardOptions, setReceiveWardOptions] = useState<FormFieldOption[]>([]);
@@ -205,7 +232,8 @@ const DangKyTamTruPage: React.FC = () => {
 
     useEffect(() => {
         const controller = new AbortController();
-        administrativeUnitService.getProvinces(controller.signal)
+        administrativeUnitService
+            .getProvinces(controller.signal)
             .then((options) => {
                 setProvinceOptions(options);
                 setAdministrativeError('');
@@ -224,7 +252,8 @@ const DangKyTamTruPage: React.FC = () => {
         }
 
         const controller = new AbortController();
-        administrativeUnitService.getWards(form.receiveCityCode, controller.signal)
+        administrativeUnitService
+            .getWards(form.receiveCityCode, controller.signal)
             .then((options) => {
                 setReceiveWardOptions(options);
                 setAdministrativeError('');
@@ -244,7 +273,8 @@ const DangKyTamTruPage: React.FC = () => {
         }
 
         const controller = new AbortController();
-        administrativeUnitService.getWards(form.temporaryCityCode, controller.signal)
+        administrativeUnitService
+            .getWards(form.temporaryCityCode, controller.signal)
             .then((options) => {
                 setTemporaryWardOptions(options);
                 setAdministrativeError('');
@@ -259,7 +289,8 @@ const DangKyTamTruPage: React.FC = () => {
 
     const getProvinceLabel = (code: string) => provinceOptions.find((item) => item.value === code)?.label || '';
     const getReceiveWardLabel = (code: string) => receiveWardOptions.find((item) => item.value === code)?.label || '';
-    const getTemporaryWardLabel = (code: string) => temporaryWardOptions.find((item) => item.value === code)?.label || '';
+    const getTemporaryWardLabel = (code: string) =>
+        temporaryWardOptions.find((item) => item.value === code)?.label || '';
 
     const buildRequestContent = (wardCode: string, provinceCode: string) => {
         const wardLabel = getTemporaryWardLabel(wardCode);
@@ -305,7 +336,10 @@ const DangKyTamTruPage: React.FC = () => {
             return {
                 ...prev,
                 temporaryVillageCode: code,
-                requestContent: !prev.requestContent || prev.requestContent.startsWith('Đăng ký tạm trú tại') ? nextContent : prev.requestContent,
+                requestContent:
+                    !prev.requestContent || prev.requestContent.startsWith('Đăng ký tạm trú tại')
+                        ? nextContent
+                        : prev.requestContent,
             };
         });
         setReview(null);
@@ -357,22 +391,28 @@ const DangKyTamTruPage: React.FC = () => {
     const updateMember = (id: number, patch: Partial<TamTruHouseholdMember>) => {
         setForm((prev) => ({
             ...prev,
-            householdMembers: prev.householdMembers.map((member) => member.id === id ? { ...member, ...patch } : member),
+            householdMembers: prev.householdMembers.map((member) =>
+                member.id === id ? { ...member, ...patch } : member,
+            ),
         }));
         setReview(null);
     };
 
     const addMember = () => {
-        setForm((prev) => ({ ...prev, householdMembers: [...prev.householdMembers, createBlankMember(memberCounter)] }));
+        setForm((prev) => ({
+            ...prev,
+            householdMembers: [...prev.householdMembers, createBlankMember(memberCounter)],
+        }));
         setMemberCounter((prev) => prev + 1);
     };
 
     const removeMember = (id: number) => {
         setForm((prev) => ({
             ...prev,
-            householdMembers: prev.householdMembers.length <= 1
-                ? prev.householdMembers
-                : prev.householdMembers.filter((member) => member.id !== id),
+            householdMembers:
+                prev.householdMembers.length <= 1
+                    ? prev.householdMembers
+                    : prev.householdMembers.filter((member) => member.id !== id),
         }));
     };
 
@@ -404,7 +444,7 @@ const DangKyTamTruPage: React.FC = () => {
             }
         });
 
-        const attachments = await Promise.all(allFilesToUpload.map(file => saveAttachmentFile(file)));
+        const attachments = await Promise.all(allFilesToUpload.map((file) => saveAttachmentFile(file)));
 
         saveApplicationToDashboard({
             procedure: 'Đăng ký tạm trú',
@@ -435,8 +475,12 @@ const DangKyTamTruPage: React.FC = () => {
         let canTho = findOptionByName(provinceOptions, ['Cần Thơ']);
         if (!canTho && provinceOptions.length > 0) canTho = provinceOptions[0];
 
-        let receiveWard = receiveWardOptions.find((item) => /Tân An|Ninh Kiều/i.test(item.label)) || receiveWardOptions[0] || null;
-        let temporaryWard = temporaryWardOptions.find((item) => /Tân An|Ninh Kiều/i.test(item.label)) || temporaryWardOptions[0] || null;
+        let receiveWard =
+            receiveWardOptions.find((item) => /Tân An|Ninh Kiều/i.test(item.label)) || receiveWardOptions[0] || null;
+        let temporaryWard =
+            temporaryWardOptions.find((item) => /Tân An|Ninh Kiều/i.test(item.label)) ||
+            temporaryWardOptions[0] ||
+            null;
 
         if (canTho && (!receiveWard || form.receiveCityCode !== canTho.value)) {
             try {
@@ -482,7 +526,10 @@ const DangKyTamTruPage: React.FC = () => {
             householderName: 'Trần Văn B',
             householderRelationship: 'Chủ hộ',
             householderCitizenId: '136890989064',
-            requestContent: temporaryWard && canTho ? `Đăng ký tạm trú tại ${temporaryWard.label} - ${canTho.label}` : 'Đăng ký tạm trú tại Phường Tân An - Thành phố Cần Thơ',
+            requestContent:
+                temporaryWard && canTho
+                    ? `Đăng ký tạm trú tại ${temporaryWard.label} - ${canTho.label}`
+                    : 'Đăng ký tạm trú tại Phường Tân An - Thành phố Cần Thơ',
             temporaryUntilDate: addYears(new Date(), 2),
             selectedDossierCaseId: 'owned-legal-place',
             attachmentDrafts: nextAttachments,
@@ -508,9 +555,8 @@ const DangKyTamTruPage: React.FC = () => {
         setReview(null);
     };
 
-    const renderHelpText = (fieldId: string) => (
-        activeHelp === fieldId && <span className="tamtru-help-text">{fieldHelp[fieldId]}</span>
-    );
+    const renderHelpText = (fieldId: string) =>
+        activeHelp === fieldId && <span className="tamtru-help-text">{fieldHelp[fieldId]}</span>;
 
     const renderInput = (
         field: keyof TamTruApplicationData,
@@ -519,10 +565,12 @@ const DangKyTamTruPage: React.FC = () => {
         maxLength?: number,
         readOnly = false,
         helpId?: string,
+        isAutofilled = false,
     ) => (
         <div className="form-group">
             <label className="form-label" htmlFor={field}>
-                {fieldLabels[field]}{requiredFields.has(field) && <span className="required"> *</span>}
+                {fieldLabels[field]}
+                {requiredFields.has(field) && <span className="required"> *</span>}
                 {helpId && helpButton(helpId, activeHelp, setActiveHelp)}
             </label>
             <input
@@ -537,6 +585,11 @@ const DangKyTamTruPage: React.FC = () => {
                 onChange={(event) => updateField(field, event.target.value as never)}
             />
             {helpId && renderHelpText(helpId)}
+            {isAutofilled && (
+                <span className="form-hint" style={{ color: 'var(--accent)' }}>
+                    ✓ Đã tự động điền
+                </span>
+            )}
         </div>
     );
 
@@ -546,23 +599,32 @@ const DangKyTamTruPage: React.FC = () => {
         placeholder = '-- Chọn --',
         helpId?: string,
         onChange?: (value: string) => void,
+        disabled = false,
     ) => (
         <div className="form-group">
             <label className="form-label" htmlFor={field}>
-                {fieldLabels[field]}{requiredFields.has(field) && <span className="required"> *</span>}
+                {fieldLabels[field]}
+                {requiredFields.has(field) && <span className="required"> *</span>}
                 {helpId && helpButton(helpId, activeHelp, setActiveHelp)}
             </label>
             <select
                 id={field}
                 className="form-select"
                 value={String(form[field])}
-                onChange={(event) => onChange ? onChange(event.target.value) : updateField(field, event.target.value as never)}
+                disabled={disabled}
+                onChange={(event) =>
+                    onChange ? onChange(event.target.value) : updateField(field, event.target.value as never)
+                }
             >
                 <option value="">{placeholder}</option>
                 {options.map((item) => {
                     const value = typeof item === 'string' ? item : item.value;
                     const label = typeof item === 'string' ? item : item.label;
-                    return <option key={value} value={value}>{label}</option>;
+                    return (
+                        <option key={value} value={value}>
+                            {label}
+                        </option>
+                    );
                 })}
             </select>
             {helpId && renderHelpText(helpId)}
@@ -572,9 +634,13 @@ const DangKyTamTruPage: React.FC = () => {
     return (
         <div className="main-content dktt-main-content tamtru-page animate-slide-up">
             <nav className="breadcrumb" aria-label="Breadcrumb">
-                <Link to="/"><Home size={13} /> Trang chủ</Link>
+                <Link to="/">
+                    <Home size={13} /> Trang chủ
+                </Link>
                 <ChevronRight size={13} className="breadcrumb-sep" />
-                <span>Hồ sơ Đăng ký tạm trú</span>
+                <span className="breadcrumb-link">Cư trú</span>
+                <ChevronRight size={13} className="breadcrumb-sep" />
+                <span aria-current="page">Đăng ký tạm trú</span>
             </nav>
 
             <div className="dktt-page-header">
@@ -583,15 +649,18 @@ const DangKyTamTruPage: React.FC = () => {
             </div>
 
             <div className="dktt-ai-hint">
-                <span className="dktt-ai-hint-icon"><img src="/logo_Gov_Bridge.jpg" alt="AI" /></span>
+                <span className="dktt-ai-hint-icon">
+                    <img src="/logo_Gov_Bridge.jpg" alt="AI" />
+                </span>
                 <span>
-                    <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền
-                    form bằng <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
+                    <strong>Mẹo:</strong> Nhấn vào nút Trợ lý AI (góc phải) để tự động điền form bằng{' '}
+                    <strong>giọng nói</strong> hoặc <strong>ảnh CCCD</strong>.
                 </span>
             </div>
 
             <div className="dktt-required-note">
-                <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
+                <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc
+                phải nhập
             </div>
 
             <div className="tamtru-toolbar">
@@ -608,24 +677,80 @@ const DangKyTamTruPage: React.FC = () => {
             <div className="tamtru-shell">
                 <div className="tamtru-form">
                     <Section number={1} title="CƠ QUAN THỰC HIỆN">
-                        {administrativeError && <p className="form-error-msg" role="alert">{administrativeError}</p>}
-                        <div className="dktt-form-row cols-2">
-                            {renderSelect('receiveCityCode', provinceOptions, 'Chọn', undefined, handleReceiveProvinceChange)}
-                            {renderSelect('receiveVillageCode', receiveWardOptions, 'Chọn', undefined, handleReceiveWardChange)}
-                            {renderInput('receiveOrgAddress', 'text', 'Cơ quan thực hiện', undefined, true)}
-                            {renderInput('receiveOrgPhone', 'text', 'Số điện thoại', undefined, true)}
+                        {administrativeError && (
+                            <p className="form-error-msg" role="alert">
+                                {administrativeError}
+                            </p>
+                        )}
+                        <div className="dktt-form-row">
+                            {renderSelect(
+                                'receiveCityCode',
+                                provinceOptions,
+                                'Chọn',
+                                undefined,
+                                handleReceiveProvinceChange,
+                            )}
+                            {renderSelect(
+                                'receiveVillageCode',
+                                receiveWardOptions,
+                                'Chọn',
+                                undefined,
+                                handleReceiveWardChange,
+                                !form.receiveCityCode,
+                            )}
+                            {renderInput(
+                                'receiveOrgAddress',
+                                'text',
+                                'Cơ quan đăng ký cư trú',
+                                undefined,
+                                true,
+                                undefined,
+                                !!form.receiveOrgAddress,
+                            )}
+                            {renderInput(
+                                'receiveOrgPhone',
+                                'text',
+                                'Số điện thoại cơ quan',
+                                undefined,
+                                true,
+                                undefined,
+                                !!form.receiveOrgPhone,
+                            )}
                         </div>
                     </Section>
 
                     <Section number={2} title="THỦ TỤC HÀNH CHÍNH YÊU CẦU">
                         <div className="dktt-form-row cols-2">
-                            {renderSelect('procedureTypeCode', procedureTypes, '-- Chọn --', 'procedureTypeCode', handleProcedureChange)}
+                            {renderSelect(
+                                'procedureTypeCode',
+                                procedureTypes,
+                                '-- Chọn --',
+                                'procedureTypeCode',
+                                handleProcedureChange,
+                                true,
+                            )}
                             {renderSelect('procedureCaseCode', procedureCases, '-- Chọn --', 'procedureCaseCode')}
                         </div>
                         {showRegistrationMode && (
                             <div className="tamtru-radio-line">
-                                <label><input type="radio" name="registrationMode" checked={form.registrationMode === 'lap-ho-moi'} onChange={() => updateField('registrationMode', 'lap-ho-moi')} /> Đăng ký tạm trú lập hộ mới</label>
-                                <label><input type="radio" name="registrationMode" checked={form.registrationMode === 'vao-ho-da-co'} onChange={() => updateField('registrationMode', 'vao-ho-da-co')} /> Đăng ký tạm trú vào hộ đã có</label>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="registrationMode"
+                                        checked={form.registrationMode === 'lap-ho-moi'}
+                                        onChange={() => updateField('registrationMode', 'lap-ho-moi')}
+                                    />{' '}
+                                    Đăng ký tạm trú lập hộ mới
+                                </label>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="registrationMode"
+                                        checked={form.registrationMode === 'vao-ho-da-co'}
+                                        onChange={() => updateField('registrationMode', 'vao-ho-da-co')}
+                                    />{' '}
+                                    Đăng ký tạm trú vào hộ đã có
+                                </label>
                             </div>
                         )}
                     </Section>
@@ -633,12 +758,33 @@ const DangKyTamTruPage: React.FC = () => {
                     <Section number={3} title="THÔNG TIN NGƯỜI ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ">
                         <div className="tamtru-choice-notes">
                             <label>
-                                <input type="radio" name="declareMode" checked={form.declareMode === 'self'} onChange={() => updateField('declareMode', 'self')} />
-                                <span><strong>Người khai thông tin là người Đăng ký tạm trú</strong><small>Tự động điền các thông tin của chủ tài khoản được lấy từ dữ liệu dân cư.</small></span>
+                                <input
+                                    type="radio"
+                                    name="declareMode"
+                                    checked={form.declareMode === 'self'}
+                                    onChange={() => updateField('declareMode', 'self')}
+                                />
+                                <span>
+                                    <strong>Người khai thông tin là người Đăng ký tạm trú</strong>
+                                    <small>
+                                        Tự động điền các thông tin của chủ tài khoản được lấy từ dữ liệu dân cư.
+                                    </small>
+                                </span>
                             </label>
                             <label>
-                                <input type="radio" name="declareMode" checked={form.declareMode === 'proxy'} onChange={() => updateField('declareMode', 'proxy')} />
-                                <span><strong>Khai hộ</strong><small>Yêu cầu khai đúng các trường thông tin có trong cơ sở dữ liệu quốc gia về dân cư của người được khai hộ.</small></span>
+                                <input
+                                    type="radio"
+                                    name="declareMode"
+                                    checked={form.declareMode === 'proxy'}
+                                    onChange={() => updateField('declareMode', 'proxy')}
+                                />
+                                <span>
+                                    <strong>Khai hộ</strong>
+                                    <small>
+                                        Yêu cầu khai đúng các trường thông tin có trong cơ sở dữ liệu quốc gia về dân cư
+                                        của người được khai hộ.
+                                    </small>
+                                </span>
                             </label>
                         </div>
                         <div className="dktt-form-row cols-2">
@@ -656,37 +802,89 @@ const DangKyTamTruPage: React.FC = () => {
 
                     <Section number={4} title="THÔNG TIN ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ">
                         <div className="dktt-form-row cols-2">
-                            {renderSelect('temporaryCityCode', provinceOptions, 'Chọn', undefined, handleTemporaryProvinceChange)}
-                            {renderSelect('temporaryVillageCode', temporaryWardOptions, 'Chọn', undefined, handleTemporaryWardChange)}
+                            {renderSelect(
+                                'temporaryCityCode',
+                                provinceOptions,
+                                'Chọn',
+                                undefined,
+                                handleTemporaryProvinceChange,
+                            )}
+                            {renderSelect(
+                                'temporaryVillageCode',
+                                temporaryWardOptions,
+                                'Chọn',
+                                undefined,
+                                handleTemporaryWardChange,
+                                !form.temporaryCityCode,
+                            )}
                             <div className="form-group full-width">
-                                <label className="form-label" htmlFor="temporaryAddress">{fieldLabels.temporaryAddress} <span className="required">*</span></label>
-                                <textarea id="temporaryAddress" className="form-textarea" placeholder="Địa chỉ đăng ký tạm trú" value={form.temporaryAddress} onChange={(event) => updateField('temporaryAddress', event.target.value)} />
+                                <label className="form-label" htmlFor="temporaryAddress">
+                                    {fieldLabels.temporaryAddress} <span className="required">*</span>
+                                </label>
+                                <textarea
+                                    id="temporaryAddress"
+                                    className="form-textarea"
+                                    placeholder="Địa chỉ đăng ký tạm trú"
+                                    value={form.temporaryAddress}
+                                    onChange={(event) => updateField('temporaryAddress', event.target.value)}
+                                />
                             </div>
                             {renderInput('householderName', 'text', 'Họ tên chủ hộ tạm trú')}
-                            {renderSelect('householderRelationship', relationshipOptions, '-- Chọn --', 'householderRelationship')}
+                            {renderSelect(
+                                'householderRelationship',
+                                relationshipOptions,
+                                '-- Chọn --',
+                                'householderRelationship',
+                            )}
                             {renderInput('householderCitizenId', 'text', 'Số định danh cá nhân chủ hộ tạm trú', 12)}
                             <div className="form-group full-width">
-                                <label className="form-label" htmlFor="requestContent">Nội dung đề nghị <span className="required">*</span></label>
-                                <textarea id="requestContent" className="form-textarea" placeholder="Đăng ký tạm trú tại [Xã/Phường] - [Tỉnh/Thành phố]" value={form.requestContent} onChange={(event) => updateField('requestContent', event.target.value)} />
+                                <label className="form-label" htmlFor="requestContent">
+                                    Nội dung đề nghị <span className="required">*</span>
+                                </label>
+                                <textarea
+                                    id="requestContent"
+                                    className="form-textarea"
+                                    placeholder="Đăng ký tạm trú tại [Xã/Phường] - [Tỉnh/Thành phố]"
+                                    value={form.requestContent}
+                                    onChange={(event) => updateField('requestContent', event.target.value)}
+                                />
                             </div>
                             {renderInput('temporaryUntilDate', 'date', '', undefined, false, 'temporaryUntilDate')}
                         </div>
-                        <p className="dktt-inline-note warning">Lưu ý: Thời hạn tạm trú không vượt quá thời hạn tạm trú của chủ hộ tạm trú, không vượt quá thời gian trong hợp đồng thuê nhà và chỉ được tối đa 2 năm.</p>
+                        <p className="dktt-inline-note warning">
+                            Lưu ý: Thời hạn tạm trú không vượt quá thời hạn tạm trú của chủ hộ tạm trú, không vượt quá
+                            thời gian trong hợp đồng thuê nhà và chỉ được tối đa 2 năm.
+                        </p>
                     </Section>
 
                     <Section number={5} title="NHỮNG THÀNH VIÊN TRONG HỘ GIA ĐÌNH CÙNG THAY ĐỔI">
+                        <div className="dktt-table-caption">
+                            <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none' }}>
+                                Những thành viên trong hộ gia đình cùng thay đổi
+                            </div>
+                            <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
+                        </div>
                         <div className="dktt-member-table-wrapper">
                             <table className="dktt-member-table tamtru-member-table">
                                 <thead>
                                     <tr>
                                         <th className="col-action">Thao tác</th>
                                         <th className="col-stt">STT</th>
-                                        <th>Họ và tên <span className="req">*</span></th>
-                                        <th>Định dạng ngày sinh</th>
-                                        <th>Ngày sinh <span className="req">*</span></th>
-                                        <th>Giới tính <span className="req">*</span></th>
-                                        <th>Số ĐDCN <span className="req">*</span></th>
-                                        <th>Quan hệ với chủ hộ <span className="req">*</span></th>
+                                        <th>
+                                            Họ và tên <span className="req">(*)</span>
+                                        </th>
+                                        <th>
+                                            Ngày sinh <span className="req">(*)</span>
+                                        </th>
+                                        <th>
+                                            Giới tính <span className="req">(*)</span>
+                                        </th>
+                                        <th>
+                                            Số ĐDCN (CCCD) <span className="req">(*)</span>
+                                        </th>
+                                        <th>
+                                            Quan hệ với chủ hộ <span className="req">(*)</span>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -694,34 +892,89 @@ const DangKyTamTruPage: React.FC = () => {
                                         <tr key={member.id}>
                                             <td className="col-action">
                                                 {index === 0 ? (
-                                                    <button type="button" className="dktt-btn-add" onClick={addMember} title="Thêm thành viên">
+                                                    <button
+                                                        type="button"
+                                                        className="dktt-btn-add"
+                                                        onClick={addMember}
+                                                        title="Thêm thành viên"
+                                                    >
                                                         +
                                                     </button>
                                                 ) : (
-                                                    <button type="button" className="dktt-btn-remove" onClick={() => removeMember(member.id)} title="Xóa dòng">
+                                                    <button
+                                                        type="button"
+                                                        className="dktt-btn-remove"
+                                                        onClick={() => removeMember(member.id)}
+                                                        title="Xóa dòng"
+                                                    >
                                                         <Trash2 size={16} />
                                                     </button>
                                                 )}
                                             </td>
                                             <td className="col-stt">{index + 1}</td>
-                                            <td><input className="dktt-table-input" value={member.fullName} onChange={(event) => updateMember(member.id, { fullName: event.target.value })} /></td>
                                             <td>
-                                                <select className="dktt-table-select" value={member.dateFormat} onChange={(event) => updateMember(member.id, { dateFormat: event.target.value })}>
-                                                    {dateFormatOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                                                <input
+                                                    className="dktt-table-input"
+                                                    value={member.fullName}
+                                                    placeholder="Họ và tên"
+                                                    onChange={(event) =>
+                                                        updateMember(member.id, { fullName: event.target.value })
+                                                    }
+                                                />
+                                            </td>
+                                            <td>
+                                                <input
+                                                    className="dktt-table-input"
+                                                    type="date"
+                                                    value={member.dateOfBirth}
+                                                    onChange={(event) =>
+                                                        updateMember(member.id, { dateOfBirth: event.target.value })
+                                                    }
+                                                />
+                                            </td>
+                                            <td>
+                                                <select
+                                                    className="dktt-table-select"
+                                                    value={member.gender}
+                                                    onChange={(event) =>
+                                                        updateMember(member.id, { gender: event.target.value })
+                                                    }
+                                                >
+                                                    <option value="">-- Chọn --</option>
+                                                    {genderOptions.map((item) => (
+                                                        <option key={item} value={item}>
+                                                            {item}
+                                                        </option>
+                                                    ))}
                                                 </select>
                                             </td>
-                                            <td><input className="dktt-table-input" type="date" value={member.dateOfBirth} onChange={(event) => updateMember(member.id, { dateOfBirth: event.target.value })} /></td>
                                             <td>
-                                                <select className="dktt-table-select" value={member.gender} onChange={(event) => updateMember(member.id, { gender: event.target.value })}>
-                                                    <option value="">Chọn</option>
-                                                    {genderOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-                                                </select>
+                                                <input
+                                                    className="dktt-table-input"
+                                                    maxLength={12}
+                                                    value={member.citizenId}
+                                                    placeholder="12 chữ số"
+                                                    onChange={(event) =>
+                                                        updateMember(member.id, { citizenId: event.target.value })
+                                                    }
+                                                />
                                             </td>
-                                            <td><input className="dktt-table-input" maxLength={12} value={member.citizenId} onChange={(event) => updateMember(member.id, { citizenId: event.target.value })} /></td>
                                             <td>
-                                                <select className="dktt-table-select" value={member.relationshipWithHead} onChange={(event) => updateMember(member.id, { relationshipWithHead: event.target.value })}>
-                                                    <option value="">Chọn</option>
-                                                    {relationshipOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                                                <select
+                                                    className="dktt-table-select"
+                                                    value={member.relationshipWithHead}
+                                                    onChange={(event) =>
+                                                        updateMember(member.id, {
+                                                            relationshipWithHead: event.target.value,
+                                                        })
+                                                    }
+                                                >
+                                                    <option value="">-- Chọn --</option>
+                                                    {relationshipOptions.map((item) => (
+                                                        <option key={item} value={item}>
+                                                            {item}
+                                                        </option>
+                                                    ))}
                                                 </select>
                                             </td>
                                         </tr>
@@ -729,18 +982,47 @@ const DangKyTamTruPage: React.FC = () => {
                                 </tbody>
                             </table>
                         </div>
+                        <p className="dktt-note tamtru-table-note">
+                            Bảng này chỉ cần khai khi có thêm nhân khẩu cùng thay đổi tạm trú. Nếu đã nhập một dòng thì
+                            cần điền đủ toàn bộ cột bắt buộc của dòng đó.
+                        </p>
                     </Section>
 
                     <Section number={6} title="HỒ SƠ ĐÍNH KÈM">
-                        <p className="dktt-note">Vui lòng đính kèm các tệp hình ảnh về các loại giấy tờ sau để giúp cơ quan chức năng xác minh và giải quyết nhanh hồ sơ của ông/bà.</p>
+                        <div className="dktt-upload-summary">
+                            <p className="dktt-note" style={{ marginBottom: 8 }}>
+                                Vui lòng đính kèm các tệp hình ảnh về các loại giấy tờ sau để giúp cơ quan chức năng xác
+                                minh và giải quyết nhanh hồ sơ của ông/bà.
+                            </p>
+                            <p className="dktt-upload-meta">
+                                Mỗi thời điểm áp dụng một trường hợp hồ sơ. Các giấy tờ bắt buộc luôn được giữ ở trạng
+                                thái chọn; các giấy tờ có thể khai thác CSDL chuyên ngành thì không bắt buộc tải file
+                                lên.
+                            </p>
+                        </div>
                         <div className="dktt-upload-case-list">
                             {dossierCases.map((dossierCase) => {
                                 const isOpen = activeDossierCaseId === dossierCase.id;
                                 return (
                                     <div key={dossierCase.id} className={`dktt-upload-case${isOpen ? ' open' : ''}`}>
-                                        <button type="button" className="dktt-upload-case-header" onClick={() => setActiveDossierCaseId(dossierCase.id)}>
-                                            <span>{dossierCase.title}</span>
-                                            <input type="radio" checked={form.selectedDossierCaseId === dossierCase.id} onChange={() => selectDossierCase(dossierCase.id)} />
+                                        <button
+                                            type="button"
+                                            className="dktt-upload-case-header"
+                                            onClick={() => setActiveDossierCaseId(dossierCase.id)}
+                                        >
+                                            <div className="dktt-upload-case-title">
+                                                <span className="dktt-upload-case-bullet">-</span>
+                                                <span>{dossierCase.title}</span>
+                                            </div>
+                                            <div className="tamtru-upload-case-controls">
+                                                <input
+                                                    type="radio"
+                                                    checked={form.selectedDossierCaseId === dossierCase.id}
+                                                    onClick={(event) => event.stopPropagation()}
+                                                    onChange={() => selectDossierCase(dossierCase.id)}
+                                                />
+                                                {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                            </div>
                                         </button>
                                         {isOpen && (
                                             <div className="dktt-upload-case-body">
@@ -748,16 +1030,18 @@ const DangKyTamTruPage: React.FC = () => {
                                                     <table className="dktt-member-table dktt-doc-table tamtru-doc-table">
                                                         <thead>
                                                             <tr>
-                                                                <th>STT</th>
-                                                                <th>Chọn</th>
-                                                                <th>Tên giấy tờ</th>
-                                                                <th>Loại giấy tờ</th>
-                                                                <th>Tải file mẫu</th>
-                                                                <th>Khai thác CSDL chuyên ngành / Biểu mẫu điện tử</th>
-                                                                <th>Đính kèm</th>
-                                                                <th>Số lượng</th>
-                                                                <th>Ghi chú</th>
-                                                                <th>Thao tác</th>
+                                                                <th className="dktt-doc-col-stt">STT</th>
+                                                                <th className="dktt-doc-col-pick" />
+                                                                <th className="dktt-doc-col-name">Tên giấy tờ</th>
+                                                                <th className="dktt-doc-col-kind">Loại giấy tờ</th>
+                                                                <th className="dktt-doc-col-template">Tải file mẫu</th>
+                                                                <th className="dktt-doc-col-specialized">
+                                                                    Khai thác CSDL chuyên ngành/ Biểu mẫu điện tử
+                                                                </th>
+                                                                <th className="dktt-doc-col-attach">Đính kèm</th>
+                                                                <th className="dktt-doc-col-quantity">Số lượng</th>
+                                                                <th className="dktt-doc-col-note">Ghi chú</th>
+                                                                <th className="dktt-doc-col-action">Thao tác</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -765,30 +1049,138 @@ const DangKyTamTruPage: React.FC = () => {
                                                                 const draft = form.attachmentDrafts[document.id];
                                                                 return (
                                                                     <tr key={document.id}>
-                                                                        <td>{index + 1}</td>
-                                                                        <td><input type="checkbox" checked={draft?.checked || false} onChange={(event) => updateAttachment(document.id, { checked: event.target.checked })} /></td>
-                                                                        <td>{document.name}{document.required && <span className="required"> *</span>}</td>
-                                                                        <td>{document.kind}</td>
-                                                                        <td><button type="button" className="dktt-doc-icon-btn">Mẫu</button></td>
-                                                                        <td><span className="dktt-doc-chip">Không áp dụng</span></td>
-                                                                        <td>{draft?.fileName || 'Chưa chọn file'}</td>
-                                                                        <td><input className="dktt-table-input" value={draft?.quantity || document.quantity} onChange={(event) => updateAttachment(document.id, { quantity: event.target.value })} /></td>
-                                                                        <td><input className="dktt-table-input" value={draft?.note || ''} onChange={(event) => updateAttachment(document.id, { note: event.target.value })} /></td>
+                                                                        <td className="dktt-doc-cell-center dktt-doc-cell-stt">
+                                                                            {index + 1}
+                                                                        </td>
+                                                                        <td className="dktt-doc-cell-center dktt-doc-cell-pick">
+                                                                            <input
+                                                                                className="dktt-doc-checkbox"
+                                                                                type="checkbox"
+                                                                                checked={draft?.checked || false}
+                                                                                onChange={(event) =>
+                                                                                    updateAttachment(document.id, {
+                                                                                        checked: event.target.checked,
+                                                                                    })
+                                                                                }
+                                                                                disabled={document.required}
+                                                                            />
+                                                                        </td>
+                                                                        <td>
+                                                                            <div className="dktt-doc-name">
+                                                                                <strong>
+                                                                                    {document.name}
+                                                                                    {document.required && (
+                                                                                        <span className="req"> *</span>
+                                                                                    )}
+                                                                                </strong>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td>
+                                                                            <select
+                                                                                className="dktt-table-select dktt-doc-select"
+                                                                                value={document.kind}
+                                                                                disabled
+                                                                            >
+                                                                                <option value={document.kind}>
+                                                                                    {document.kind}
+                                                                                </option>
+                                                                            </select>
+                                                                        </td>
+                                                                        <td className="dktt-doc-cell-center">
+                                                                            {document.templateAvailable ? (
+                                                                                <a
+                                                                                    className="dktt-doc-icon-btn"
+                                                                                    href={CT01_TEMPLATE_URL}
+                                                                                    download
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    title="Tải file mẫu"
+                                                                                    aria-label="Tải file mẫu"
+                                                                                >
+                                                                                    <FileDown size={14} />
+                                                                                </a>
+                                                                            ) : (
+                                                                                <span className="dktt-table-placeholder">
+                                                                                    -
+                                                                                </span>
+                                                                            )}
+                                                                        </td>
+                                                                        <td>
+                                                                            <span className="dktt-table-placeholder">
+                                                                                Không áp dụng
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>
+                                                                            <label className="dktt-doc-attach">
+                                                                                <input
+                                                                                    type="file"
+                                                                                    accept="image/png,image/jpeg,application/pdf"
+                                                                                    onChange={(event) =>
+                                                                                        updateAttachment(document.id, {
+                                                                                            checked: true,
+                                                                                            fileName:
+                                                                                                event.target.files?.[0]
+                                                                                                    ?.name || '',
+                                                                                            quantity:
+                                                                                                draft?.quantity ||
+                                                                                                document.quantity,
+                                                                                        })
+                                                                                    }
+                                                                                />
+                                                                                <Paperclip size={14} />
+                                                                                <span>
+                                                                                    {draft?.fileName || 'Chọn file'}
+                                                                                </span>
+                                                                            </label>
+                                                                        </td>
                                                                         <td>
                                                                             <input
-                                                                                type="file"
-                                                                                id={`tamtru-file-${document.id}`}
-                                                                                style={{ display: 'none' }}
-                                                                                onChange={(event) => {
-                                                                                    const file = event.target.files?.[0];
-                                                                                    if (file) {
-                                                                                        updateAttachment(document.id, { checked: true, fileName: file.name, file: file, quantity: draft?.quantity || document.quantity });
-                                                                                    }
-                                                                                }}
+                                                                                className="dktt-table-input dktt-doc-qty-input"
+                                                                                value={
+                                                                                    draft?.quantity || document.quantity
+                                                                                }
+                                                                                onChange={(event) =>
+                                                                                    updateAttachment(document.id, {
+                                                                                        quantity: event.target.value,
+                                                                                    })
+                                                                                }
                                                                             />
-                                                                            <button type="button" className="dktt-doc-icon-btn" onClick={() => window.document.getElementById(`tamtru-file-${document.id}`)?.click()}>
-                                                                                Chọn file
-                                                                            </button>
+                                                                        </td>
+                                                                        <td>
+                                                                            <input
+                                                                                className="dktt-table-input dktt-doc-note-input"
+                                                                                value={draft?.note || ''}
+                                                                                placeholder="Ghi chú"
+                                                                                onChange={(event) =>
+                                                                                    updateAttachment(document.id, {
+                                                                                        note: event.target.value,
+                                                                                    })
+                                                                                }
+                                                                            />
+                                                                        </td>
+                                                                        <td className="dktt-doc-cell-center">
+                                                                            <label
+                                                                                className="dktt-doc-icon-btn"
+                                                                                title="Thêm tệp đính kèm"
+                                                                            >
+                                                                                <input
+                                                                                    type="file"
+                                                                                    accept="image/png,image/jpeg,application/pdf"
+                                                                                    onChange={(event) =>
+                                                                                        updateAttachment(document.id, {
+                                                                                            checked: true,
+                                                                                            fileName:
+                                                                                                event.target.files?.[0]
+                                                                                                    ?.name ||
+                                                                                                `${document.id}-demo.pdf`,
+                                                                                            quantity:
+                                                                                                draft?.quantity ||
+                                                                                                document.quantity,
+                                                                                        })
+                                                                                    }
+                                                                                />
+                                                                                <Plus size={14} />
+                                                                            </label>
                                                                         </td>
                                                                     </tr>
                                                                 );
@@ -808,9 +1200,20 @@ const DangKyTamTruPage: React.FC = () => {
                     <Section number={7} title="THÔNG TIN NHẬN THÔNG BÁO TÌNH TRẠNG HỒ SƠ, KẾT QUẢ GIẢI QUYẾT HỒ SƠ">
                         <div className="dktt-form-row cols-2">
                             <div className="form-group">
-                                <label className="form-label" htmlFor="notificationMethod">Hình thức nhận thông báo</label>
-                                <select id="notificationMethod" className="form-select" value={form.notificationMethod} onChange={(event) => updateField('notificationMethod', event.target.value)}>
-                                    {notificationMethods.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                                <label className="form-label" htmlFor="notificationMethod">
+                                    Hình thức nhận thông báo
+                                </label>
+                                <select
+                                    id="notificationMethod"
+                                    className="form-select"
+                                    value={form.notificationMethod}
+                                    onChange={(event) => updateField('notificationMethod', event.target.value)}
+                                >
+                                    {notificationMethods.map((item) => (
+                                        <option key={item.value} value={item.value}>
+                                            {item.label}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             {renderSelect('resultMethod', resultMethods)}
@@ -819,35 +1222,84 @@ const DangKyTamTruPage: React.FC = () => {
 
                     <Section number={8} title="THÔNG TIN LỆ PHÍ">
                         <div className="tamtru-radio-line">
-                            <label><input type="radio" name="feeType" checked={form.feeType === 'co-phi'} onChange={() => handleFeeTypeChange('co-phi')} /> Có phí</label>
-                            <label><input type="radio" name="feeType" checked={form.feeType === 'mien-phi'} onChange={() => handleFeeTypeChange('mien-phi')} /> Miễn phí</label>
-                            <label><input type="radio" name="feeType" checked={form.feeType === 'khong-nop'} onChange={() => handleFeeTypeChange('khong-nop')} /> Không phải nộp lệ phí</label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="feeType"
+                                    checked={form.feeType === 'co-phi'}
+                                    onChange={() => handleFeeTypeChange('co-phi')}
+                                />{' '}
+                                Có phí
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="feeType"
+                                    checked={form.feeType === 'mien-phi'}
+                                    onChange={() => handleFeeTypeChange('mien-phi')}
+                                />{' '}
+                                Miễn phí
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="feeType"
+                                    checked={form.feeType === 'khong-nop'}
+                                    onChange={() => handleFeeTypeChange('khong-nop')}
+                                />{' '}
+                                Không phải nộp lệ phí
+                            </label>
                             {helpButton('fee', activeHelp, setActiveHelp)}
                         </div>
                         <div className="dktt-form-row cols-2">
                             {renderInput('feeAmount', 'text', '', undefined, true)}
-                            {renderInput('feeExemptionReason', 'text', 'Nhập lý do miễn lệ phí', undefined, form.feeType === 'co-phi')}
+                            {renderInput(
+                                'feeExemptionReason',
+                                'text',
+                                'Nhập lý do miễn lệ phí',
+                                undefined,
+                                form.feeType === 'co-phi',
+                            )}
                             <div className="form-group full-width">
-                                <label className="form-label" htmlFor="feeDescription">Mô tả</label>
-                                <textarea id="feeDescription" className="form-textarea" value={form.feeDescription} onChange={(event) => updateField('feeDescription', event.target.value)} />
+                                <label className="form-label" htmlFor="feeDescription">
+                                    Mô tả
+                                </label>
+                                <textarea
+                                    id="feeDescription"
+                                    className="form-textarea"
+                                    value={form.feeDescription}
+                                    onChange={(event) => updateField('feeDescription', event.target.value)}
+                                />
                             </div>
                         </div>
                         {renderHelpText('fee')}
                     </Section>
 
                     <label className="dktt-legal-check">
-                        <input type="checkbox" checked={form.committed} onChange={(event) => updateField('committed', event.target.checked)} />
+                        <input
+                            type="checkbox"
+                            checked={form.committed}
+                            onChange={(event) => updateField('committed', event.target.checked)}
+                        />
                         <span>Tôi xin chịu trách nhiệm trước pháp luật về lời khai trên</span>
                     </label>
 
                     <div className="dktt-actions">
-                        <button className="btn btn-primary" type="button" onClick={() => showToast('Tính năng in CT01 đang ở chế độ demo.')}>
+                        <button
+                            className="btn btn-primary"
+                            type="button"
+                            onClick={() => showToast('Tính năng in CT01 đang ở chế độ demo.')}
+                        >
                             <FileText size={16} /> In CT01
                         </button>
                         <button className="btn btn-outline" type="button" onClick={() => navigate('/')}>
                             <ArrowLeft size={16} /> Quay lại
                         </button>
-                        <button className="btn btn-secondary" type="button" onClick={() => showToast('Đã lưu nháp hồ sơ demo.')}>
+                        <button
+                            className="btn btn-secondary"
+                            type="button"
+                            onClick={() => showToast('Đã lưu nháp hồ sơ demo.')}
+                        >
                             <Save size={16} /> Lưu nháp
                         </button>
                         <button className="btn btn-primary" type="button" onClick={handleSubmit}>
@@ -868,8 +1320,8 @@ const DangKyTamTruPage: React.FC = () => {
                                 {review.status === 'VALID'
                                     ? 'Hồ sơ đủ điều kiện tiền kiểm'
                                     : review.status === 'NEED_REVIEW'
-                                        ? 'Hồ sơ cần kiểm tra thêm'
-                                        : 'Hồ sơ thiếu/sai thông tin'}
+                                      ? 'Hồ sơ cần kiểm tra thêm'
+                                      : 'Hồ sơ thiếu/sai thông tin'}
                             </h2>
                             {[...review.errors, ...review.warnings].map((item) => (
                                 <div className="tamtru-review-item" key={`${item.title}-${item.reason}`}>
@@ -878,13 +1330,78 @@ const DangKyTamTruPage: React.FC = () => {
                                     <span>{item.suggestion}</span>
                                 </div>
                             ))}
-                            {review.suggestions.map((item) => <p className="tamtru-suggestion" key={item}>{item}</p>)}
+                            {review.suggestions.map((item) => (
+                                <p className="tamtru-suggestion" key={item}>
+                                    {item}
+                                </p>
+                            ))}
                         </div>
                     )}
                 </div>
+                <aside className="service-sidebar dktt-service-sidebar" aria-label="Thông tin dịch vụ">
+                    <div className="sidebar-info-card">
+                        <div className="sidebar-info-card-header">
+                            <div className="sidebar-info-card-title">Giấy tờ cần chuẩn bị</div>
+                        </div>
+                        <div className="sidebar-info-card-body">
+                            <ul className="info-list">
+                                {(service.requiredDocs || []).map((doc, index) => (
+                                    <li key={index} className="info-list-item">
+                                        {doc}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="sidebar-info-card">
+                        <div className="sidebar-info-card-header">
+                            <div className="sidebar-info-card-title">Các bước thực hiện</div>
+                        </div>
+                        <div className="sidebar-info-card-body">
+                            <ol className="steps-list">
+                                {(service.steps || []).map((step, index) => (
+                                    <li key={index}>{step}</li>
+                                ))}
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div className="sidebar-info-card">
+                        <div className="sidebar-info-card-header">
+                            <div className="sidebar-info-card-title">Thông tin dịch vụ</div>
+                        </div>
+                        <div className="sidebar-info-card-body">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div
+                                    style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}
+                                >
+                                    <span style={{ color: 'var(--text-secondary)' }}>Thời gian xử lý</span>
+                                    <strong style={{ color: '#C8441A' }}>{service.processingTime}</strong>
+                                </div>
+                                <div
+                                    style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}
+                                >
+                                    <span style={{ color: 'var(--text-secondary)' }}>Lệ phí</span>
+                                    <strong style={{ color: 'var(--accent)' }}>{service.fee}</strong>
+                                </div>
+                                <div
+                                    style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}
+                                >
+                                    <span style={{ color: 'var(--text-secondary)' }}>Danh mục</span>
+                                    <strong>{service.category}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
             </div>
 
-            {toast && <div className="dktt-toast" role="alert">{toast}</div>}
+            {toast && (
+                <div className="dktt-toast" role="alert">
+                    {toast}
+                </div>
+            )}
         </div>
     );
 };
