@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
     Building2,
     CheckCircle2,
@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
-import { loadDashboardApplications } from '../../utils/applicationDashboardData';
+import { loadDashboardApplications, DASHBOARD_STORAGE_KEY } from '../../utils/applicationDashboardData';
 import {
     MISSING_OFFICER_VALUE,
     filterOfficerApplications,
@@ -60,11 +60,21 @@ const fileTypeLabel = (attachment: AttachmentMetadata) => {
 
 const CitizenDashboardPage: React.FC = () => {
     const { user } = useAuth();
-    const [applications] = useState<OfficerApplication[]>(loadDashboardApplications);
+    const [applications, setApplications] = useState<OfficerApplication[]>(loadDashboardApplications);
     const [statusFilter, setStatusFilter] = useState<OfficerApplicationFilters['status']>('Tất cả');
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
     const [attachmentNotice, setAttachmentNotice] = useState('');
+
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === DASHBOARD_STORAGE_KEY) {
+                setApplications(loadDashboardApplications());
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
     const filteredApplications = useMemo(() => filterOfficerApplications(
         applications,
