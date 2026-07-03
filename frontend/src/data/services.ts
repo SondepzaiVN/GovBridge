@@ -19,6 +19,11 @@ export let PUBLIC_SERVICES: PublicService[] = [];
 export let SERVICE_MAP: Record<string, PublicService> = {};
 export let ROUTE_TO_SERVICE_MAP: Record<string, PublicService> = {};
 
+const ROUTE_ALIASES: Record<string, string> = {
+    '/dang-ky-thuong-tru': '/ho-khau',
+    '/tam-tru': '/dang-ky-tam-tru',
+};
+
 let hasLoaded = false;
 let loadingPromise: Promise<void> | null = null;
 
@@ -73,7 +78,12 @@ const normalizeProcedure = (procedure: ApiProcedure): PublicService => ({
 const setPublicServices = (services: PublicService[]) => {
     PUBLIC_SERVICES = services;
     SERVICE_MAP = Object.fromEntries(services.map((service) => [service.id, service]));
-    ROUTE_TO_SERVICE_MAP = Object.fromEntries(services.map((service) => [service.route, service]));
+    const routeMap = Object.fromEntries(services.map((service) => [service.route, service]));
+    for (const [aliasRoute, canonicalRoute] of Object.entries(ROUTE_ALIASES)) {
+        const service = routeMap[canonicalRoute];
+        if (service) routeMap[aliasRoute] = service;
+    }
+    ROUTE_TO_SERVICE_MAP = routeMap;
 };
 
 export const loadPublicServices = (): Promise<void> => {
