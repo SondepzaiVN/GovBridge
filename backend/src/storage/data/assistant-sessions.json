@@ -127,68 +127,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T21:46:00.831Z",
+      "updatedAt": "2026-07-03T21:58:32.906Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "chuyển đến trang chủ",
-          "createdAt": "2026-07-03T21:42:28.963Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn sẽ được chuyển đến trang chủ.",
-          "createdAt": "2026-07-03T21:42:28.963Z"
-        },
-        {
-          "role": "user",
-          "content": "Thử lại",
-          "createdAt": "2026-07-03T21:43:16.654Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn sẽ được chuyển đến trang chủ.",
-          "createdAt": "2026-07-03T21:43:16.654Z"
-        },
-        {
-          "role": "user",
-          "content": "hi",
-          "createdAt": "2026-07-03T21:43:39.684Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin chào! Mình có thể hỗ trợ bạn tra cứu thủ tục hành chính, giấy tờ cần chuẩn bị, cách điền hồ sơ hoặc chuyển đến dịch vụ phù hợp.",
-          "createdAt": "2026-07-03T21:43:39.684Z"
-        },
-        {
-          "role": "user",
-          "content": "bạn là ai",
-          "createdAt": "2026-07-03T21:43:46.191Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình là trợ lý ảo của GovBridge, có nhiệm vụ giúp bạn tìm kiếm thông tin về thủ tục hành chính, giấy tờ cần thiết và quy trình thực hiện. Nếu bạn có câu hỏi cụ thể nào, hãy cho mình biết nhé!",
-          "createdAt": "2026-07-03T21:43:46.191Z"
-        },
-        {
-          "role": "user",
-          "content": "thường trú là gì",
-          "createdAt": "2026-07-03T21:43:57.535Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Đăng ký thường trú là thủ tục hành chính cho phép công dân được ghi vào sổ hộ khẩu tại một địa chỉ nhất định, xác nhận quyền cư trú lâu dài tại địa phương đó. Thủ tục này thường liên quan đến việc cung cấp các giấy tờ như giấy tờ tùy thân, giấy chứng nhận quyền sử dụng đất, hợp đồng mua bán nhà, v.v. để chứng minh nơi cư trú. Nếu bạn cần thông tin chi tiết về quy trình hoặc các giấy tờ cần thiết, hãy cho mình biết!",
-          "createdAt": "2026-07-03T21:43:57.535Z"
-        },
-        {
-          "role": "user",
-          "content": "chuyển đến trang đăng ký thường trú",
-          "createdAt": "2026-07-03T21:44:18.015Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T21:44:18.015Z"
-        },
         {
           "role": "user",
           "content": "Họ và tên là trần minh hùng",
@@ -228,6 +168,66 @@
           "role": "assistant",
           "content": "Bạn đã nhập ngày sinh là 2/3/2006. Nếu thông tin này chính xác, mình sẽ tiến hành cập nhật vào biểu mẫu đăng ký thường trú của bạn. Bạn có muốn tiếp tục không?",
           "createdAt": "2026-07-03T21:46:00.831Z"
+        },
+        {
+          "role": "user",
+          "content": "đi đến trang tạm trụ",
+          "createdAt": "2026-07-03T21:52:32.220Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:52:32.220Z"
+        },
+        {
+          "role": "user",
+          "content": "Đăng ký thường chú",
+          "createdAt": "2026-07-03T21:55:49.531Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:55:49.531Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi muốn tìm thấy hạ xuống",
+          "createdAt": "2026-07-03T21:57:03.487Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn có thể cung cấp thêm thông tin về phần nào bạn muốn tìm thấy? Ví dụ như tên trường hoặc thông tin cụ thể nào bạn đang tìm kiếm.\n\nBạn đang tìm kiếm trường nào để hạ xuống?",
+          "createdAt": "2026-07-03T21:57:03.487Z"
+        },
+        {
+          "role": "user",
+          "content": "Tạm dừng",
+          "createdAt": "2026-07-03T21:57:33.394Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Nếu bạn cần hỗ trợ thêm, hãy cho tôi biết!",
+          "createdAt": "2026-07-03T21:57:33.394Z"
+        },
+        {
+          "role": "user",
+          "content": "Đến khi trung tạm trú",
+          "createdAt": "2026-07-03T21:57:58.797Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, dựa trên thông tin về thủ tục **Đăng ký tạm trú**, có một số thông tin quan trọng liên quan đến thời gian và quy trình mà bạn cần lưu ý:\n\n1. **Thời hạn giải quyết thủ tục:** Thời hạn giải quyết thủ tục đăng ký tạm trú là **03 ngày làm việc**, kể từ ngày cơ quan đăng ký cư trú nhận được hồ sơ đầy đủ và hợp lệ.\n\n2. **Quy trình kiểm tra và trả kết quả:** Sau khi bạn nộp hồ sơ thành công, Công an cấp xã nơi có chỗ ở tạm trú sẽ:\n   - Kiểm tra tính pháp lý và nội dung hồ sơ.\n   - Nếu hồ sơ **đầy đủ, hợp lệ**: Cơ quan sẽ tiếp nhận hồ sơ và hẹn trả kết quả.\n   - Nếu hồ sơ **chưa đầy đủ**: Cơ quan sẽ hướng dẫn bạn bổ sung hồ sơ.\n   - Nếu hồ sơ **không đủ điều kiện**: Cơ quan sẽ từ chối giải quyết và nêu rõ lý do.\n\n3. **Cách tra cứu kết quả:** Bạn nên theo dõi trạng thái xử lý trên hệ thống (Cổng Dịch vụ công quốc gia hoặc ứng dụng VNeID) bằng mã hồ sơ/mã tiếp nhận.\n\nNếu bạn có câu hỏi cụ thể hơn, vui lòng cung cấp thêm thông tin để tôi có thể hỗ trợ chính xác hơn.",
+          "createdAt": "2026-07-03T21:57:58.797Z"
+        },
+        {
+          "role": "user",
+          "content": "Những con tạm trú",
+          "createdAt": "2026-07-03T21:58:32.906Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, dựa trên thông tin về thủ tục **Đăng ký tạm trú**, đối tượng được thực hiện thủ tục này là **Công dân Việt Nam**. \n\nCụ thể, người dân cần thực hiện thủ tục đăng ký tạm trú khi có nhu cầu sinh sống tại một nơi nhất định ngoài nơi thường trú, bao gồm các trường hợp như:\n- Ở tại nhà thuê, nhà mượn, nhà người thân.\n- Ở tại ký túc xá, cơ sở lưu trú.\n- Ở tại nơi làm việc có chỗ ở hoặc một chỗ ở hợp pháp khác ngoài nơi thường trú.  \n\nNếu bạn thuộc nhóm đối tượng này, bạn có thể thực hiện thủ tục trực tuyến qua Cổng Dịch vụ công quốc gia hoặc nộp trực tiếp tại Công an cấp xã nơi có chỗ ở tạm trú.",
+          "createdAt": "2026-07-03T21:58:32.906Z"
         }
       ]
     },
