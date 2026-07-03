@@ -163,10 +163,8 @@ const VoiceCallController: React.FC = () => {
 
         const greeting = state.messages.length === 0 ? INTRO_GREETING : SUBSEQUENT_GREETING;
 
-        // Warm-up mic: xin quyền sớm trong lúc TTS đang nói
-        void navigator.mediaDevices?.getUserMedia({ audio: true })
-            .then((stream) => { stream.getTracks().forEach((t) => t.stop()); })
-            .catch(() => undefined);
+        // Warm-up mic bằng sttService để giữ connection luôn mở
+        void sttService.warmupStream();
 
         dispatch({
             type: 'SET_CALL_STATUS',
@@ -337,6 +335,7 @@ const VoiceCallController: React.FC = () => {
             ttsService.stop();
             dispatch({ type: 'SET_LISTENING', payload: false });
             void sttService.cancelListening().catch(() => undefined);
+            sttService.releaseStream();
             return;
         }
 
