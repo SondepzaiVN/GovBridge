@@ -91,9 +91,9 @@ const LoginPage: React.FC = () => {
                     <ArrowLeft size={17} /> Về trang chủ
                 </button>
 
-                <header className="login-ref-brand">
-                    <img src="/logo_Gov_Bridge.jpg" alt="Quốc huy Việt Nam" />
-                    <img className="login-ref-brand-heading" src="/auth/dvc-heading.svg" alt="Cổng Dịch vụ công Quốc gia - Kết nối, cung cấp thông tin và dịch vụ công mọi lúc, mọi nơi" />
+                <header className="login-ref-brand" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
+                    <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#b91c1c', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>GovBridge</h1>
                 </header>
 
                 <main className="login-ref-selector" aria-labelledby="login-selector-title">
@@ -103,12 +103,12 @@ const LoginPage: React.FC = () => {
                             <h2 id="citizen-login-title">Công dân</h2>
                             <div className="login-ref-methods two-methods">
                                 <button type="button" className="login-ref-method" onClick={() => openMethod('vneid')}>
-                                    <img src="/auth/logo-vneid.png" alt="VNeID" />
+                                    <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
                                     <span>Tài khoản Định danh điện tử (VNeID)</span>
                                 </button>
                                 <button type="button" className="login-ref-method" onClick={() => openMethod('dvc')}>
-                                    <img src="/logo_Gov_Bridge.jpg" alt="Cổng Dịch vụ công Quốc gia" />
-                                    <span>Tài khoản cấp bởi Cổng dịch vụ công quốc gia</span>
+                                    <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
+                                    <span>Tài khoản cấp bởi hệ thống GovBridge</span>
                                 </button>
                             </div>
                         </section>
@@ -117,7 +117,7 @@ const LoginPage: React.FC = () => {
                             <h2 id="officer-login-title">Cán bộ</h2>
                             <div className="login-ref-methods">
                                 <button type="button" className="login-ref-method" onClick={() => openMethod('officer')}>
-                                    <img src="/logo_Gov_Bridge.jpg" alt="Tài khoản cán bộ" />
+                                    <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
                                     <span>Tài khoản cán bộ, cơ quan xử lý hồ sơ</span>
                                 </button>
                             </div>
@@ -152,14 +152,10 @@ const LoginPage: React.FC = () => {
             </button>
 
             <div className="login-ref-vneid-brand">
-                {isVneid ? (
-                    <img src="/auth/logo-full-vneid.png" alt="Bộ Công an - Trung tâm dữ liệu Quốc gia về dân cư" />
-                ) : (
-                    <div className="login-ref-gov-brand">
-                        <img src="/logo_Gov_Bridge.jpg" alt="Quốc huy Việt Nam" />
-                        <strong>{role === 'can-bo' ? 'Hệ thống cán bộ' : 'Cổng Dịch vụ công Quốc gia'}</strong>
-                    </div>
-                )}
+                <div className="login-ref-gov-brand">
+                    <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
+                    <strong>{role === 'can-bo' ? 'Hệ thống cán bộ GovBridge' : 'Hệ thống công dân GovBridge'}</strong>
+                </div>
             </div>
 
             <main className={`login-ref-auth-card${role === 'can-bo' ? ' officer' : ''}`}>
@@ -218,8 +214,8 @@ const LoginPage: React.FC = () => {
                         </>
                     ) : (
                         <>
-                            <img src="/logo_Gov_Bridge.jpg" alt="Quốc huy Việt Nam" />
-                            <p>{role === 'can-bo' ? 'Dành cho cán bộ tiếp nhận và xử lý hồ sơ hành chính.' : 'Xác thực bằng tài khoản Cổng Dịch vụ công Quốc gia.'}</p>
+                            <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
+                            <p>{role === 'can-bo' ? 'Dành cho cán bộ tiếp nhận và xử lý hồ sơ hành chính.' : 'Xác thực bằng tài khoản GovBridge.'}</p>
                         </>
                     )}
                 </aside>
