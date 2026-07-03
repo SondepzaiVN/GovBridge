@@ -206,6 +206,7 @@
     --chat-user-text: #ffffff;
     --chatbot-width: 380px;
     --chatbot-height: 580px;
+    --chatbot-bottom-safe-space: 126px;
 
     /* Shadows */
     --shadow-sm: 0 1px 3px rgba(26, 86, 160, 0.1), 0 1px 2px rgba(26, 86, 160, 0.06);
@@ -691,7 +692,7 @@ button.header-nav-link.active {
    ============================================================ */
 .main-content {
     flex: 1;
-    padding: 32px 24px;
+    padding: 32px 24px var(--chatbot-bottom-safe-space);
     max-width: 1280px;
     margin: 0 auto;
     width: 100%;
@@ -701,6 +702,13 @@ button.header-nav-link.active {
 @media (min-width: 768px) {
     .main-content {
         padding-bottom: 110px;
+    }
+}
+
+/* Trên mobile */
+@media (max-width: 767px) {
+    .main-content {
+        padding-bottom: 56px;
     }
 }
 
@@ -10941,7 +10949,7 @@ button.header-nav-link.active {
     padding: 28px 24px 80px;
     overflow: hidden;
     background-color: #5f0004;
-    background-image: url('/auth/background-login.png');
+    background-image: url('../public/auth/background-login.png');
     background-position: center top;
     background-repeat: no-repeat;
     background-size: cover;
@@ -11735,6 +11743,11 @@ button.header-nav-link.active {
     color: #22743b;
 }
 
+.officer-status.approved {
+    background: #e6f4ed;
+    color: #176b42;
+}
+
 .officer-status.rejected {
     background: #fde9e8;
     color: #a32824;
@@ -12526,7 +12539,7 @@ button.header-nav-link.active {
     flex-direction: column;
     gap: 10px;
 }
-.officer-attachment-item {
+ul.officer-attachment-list li.officer-attachment-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -12656,4 +12669,77 @@ button.header-nav-link.active {
     text-align: center;
     padding: 20px;
     color: #525b64;
+}
+
+/* Citizen application dashboard reuses the officer read-only workspace. */
+.citizen-workspace.list-only {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.citizen-detail-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.citizen-detail-close {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border: 1px solid #d4d9de;
+    border-radius: 3px;
+    background: #fff;
+    color: #5f6872;
+    cursor: pointer;
+}
+
+.citizen-detail-close:hover {
+    border-color: #9d211d;
+    color: #9d211d;
+}
+
+.citizen-empty-attachments {
+    color: #737c85;
+    font-size: 0.66rem;
+}
+
+.citizen-application-table td:nth-child(2),
+.citizen-application-table td:nth-child(3) {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+    .citizen-application-table th:nth-child(3),
+    .citizen-application-table td:nth-child(3) {
+        display: none;
+    }
+
+    .citizen-application-table th:nth-child(1) {
+        width: 39%;
+    }
+
+    .citizen-application-table th:nth-child(2) {
+        width: 20%;
+    }
+
+    .citizen-application-table th:nth-child(4) {
+        width: 33%;
+    }
+
+    .citizen-application-table th:nth-child(5) {
+        width: 8%;
+    }
+
+    ul.officer-attachment-list li.officer-attachment-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .officer-attachment-actions {
+        width: 100%;
+        margin-left: 0;
+    }
 }
