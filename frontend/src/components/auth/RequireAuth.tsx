@@ -1,16 +1,13 @@
 import React from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/useAuth';
-import type { UserRole } from '../../services/authService';
 import { Lock } from 'lucide-react';
 
-type RequireRoleProps = React.PropsWithChildren<{
-    role: UserRole;
-}>;
-
-const getDashboardRoute = (role: UserRole) => role === 'can-bo' ? '/can-bo' : '/nguoi-dan';
-
-const RequireRole: React.FC<RequireRoleProps> = ({ role, children }) => {
+/**
+ * Guard chung: yêu cầu đăng nhập (bất kỳ role nào).
+ * Nếu chưa đăng nhập → hiện bảng thông báo yêu cầu đăng nhập với 2 lựa chọn: Hủy hoặc Đăng nhập.
+ */
+const RequireAuth: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -25,7 +22,7 @@ const RequireRole: React.FC<RequireRoleProps> = ({ role, children }) => {
         };
 
         const handleLogin = () => {
-            navigate(`/dang-nhap?role=${role}`, { replace: true, state: { from: location.pathname } });
+            navigate('/dang-nhap', { replace: true, state: { from: location.pathname } });
         };
 
             <div style={{ minHeight: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -46,7 +43,7 @@ const RequireRole: React.FC<RequireRoleProps> = ({ role, children }) => {
                                     Yêu cầu đăng nhập
                                 </h3>
                                 <p className="auth-modal-desc">
-                                    Vui lòng đăng nhập tài khoản để tiếp tục truy cập vào khu vực này.
+                                    Vui lòng đăng nhập tài khoản để tiếp tục truy cập và thực hiện thủ tục dịch vụ công này.
                                 </p>
                             </div>
                         </div>
@@ -73,11 +70,7 @@ const RequireRole: React.FC<RequireRoleProps> = ({ role, children }) => {
         );
     }
 
-    if (user.role !== role) {
-        return <Navigate to={getDashboardRoute(user.role)} replace />;
-    }
-
     return children;
 };
 
-export default RequireRole;
+export default RequireAuth;

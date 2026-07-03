@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
         ? methodParam
         : null;
     const role: UserRole = method === 'officer' || searchParams.get('role') === 'can-bo' ? 'can-bo' : 'nguoi-dan';
-    const [agency, setAgency] = useState('');
+    const [agency, setAgency] = useState('Cần Thơ');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +37,10 @@ const LoginPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
-    if (user) return <Navigate to={getDashboardRoute(user.role)} replace />;
+    // Lấy trang muốn vào trước khi bị redirect về đăng nhập
+    const from = (location.state as { from?: string } | null)?.from;
+
+    if (user) return <Navigate to={from ?? getDashboardRoute(user.role)} replace />;
 
     const openMethod = (nextMethod: LoginMethod) => {
         const nextRole = nextMethod === 'officer' ? 'can-bo' : 'nguoi-dan';
@@ -74,6 +77,10 @@ const LoginPage: React.FC = () => {
                 return;
             }
             setSuccessMessage('Đăng nhập thành công. Đang chuyển hướng...');
+            // Sau 600ms navigate về trang ban đầu hoặc dashboard
+            window.setTimeout(() => {
+                navigate(from ?? getDashboardRoute(role), { replace: true });
+            }, 700);
         }, 650);
     };
 
@@ -164,7 +171,7 @@ const LoginPage: React.FC = () => {
                                 <label htmlFor="login-ref-agency" className="sr-only">Đơn vị / Cơ quan</label>
                                 <div className={`login-ref-input${errors.agency ? ' invalid' : ''}`}>
                                     <Building2 size={23} />
-                                    <input id="login-ref-agency" value={agency} onChange={(event) => setAgency(event.target.value)} placeholder="Đơn vị / Cơ quan" autoComplete="organization" />
+                                    <input id="login-ref-agency" value="Cần Thơ" readOnly disabled style={{ cursor: 'not-allowed', opacity: 0.85, fontWeight: 600 }} placeholder="Đơn vị / Cơ quan" />
                                 </div>
                                 {errors.agency && <p className="login-ref-error">{errors.agency}</p>}
                             </div>
