@@ -1404,6 +1404,228 @@ a:hover {
 }
 
 /* ============================================================
+   REALTIME VOICE — INDEPENDENT FLOATING CONTROL
+   ============================================================ */
+.realtime-voice-control {
+    --voice-accent: #c8441a;
+    --voice-accent-rgb: 200, 68, 26;
+    position: fixed;
+    right: 24px;
+    bottom: max(24px, env(safe-area-inset-bottom, 24px));
+    z-index: calc(var(--z-overlay) + 2);
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    transform: translate(0, 0);
+    transition:
+        right 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+        bottom 0.46s cubic-bezier(0.22, 1, 0.36, 1),
+        width 0.32s ease,
+        height 0.32s ease,
+        transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.realtime-voice-control--active {
+    right: 50%;
+    bottom: 19px;
+    width: 72px;
+    height: 72px;
+    transform: translateX(50%);
+}
+
+.realtime-voice-control--listening {
+    --voice-accent: #159669;
+    --voice-accent-rgb: 21, 150, 105;
+}
+
+.realtime-voice-control--transcribing,
+.realtime-voice-control--thinking,
+.realtime-voice-control--connecting {
+    --voice-accent: #d97706;
+    --voice-accent-rgb: 217, 119, 6;
+}
+
+.realtime-voice-control--speaking {
+    --voice-accent: #2563eb;
+    --voice-accent-rgb: 37, 99, 235;
+}
+
+.realtime-voice-control--error {
+    --voice-accent: #dc2626;
+    --voice-accent-rgb: 220, 38, 38;
+}
+
+.realtime-voice-control--waiting {
+    --voice-accent: #d97706;
+    --voice-accent-rgb: 217, 119, 6;
+}
+
+.realtime-voice-button {
+    position: relative;
+    z-index: 2;
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    overflow: visible;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--voice-accent) 82%, white), var(--voice-accent));
+    box-shadow:
+        0 14px 34px rgba(var(--voice-accent-rgb), 0.32),
+        0 5px 14px rgba(15, 23, 42, 0.2);
+    cursor: pointer;
+    transition:
+        width 0.32s ease,
+        height 0.32s ease,
+        transform 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.realtime-voice-button:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow:
+        0 18px 42px rgba(var(--voice-accent-rgb), 0.38),
+        0 7px 18px rgba(15, 23, 42, 0.22);
+}
+
+.realtime-voice-button:focus-visible {
+    outline: 4px solid rgba(var(--voice-accent-rgb), 0.22);
+    outline-offset: 4px;
+}
+
+.realtime-voice-button:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+.realtime-voice-control--active .realtime-voice-button {
+    width: 72px;
+    height: 72px;
+    box-shadow:
+        0 24px 58px rgba(var(--voice-accent-rgb), 0.34),
+        0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.realtime-voice-icon {
+    display: grid;
+    place-items: center;
+    transition: transform 0.24s ease;
+}
+
+.realtime-voice-control--active .realtime-voice-icon {
+    transform: translateY(-6px);
+}
+
+.realtime-voice-equalizer {
+    position: absolute;
+    right: 0;
+    bottom: 13px;
+    left: 0;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.realtime-voice-equalizer span {
+    width: 3px;
+    height: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    animation: realtime-equalizer 0.9s ease-in-out infinite;
+}
+
+.realtime-voice-rings {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.realtime-voice-rings span {
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgba(var(--voice-accent-rgb), 0.34);
+    border-radius: 50%;
+    animation: realtime-ring 2.2s ease-out infinite;
+}
+
+.realtime-voice-rings span:nth-child(2) {
+    animation-delay: 0.7s;
+}
+
+.realtime-voice-rings span:nth-child(3) {
+    animation-delay: 1.4s;
+}
+
+.realtime-voice-status {
+    position: absolute;
+    top: 50%;
+    right: 76px;
+    width: max-content;
+    max-width: min(280px, calc(100vw - 112px));
+    padding: 8px 12px;
+    border: 1px solid rgba(var(--voice-accent-rgb), 0.2);
+    border-radius: 999px;
+    color: #334155;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-50%) translateX(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.realtime-voice-control:hover .realtime-voice-status,
+.realtime-voice-control:focus-within .realtime-voice-status,
+.realtime-voice-control--waiting .realtime-voice-status {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+.realtime-voice-control--active .realtime-voice-status {
+    top: auto;
+    right: 50%;
+    bottom: calc(100% + 12px);
+    min-width: 220px;
+    color: var(--voice-accent);
+    opacity: 1;
+    transform: translateX(50%);
+}
+
+@keyframes realtime-ring {
+    0% {
+        opacity: 0.72;
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.8);
+    }
+}
+
+@keyframes realtime-equalizer {
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scaleY(0.45);
+    }
+    50% {
+        opacity: 1;
+        transform: scaleY(1.2);
+    }
+}
+
+/* ============================================================
    CHATBOT — DESKTOP BAR + OVERLAY
    ============================================================ */
 .desktop-chat-bar,
@@ -2667,6 +2889,66 @@ a:hover {
     color: var(--text-secondary);
 }
 
+.chatbot-soft-backdrop--confirmation {
+    background: rgba(15, 23, 42, 0.28) !important;
+    backdrop-filter: blur(5px) !important;
+}
+
+.chatbot-overlay-panel.chatbot-overlay-panel--confirmation {
+    border-color: rgba(217, 119, 6, 0.7);
+    box-shadow:
+        0 0 0 5px rgba(245, 158, 11, 0.14),
+        0 30px 90px rgba(15, 23, 42, 0.26);
+}
+
+.chatbot-panel-control:disabled {
+    color: #94a3b8;
+    background: #f8fafc;
+    cursor: not-allowed;
+    transform: translateX(-50%);
+}
+
+.message-wrapper--confirmation .message-bubble {
+    border-color: rgba(217, 119, 6, 0.62) !important;
+    box-shadow:
+        0 0 0 4px rgba(245, 158, 11, 0.11),
+        0 14px 34px rgba(15, 23, 42, 0.12) !important;
+    animation: confirmation-focus 1.8s ease-in-out infinite;
+}
+
+.confirmation-required-note {
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: #92400e;
+    background: #fffbeb;
+    font-size: 0.72rem;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
+.nav-confirm-actions {
+    flex-wrap: wrap;
+}
+
+.nav-confirm-actions #nav-confirm-review {
+    flex-basis: 100%;
+}
+
+@keyframes confirmation-focus {
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 3px rgba(245, 158, 11, 0.09),
+            0 12px 30px rgba(15, 23, 42, 0.1);
+    }
+    50% {
+        box-shadow:
+            0 0 0 6px rgba(245, 158, 11, 0.16),
+            0 16px 38px rgba(15, 23, 42, 0.14);
+    }
+}
+
 @media (max-width: 420px) {
     .fill-confirm-field {
         grid-template-columns: 1fr;
@@ -3008,7 +3290,7 @@ a:hover {
 
     .desktop-chat-bar {
         position: fixed;
-        right: 12px;
+        right: 88px;
         bottom: max(12px, env(safe-area-inset-bottom, 12px));
         left: 12px;
         z-index: var(--z-fab);
@@ -3039,10 +3321,7 @@ a:hover {
     }
 
     .desktop-chat-bar-brand {
-        width: 38px;
-        height: 38px;
-        flex: 0 0 38px;
-        display: grid;
+        display: none;
         place-items: center;
         position: relative;
         border: 1px solid rgba(200, 68, 26, 0.2);
@@ -3196,6 +3475,10 @@ a:hover {
         transform-origin: center bottom;
     }
 
+    .chatbot-overlay-panel.chatbot-overlay-panel--confirmation {
+        box-shadow: inset 0 0 0 3px rgba(245, 158, 11, 0.52);
+    }
+
     .chatbot-panel-controls {
         position: absolute;
         top: max(10px, env(safe-area-inset-top, 10px));
@@ -3285,7 +3568,7 @@ a:hover {
     }
 
     .chatbot-overlay-panel .chatbot-input-area {
-        padding: 8px 12px max(12px, env(safe-area-inset-bottom, 12px));
+        padding: 8px 82px max(12px, env(safe-area-inset-bottom, 12px)) 12px;
         border-top: 0;
         background: #fff;
         box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.04);
@@ -3394,6 +3677,42 @@ a:hover {
         font-size: 0.78rem;
         font-weight: 650;
         cursor: pointer;
+    }
+
+    .realtime-voice-control {
+        right: 16px;
+        bottom: max(14px, env(safe-area-inset-bottom, 14px));
+        width: 58px;
+        height: 58px;
+    }
+
+    .realtime-voice-button {
+        width: 58px;
+        height: 58px;
+    }
+
+    .realtime-voice-control--active {
+        right: 50%;
+        bottom: max(5px, env(safe-area-inset-bottom, 5px));
+        width: 72px;
+        height: 72px;
+    }
+
+    .realtime-voice-control--active .realtime-voice-button {
+        width: 72px;
+        height: 72px;
+    }
+
+    .realtime-voice-control--active .realtime-voice-status {
+        min-width: min(230px, calc(100vw - 40px));
+    }
+
+    .realtime-voice-control--waiting {
+        bottom: max(16px, env(safe-area-inset-bottom, 16px));
+    }
+
+    .realtime-voice-control--waiting .realtime-voice-status {
+        display: none;
     }
 
     .form-body {
