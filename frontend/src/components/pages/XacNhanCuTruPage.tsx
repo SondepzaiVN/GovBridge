@@ -5,6 +5,7 @@ import { provinces, getResidenceAgencyName, useWards } from '../../hooks/useAdmi
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { SERVICE_MAP } from '../../data/services';
+import { useForm } from '../../contexts/FormContext';
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
 
 interface FieldConfig {
@@ -278,6 +279,7 @@ const initialValues: Record<string, string> = {
 
 const XacNhanCuTruPage: React.FC = () => {
     const navigate = useNavigate();
+    const { formState } = useForm();
     const service = SERVICE_MAP['xac-nhan-cu-tru'] || {
         requiredDocs: [],
         steps: [],
@@ -303,6 +305,24 @@ const XacNhanCuTruPage: React.FC = () => {
     const [draftSaved, setDraftSaved] = React.useState(false);
     const { wardOptions: agencyWardOptions, loading: loadingAgencyWards } = useWards(values.provinceAgency);
     const { wardOptions: requestWardOptions, loading: loadingRequestWards } = useWards(values.requestProvince);
+
+    React.useEffect(() => {
+        const ocrFields: Record<string, string> = {};
+        ['fullName', 'birthDate', 'gender', 'citizenId'].forEach((fieldId) => {
+            const value = formState.values[fieldId];
+            if (formState.touched[fieldId] && value && values[fieldId] !== value) {
+                ocrFields[fieldId] = value;
+            }
+        });
+
+        if (Object.keys(ocrFields).length > 0) {
+            setValues((current) => ({ ...current, ...ocrFields }));
+            setErrors((current) => ({
+                ...current,
+                ...Object.fromEntries(Object.keys(ocrFields).map((fieldId) => [fieldId, ''])),
+            }));
+        }
+    }, [formState.touched, formState.values, values]);
 
     const agencyFields = React.useMemo(
         () =>
