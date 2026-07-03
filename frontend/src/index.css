@@ -1449,6 +1449,10 @@ a:hover {
         display: none;
     }
 
+    .desktop-chat-bar .chatbot-input-area--bar.call-mode .chatbot-input-row {
+        display: none;
+    }
+
     .desktop-chat-bar .chatbot-input-row {
         align-items: center;
         gap: 10px;

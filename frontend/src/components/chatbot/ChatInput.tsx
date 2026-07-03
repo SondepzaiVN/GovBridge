@@ -141,6 +141,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   const displayValue = inputValue;
+  const showInlineVoiceState = state.isListening && !state.isCallMode;
 
   const callStatusLabel = state.callStatusText ?? (
     state.callStatus === "connecting" ? "Đang kết nối VNPT SmartVoice..."
@@ -173,8 +174,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </button>
         </div>
       )}
-      <div className={`chatbot-input-row ${state.isListening ? "is-recording" : ""}`}>
-        {state.isListening ? (
+      <div className={`chatbot-input-row ${showInlineVoiceState ? "is-recording" : ""}`}>
+        {showInlineVoiceState ? (
           <div className="voice-input-state">
             <div className="voice-status-left">
               <Mic size={16} />
