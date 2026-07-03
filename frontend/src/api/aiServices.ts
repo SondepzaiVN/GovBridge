@@ -105,10 +105,29 @@ interface ActiveVoiceCapture {
 
 let activeCapture: ActiveVoiceCapture | null = null;
 let sharedStream: MediaStream | null = null;
+let sharedStreamPromise: Promise<MediaStream> | null = null;
 const SPEECH_RMS_THRESHOLD = 0.018;
 const SILENCE_END_MS = 1200;
 const MAX_UTTERANCE_MS = 15000;
 const MIN_SPEECH_MS = 300;
+
+const getSharedStream = async (): Promise<MediaStream> => {
+    if (sharedStream && sharedStream.getAudioTracks().some(t => t.readyState === 'live')) {
+        return sharedStream;
+    }
+    if (sharedStreamPromise) {
+        return sharedStreamPromise;
+    }
+    sharedStreamPromise = navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        sharedStream = stream;
+        sharedStreamPromise = null;
+        return stream;
+    }).catch(err => {
+        sharedStreamPromise = null;
+        throw err;
+    });
+    return sharedStreamPromise;
+};
 
 const mergeAudioChunks = (chunks: Float32Array[]): Float32Array => {
     const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
@@ -165,12 +184,10 @@ const disposeVoiceCapture = async (capture: ActiveVoiceCapture) => {
 export const sttService = {
     warmupStream: async () => {
         if (!navigator.mediaDevices?.getUserMedia) return;
-        if (!sharedStream || sharedStream.getAudioTracks().every(t => t.readyState === 'ended')) {
-            try {
-                sharedStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            } catch (error) {
-                console.warn('[STT] Warmup failed', error);
-            }
+        try {
+            await getSharedStream();
+        } catch (error) {
+            console.warn('[STT] Warmup failed', error);
         }
     },
     releaseStream: () => {
@@ -178,6 +195,7 @@ export const sttService = {
             sharedStream.getTracks().forEach((track) => track.stop());
             sharedStream = null;
         }
+        sharedStreamPromise = null;
     },
     startListening: async (
         callback: (transcript: string, isFinal: boolean) => void,
@@ -189,12 +207,14 @@ export const sttService = {
 
         await sttService.stopListening();
         
-        if (!sharedStream || sharedStream.getAudioTracks().every(t => t.readyState === 'ended')) {
-            sharedStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await getSharedStream();
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+            await audioContext.resume().catch(console.warn);
         }
         
-        const stream = sharedStream;
-        const audioContext = new AudioContext();
         const source = audioContext.createMediaStreamSource(stream);
         const processor = audioContext.createScriptProcessor(4096, 1, 1);
         const chunks: Float32Array[] = [];
