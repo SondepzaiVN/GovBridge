@@ -55,7 +55,10 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
   const ocrProvider: IdentityOcrProvider = options.ocrProvider ?? (env.OCR_PROVIDER === 'vnpt'
     ? new VnptOcrProvider({
       baseUrl: env.VNPT_EKYC_URL,
+      authUrl: env.VNPT_EKYC_AUTH_URL,
       accessToken: env.VNPT_EKYC_ACCESS_TOKEN,
+      clientId: env.VNPT_EKYC_CLIENT_ID,
+      clientSecret: env.VNPT_EKYC_CLIENT_SECRET,
       tokenId: env.VNPT_EKYC_TOKEN_ID,
       tokenKey: env.VNPT_EKYC_TOKEN_KEY,
       macAddress: env.VNPT_MAC_ADDRESS,
