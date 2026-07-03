@@ -3,9 +3,19 @@
   "sessions": [
     {
       "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
-      "currentRoute": "/lien-thong-khai-sinh/buoc-1",
+      "currentRoute": "/ho-khau",
       "state": {
-        "formSnapshot": {},
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi",
+          "hoTen": "Trần Minh Hùng",
+          "ngaySinh": "2006-02-23",
+          "gioiTinh": "Nam",
+          "danToc": "kinh",
+          "cccd": "093206008464",
+          "sdt": "0793920853",
+          "email": "abc@gmail.com"
+        },
         "candidateCases": [],
         "recentFacts": [
           {
@@ -67,6 +77,36 @@
             "value": "0793920853",
             "confidence": 0.9,
             "source": "chat"
+          },
+          {
+            "fieldHint": "email",
+            "value": "123",
+            "confidence": 0.8,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "email",
+            "value": "BCA còng gờ meo chấm com",
+            "confidence": 0.5,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "email",
+            "value": "abc@gmail.com",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "gioiTinh",
+            "value": "Nam",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "hoTen",
+            "value": "Trần Văn A",
+            "confidence": 0.9,
+            "source": "chat"
           }
         ],
         "knowledgeSession": {
@@ -75,98 +115,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T20:25:24.185Z",
+      "updatedAt": "2026-07-03T20:33:37.550Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "Thay đổi thông tin trong biểu mẫu tôn giáo thành phật giáo",
-          "createdAt": "2026-07-03T20:08:58.988Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Tôn giáo đã được thay đổi thành \"Phật giáo\". Bạn còn cần hỗ trợ gì thêm không?",
-          "createdAt": "2026-07-03T20:08:58.988Z"
-        },
-        {
-          "role": "user",
-          "content": "điền giúp tôi thông tin tôn giáo: Phật giáo",
-          "createdAt": "2026-07-03T20:09:18.981Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Tôn giáo đã được điền là \"Phật giáo\". Bạn còn cần nhập thêm thông tin nào không?",
-          "createdAt": "2026-07-03T20:09:18.981Z"
-        },
-        {
-          "role": "user",
-          "content": "điền giúp tôi số căn cước công dân là 093206008464",
-          "createdAt": "2026-07-03T20:09:43.724Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T20:09:43.724Z"
-        },
-        {
-          "role": "user",
-          "content": "Điền giúp tôi số điện thoại liên hệ là 0793920853",
-          "createdAt": "2026-07-03T20:10:04.868Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T20:10:04.868Z"
-        },
-        {
-          "role": "user",
-          "content": "đến trang đăng ký thường trú",
-          "createdAt": "2026-07-03T20:22:29.609Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:22:29.609Z"
-        },
-        {
-          "role": "user",
-          "content": "đến trang liên thông khai sinh",
-          "createdAt": "2026-07-03T20:23:08.630Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Liên thông Khai sinh**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:23:08.630Z"
-        },
-        {
-          "role": "user",
-          "content": "Thường trú",
-          "createdAt": "2026-07-03T20:23:39.551Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị,\n\nCụm từ \"Thường trú\" liên quan đến việc **đăng ký nơi thường trú cho trẻ mới sinh**. Hệ thống cần xác định rõ ý định của anh/chị về việc đăng ký thường trú cho bé. Anh/chị vui lòng chọn một trong các trường hợp sau:\n\n1. **Có đăng ký thường trú:** Nếu gia đình muốn làm luôn thủ tục đăng ký thường trú cho trẻ cùng lúc với khai sinh.\n2. **Không đăng ký thường trú:** Nếu gia đình chỉ muốn khai sinh và cấp thẻ BHYT, không làm thủ tục thường trú ngay lúc này.\n\nNếu anh/chị chọn **Có đăng ký thường trú**, hệ thống sẽ yêu cầu cung cấp thêm thông tin về nơi trẻ dự kiến đăng ký thường trú (thường là theo cha hoặc theo mẹ) và chủ hộ tại địa chỉ đó.\n\nAnh/chị mong muốn thực hiện thủ tục đăng ký thường trú cho con hay không?",
-          "createdAt": "2026-07-03T20:23:39.551Z"
-        },
-        {
-          "role": "user",
-          "content": "Ký thường chú",
-          "createdAt": "2026-07-03T20:24:15.209Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị,\n\nCụm từ \"Ký thường chú\" có thể chưa rõ nghĩa hoặc bị gõ nhầm. Nếu anh/chị đang muốn thực hiện thủ tục đăng ký thường trú cho trẻ mới sinh trong quy trình **Liên thông Khai sinh**, vui lòng cung cấp thông tin cụ thể, như thông tin người yêu cầu, thông tin trẻ và nơi đăng ký thường trú.\n\nNếu anh/chị muốn hỏi về việc ký tên vào hồ sơ điện tử, hiện nay khi sử dụng Cổng Dịch vụ công Quốc gia hoặc ứng dụng VNeID, việc ký số được thực hiện qua tài khoản định danh điện tử hoặc chữ ký số. Anh/chị không cần in tờ khai ra để ký tay.\n\nNếu có phần nào cần hỗ trợ thêm, xin vui lòng cho biết!",
-          "createdAt": "2026-07-03T20:24:15.209Z"
-        },
-        {
-          "role": "user",
-          "content": "Thường chú",
-          "createdAt": "2026-07-03T20:24:44.740Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị,\n\nDựa trên ngữ cảnh hiện tại là thực hiện thủ tục **Liên thông Khai sinh** và câu hỏi của anh/chị là \"Thường chú\", có thể anh/chị đang muốn tìm hiểu về khái niệm **\"Thường trú\"** hoặc **\"Nơi thường trú\"** liên quan đến việc đăng ký hộ khẩu cho trẻ.\n\nTheo quy định về thủ tục này:\n1.  **Nơi thường trú** là nơi công dân sinh sống ổn định, lâu dài và đã được đăng ký thường trú (trước đây hay gọi là địa chỉ thường trú hoặc hộ khẩu thường trú).\n2.  Trong thủ tục Liên thông Khai sinh, sau khi đăng ký khai sinh, hệ thống sẽ tự động chuyển dữ liệu để thực hiện **đăng ký thường trú** cho trẻ em dưới 6 tuổi nếu gia đình lựa chọn dịch vụ này.\n3.  Việc đăng ký thường trú cho trẻ thường được thực hiện theo nơi thường trú của cha hoặc mẹ. Anh/chị cần xác định xem bé sẽ đăng ký thường trú theo cha hay theo mẹ để kê khai chính xác địa chỉ cư trú.\n\nNếu anh/chị cần hỗ trợ cụ thể hơn về cách điền thông tin nơi thường trú hoặc các bước tiếp theo trong hồ sơ, vui lòng cho tôi biết thêm chi tiết nhé!",
-          "createdAt": "2026-07-03T20:24:44.740Z"
-        },
         {
           "role": "user",
           "content": "456",
@@ -176,6 +126,96 @@
           "role": "assistant",
           "content": "Có vẻ như anh/chị đã nhập một chuỗi số mà không có ngữ cảnh rõ ràng. Nếu anh/chị đang muốn cung cấp thông tin nào đó liên quan đến thủ tục Liên thông Khai sinh, vui lòng cho biết thêm chi tiết. Hoặc nếu có câu hỏi khác, anh/chị cũng có thể chia sẻ!",
           "createdAt": "2026-07-03T20:25:24.185Z"
+        },
+        {
+          "role": "user",
+          "content": "Đến trang đăng ký thường trú",
+          "createdAt": "2026-07-03T20:29:53.412Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:29:53.412Z"
+        },
+        {
+          "role": "user",
+          "content": "Khái niệm thần chú là gì",
+          "createdAt": "2026-07-03T20:30:11.925Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Khái niệm \"thần chú\" thường được hiểu là những câu nói, câu văn hoặc từ ngữ được sử dụng trong các nghi lễ, nghi thức tôn giáo hoặc trong các hoạt động ma thuật với ý nghĩa đặc biệt. Thần chú thường được cho là có sức mạnh, khả năng tạo ra ảnh hưởng hoặc hiệu ứng nhất định, và được sử dụng để cầu nguyện, bảo vệ, hoặc gọi đến các thế lực siêu nhiên. Trong nhiều nền văn hóa, thần chú có thể được viết hoặc nói lên trong các tình huống cụ thể để đạt được mục tiêu mong muốn.",
+          "createdAt": "2026-07-03T20:30:11.925Z"
+        },
+        {
+          "role": "user",
+          "content": "Email giúp tôi là 123",
+          "createdAt": "2026-07-03T20:30:45.622Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Vui lòng cung cấp một địa chỉ email đầy đủ và chính xác để tôi có thể hỗ trợ bạn tốt hơn.\n\nBạn có muốn cung cấp thêm thông tin về địa chỉ email không?",
+          "createdAt": "2026-07-03T20:30:45.622Z"
+        },
+        {
+          "role": "user",
+          "content": "BCA còng gờ meo chấm com",
+          "createdAt": "2026-07-03T20:31:11.025Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Địa chỉ email bạn cung cấp có vẻ chưa chính xác hoặc không đầy đủ. Địa chỉ email hợp lệ cần có định dạng như `tênngười@miền.com`. Bạn có thể kiểm tra lại và cung cấp một địa chỉ email khác không?\n\nBạn có muốn thử cung cấp lại địa chỉ email không?",
+          "createdAt": "2026-07-03T20:31:11.025Z"
+        },
+        {
+          "role": "user",
+          "content": "abc@gmail.com",
+          "createdAt": "2026-07-03T20:31:29.472Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T20:31:29.472Z"
+        },
+        {
+          "role": "user",
+          "content": "Giúp tôi giới tính là nam",
+          "createdAt": "2026-07-03T20:32:00.427Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T20:32:00.427Z"
+        },
+        {
+          "role": "user",
+          "content": "ở phần thông tin đề nghị, chọn giúp tôi thành phố cần thơ",
+          "createdAt": "2026-07-03T20:32:48.323Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện các thông tin bạn muốn chọn. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T20:32:48.323Z"
+        },
+        {
+          "role": "user",
+          "content": "xác nhận",
+          "createdAt": "2026-07-03T20:33:08.389Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, dựa trên thông tin về thủ tục **Đăng ký thường trú** (Mã thủ tục: ho-khau), dưới đây là các thông tin chi tiết về biểu mẫu và tờ khai cần sử dụng:\n\n**1. Tờ khai chính thức:**\n*   **Mẫu CT01:** Đây là **Tờ khai thay đổi thông tin cư trú**. Người dân cần điền đầy đủ thông tin này khi thực hiện thủ tục đăng ký thường trú. Mẫu này dùng để kê khai thông tin người đề nghị đăng ký thường trú, nơi đề nghị đăng ký, quan hệ với chủ hộ hoặc chủ sở hữu chỗ ở hợp pháp.\n\n**2. Các loại giấy tờ/chứng minh khác liên quan đến hồ sơ:**\nNgoài tờ khai, hồ sơ đăng ký thường trú còn cần chuẩn bị các giấy tờ, tài liệu chứng minh:\n*   Chỗ ở hợp pháp (ví dụ: Giấy chứng nhận quyền sử dụng đất, quyền sở hữu nhà ở, hợp đồng mua bán, thuê, mượn, ở nhờ...).\n*   Chứng minh quan hệ nhân thân (nếu đăng ký vào hộ gia đình có người thân).\n*   Các giấy tờ liên quan khác tùy theo trường hợp cụ thể.\n\n**Lưu ý quan trọng về \"Xác nhận\":**\nTrong quy trình trực tuyến, sau khi khai báo thông tin trên hệ thống, bước tiếp theo là **xác nhận tờ khai thông tin cư trú bản điện tử**. Tùy từng trường hợp, hệ thống có thể yêu cầu sự xác nhận ý kiến của chủ hộ, chủ sở hữu chỗ ở hợp pháp, cha, mẹ hoặc người giám hộ thông qua ứng dụng **VNeID**.",
+          "createdAt": "2026-07-03T20:33:08.389Z"
+        },
+        {
+          "role": "user",
+          "content": "thay đổi họ tên thành Trần Văn A",
+          "createdAt": "2026-07-03T20:33:37.550Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T20:33:37.550Z"
         }
       ]
     },
