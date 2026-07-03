@@ -229,6 +229,14 @@ a:hover {
     color: inherit;
 }
 
+.header-quoc-huy {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    flex-shrink: 0;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
+}
+
 .header-logo-text {
     display: flex;
     flex-direction: column;
@@ -1285,7 +1293,10 @@ a:hover {
     background: white;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22);
     cursor: pointer;
-    transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    transition:
+        transform var(--transition-fast),
+        background var(--transition-fast),
+        color var(--transition-fast);
 }
 
 .chatbot-fab-call-btn:hover {
@@ -2322,7 +2333,8 @@ a:hover {
 }
 
 @keyframes callPulse {
-    0%, 100% {
+    0%,
+    100% {
         transform: scale(1);
         box-shadow: 0 0 0 4px rgba(196, 68, 26, 0.12);
     }
