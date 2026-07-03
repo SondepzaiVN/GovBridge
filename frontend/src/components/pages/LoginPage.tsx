@@ -85,7 +85,7 @@ const LoginPage: React.FC = () => {
                 </button>
 
                 <header className="login-ref-brand">
-                    <img src="/quoc_huy.png" alt="Quốc huy Việt Nam" />
+                    <img src="/logo_Gov_Bridge.jpg" alt="Quốc huy Việt Nam" />
                     <img className="login-ref-brand-heading" src="/auth/dvc-heading.svg" alt="Cổng Dịch vụ công Quốc gia - Kết nối, cung cấp thông tin và dịch vụ công mọi lúc, mọi nơi" />
                 </header>
 
@@ -100,7 +100,7 @@ const LoginPage: React.FC = () => {
                                     <span>Tài khoản Định danh điện tử (VNeID)</span>
                                 </button>
                                 <button type="button" className="login-ref-method" onClick={() => openMethod('dvc')}>
-                                    <img src="/quoc_huy.png" alt="Cổng Dịch vụ công Quốc gia" />
+                                    <img src="/logo_Gov_Bridge.jpg" alt="Cổng Dịch vụ công Quốc gia" />
                                     <span>Tài khoản cấp bởi Cổng dịch vụ công quốc gia</span>
                                 </button>
                             </div>
@@ -110,7 +110,7 @@ const LoginPage: React.FC = () => {
                             <h2 id="officer-login-title">Cán bộ</h2>
                             <div className="login-ref-methods">
                                 <button type="button" className="login-ref-method" onClick={() => openMethod('officer')}>
-                                    <img src="/quoc_huy.png" alt="Tài khoản cán bộ" />
+                                    <img src="/logo_Gov_Bridge.jpg" alt="Tài khoản cán bộ" />
                                     <span>Tài khoản cán bộ, cơ quan xử lý hồ sơ</span>
                                 </button>
                             </div>
@@ -149,7 +149,7 @@ const LoginPage: React.FC = () => {
                     <img src="/auth/logo-full-vneid.png" alt="Bộ Công an - Trung tâm dữ liệu Quốc gia về dân cư" />
                 ) : (
                     <div className="login-ref-gov-brand">
-                        <img src="/quoc_huy.png" alt="Quốc huy Việt Nam" />
+                        <img src="/logo_Gov_Bridge.jpg" alt="Quốc huy Việt Nam" />
                         <strong>{role === 'can-bo' ? 'Hệ thống cán bộ' : 'Cổng Dịch vụ công Quốc gia'}</strong>
                     </div>
                 )}
@@ -211,7 +211,7 @@ const LoginPage: React.FC = () => {
                         </>
                     ) : (
                         <>
-                            <img src="/quoc_huy.png" alt="Quốc huy Việt Nam" />
+                            <img src="/logo_Gov_Bridge.jpg" alt="Quốc huy Việt Nam" />
                             <p>{role === 'can-bo' ? 'Dành cho cán bộ tiếp nhận và xử lý hồ sơ hành chính.' : 'Xác thực bằng tài khoản Cổng Dịch vụ công Quốc gia.'}</p>
                         </>
                     )}
