@@ -162,13 +162,16 @@ export const planAssistantResult = (
   if (understanding.navigationRoute) {
     const targetProcedure = context.procedures.find((p) => p.route === understanding.navigationRoute);
     if (targetProcedure) {
+      const navigationMessage = `Mình tìm thấy trang **${targetProcedure.name}**. Bạn có muốn chuyển đến trang này không?`;
       actions.push({
         type: 'NAVIGATE',
         route: targetProcedure.route,
         serviceName: targetProcedure.name,
-        message: finalMessage,
+        message: navigationMessage,
       });
       finalIntent = 'NAVIGATE';
+      finalMessage = navigationMessage;
+      finalSuggestions = undefined;
       finalData = { ...finalData, route: targetProcedure.route, serviceName: targetProcedure.name };
       // Nếu đã chuyển trang, không cần xử lý điền form cũ
       return {

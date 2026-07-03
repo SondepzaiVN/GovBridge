@@ -13,10 +13,9 @@ export class NavigationTool implements AssistantTool {
   execute(context: AssistantToolContext): AssistantResult {
     const procedure = findRelevantProcedure(context)!;
     const message = 'Mình tìm thấy thủ tục **' + procedure.name + '**. Bạn có muốn chuyển đến trang này không?';
-    const suggestions = ['Đồng ý, chuyển ngay!', 'Cho tôi biết cần chuẩn bị gì trước', 'Không cần'];
     return {
-      response: { intent: 'NAVIGATE', message, data: { route: procedure.route, serviceName: procedure.name }, suggestions },
-      actions: [{ type: 'NAVIGATE', route: procedure.route, serviceName: procedure.name, message, suggestions }],
+      response: { intent: 'NAVIGATE', message, data: { route: procedure.route, serviceName: procedure.name } },
+      actions: [{ type: 'NAVIGATE', route: procedure.route, serviceName: procedure.name, message }],
     };
   }
 }

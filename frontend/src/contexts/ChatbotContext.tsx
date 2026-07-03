@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
+﻿import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
 import type { ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
 import { smartbotService } from '../api/aiServices';
 import { ttsService } from '../api/aiServices';
+import { ApiClientError } from '../api/client';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
 
@@ -17,6 +18,20 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
     case 'SET_LOADING': return { ...state, isLoading: action.payload };
     case 'SET_LISTENING': return { ...state, isListening: action.payload };
     case 'SET_SPEAKING': return { ...state, isSpeaking: action.payload };
+    case 'SET_CALL_MODE': return {
+      ...state,
+      isCallMode: action.payload,
+      callStatus: action.payload ? state.callStatus : 'idle',
+      callStatusText: action.payload ? state.callStatusText : null,
+      isListening: action.payload ? state.isListening : false,
+      isSpeaking: action.payload ? state.isSpeaking : false,
+    };
+    case 'SET_CALL_STATUS': return {
+      ...state,
+      callStatus: action.payload.status,
+      callStatusText: action.payload.text ?? null,
+    };
+    case 'SET_REQUIRES_USER_ACTION': return { ...state, requiresUserAction: action.payload };
     case 'SET_HIGHLIGHT': return { ...state, highlightedElementId: action.payload };
     case 'SET_PENDING_NAV': return { ...state, pendingNavigation: action.payload };
     case 'SET_CURRENT_SERVICE': return { ...state, currentService: action.payload };
@@ -32,6 +47,10 @@ const initialState: ChatbotState = {
   isLoading: false,
   isListening: false,
   isSpeaking: false,
+  isCallMode: false,
+  callStatus: 'idle',
+  callStatusText: null,
+  requiresUserAction: false,
   highlightedElementId: null,
   pendingNavigation: null,
   currentService: null,
@@ -49,8 +68,6 @@ interface ChatbotContextValue {
   clearHighlight: () => void;
   confirmNavigation: () => void;
   cancelNavigation: () => void;
-  enableVoiceResponse: boolean;
-  setEnableVoiceResponse: (v: boolean) => void;
 }
 
 const ChatbotContext = createContext<ChatbotContextValue | null>(null);
@@ -74,32 +91,31 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   formValues,
 }) => {
   const [state, dispatch] = useReducer(chatbotReducer, initialState);
-  const [enableVoiceResponse, setEnableVoiceResponse] = React.useState(false);
   const messageIdCounter = useRef(0);
 
-  // Dùng ref để tránh stale closure trong event handlers
+  // Dùng ref để tránh stale closure trong event handlers.
   const onNavigateRef = useRef(onNavigate);
   const onFillFormRef = useRef(onFillForm);
-  const enableVoiceRef = useRef(enableVoiceResponse);
+  const callModeRef = useRef(state.isCallMode);
   const currentRouteRef = useRef(currentRoute);
   const formValuesRef = useRef(formValues);
   useEffect(() => {
     onNavigateRef.current = onNavigate;
     onFillFormRef.current = onFillForm;
-    enableVoiceRef.current = enableVoiceResponse;
+    callModeRef.current = state.isCallMode;
     currentRouteRef.current = currentRoute;
     formValuesRef.current = formValues;
   });
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
 
-  // Update smartbot với route hiện tại
+  // Update smartbot với route hiện tại.
   useEffect(() => {
     smartbotService.setCurrentRoute(currentRoute);
   }, [currentRoute]);
 
   // ============================================================
-  // Hàm thêm message từ bot vào chat (dùng nội bộ)
+  // Hàm thêm message từ bot vào chat.
   // ============================================================
   const addBotMessage = useCallback((
     content: string,
@@ -118,16 +134,22 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     };
     dispatch({ type: 'ADD_MESSAGE', payload: msg });
 
-    // Voice response
-    if (enableVoiceRef.current) {
+    if (callModeRef.current) {
       ttsService.speak(content, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        dispatch({
+          type: 'SET_CALL_STATUS',
+          payload: {
+            status: isPlaying ? 'speaking' : 'idle',
+            text: isPlaying ? 'Trợ lý đang trả lời bằng giọng nói...' : null,
+          },
+        });
       });
     }
   }, []);
 
   // ============================================================
-  // ✅ Event-Driven: Lắng nghe tất cả AgentEvent từ agentEventBus
+  // Event-driven: lắng nghe tất cả AgentEvent từ agentEventBus.
   // ============================================================
   useEffect(() => {
     const handleAgentEvent = (event: AgentEvent) => {
@@ -138,7 +160,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
         case 'HIGHLIGHT_ELEMENT':
           addBotMessage(event.message, 'text', undefined, event.suggestions);
-          // Cập nhật state để UIHighlighter (legacy path) cũng hoạt động
+          // Cập nhật state để UIHighlighter legacy path cũng hoạt động.
           if (window.innerWidth <= 768) {
             setTimeout(() => {
               dispatch({ type: 'CLOSE' });
@@ -158,6 +180,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           break;
 
         case 'REQUEST_CONFIRM_FILL':
+          dispatch({ type: 'OPEN' });
+          dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
           addBotMessage(
             event.message,
             'fill-confirm',
@@ -171,8 +195,10 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           break;
 
         case 'NAVIGATE':
+          dispatch({ type: 'OPEN' });
+          dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
           addBotMessage(event.message, 'navigation-confirm', undefined, event.suggestions);
-          // Đặt pending navigation — user confirm thì mới navigate
+          // Đặt pending navigation, user confirm thì mới navigate.
           dispatch({
             type: 'SET_PENDING_NAV',
             payload: { route: event.route, serviceName: event.serviceName },
@@ -204,23 +230,17 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       }
     };
 
-    // Đăng ký wildcard listener — bắt tất cả events
+    // Đăng ký wildcard listener để bắt tất cả events.
     agentEventBus.on('*', handleAgentEvent);
     return () => agentEventBus.off('*', handleAgentEvent);
   }, [addBotMessage]);
 
   // ============================================================
-  // handleAIResponse — vẫn hỗ trợ backward compat (mock/VNPT path)
-  // Khi dùng OpenAI Tool Calling, event đã được emit qua agentEventBus
-  // nên ChatbotContext chỉ cần hiển thị message (không re-process intent)
+  // handleAIResponse vẫn hỗ trợ backward compatibility cho mock/VNPT path.
+  // Khi dùng OpenAI Tool Calling, event đã được emit qua agentEventBus.
   // ============================================================
   const handleAIResponse = useCallback((response: AIResponse) => {
-    // Nếu OpenAI Tool Calling đã emit event (và listener đã xử lý),
-    // response này chỉ cần hiển thị message vào chat mà không trigger thêm action
-    // Để tránh duplicate, chúng ta chỉ xử lý khi không phải Tool Calling path
-    // (Tool Calling path đã được xử lý bởi agentEventBus listener ở trên)
-
-    // Legacy path: mock / VNPT (không emit event) → xử lý trực tiếp
+    // Legacy path: mock/VNPT không emit event thì xử lý trực tiếp.
     const msg: ChatMessage = {
       id: createMessageId(),
       role: 'bot',
@@ -246,6 +266,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         break;
       case 'NAVIGATE':
         if (response.data?.route && response.data?.serviceName) {
+          dispatch({ type: 'OPEN' });
+          dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
           dispatch({
             type: 'SET_PENDING_NAV',
             payload: { route: response.data.route, serviceName: response.data.serviceName },
@@ -266,15 +288,27 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         break;
     }
 
-    if (enableVoiceRef.current) {
+    if (response.intent === 'OCR_CONFIRM') {
+      dispatch({ type: 'OPEN' });
+      dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
+    }
+
+    if (callModeRef.current) {
       ttsService.speak(response.message, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        dispatch({
+          type: 'SET_CALL_STATUS',
+          payload: {
+            status: isPlaying ? 'speaking' : 'idle',
+            text: isPlaying ? 'Trợ lý đang trả lời bằng giọng nói...' : null,
+          },
+        });
       });
     }
   }, []);
 
   // ============================================================
-  // sendMessage — điểm vào chính
+  // sendMessage là điểm vào chính.
   // ============================================================
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
@@ -287,7 +321,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       timestamp: new Date(),
     };
     dispatch({ type: 'ADD_MESSAGE', payload: userMsg });
+
     dispatch({ type: 'SET_LOADING', payload: true });
+    if (callModeRef.current) {
+      dispatch({
+        type: 'SET_CALL_STATUS',
+        payload: { status: 'thinking', text: 'Trợ lý đang suy nghĩ...' },
+      });
+    }
 
     try {
       const result = await smartbotService.sendMessage(text, {
@@ -302,11 +343,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       }
     } catch (err) {
       console.error('Send message error:', err);
+      const message = err instanceof ApiClientError
+        ? err.message + (err.code ? ' (' + err.code + ')' : '')
+        : 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!';
       const errMsg: ChatMessage = {
         id: createMessageId(),
         role: 'bot',
         type: 'text',
-        content: 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại! 🙏',
+        content: message,
         timestamp: new Date(),
         suggestions: ['Thử lại', 'Tôi cần hỗ trợ'],
       };
@@ -325,7 +369,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           id: createMessageId(),
           role: 'bot',
           type: 'text',
-          content: 'Xin chào! Tôi là **Trợ lý AI Dịch Vụ Công**\n\nTôi có thể giúp bạn:\n• 📝 Tư vấn thủ tục hành chính\n• ✍️ Tự động điền form từ giọng nói\n• 📷 Đọc thông tin từ ảnh CCCD\n• 💡 Chỉ dẫn vị trí các nút trên trang\n\nBạn cần hỗ trợ gì hôm nay?',
+          content: 'Xin chào! Tôi là **Trợ lý AI Dịch Vụ Công**\n\nTôi có thể giúp bạn:\n- Tư vấn thủ tục hành chính\n- Tự động điền form từ giọng nói\n- Đọc thông tin từ ảnh CCCD\n- Chỉ dẫn vị trí các nút trên trang\n\nBạn cần hỗ trợ gì hôm nay?',
           timestamp: new Date(),
           suggestions: ['Đăng ký khai sinh', 'Làm hộ khẩu mới', 'Cấp lại CCCD', 'Đăng ký kết hôn'],
         };
@@ -342,32 +386,32 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     if (state.pendingNavigation) {
       onNavigateRef.current(state.pendingNavigation.route);
       dispatch({ type: 'SET_PENDING_NAV', payload: null });
+      dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
 
       const confirmMsg: ChatMessage = {
         id: createMessageId(),
         role: 'bot',
         type: 'text',
-        content: `Đã chuyển đến trang **${state.pendingNavigation.serviceName}**! ✅\n\nBạn có thể bắt đầu điền thông tin. Tôi sẵn sàng hỗ trợ!`,
+        content: `Đã chuyển đến trang **${state.pendingNavigation.serviceName}**!\n\nBạn có thể bắt đầu điền thông tin. Tôi sẵn sàng hỗ trợ!`,
         timestamp: new Date(),
         suggestions: ['Điền bằng giọng nói', 'Upload ảnh CCCD', 'Hướng dẫn điền form'],
       };
       dispatch({ type: 'ADD_MESSAGE', payload: confirmMsg });
 
-      if (window.innerWidth <= 768) {
-        setTimeout(() => dispatch({ type: 'CLOSE' }), 600);
-      }
+      setTimeout(() => dispatch({ type: 'CLOSE' }), 600);
     }
   }, [state.pendingNavigation]);
 
   const cancelNavigation = useCallback(() => {
     dispatch({ type: 'SET_PENDING_NAV', payload: null });
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
+    setTimeout(() => dispatch({ type: 'CLOSE' }), 200);
   }, []);
 
   return (
     <ChatbotContext.Provider value={{
       state, dispatch, sendMessage, handleAIResponse,
       openChatbot, clearHighlight, confirmNavigation, cancelNavigation,
-      enableVoiceResponse, setEnableVoiceResponse,
     }}>
       {children}
     </ChatbotContext.Provider>
