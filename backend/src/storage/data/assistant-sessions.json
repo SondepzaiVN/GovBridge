@@ -3,7 +3,7 @@
   "sessions": [
     {
       "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
-      "currentRoute": "/",
+      "currentRoute": "/dang-ky-tam-tru",
       "state": {
         "formSnapshot": {},
         "candidateCases": [],
@@ -105,38 +105,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T20:47:40.090Z",
+      "updatedAt": "2026-07-03T20:50:33.978Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "ở phần thông tin đề nghị, chọn giúp tôi thành phố cần thơ",
-          "createdAt": "2026-07-03T20:32:48.323Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện các thông tin bạn muốn chọn. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T20:32:48.323Z"
-        },
-        {
-          "role": "user",
-          "content": "xác nhận",
-          "createdAt": "2026-07-03T20:33:08.389Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, dựa trên thông tin về thủ tục **Đăng ký thường trú** (Mã thủ tục: ho-khau), dưới đây là các thông tin chi tiết về biểu mẫu và tờ khai cần sử dụng:\n\n**1. Tờ khai chính thức:**\n*   **Mẫu CT01:** Đây là **Tờ khai thay đổi thông tin cư trú**. Người dân cần điền đầy đủ thông tin này khi thực hiện thủ tục đăng ký thường trú. Mẫu này dùng để kê khai thông tin người đề nghị đăng ký thường trú, nơi đề nghị đăng ký, quan hệ với chủ hộ hoặc chủ sở hữu chỗ ở hợp pháp.\n\n**2. Các loại giấy tờ/chứng minh khác liên quan đến hồ sơ:**\nNgoài tờ khai, hồ sơ đăng ký thường trú còn cần chuẩn bị các giấy tờ, tài liệu chứng minh:\n*   Chỗ ở hợp pháp (ví dụ: Giấy chứng nhận quyền sử dụng đất, quyền sở hữu nhà ở, hợp đồng mua bán, thuê, mượn, ở nhờ...).\n*   Chứng minh quan hệ nhân thân (nếu đăng ký vào hộ gia đình có người thân).\n*   Các giấy tờ liên quan khác tùy theo trường hợp cụ thể.\n\n**Lưu ý quan trọng về \"Xác nhận\":**\nTrong quy trình trực tuyến, sau khi khai báo thông tin trên hệ thống, bước tiếp theo là **xác nhận tờ khai thông tin cư trú bản điện tử**. Tùy từng trường hợp, hệ thống có thể yêu cầu sự xác nhận ý kiến của chủ hộ, chủ sở hữu chỗ ở hợp pháp, cha, mẹ hoặc người giám hộ thông qua ứng dụng **VNeID**.",
-          "createdAt": "2026-07-03T20:33:08.389Z"
-        },
-        {
-          "role": "user",
-          "content": "thay đổi họ tên thành Trần Văn A",
-          "createdAt": "2026-07-03T20:33:37.550Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T20:33:37.550Z"
-        },
         {
           "role": "user",
           "content": "chuyển đến trang chủ",
@@ -206,6 +176,36 @@
           "role": "assistant",
           "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
           "createdAt": "2026-07-03T20:47:40.090Z"
+        },
+        {
+          "role": "user",
+          "content": "hi",
+          "createdAt": "2026-07-03T20:50:05.348Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Xin chào! Bạn cần hỗ trợ gì về thủ tục hành chính không?",
+          "createdAt": "2026-07-03T20:50:05.348Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang tạm trú",
+          "createdAt": "2026-07-03T20:50:17.970Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:50:17.970Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang thường trú",
+          "createdAt": "2026-07-03T20:50:33.978Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:50:33.978Z"
         }
       ]
     },

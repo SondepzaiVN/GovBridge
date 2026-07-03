@@ -510,11 +510,8 @@ export const ChatbotFAB: React.FC = () => {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const callStatusLabel = getCallStatusLabel(state.callStatus, state.callStatusText);
     const isRealtime = state.conversationState === 'REALTIME';
-    const isWaitingForConfirmation = state.conversationState === 'WAITING_FOR_CONFIRMATION';
 
     const handleCallToggle = () => {
-        if (isWaitingForConfirmation) return;
-
         if (isRealtime || state.isListening) {
             dispatch({ type: 'SET_CALL_MODE', payload: false });
             dispatch({ type: 'SET_CALL_STATUS', payload: { status: 'idle', text: null } });
@@ -534,11 +531,9 @@ export const ChatbotFAB: React.FC = () => {
         });
     };
 
-    const buttonLabel = isWaitingForConfirmation
-        ? 'Đang chờ xác nhận trong khung chat'
-        : isRealtime
-          ? 'Tắt trò chuyện realtime bằng giọng nói'
-          : 'Bắt đầu trò chuyện realtime bằng giọng nói';
+    const buttonLabel = isRealtime
+        ? 'Tắt trò chuyện realtime bằng giọng nói'
+        : 'Bắt đầu trò chuyện realtime bằng giọng nói';
 
     return (
         <>
@@ -546,7 +541,6 @@ export const ChatbotFAB: React.FC = () => {
                 className={[
                     'realtime-voice-control',
                     isRealtime ? 'realtime-voice-control--active' : '',
-                    isWaitingForConfirmation ? 'realtime-voice-control--waiting' : '',
                     `realtime-voice-control--${state.callStatus}`,
                 ].filter(Boolean).join(' ')}
                 data-conversation-state={state.conversationState}
@@ -564,7 +558,6 @@ export const ChatbotFAB: React.FC = () => {
                     type="button"
                     id="realtime-voice-button"
                     onClick={handleCallToggle}
-                    disabled={isWaitingForConfirmation}
                     aria-label={buttonLabel}
                     aria-pressed={isRealtime}
                     aria-describedby="realtime-voice-status"
