@@ -134,24 +134,62 @@ const THINKING_ANNOUNCEMENTS = [
     'Sắp xong rồi, tôi đang hoàn thiện câu trả lời cho bạn.',
 ];
 
+const INTRO_GREETING = 'Xin chào! Tôi là trợ lý VNPT AI, sẵn sàng hỗ trợ dịch vụ công cho bạn. Hãy nói điều bạn cần!';
+
 const VoiceCallController: React.FC = () => {
     const { state, dispatch, sendMessage, handleAIResponse } = useChatbot();
     const stateRef = useRef(state);
     const sendMessageRef = useRef(sendMessage);
     const isFinishingRef = useRef(false);
+    const introPlayedRef = useRef(false);
 
     useEffect(() => {
         stateRef.current = state;
         sendMessageRef.current = sendMessage;
     }, [state, sendMessage]);
 
+    // ── Lời chào khi bắt đầu cuộc gọi + warm-up mic song song ──────────────
+    useEffect(() => {
+        if (!state.isCallMode) {
+            // Reset để lần sau phát lại
+            introPlayedRef.current = false;
+            return;
+        }
+        if (introPlayedRef.current) return;
+        introPlayedRef.current = true;
+
+        // Warm-up mic: xin quyền sớm trong lúc TTS đang nói
+        void navigator.mediaDevices?.getUserMedia({ audio: true })
+            .then((stream) => { stream.getTracks().forEach((t) => t.stop()); })
+            .catch(() => undefined);
+
+        dispatch({
+            type: 'SET_CALL_STATUS',
+            payload: { status: 'speaking', text: INTRO_GREETING },
+        });
+        void ttsService.speak(INTRO_GREETING, (isPlaying) => {
+            dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+            dispatch({
+                type: 'SET_CALL_STATUS',
+                payload: {
+                    status: isPlaying ? 'speaking' : 'listening',
+                    text: isPlaying ? INTRO_GREETING : 'Đang lắng nghe...',
+                },
+            });
+        });
+    }, [state.isCallMode, dispatch]);
+
     useEffect(() => {
         if (!state.isCallMode || !state.isLoading || state.requiresUserAction) return;
 
         let phraseIndex = 0;
-        const announceThinking = () => {
+        let cancelled = false;
+        let pendingTimer: ReturnType<typeof window.setTimeout> | null = null;
+
+        const announceNext = () => {
             if (
-                !stateRef.current.isCallMode
+                cancelled
+                || !stateRef.current.isCallMode
                 || !stateRef.current.isLoading
                 || stateRef.current.requiresUserAction
             ) {
@@ -173,14 +211,18 @@ const VoiceCallController: React.FC = () => {
                         text: isPlaying ? phrase : 'Trợ lý đang suy nghĩ...',
                     },
                 });
+                // Khi TTS vừa kết thúc (isPlaying chuyển false), lên lịch câu tiếp sau 3 giây
+                if (!isPlaying && !cancelled) {
+                    pendingTimer = window.setTimeout(announceNext, 3000);
+                }
             });
         };
 
-        const firstAnnouncement = window.setTimeout(announceThinking, 600);
-        const announcementInterval = window.setInterval(announceThinking, 4200);
+        // Bắt đầu câu đầu tiên sau 600ms
+        pendingTimer = window.setTimeout(announceNext, 600);
         return () => {
-            window.clearTimeout(firstAnnouncement);
-            window.clearInterval(announcementInterval);
+            cancelled = true;
+            if (pendingTimer !== null) window.clearTimeout(pendingTimer);
         };
     }, [dispatch, state.isCallMode, state.isLoading, state.requiresUserAction]);
 
@@ -294,9 +336,11 @@ const VoiceCallController: React.FC = () => {
         }
 
         if (state.isListening || state.isLoading || state.isSpeaking || state.requiresUserAction) return;
+        // Nếu intro đã phát xong thì nghe ngay, không delay nhiều
+        const delay = introPlayedRef.current ? 150 : 800;
         const timer = window.setTimeout(() => {
             void startVoiceListening();
-        }, 800);
+        }, delay);
         return () => window.clearTimeout(timer);
     }, [
         state.isCallMode,
