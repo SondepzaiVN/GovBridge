@@ -6,6 +6,80 @@ import { useChatbot } from '../../contexts/ChatbotContext';
 import { useForm } from '../../contexts/FormContext';
 import { ROUTE_TO_SERVICE_MAP } from '../../data/services';
 
+const FALLBACK_CCCD_FIELD_MAP: Record<string, Record<string, string>> = {
+  '/dang-ky-tam-tru': {
+    hoTen: 'fullName',
+    ngaySinh: 'dateOfBirth',
+    gioiTinh: 'gender',
+    id: 'citizenId',
+  },
+  '/tam-tru': {
+    hoTen: 'fullName',
+    ngaySinh: 'dateOfBirth',
+    gioiTinh: 'gender',
+    id: 'citizenId',
+  },
+  '/xac-nhan-cu-tru': {
+    hoTen: 'fullName',
+    ngaySinh: 'birthDate',
+    gioiTinh: 'gender',
+    id: 'citizenId',
+  },
+  '/lien-thong-khai-tu': {
+    hoTen: 'ltkt_fullName',
+    ngaySinh: 'ltkt_dob',
+    gioiTinh: 'ltkt_gender',
+    id: 'ltkt_idNumber',
+    ngayCap: 'ltkt_idIssueDate',
+    noiCap: 'ltkt_idIssuePlace',
+    thuongTru: 'ltkt_addressDetail',
+  },
+};
+
+const normalizeGenderValue = (value: string) => {
+  const normalized = value.trim().toLowerCase();
+  return normalized.includes('nữ') || normalized.includes('nu') || normalized.includes('ná»¯') ? 'Nu' : 'Nam';
+};
+
+const normalizeServiceRoute = (pathname: string) => pathname.replace(/\/buoc-\d+\/?$/, '');
+
+const buildFieldsFromCccdMap = (info: Record<string, string>, fieldMap: Record<string, string>) => {
+  const fields: Record<string, string> = {};
+  Object.entries(fieldMap).forEach(([cccdKey, fieldId]) => {
+    const rawValue = info[cccdKey];
+    if (!rawValue) return;
+    fields[fieldId] = cccdKey === 'gioiTinh'
+      ? normalizeGenderValue(rawValue)
+      : rawValue;
+  });
+  return fields;
+};
+
+const getRouteSpecificCccdFieldMap = (route: string, info: Record<string, string>): Record<string, string> | null => {
+  const gender = info.gioiTinh ? normalizeGenderValue(info.gioiTinh) : '';
+  const isFemale = gender === 'Nu';
+
+  if (route === '/khai-sinh') {
+    return isFemale
+      ? { id: 'cccdMe', hoTen: 'hoTenMe', ngaySinh: 'ngaySinhMe' }
+      : { id: 'cccdCha', hoTen: 'hoTenCha', ngaySinh: 'ngaySinhCha' };
+  }
+
+  if (route === '/lien-thong-khai-sinh') {
+    return isFemale
+      ? { id: 'ltks_cccdMe', hoTen: 'ltks_hoTenMe' }
+      : { id: 'ltks_cccdCha', hoTen: 'ltks_hoTenCha' };
+  }
+
+  if (route === '/ket-hon') {
+    return isFemale
+      ? { hoTen: 'hoTenNu', id: 'cccdNu', ngaySinh: 'ngaySinhNu', thuongTru: 'diaChiNu' }
+      : { hoTen: 'hoTenNam', id: 'cccdNam', ngaySinh: 'ngaySinhNam', thuongTru: 'diaChiNam' };
+  }
+
+  return null;
+};
+
 const renderContent = (content: string) => {
   const lines = content.split('\n');
   return lines.map((line, index) => {
@@ -110,18 +184,28 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
             className="btn btn-primary btn-sm"
             id="cccd-confirm-btn"
             onClick={() => {
-              const fields: Record<string, string> = {};
-              const serviceRoute = location.pathname.replace(/\/buoc-\d+\/?$/, '');
+              const serviceRoute = normalizeServiceRoute(location.pathname);
               const service = ROUTE_TO_SERVICE_MAP[serviceRoute];
+              const routeSpecificFieldMap = getRouteSpecificCccdFieldMap(serviceRoute, info);
+              const fields: Record<string, string> = routeSpecificFieldMap
+                ? buildFieldsFromCccdMap(info, routeSpecificFieldMap)
+                : {};
 
-              service?.fields.forEach((field) => {
-                if (!field.cccdKey) return;
-                const rawValue = info[field.cccdKey];
-                if (!rawValue) return;
-                fields[field.id] = field.cccdKey === 'gioiTinh'
-                  ? rawValue.toLowerCase().includes('nữ') ? 'Nu' : 'Nam'
-                  : rawValue;
-              });
+              if (Object.keys(fields).length === 0) {
+                service?.fields.forEach((field) => {
+                  if (!field.cccdKey) return;
+                  const rawValue = info[field.cccdKey];
+                  if (!rawValue) return;
+                  fields[field.id] = field.cccdKey === 'gioiTinh'
+                    ? normalizeGenderValue(rawValue)
+                    : rawValue;
+                });
+              }
+
+              if (Object.keys(fields).length === 0) {
+                const fallbackFieldMap = FALLBACK_CCCD_FIELD_MAP[serviceRoute];
+                Object.assign(fields, buildFieldsFromCccdMap(info, fallbackFieldMap || {}));
+              }
 
               if (Object.keys(fields).length === 0) {
                 handleAIResponse({
