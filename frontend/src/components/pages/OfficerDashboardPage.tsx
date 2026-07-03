@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
     AlertTriangle,
     Check,
@@ -76,6 +76,16 @@ const OfficerDashboardPage: React.FC = () => {
         ?? filteredApplications[0]
         ?? applications[0];
     const officerNote = officerNoteDrafts[selectedApplication.id] ?? selectedApplication.officerNote;
+
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === DASHBOARD_STORAGE_KEY) {
+                setApplications(loadDashboardApplications());
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
     const handleSaveOfficerNote = () => {
         setApplications((current) => {
@@ -204,7 +214,10 @@ const OfficerDashboardPage: React.FC = () => {
         setApplications((current) => {
             const newApps = current.map((application) => {
                 if (application.id === selectedApplication.id) {
-                    const updates: Partial<Application> = { status: nextStatus };
+                    const updates: Partial<Application> = { 
+                        status: nextStatus,
+                        statusLabel: nextStatus
+                    };
                     if (confirmAction === 'reject') {
                         updates.returnReason = returnReason || 'Điền thiếu';
                         updates.responseMessage = message || 'Điền thiếu';
