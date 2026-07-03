@@ -2,7 +2,7 @@ import { normalizeOfficerApplication, type OfficerApplication } from './officerA
 
 export const DASHBOARD_STORAGE_KEY = 'officerApplications_v2';
 
-const RAW_INITIAL_APPLICATIONS: any[] = [];
+const RAW_INITIAL_APPLICATIONS: unknown[] = [];
 
 export const INITIAL_DASHBOARD_APPLICATIONS: OfficerApplication[] = RAW_INITIAL_APPLICATIONS.map(
     (application, index) => normalizeOfficerApplication(application, `GOV-MOCK-${index + 1}`),

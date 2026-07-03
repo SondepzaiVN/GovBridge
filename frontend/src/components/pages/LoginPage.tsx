@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
         ? methodParam
         : null;
     const role: UserRole = method === 'officer' || searchParams.get('role') === 'can-bo' ? 'can-bo' : 'nguoi-dan';
-    const [agency, setAgency] = useState('Cần Thơ');
+    const [agency] = useState('Cần Thơ');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
