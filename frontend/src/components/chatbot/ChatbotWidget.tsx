@@ -163,8 +163,7 @@ const VoiceCallController: React.FC = () => {
 
         const greeting = state.messages.length === 0 ? INTRO_GREETING : SUBSEQUENT_GREETING;
 
-        // Warm-up mic bằng sttService để giữ connection luôn mở
-        void sttService.warmupStream();
+        // Lời chào khi bắt đầu cuộc gọi
 
         dispatch({
             type: 'SET_CALL_STATUS',
@@ -336,7 +335,6 @@ const VoiceCallController: React.FC = () => {
             ttsService.stop();
             dispatch({ type: 'SET_LISTENING', payload: false });
             void sttService.cancelListening().catch(() => undefined);
-            sttService.releaseStream();
             return;
         }
 
