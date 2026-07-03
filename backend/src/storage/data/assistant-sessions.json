@@ -2,6 +2,70 @@
   "schemaVersion": 1,
   "sessions": [
     {
+      "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi",
+          "hoTen": "Trần Minh Hùng"
+        },
+        "candidateCases": [],
+        "recentFacts": [
+          {
+            "fieldHint": "hoTen",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "ngaySinh",
+            "value": "23/2/2006",
+            "confidence": 0.9,
+            "source": "chat"
+          }
+        ],
+        "knowledgeSession": {
+          "senderId": "sender_466b4227-2d05-4e19-a5a4-03eec960895c",
+          "sessionId": "knowledge_cecffd69-cf1d-4660-8b1e-e316d88d3f90"
+        }
+      },
+      "createdAt": "2026-07-03T19:56:59.068Z",
+      "updatedAt": "2026-07-03T19:57:46.093Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Đến trang đăng ký thường trú",
+          "createdAt": "2026-07-03T19:56:59.068Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T19:56:59.068Z"
+        },
+        {
+          "role": "user",
+          "content": "Giúp tôi họ tên trần minh hùng",
+          "createdAt": "2026-07-03T19:57:21.317Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T19:57:21.317Z"
+        },
+        {
+          "role": "user",
+          "content": "Giúp tôi ngày sinh 23/2/2006",
+          "createdAt": "2026-07-03T19:57:46.093Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T19:57:46.093Z"
+        }
+      ]
+    },
+    {
       "id": "30b138ef-1a45-442c-978a-ae2a8af243e9",
       "currentRoute": "/ho-khau",
       "state": {
