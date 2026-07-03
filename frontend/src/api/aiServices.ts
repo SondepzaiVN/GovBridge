@@ -104,6 +104,7 @@ interface ActiveVoiceCapture {
 }
 
 let activeCapture: ActiveVoiceCapture | null = null;
+let sharedStream: MediaStream | null = null;
 const SPEECH_RMS_THRESHOLD = 0.018;
 const SILENCE_END_MS = 1200;
 const MAX_UTTERANCE_MS = 15000;
@@ -158,11 +159,26 @@ const encodeWav = (samples: Float32Array, sampleRate: number): Blob => {
 const disposeVoiceCapture = async (capture: ActiveVoiceCapture) => {
     capture.processor.disconnect();
     capture.source.disconnect();
-    capture.stream.getTracks().forEach((track) => track.stop());
     await capture.audioContext.close().catch(() => undefined);
 };
 
 export const sttService = {
+    warmupStream: async () => {
+        if (!navigator.mediaDevices?.getUserMedia) return;
+        if (!sharedStream || sharedStream.getAudioTracks().every(t => t.readyState === 'ended')) {
+            try {
+                sharedStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (error) {
+                console.warn('[STT] Warmup failed', error);
+            }
+        }
+    },
+    releaseStream: () => {
+        if (sharedStream) {
+            sharedStream.getTracks().forEach((track) => track.stop());
+            sharedStream = null;
+        }
+    },
     startListening: async (
         callback: (transcript: string, isFinal: boolean) => void,
         options: { onSilence?: () => void } = {},
@@ -172,7 +188,12 @@ export const sttService = {
         }
 
         await sttService.stopListening();
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        if (!sharedStream || sharedStream.getAudioTracks().every(t => t.readyState === 'ended')) {
+            sharedStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+        
+        const stream = sharedStream;
         const audioContext = new AudioContext();
         const source = audioContext.createMediaStreamSource(stream);
         const processor = audioContext.createScriptProcessor(4096, 1, 1);
