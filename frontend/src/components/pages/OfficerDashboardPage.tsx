@@ -58,7 +58,7 @@ const OfficerDashboardPage: React.FC = () => {
     const [reasonError, setReasonError] = useState('');
     const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
     const [toast, setToast] = useState('');
-    const [officerNoteDrafts, setOfficerNoteDrafts] = useState<Record<string, string>>({});
+
     const [previewFile, setPreviewFile] = useState<{
         fileName: string;
         mimeType: string;
@@ -74,7 +74,7 @@ const OfficerDashboardPage: React.FC = () => {
     const selectedApplication = filteredApplications.find((application) => application.id === selectedId)
         ?? filteredApplications[0]
         ?? applications[0];
-    const officerNote = selectedApplication ? (officerNoteDrafts[selectedApplication.id] ?? selectedApplication.officerNote) : '';
+    const officerNote = selectedApplication?.officerNote ?? '';
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -86,18 +86,7 @@ const OfficerDashboardPage: React.FC = () => {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    const handleSaveOfficerNote = () => {
-        if (!selectedApplication) return;
-        setApplications((current) => {
-            const newApps = current.map((application) => (
-                application.id === selectedApplication.id ? { ...application, officerNote } : application
-            ));
-            window.localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(newApps));
-            return newApps;
-        });
-        setToast('Đã lưu lưu ý hồ sơ');
-        setTimeout(() => setToast(''), 2600);
-    };
+
 
     const handleDownloadAttachment = async (attachment: AttachmentMetadata) => {
         try {
@@ -328,24 +317,8 @@ const OfficerDashboardPage: React.FC = () => {
                                     <span style={{ backgroundColor: '#0ea5e9', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>AI đánh giá</span>
                                     <h3 style={{ margin: 0, color: '#0369a1', fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><FileText size={17} /> Lưu ý hồ sơ</h3>
                                 </div>
-                                <textarea 
-                                    value={officerNote}
-                                    onChange={(event) => setOfficerNoteDrafts((current) => ({
-                                        ...current,
-                                        [selectedApplication.id]: event.target.value,
-                                    }))}
-                                    placeholder="Chưa có đánh giá AI cho hồ sơ này..."
-                                    maxLength={1000}
-                                    style={{ width: '100%', minHeight: '80px', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '14px', resize: 'vertical', backgroundColor: 'white', color: '#334155' }}
-                                />
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                                    <button 
-                                        type="button" 
-                                        onClick={handleSaveOfficerNote}
-                                        style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#0ea5e9', color: 'white', border: 'none', padding: '6px 14px', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', fontWeight: '500' }}
-                                    >
-                                        <Check size={14} /> Lưu đánh giá
-                                    </button>
+                                <div style={{ fontSize: '14px', color: '#334155', lineHeight: '1.5', whiteSpace: 'pre-wrap', backgroundColor: 'white', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                                    {officerNote || <span style={{ fontStyle: 'italic', color: '#64748b' }}>Chưa có đánh giá AI cho hồ sơ này.</span>}
                                 </div>
                             </section>
 
