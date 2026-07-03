@@ -39,6 +39,8 @@ const UIHighlighter: React.FC = () => {
     });
   }, []);
 
+  const activeElementRef = useRef<Element | null>(null);
+
   // ── Core logic: tìm element và bật spotlight ──
   const activateHighlight = useCallback((id: string, lbl?: string) => {
     let attempts = 0;
@@ -54,8 +56,11 @@ const UIHighlighter: React.FC = () => {
       }
 
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      activeElementRef.current = el;
 
       setTimeout(() => {
+        // Double check if the user dismissed it before the timeout fires
+        if (activeElementRef.current !== el) return;
         updateRect(el);
         setLabel(
           lbl ||
@@ -67,19 +72,28 @@ const UIHighlighter: React.FC = () => {
         );
       }, 400);
 
-      const onScroll = () => {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = requestAnimationFrame(() => updateRect(el));
-      };
-
       observerRef.current?.disconnect();
-      observerRef.current = new ResizeObserver(() => updateRect(el));
+      observerRef.current = new ResizeObserver(() => {
+        if (activeElementRef.current === el) updateRect(el);
+      });
       observerRef.current.observe(el);
-      window.addEventListener('scroll', onScroll, { passive: true });
     };
 
     findEl();
   }, [updateRect]);
+
+  // Global scroll listener
+  useEffect(() => {
+    const onScroll = () => {
+      if (!activeElementRef.current || !rect) return;
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        if (activeElementRef.current) updateRect(activeElementRef.current);
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [rect, updateRect]);
 
   // ── Lắng nghe HIGHLIGHT_ELEMENT event từ agentEventBus ──
   // Khai báo SAU activateHighlight để tránh lỗi "used before declaration"
@@ -98,6 +112,7 @@ const UIHighlighter: React.FC = () => {
   useEffect(() => {
     if (!elementId) {
       requestAnimationFrame(() => {
+        activeElementRef.current = null;
         setRect(null);
         setLabel('');
       });
@@ -117,6 +132,7 @@ const UIHighlighter: React.FC = () => {
   useEffect(() => {
     if (!rect) return;
     const t = setTimeout(() => {
+      activeElementRef.current = null;
       setRect(null);
       clearHighlight();
     }, 8000);
@@ -124,6 +140,7 @@ const UIHighlighter: React.FC = () => {
   }, [rect, clearHighlight]);
 
   const handleDismiss = () => {
+    activeElementRef.current = null;
     setRect(null);
     clearHighlight();
   };

@@ -87,6 +87,9 @@ export interface AssistantUnderstanding {
   caseSuggestion: CaseSuggestion | null;
   followUpQuestion: string | null;
   fieldExplanation: FieldExplanation | null;
+  navigationRoute: string | null;
+  highlightElementId: string | null;
+  nextStepRequested: boolean;
 }
 
 export interface OrchestratorFinalResult extends AssistantResult {

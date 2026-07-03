@@ -1,134 +1,274 @@
-import React, { useState } from 'react';
-import { useChatbot } from '../../contexts/ChatbotContext';
-import ChatWindow from './ChatWindow';
-import ChatInput from './ChatInput';
+import React, { useEffect, useRef, useState } from 'react';
+import { Bot, ChevronDown, Minimize2, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { smartbotService } from '../../api/aiServices';
-import { X, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { useChatbot } from '../../contexts/ChatbotContext';
+import ChatInput from './ChatInput';
+import ChatWindow from './ChatWindow';
+
+interface ChatHeaderProps {
+    title: string;
+    subtitle: string;
+    onClear: () => void;
+    onClose: () => void;
+    onMinimize?: () => void;
+}
+
+const ChatHeader: React.FC<ChatHeaderProps> = ({
+    title,
+    subtitle,
+    onClear,
+    onClose,
+    onMinimize,
+}) => {
+    const { state, enableVoiceResponse, setEnableVoiceResponse } = useChatbot();
+
+    return (
+        <div className="chatbot-header">
+            <div className="chatbot-avatar" style={{ padding: 0 }}>
+                <img
+                    src="/logo_Gov_Bridge.jpg"
+                    alt="Gov Bridge"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                />
+                <div className="chatbot-status-dot" title="Đang hoạt động" />
+            </div>
+
+            <div className="chatbot-header-info">
+                <div className="chatbot-header-name">{title}</div>
+                <div className="chatbot-header-status">
+                    {state.isListening
+                        ? 'Đang nghe...'
+                        : state.isSpeaking
+                          ? 'Đang nói...'
+                          : state.isLoading
+                            ? 'Trợ lý đang tra cứu...'
+                            : subtitle}
+                </div>
+            </div>
+
+            <button
+                className={`voice-toggle ${enableVoiceResponse ? 'active' : ''}`}
+                onClick={() => setEnableVoiceResponse(!enableVoiceResponse)}
+                title={enableVoiceResponse ? 'Tắt giọng đọc' : 'Bật giọng đọc'}
+                aria-label={enableVoiceResponse ? 'Tắt giọng đọc' : 'Bật giọng đọc'}
+                id="voice-response-toggle"
+                type="button"
+            >
+                {enableVoiceResponse ? <Volume2 size={13} /> : <VolumeX size={13} />}
+                {enableVoiceResponse ? 'Tắt' : 'Giọng'}
+            </button>
+
+            <div className="chatbot-header-actions">
+                <button
+                    className="chatbot-header-btn"
+                    onClick={onClear}
+                    title="Xoá lịch sử chat"
+                    aria-label="Xoá chat"
+                    type="button"
+                >
+                    <RotateCcw size={14} />
+                </button>
+
+                {onMinimize && (
+                    <button
+                        className="chatbot-header-btn"
+                        onClick={onMinimize}
+                        title="Thu nhỏ"
+                        aria-label="Thu nhỏ overlay"
+                        type="button"
+                    >
+                        <Minimize2 size={14} />
+                    </button>
+                )}
+
+                <button
+                    className="chatbot-header-btn"
+                    onClick={onClose}
+                    title="Đóng"
+                    aria-label="Đóng chatbot"
+                    id="chatbot-close-btn"
+                    type="button"
+                >
+                    <X size={14} />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const WelcomeState: React.FC = () => {
+    const { sendMessage } = useChatbot();
+    const suggestions = [
+        'Đăng ký tạm trú',
+        'Liên thông khai sinh',
+        'Cấp lại CCCD',
+        'Cần chuẩn bị giấy tờ gì?',
+    ];
+
+    return (
+        <div className="chatbot-welcome-state">
+            <div className="chatbot-welcome-icon">
+                <Sparkles size={22} />
+            </div>
+            <h2>Xin chào, tôi có thể giúp gì cho bạn?</h2>
+            <div className="chatbot-welcome-chips">
+                {suggestions.map((item) => (
+                    <button key={item} type="button" onClick={() => sendMessage(item)}>
+                        {item}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const ChatbotWidget: React.FC = () => {
-    const { state, dispatch, sendMessage, enableVoiceResponse, setEnableVoiceResponse } = useChatbot();
+    const { state, dispatch, sendMessage, openChatbot } = useChatbot();
     const [isExiting, setIsExiting] = useState(false);
-
-    if (!state.isOpen) return null;
+    const desktopPanelRef = useRef<HTMLElement | null>(null);
 
     const handleClose = () => {
         setIsExiting(true);
-        setTimeout(() => {
+        window.setTimeout(() => {
             dispatch({ type: 'CLOSE' });
             setIsExiting(false);
-        }, 240);
+        }, 180);
+    };
+
+    const handleOpen = () => {
+        openChatbot();
     };
 
     const handleClear = () => {
         dispatch({ type: 'CLEAR_MESSAGES' });
-        smartbotService.clearHistory();
-        // Re-send welcome message
-        setTimeout(() => {
+        void smartbotService.clearHistory();
+        window.setTimeout(() => {
             dispatch({
                 type: 'ADD_MESSAGE',
                 payload: {
                     id: `msg_${Date.now()}`,
                     role: 'bot',
                     type: 'text',
-                    content: 'Đã xoá lịch sử chat! Tôi có thể giúp gì cho bạn? 😊',
+                    content: 'Đã xoá lịch sử chat. Tôi có thể giúp gì cho bạn?',
                     timestamp: new Date(),
-                    suggestions: ['Đăng ký khai sinh', 'Làm hộ khẩu mới', 'Cấp lại CCCD'],
+                    suggestions: ['Đăng ký khai sinh', 'Liên thông khai sinh', 'Cần chuẩn bị gì?'],
                 },
             });
         }, 100);
     };
 
+    useEffect(() => {
+        if (!state.isOpen) return;
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape' && window.innerWidth >= 768) {
+                handleClose();
+            }
+        };
+        const handlePointerDown = (event: PointerEvent) => {
+            if (window.innerWidth < 768) return;
+            const target = event.target as Node | null;
+            if (!target || desktopPanelRef.current?.contains(target)) return;
+            handleClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('pointerdown', handlePointerDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('pointerdown', handlePointerDown);
+        };
+    }, [state.isOpen]);
+
     return (
-        <div
-            className={`chatbot-widget ${isExiting ? 'chatbot-exit' : 'chatbot-enter'}`}
-            role="dialog"
-            aria-label="Trợ lý AI Dịch Vụ Công"
-            aria-modal="false"
-            id="chatbot-widget"
-        >
-            {/* Header */}
-            <div className="chatbot-header">
-                <div className="chatbot-avatar" style={{ padding: 0 }}>
-                    <img
-                        src="/logo_Gov_Bridge.jpg"
-                        alt="Gov Bridge"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
-                    />
-                    <div className="chatbot-status-dot" title="Đang hoạt động" />
-                </div>
-
-                <div className="chatbot-header-info">
-                    <div className="chatbot-header-name">Trợ lý AI DVC</div>
-                    <div className="chatbot-header-status">
-                        {state.isListening
-                            ? '🎤 Đang nghe...'
-                            : state.isSpeaking
-                              ? '🔊 Đang nói...'
-                              : state.isLoading
-                                ? '💭 Đang xử lý...'
-                                : smartbotService.getBackendInfo()}
+        <>
+            {!state.isOpen && (
+                <div className="desktop-chat-bar" aria-label="Thanh chat Trợ lý AI Dịch Vụ Công">
+                    <div className="desktop-chat-bar-brand">
+                        <img src="/logo_Gov_Bridge.jpg" alt="" />
+                        <Bot size={16} />
                     </div>
+                    <ChatInput
+                        variant="bar"
+                        onSend={sendMessage}
+                        disabled={state.isLoading}
+                        onFocusInput={handleOpen}
+                        onBeforeSend={handleOpen}
+                    />
                 </div>
+            )}
 
-                {/* Voice response toggle */}
-                <button
-                    className={`voice-toggle ${enableVoiceResponse ? 'active' : ''}`}
-                    onClick={() => setEnableVoiceResponse(!enableVoiceResponse)}
-                    title={enableVoiceResponse ? 'Tắt giọng đọc' : 'Bật giọng đọc'}
-                    id="voice-response-toggle"
-                >
-                    {enableVoiceResponse ? <Volume2 size={13} /> : <VolumeX size={13} />}
-                    {enableVoiceResponse ? 'Tắt' : 'Giọng'}
-                </button>
-
-                {/* Action buttons */}
-                <div className="chatbot-header-actions">
-                    <button
-                        className="chatbot-header-btn"
-                        onClick={handleClear}
-                        title="Xoá lịch sử chat"
-                        aria-label="Xoá chat"
-                    >
-                        <RotateCcw size={14} />
-                    </button>
-
-                    <button
-                        className="chatbot-header-btn"
-                        onClick={handleClose}
-                        title="Đóng"
-                        aria-label="Đóng chatbot"
-                        id="chatbot-close-btn"
-                    >
-                        <X size={14} />
-                    </button>
-                </div>
-            </div>
-
-            {/* Body — hidden when minimized */}
-            {!state.isMinimized && (
+            {state.isOpen && (
                 <>
-                    <ChatWindow messages={state.messages} isLoading={state.isLoading} />
-                    <ChatInput onSend={sendMessage} disabled={state.isLoading} />
+                    <div className="chatbot-soft-backdrop" aria-hidden="true" />
+                    <div className={`chatbot-desktop-overlay ${isExiting ? 'chatbot-exit' : 'chatbot-enter'}`}>
+                        <section
+                            ref={desktopPanelRef}
+                            className="chatbot-overlay-panel"
+                            role="dialog"
+                            aria-label="Trợ lý AI Dịch Vụ Công"
+                            aria-modal="true"
+                        >
+                            <div className="chatbot-panel-controls" aria-label="Điều khiển chatbot">
+                                <button
+                                    className="chatbot-panel-control chatbot-panel-control--center"
+                                    type="button"
+                                    onClick={handleClose}
+                                    title="Thu nhỏ"
+                                    aria-label="Thu nhỏ chatbot"
+                                >
+                                    <ChevronDown size={18} />
+                                </button>
+                            </div>
+                            {state.messages.length === 0 ? (
+                                <WelcomeState />
+                            ) : (
+                                <ChatWindow messages={state.messages} isLoading={state.isLoading} />
+                            )}
+                            <ChatInput
+                                variant="panel"
+                                autoFocus
+                                onSend={sendMessage}
+                                disabled={state.isLoading}
+                            />
+                        </section>
+                    </div>
                 </>
             )}
-        </div>
+
+            {state.isOpen && (
+                <div
+                    className={`chatbot-widget ${isExiting ? 'chatbot-exit' : 'chatbot-enter'}`}
+                    role="dialog"
+                    aria-label="Trợ lý AI Dịch Vụ Công"
+                    aria-modal="false"
+                    id="chatbot-widget"
+                >
+                    <ChatHeader
+                        title="Trợ lý AI DVC"
+                        subtitle={smartbotService.getBackendInfo()}
+                        onClear={handleClear}
+                        onClose={handleClose}
+                    />
+                    {!state.isMinimized && (
+                        <>
+                            <ChatWindow messages={state.messages} isLoading={state.isLoading} />
+                            <ChatInput onSend={sendMessage} disabled={state.isLoading} />
+                        </>
+                    )}
+                </div>
+            )}
+        </>
     );
 };
 
-// ============================================================
-// FAB (Floating Action Button)
-// ============================================================
 export const ChatbotFAB: React.FC = () => {
     const { state, openChatbot, dispatch, sendMessage } = useChatbot();
     const pttTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
     const [isPTT, setIsPTT] = React.useState(false);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const recognitionRef = React.useRef<any>(null);
-    // Track whether PTT was actually activated so onClick can be suppressed
     const pttActivatedRef = React.useRef(false);
 
     const handleClick = (e: React.MouseEvent) => {
-        // If PTT was just activated, suppress the click toggle
         if (pttActivatedRef.current) {
             e.preventDefault();
             e.stopPropagation();
@@ -142,11 +282,10 @@ export const ChatbotFAB: React.FC = () => {
         }
     };
 
-    // PTT: hold FAB when chat is CLOSED to start voice
     const handlePointerDown = () => {
-        if (state.isOpen) return; // normal click handled separately
+        if (state.isOpen) return;
         pttTimerRef.current = setTimeout(() => {
-            pttActivatedRef.current = true; // mark PTT as activated to block onClick
+            pttActivatedRef.current = true;
             setIsPTT(true);
             /* eslint-disable @typescript-eslint/no-explicit-any */
             const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -157,9 +296,8 @@ export const ChatbotFAB: React.FC = () => {
             recognition.interimResults = false;
             recognition.onresult = (e: SpeechRecognitionEvent) => {
                 const transcript = e.results[0][0].transcript;
-                // Directly open chat then send the voice transcript as a message
                 dispatch({ type: 'OPEN' });
-                sendMessage(transcript);
+                void sendMessage(transcript);
             };
             recognition.onend = () => {
                 setIsPTT(false);
@@ -171,7 +309,7 @@ export const ChatbotFAB: React.FC = () => {
             };
             recognition.start();
             recognitionRef.current = recognition;
-        }, 400); // hold 400ms to trigger PTT
+        }, 400);
     };
 
     const handlePointerUp = () => {
@@ -184,7 +322,6 @@ export const ChatbotFAB: React.FC = () => {
         }
     };
 
-    // Count unread messages (when chatbot is closed)
     const unreadCount = !state.isOpen ? state.messages.filter((m) => m.role === 'bot').length : 0;
 
     return (
@@ -198,6 +335,7 @@ export const ChatbotFAB: React.FC = () => {
                 aria-label={state.isOpen ? 'Đóng trợ lý AI' : 'Mở trợ lý AI Dịch Vụ Công'}
                 title="Trợ lý AI Dịch Vụ Công"
                 id="chatbot-fab"
+                type="button"
             >
                 <div className="chatbot-fab-pulse" />
                 <div
@@ -205,30 +343,9 @@ export const ChatbotFAB: React.FC = () => {
                     style={!state.isOpen ? { width: 64, height: 64, borderRadius: '50%', padding: 2 } : {}}
                 >
                     {state.isOpen ? (
-                        <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                        >
-                            <path d="M18 6L6 18M6 6l12 12" />
-                        </svg>
+                        <X size={24} />
                     ) : isPTT ? (
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '100%',
-                                height: '100%',
-                            }}
-                        >
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
-                                <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4zm-1 18.93A8 8 0 0 1 4 12H2a10 10 0 0 0 9 9.93V23h2v-1.07A10 10 0 0 0 22 12h-2a8 8 0 0 1-7 7.93z" />
-                            </svg>
-                        </div>
+                        <Bot size={28} />
                     ) : (
                         <img
                             src="/logo_Gov_Bridge.jpg"
@@ -249,7 +366,7 @@ export const ChatbotFAB: React.FC = () => {
                     </span>
                 )}
             </button>
-            <div className="chatbot-fab-tooltip">{isPTT ? '🎤 Đang nghe...' : 'Trợ lý AI 24/7'}</div>
+            <div className="chatbot-fab-tooltip">{isPTT ? 'Đang nghe...' : 'Trợ lý AI 24/7'}</div>
         </div>
     );
 };

@@ -130,9 +130,6 @@ const Header: React.FC = () => {
                         >
                             Kết Hôn
                         </NavLink>
-                        <NavLink to="/" className="header-nav-link">
-                            Hỗ Trợ <ChevronDown size={13} />
-                        </NavLink>
                     </nav>
 
                     {/* Mobile menu toggle */}

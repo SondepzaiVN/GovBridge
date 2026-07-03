@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw } from 'lucide-react';
+import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw, Home } from 'lucide-react';
 import { useForm } from '../../contexts/FormContext';
 import { saveApplicationToDashboard } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { provinces, getKhaiSinhAgencyName, getResidenceAgencyName, getBhytAgencyName, useWards } from '../../hooks/useAdministrativeUnits';
+import { administrativeUnitService } from '../../api/administrativeUnitService';
+import type { FormFieldOption } from '../../types';
+import { SERVICE_MAP } from '../../data/services';
 
 type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
 
@@ -21,6 +24,7 @@ interface LinkedField {
   dotted?: boolean;
   hideLabel?: boolean;
   readOnly?: boolean;
+  disabled?: boolean;
 }
 
 interface LinkedSection {
@@ -84,8 +88,8 @@ const residenceCaseOptions = [
 ];
 
 const genderOptions = ['Nam', 'Nữ'];
-
-
+const provinceOptions: string[] = [];
+const wardOptions: string[] = [];
 const countryOptions = ['Cộng hòa XHCN Việt Nam'];
 const nationalityOptions = ['Việt Nam'];
 const ethnicityOptions = ['Kinh', 'Tày', 'Thái', 'Mường', 'Khác'];
@@ -147,9 +151,9 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
         title: 'Cơ quan thực hiện đăng ký khai sinh',
         fields: [
           { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: birthTypeOptions },
-          { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinces },
-          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: opts.wardsKhaiSinh },
-          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
+          { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
+          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, placeholder: '-- Chọn --' },
+          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, placeholder: '-- Chọn --' },
           { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: birthCaseOptions },
         ],
       },
@@ -157,9 +161,9 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
         title: 'Cơ quan thực hiện đăng ký thường trú',
         sameArea: true,
         fields: [
-          { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinces },
-          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: opts.wardsThuongTru },
-          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
+          { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
+          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, placeholder: '-- Chọn --' },
+          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, placeholder: '-- Chọn --' },
           { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: residenceCaseOptions },
         ],
       },
@@ -385,7 +389,26 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
   },
 ];
 
+const addressFieldPairs: Record<string, string> = {
+  ltks_tinhKhaiSinh: 'ltks_phuongKhaiSinh',
+  ltks_tinhThuongTru: 'ltks_phuongThuongTru',
+  ltks_tinhNguoiYeuCau: 'ltks_phuongNguoiYeuCau',
+  ltks_tinhNoiSinh: 'ltks_phuongNoiSinh',
+  ltks_tinhQueQuan: 'ltks_phuongQueQuan',
+  ltks_tinhMe: 'ltks_phuongMe',
+  ltks_tinhCha: 'ltks_phuongCha',
+  ltks_tinhDangKyThuongTru: 'ltks_phuongDangKyThuongTru',
+};
 
+const wardToProvinceFieldMap = Object.fromEntries(
+  Object.entries(addressFieldPairs).map(([provinceFieldId, wardFieldId]) => [wardFieldId, provinceFieldId]),
+);
+
+const parseStep = (stepSlug?: string) => {
+  const match = stepSlug?.match(/^buoc-(\d+)$/);
+  const step = match ? Number(match[1]) : 1;
+  return Math.min(Math.max(step, 1), steps.length);
+};
 
 const LienThongKhaiSinhPage: React.FC = () => {
   const { formState, setFieldValue, setFieldError, touchField, resetForm } = useForm();
@@ -444,6 +467,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
   };
 
   const navigate = useNavigate();
+  const service = SERVICE_MAP['khai-sinh'] || { requiredDocs: [], steps: [], processingTime: '', fee: '', category: '' };
   const { stepSlug } = useParams();
   const parseStep = (slug?: string) => {
     const match = slug?.match(/^buoc-(\d+)$/);
@@ -453,12 +477,204 @@ const LienThongKhaiSinhPage: React.FC = () => {
   const [submitError, setSubmitError] = React.useState('');
   const [activeReviewTab, setActiveReviewTab] = React.useState(0);
   const [uploadedFiles, setUploadedFiles] = React.useState<Record<string, File>>({});
+  const [administrativeProvinceOptions, setAdministrativeProvinceOptions] = React.useState<FormFieldOption[]>([]);
+  const [wardOptionsByProvinceField, setWardOptionsByProvinceField] = React.useState<Record<string, string[]>>({});
+  const [loadingWardFields, setLoadingWardFields] = React.useState<Record<string, boolean>>({});
+  const [isLoadingProvinces, setIsLoadingProvinces] = React.useState(true);
+  const [isSameRegistrationArea, setIsSameRegistrationArea] = React.useState(true);
+
   const currentStep = parseStep(stepSlug);
   const current = steps[currentStep - 1];
+  const fieldDefaults = React.useMemo(() => {
+    const defaults = new Map<string, string>();
+    steps.forEach((step) => {
+      step.sections.forEach((section) => {
+        section.fields?.forEach((field) => {
+          if (field.value) defaults.set(field.id, field.value);
+        });
+      });
+    });
+    return defaults;
+  }, []);
+  const provinceLabels = React.useMemo(
+    () => administrativeProvinceOptions.map((option) => option.label),
+    [administrativeProvinceOptions],
+  );
+  const provinceCodeByLabel = React.useMemo(() => {
+    const nextMap = new Map<string, string>();
+    administrativeProvinceOptions.forEach((option) => nextMap.set(option.label, option.value));
+    return nextMap;
+  }, [administrativeProvinceOptions]);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+
+    administrativeUnitService.getProvinces(controller.signal)
+      .then(setAdministrativeProvinceOptions)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        setAdministrativeProvinceOptions([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoadingProvinces(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  React.useEffect(() => {
+    const requestsToLoad = Object.keys(addressFieldPairs).flatMap((provinceFieldId) => {
+      const provinceLabel = formState.values[provinceFieldId] ?? fieldDefaults.get(provinceFieldId) ?? '';
+      const provinceCode = provinceCodeByLabel.get(provinceLabel);
+      if (!provinceCode || wardOptionsByProvinceField[provinceFieldId] || loadingWardFields[provinceFieldId]) return [];
+      return [{ provinceFieldId, provinceCode }];
+    });
+
+    if (requestsToLoad.length === 0) return;
+
+    const controller = new AbortController();
+    setLoadingWardFields((previous) => ({
+      ...previous,
+      ...Object.fromEntries(requestsToLoad.map(({ provinceFieldId }) => [provinceFieldId, true])),
+    }));
+
+    Promise.all(
+      requestsToLoad.map(async ({ provinceFieldId, provinceCode }) => {
+        try {
+          const options = await administrativeUnitService.getWards(provinceCode, controller.signal);
+          return { provinceFieldId, options: options.map((option) => option.label) };
+        } catch (error: unknown) {
+          if (error instanceof DOMException && error.name === 'AbortError') return;
+          return { provinceFieldId, options: [] };
+        }
+      }),
+    ).then((results) => {
+      if (controller.signal.aborted) return;
+      const loadedResults = results.filter(Boolean) as Array<{ provinceFieldId: string; options: string[] }>;
+      setWardOptionsByProvinceField((previous) => ({
+        ...previous,
+        ...Object.fromEntries(loadedResults.map(({ provinceFieldId, options }) => [provinceFieldId, options])),
+      }));
+      setLoadingWardFields((previous) => ({
+        ...previous,
+        ...Object.fromEntries(loadedResults.map(({ provinceFieldId }) => [provinceFieldId, false])),
+      }));
+    });
+
+    return () => controller.abort();
+  }, [fieldDefaults, formState.values, provinceCodeByLabel, wardOptionsByProvinceField]);
+
+  React.useEffect(() => {
+    Object.entries(addressFieldPairs).forEach(([provinceFieldId, wardFieldId]) => {
+      const wardValue = formState.values[wardFieldId] ?? fieldDefaults.get(wardFieldId) ?? '';
+      const options = wardOptionsByProvinceField[provinceFieldId];
+      if (wardValue && options && !options.includes(wardValue)) {
+        setFieldValue(wardFieldId, '');
+      }
+    });
+  }, [fieldDefaults, formState.values, setFieldValue, wardOptionsByProvinceField]);
+
+  React.useEffect(() => {
+    if (!isSameRegistrationArea) return;
+
+    const birthProvince = formState.values.ltks_tinhKhaiSinh ?? fieldDefaults.get('ltks_tinhKhaiSinh') ?? '';
+    const birthWard = formState.values.ltks_phuongKhaiSinh ?? fieldDefaults.get('ltks_phuongKhaiSinh') ?? '';
+
+    if (formState.values.ltks_tinhThuongTru !== birthProvince) {
+      setFieldValue('ltks_tinhThuongTru', birthProvince);
+    }
+    if (formState.values.ltks_phuongThuongTru !== birthWard) {
+      setFieldValue('ltks_phuongThuongTru', birthWard);
+    }
+  }, [
+    fieldDefaults,
+    formState.values.ltks_phuongKhaiSinh,
+    formState.values.ltks_phuongThuongTru,
+    formState.values.ltks_tinhKhaiSinh,
+    formState.values.ltks_tinhThuongTru,
+    isSameRegistrationArea,
+    setFieldValue,
+  ]);
 
   const goToStep = (step: number) => {
     navigate(`/lien-thong-khai-sinh/buoc-${step}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getAgencyFieldValue = (fieldId: string) => {
+    if (fieldId === 'ltks_coQuanDangKyKhaiSinh') {
+      const ward = formState.values.ltks_phuongKhaiSinh ?? fieldDefaults.get('ltks_phuongKhaiSinh') ?? '';
+      return ward ? `UBND ${ward}` : '';
+    }
+
+    if (fieldId === 'ltks_coQuanDangKyThuongTru') {
+      const ward = formState.values.ltks_phuongThuongTru ?? fieldDefaults.get('ltks_phuongThuongTru') ?? '';
+      return ward ? `Công an ${ward}` : '';
+    }
+
+    if (fieldId === 'ltks_coQuanCapBhyt') {
+      return 'Cơ quan Bảo hiểm xã hội';
+    }
+
+    return undefined;
+  };
+
+  const getFieldValue = (field: LinkedField) => getAgencyFieldValue(field.id) ?? formState.values[field.id] ?? field.value ?? '';
+
+  const getResolvedField = (field: LinkedField): LinkedField => {
+    if (addressFieldPairs[field.id]) {
+      return {
+        ...field,
+        options: provinceLabels,
+        disabled: isLoadingProvinces || (isSameRegistrationArea && field.id === 'ltks_tinhThuongTru'),
+      };
+    }
+
+    const provinceFieldId = wardToProvinceFieldMap[field.id];
+    if (provinceFieldId) {
+      const provinceValue = formState.values[provinceFieldId] ?? fieldDefaults.get(provinceFieldId) ?? '';
+      return {
+        ...field,
+        options: provinceValue ? (wardOptionsByProvinceField[provinceFieldId] ?? []) : [],
+        disabled: !provinceValue
+          || Boolean(loadingWardFields[provinceFieldId])
+          || (isSameRegistrationArea && field.id === 'ltks_phuongThuongTru'),
+      };
+    }
+
+    return field;
+  };
+
+  const clearWardOptions = (provinceFieldId: string) => {
+    setWardOptionsByProvinceField((previous) => {
+      if (!previous[provinceFieldId]) return previous;
+      const next = { ...previous };
+      delete next[provinceFieldId];
+      return next;
+    });
+  };
+
+  const handleFieldChange = (fieldId: string, value: string) => {
+    setFieldValue(fieldId, value);
+
+    const wardFieldId = addressFieldPairs[fieldId];
+    if (wardFieldId) {
+      setFieldValue(wardFieldId, '');
+      setFieldError(wardFieldId, '');
+      clearWardOptions(fieldId);
+    }
+
+    if (isSameRegistrationArea && fieldId === 'ltks_tinhKhaiSinh') {
+      setFieldValue('ltks_tinhThuongTru', value);
+      setFieldValue('ltks_phuongThuongTru', '');
+      setFieldError('ltks_phuongThuongTru', '');
+      clearWardOptions('ltks_tinhThuongTru');
+    }
+
+    if (isSameRegistrationArea && fieldId === 'ltks_phuongKhaiSinh') {
+      setFieldValue('ltks_phuongThuongTru', value);
+      setFieldError('ltks_phuongThuongTru', '');
+    }
   };
 
   const validateStep = () => {
@@ -467,7 +683,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
 
     fields.forEach((field) => {
       touchField(field.id);
-      const value = formState.values[field.id] ?? field.value ?? '';
+      const value = getFieldValue(field);
       const error = field.required && !String(value).trim() ? 'Vui lòng nhập thông tin bắt buộc.' : '';
       setFieldError(field.id, error);
       if (error) isValid = false;
@@ -539,10 +755,17 @@ const LienThongKhaiSinhPage: React.FC = () => {
   return (
     <LienThongShell>
       <main className="ltks-main">
-        <nav className="ltks-breadcrumb" aria-label="Breadcrumb">
-          <ChevronRight size={20} />
-          <Link to="/">Trang chủ DVCLT</Link>
-          <span>/ THÊM MỚI HỒ SƠ DỊCH VỤ CÔNG LIÊN THÔNG ĐĂNG KÝ KHAI SINH, ĐĂNG KÝ THƯỜNG TRÚ, CẤP THẺ BHYT CHO TRẺ DƯỚI 6 TUỔI</span>
+        <nav className="breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">
+            <Home size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+            Trang Chủ
+          </Link>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span>Hộ tịch</span>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+            Liên thông khai sinh
+          </span>
         </nav>
 
         <div className="ltks-stepper" role="tablist" aria-label="Các bước kê khai">
@@ -554,7 +777,6 @@ const LienThongKhaiSinhPage: React.FC = () => {
                 type="button"
                 className={`ltks-step ${state}`}
                 key={step.title}
-                onClick={() => goToStep(stepNo)}
                 role="tab"
                 aria-selected={stepNo === currentStep}
               >
@@ -582,7 +804,10 @@ const LienThongKhaiSinhPage: React.FC = () => {
         <form className={`ltks-form ltks-form-step-${currentStep}`} onSubmit={(event) => event.preventDefault()} noValidate>
           <div className="ltks-form-body">
             {current.sections.map((section) => (
-              <section className="ltks-section" key={section.title}>
+              <section
+                className={`ltks-section${section.sameArea && isSameRegistrationArea ? ' same-area-locked' : ''}`}
+                key={section.title}
+              >
                 {!section.reviewTabs && !section.hideTitle && (
                   <div className="ltks-section-title">
                     <h3>{section.title}</h3>
@@ -595,7 +820,19 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     )}
                     {section.sameArea && (
                       <label className="ltks-inline-check">
-                        <input type="checkbox" aria-label="Cùng địa bàn thực hiện đăng ký khai sinh" />
+                        <input
+                          type="checkbox"
+                          checked={isSameRegistrationArea}
+                          aria-label="Cùng địa bàn thực hiện đăng ký khai sinh"
+                          onChange={(event) => {
+                            const checked = event.target.checked;
+                            setIsSameRegistrationArea(checked);
+                            if (checked) {
+                              setFieldValue('ltks_tinhThuongTru', formState.values.ltks_tinhKhaiSinh ?? fieldDefaults.get('ltks_tinhKhaiSinh') ?? '');
+                              setFieldValue('ltks_phuongThuongTru', formState.values.ltks_phuongKhaiSinh ?? fieldDefaults.get('ltks_phuongKhaiSinh') ?? '');
+                            }
+                          }}
+                        />
                         Cùng địa bàn thực hiện đăng ký khai sinh
                       </label>
                     )}
@@ -611,15 +848,18 @@ const LienThongKhaiSinhPage: React.FC = () => {
                 )}
                 {section.fields && (
                   <div className="ltks-grid">
-                    {section.fields.map((field) => (
+                    {section.fields.map((field) => {
+                      const resolvedField = getResolvedField(field);
+                      return (
                       <FieldControl
                         key={field.id}
-                        field={field}
-                        value={formState.values[field.id] ?? field.value ?? ''}
+                        field={resolvedField}
+                        value={getFieldValue(field)}
                         error={formState.errors[field.id]}
-                        onChange={(value) => handleChangeField(field.id, value)}
+                        onChange={(value) => handleFieldChange(field.id, value)}
                       />
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
                 {section.uploads && (
@@ -666,6 +906,56 @@ const LienThongKhaiSinhPage: React.FC = () => {
             </div>
           )}
         </form>
+        <aside className="service-sidebar dktt-service-sidebar" aria-label="Thông tin dịch vụ">
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Giấy tờ cần chuẩn bị</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <ul className="info-list">
+                {service.requiredDocs.map((doc, index) => (
+                  <li key={index} className="info-list-item">{doc}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Các bước thực hiện</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <ol className="steps-list">
+                {service.steps.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Thông tin dịch vụ</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Thời gian xử lý</span>
+                  <strong style={{ color: '#C8441A' }}>{service.processingTime}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Lệ phí</span>
+                  <strong style={{ color: 'var(--accent)' }}>{service.fee}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Danh mục</span>
+                  <strong>{service.category}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </aside>
       </main>
     </LienThongShell>
   );
@@ -688,6 +978,7 @@ const FieldControl: React.FC<FieldControlProps> = ({ field, value, error, onChan
   const commonProps = {
     id: field.id,
     value,
+    disabled: field.disabled,
     'aria-label': field.label,
     'aria-required': field.required,
     'aria-invalid': !!error,
@@ -708,6 +999,7 @@ const FieldControl: React.FC<FieldControlProps> = ({ field, value, error, onChan
           placeholder={field.placeholder ?? ''}
           required={field.required}
           invalid={!!error}
+          disabled={field.disabled}
           onChange={onChange}
         />
       ) : field.type === 'radio' ? (
@@ -756,6 +1048,7 @@ interface CustomSelectProps {
   placeholder: string;
   required?: boolean;
   invalid?: boolean;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -767,6 +1060,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   placeholder,
   required,
   invalid,
+  disabled,
   onChange,
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -806,7 +1100,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (!options.length) return;
+    if (disabled || !options.length) return;
     const currentIndex = Math.max(options.indexOf(activeOption || value), 0);
 
     if (event.key === 'ArrowDown') {
@@ -819,7 +1113,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       setActiveOption(options[Math.max(currentIndex - 1, 0)]);
     } else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      if (isOpen) selectOption(activeOption || options[0]);
+      if (isOpen) {
+        selectOption(activeOption === '-- Chọn --' || !activeOption ? '' : activeOption);
+      }
       setIsOpen(!isOpen);
     } else if (event.key === 'Escape') {
       setIsOpen(false);
@@ -837,8 +1133,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         aria-invalid={invalid}
         aria-expanded={isOpen}
         aria-controls={listboxId}
+        disabled={disabled}
         data-highlight-id={id}
         onClick={() => {
+          if (disabled) return;
           setActiveOption(value || options[0] || '');
           setIsOpen((open) => !open);
         }}

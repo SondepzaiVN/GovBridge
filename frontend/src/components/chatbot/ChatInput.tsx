@@ -1,14 +1,25 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useChatbot } from "../../contexts/ChatbotContext";
 import { ocrService, smartbotService, sttService } from "../../api/aiServices";
-import { Mic, MicOff, Send, Camera, X } from "lucide-react";
+import { Mic, MicOff, Send, Camera } from "lucide-react";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
   disabled?: boolean;
+  variant?: "panel" | "bar";
+  autoFocus?: boolean;
+  onFocusInput?: () => void;
+  onBeforeSend?: () => void;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
+const ChatInput: React.FC<ChatInputProps> = ({
+  onSend,
+  disabled,
+  variant = "panel",
+  autoFocus = false,
+  onFocusInput,
+  onBeforeSend,
+}) => {
   const { state, dispatch, handleAIResponse } = useChatbot();
   const [inputValue, setInputValue] = useState("");
   const [interimText, setInterimText] = useState("");
@@ -25,9 +36,16 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
     ta.style.height = `${Math.min(ta.scrollHeight, 100)}px`;
   }, [inputValue]);
 
+  useEffect(() => {
+    if (!autoFocus) return;
+    const timer = window.setTimeout(() => textareaRef.current?.focus(), 80);
+    return () => window.clearTimeout(timer);
+  }, [autoFocus]);
+
   const handleSend = () => {
     const text = inputValue.trim();
     if (!text || disabled || state.isLoading) return;
+    onBeforeSend?.();
     onSend(text);
     setInputValue("");
     setInterimText("");
@@ -58,14 +76,18 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
       setInterimText("");
       setInputValue("");
 
-      await sttService.startListening((transcript: string, isFinal: boolean) => {
-        if (isFinal) {
-          setInputValue(transcript);
-          setInterimText("");
-        } else {
-          setInterimText(transcript);
-        }
-      });
+      try {
+        await sttService.startListening((transcript: string, isFinal: boolean) => {
+          if (isFinal) {
+            setInputValue(transcript);
+            setInterimText("");
+          } else {
+            setInterimText(transcript);
+          }
+        });
+      } catch (error) {
+        console.warn("[ChatInput Voice] Voice input unavailable, using mock listening state:", error);
+      }
     }
   };
 
@@ -138,30 +160,39 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
     : inputValue;
 
   return (
-    <div className="chatbot-input-area">
-      {/* Voice visualizer */}
-      {state.isListening && (
-        <VoiceBar interim={interimText} onStop={toggleRecording} />
-      )}
-
-      <div className="chatbot-input-row">
-        {/* Text input */}
-        <textarea
-          ref={textareaRef}
-          className="chatbot-input-field"
-          value={displayValue}
-          onChange={(e) => !state.isListening && setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={
-            state.isListening
-              ? "🎤 Đang nghe..."
-              : "Nhập tin nhắn hoặc câu hỏi..."
-          }
-          disabled={disabled || state.isLoading}
-          rows={1}
-          aria-label="Nhập tin nhắn"
-          id="chat-input-field"
-        />
+    <div className={`chatbot-input-area chatbot-input-area--${variant}`}>
+      <div className={`chatbot-input-row ${state.isListening ? "is-recording" : ""}`}>
+        {state.isListening ? (
+          <div className="voice-input-state">
+            <div className="voice-status-left">
+              <Mic size={16} />
+              <span>{interimText ? `"${interimText.slice(0, 28)}${interimText.length > 28 ? "..." : ""}"` : "Đang nghe..."}</span>
+            </div>
+            <div className="voice-waveform" aria-hidden="true">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <span key={i} style={{ animationDelay: `${i * 90}ms` }} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <textarea
+            ref={textareaRef}
+            className="chatbot-input-field"
+            value={displayValue}
+            onChange={(e) => !state.isListening && setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={onFocusInput}
+            placeholder={
+              variant === "bar"
+                ? "Hỏi Trợ lý AI về thủ tục, giấy tờ, cách điền hồ sơ..."
+                : "Nhập tin nhắn hoặc câu hỏi..."
+            }
+            disabled={disabled || state.isLoading}
+            rows={1}
+            aria-label="Nhập tin nhắn"
+            id="chat-input-field"
+          />
+        )}
 
         <div className="chatbot-input-actions">
           {/* Image upload menu */}
@@ -254,53 +285,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           </button>
         </div>
       </div>
-    </div>
-  );
-};
-
-// Voice bar component
-const VoiceBar: React.FC<{ interim: string; onStop: () => void }> = ({
-  interim,
-  onStop,
-}) => {
-  const bars = Array.from({ length: 12 });
-
-  return (
-    <div className="voice-visualizer">
-      {bars.map((_, i) => (
-        <div
-          key={i}
-          className="voice-wave-bar"
-          style={{
-            animationDelay: `${i * 50}ms`,
-          }}
-        />
-      ))}
-      <span className="voice-visualizer-label">
-        {interim
-          ? `"${interim.slice(0, 20)}${interim.length > 20 ? "..." : ""}"`
-          : "Đang nghe..."}
-      </span>
-      <button
-        onClick={onStop}
-        style={{
-          position: "absolute",
-          right: 8,
-          background: "var(--danger)",
-          color: "white",
-          border: "none",
-          borderRadius: "50%",
-          width: 24,
-          height: 24,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        title="Dừng ghi âm"
-      >
-        <X size={12} />
-      </button>
     </div>
   );
 };
