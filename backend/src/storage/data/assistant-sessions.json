@@ -3,19 +3,9 @@
   "sessions": [
     {
       "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
-      "currentRoute": "/ho-khau",
+      "currentRoute": "/",
       "state": {
-        "formSnapshot": {
-          "thuTuc": "dktt",
-          "loaiDKTT": "lap_ho_moi",
-          "hoTen": "Trần Văn A",
-          "ngaySinh": "2006-02-23",
-          "gioiTinh": "Nam",
-          "danToc": "kinh",
-          "cccd": "093206008464",
-          "sdt": "0793920853",
-          "email": "abc@gmail.com"
-        },
+        "formSnapshot": {},
         "candidateCases": [],
         "recentFacts": [
           {
@@ -115,18 +105,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T20:43:42.240Z",
+      "updatedAt": "2026-07-03T20:47:40.090Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "Giúp tôi giới tính là nam",
-          "createdAt": "2026-07-03T20:32:00.427Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T20:32:00.427Z"
-        },
         {
           "role": "user",
           "content": "ở phần thông tin đề nghị, chọn giúp tôi thành phố cần thơ",
@@ -216,6 +196,16 @@
           "role": "assistant",
           "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
           "createdAt": "2026-07-03T20:43:42.240Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang tạm trú",
+          "createdAt": "2026-07-03T20:47:40.090Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:47:40.090Z"
         }
       ]
     },

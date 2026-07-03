@@ -143,12 +143,17 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const callModeRef = useRef(state.isCallMode);
   const currentRouteRef = useRef(currentRoute);
   const formValuesRef = useRef(formValues);
+  const requiresUserActionRef = useRef(state.requiresUserAction);
+  const confirmationSourceRef = useRef(state.confirmationSource);
+
   useEffect(() => {
     onNavigateRef.current = onNavigate;
     onFillFormRef.current = onFillForm;
     callModeRef.current = state.isCallMode;
     currentRouteRef.current = currentRoute;
     formValuesRef.current = formValues;
+    requiresUserActionRef.current = state.requiresUserAction;
+    confirmationSourceRef.current = state.confirmationSource;
   });
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
@@ -214,6 +219,31 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
   const resumeRealtimeWithVoice = useCallback((message: string, suggestions?: string[]) => {
     callModeRef.current = true;
+    
+    // Nếu đang kẹt ở màn hình xác nhận text, tự động hủy để chuyển sang voice
+    if (requiresUserActionRef.current && confirmationSourceRef.current !== 'voice') {
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          id: `msg_${Date.now()}_cancel_user`,
+          role: 'user',
+          type: 'text',
+          content: 'Hủy',
+          timestamp: new Date()
+        }
+      });
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          id: `msg_${Date.now()}_cancel_bot`,
+          role: 'bot',
+          type: 'text',
+          content: 'Đã hủy thao tác xác nhận để ưu tiên yêu cầu mới bằng giọng nói.',
+          timestamp: new Date()
+        }
+      });
+    }
+
     dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
     dispatch({ type: 'SET_CALL_MODE', payload: true });
     dispatch({
