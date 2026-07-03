@@ -6162,6 +6162,15 @@ a:hover {
     color: #5b7487;
 }
 
+.ltks-main .breadcrumb {
+    margin-bottom: 18px;
+    color: #69727d;
+}
+
+.ltks-main .breadcrumb a {
+    color: #5b7487;
+}
+
 .dktt-service-page {
     grid-template-columns: minmax(0, 1fr);
     gap: 22px;
@@ -6349,6 +6358,18 @@ a:hover {
     color: #4e5359;
     background-color: #f3f3f3;
     opacity: 1;
+}
+
+.ltkt-public-service-form input:disabled,
+.ltkt-public-service-form select:disabled,
+.ltkt-public-service-form textarea:disabled,
+.ltkt-public-service-form input[readonly],
+.ltkt-public-service-form select[readonly],
+.ltkt-public-service-form textarea[readonly] {
+    background-color: #f1f3f5 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    border-color: #dee2e6 !important;
 }
 
 .dktt-sub-title {
@@ -7199,7 +7220,6 @@ a:hover {
 
 /* HAR alignment: dichvucong.dancuquocgia.gov.vn residence form */
 .xctt-page {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.42857143;
     color: #333;
@@ -7220,7 +7240,6 @@ a:hover {
 }
 
 .xctt-title-row h1 {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 32px;
     font-weight: 700;
     line-height: 1.2;
@@ -7653,6 +7672,15 @@ a:hover {
 
 .tamtru-form {
     min-width: 0;
+}
+
+.tamtru-page .form-input:disabled,
+.tamtru-page .form-select:disabled,
+.tamtru-page .form-textarea:disabled {
+    color: #4e5359;
+    background-color: #f3f3f3;
+    opacity: 1;
+    cursor: not-allowed;
 }
 
 .tamtru-toolbar {
@@ -8261,6 +8289,11 @@ a:hover {
     border-color: #d71920;
 }
 
+.ltks-app-page .ltks-step:not(.active):not(.done) {
+    background: #e3e3e3;
+    border-color: #e3e3e3;
+}
+
 .ltks-app-page .ltks-step span {
     margin: 0 0 4px;
     color: #24272c;
@@ -8371,6 +8404,19 @@ a:hover {
 .ltks-app-page .ltks-select-trigger:focus {
     border-color: #d71920;
     box-shadow: 0 0 0 2px rgba(215, 25, 32, 0.1);
+}
+
+.ltks-app-page .ltks-field input:disabled,
+.ltks-app-page .ltks-field select:disabled,
+.ltks-app-page .ltks-field textarea:disabled,
+.ltks-app-page .ltks-select-trigger:disabled,
+.ltks-app-page .ltks-field input[readonly],
+.ltks-app-page .ltks-field select[readonly],
+.ltks-app-page .ltks-field textarea[readonly] {
+    background-color: #f1f3f5;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #dee2e6;
 }
 
 .ltks-app-page .ltks-actions {
@@ -8513,6 +8559,24 @@ a:hover {
     border: 1px solid #d71920 !important;
 }
 
+.ltkt-form-frame .ltks-pdf-toolbar button,
+.ltkt-form-frame .ltks-pdf-toolbar a {
+    width: 28px !important;
+    height: 28px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
+    color: #f1f1f1 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame .ltks-pdf-toolbar button:hover,
+.ltkt-form-frame .ltks-pdf-toolbar a:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
 .ltkt-form-frame > .ltks-form-body > div > div:last-child > button:first-child {
     color: #b9141a !important;
     background: #fff !important;
@@ -8558,12 +8622,12 @@ a:hover {
 
 .ltkt-form-frame .ltkt-form-card {
     display: block;
-    margin-bottom: 22px;
+    margin-bottom: 28px;
     padding: 0 20px 20px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
-    overflow: hidden;
+    /* Removed overflow: hidden so dropdowns aren't clipped */
 }
 
 .ltkt-form-frame .ltkt-form-card > div {
@@ -8580,10 +8644,182 @@ a:hover {
     padding: 8px 20px !important;
     background: rgba(255, 241, 184, 0.52) !important;
     border-bottom: 2px solid #d71920;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
 }
 
 .ltkt-form-frame .ltkt-form-card > div:has(> h3) > div {
     background-color: transparent !important;
+}
+
+.ltkt-form-frame .ltkt-form-card + .ltkt-form-card {
+    margin-top: 28px;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 0 20px !important;
+    background: #fff !important;
+    border: 1px solid #e0e2e6 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14) !important;
+    overflow: visible;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h4,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > table {
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h4) {
+    min-height: 42px;
+    margin: 28px 0 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:first-child:has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:first-child:has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:first-child:has(> h4) {
+    margin-top: 0 !important;
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) {
+    padding: 0 20px 18px !important;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) + div:has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) + div:has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:has(> span:first-child)):not(:has(> h3)):not(:has(> h4)) + div:has(> h4) {
+    margin-top: 10px !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:first-child):has(> span:first-child),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:first-child):has(> h3),
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:not(:first-child):has(> h4) {
+    margin-top: 10px !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h4 {
+    min-height: 42px;
+    margin: 28px 0 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920 !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> span:first-child) > span:first-child,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h3) h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > div:has(> h4) h4,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h3,
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > div > h4 {
+    color: #303238 !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+}
+
+.ltkt-form-frame > .ltks-form-body > .ltkt-public-service-form {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: #303238;
+    font-family: inherit !important;
+    overflow: visible;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card {
+    display: block;
+    margin: 0 0 18px;
+    padding: 0 20px 20px;
+    background: #fff;
+    border: 1px solid #e0e2e6;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(32, 35, 40, 0.14);
+    overflow: visible;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child),
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3),
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+    min-height: 42px;
+    margin: 0 -20px 18px !important;
+    padding: 8px 20px !important;
+    background: rgba(255, 241, 184, 0.52) !important;
+    border-bottom: 2px solid #d71920 !important;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    box-shadow: none !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child) > span:first-child,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3) h3,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+    color: #303238 !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35;
+    text-transform: uppercase;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child) > div,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3) > div {
+    background-color: transparent !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+    display: flex;
+    align-items: center;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:last-child,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3:last-child {
+    margin-bottom: 0 !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card label {
+    color: #30343a !important;
+    font-size: 0.79rem !important;
+    font-weight: 600 !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card input,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card select,
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card textarea {
+    min-height: 38px;
+    color: #30343a !important;
+    font-size: 0.84rem !important;
+}
+
+.ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card h4 {
+    color: #303238 !important;
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+}
+
+.ltkt-form-frame:is(.ltks-form-step-2, .ltks-form-step-4, .ltks-form-step-5) > .ltks-form-body > .ltkt-public-service-form {
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
 }
 
 .ltkt-page-shell input,
@@ -8707,4 +8943,150 @@ a:hover {
     display: flex;
     margin-right: auto;
     margin-left: auto;
+}
+
+.service-standard-page label:has(> input[type='radio']),
+.service-standard-page label:has(> input[type='checkbox']),
+.ltks-app-page label:has(> input[type='radio']),
+.ltks-app-page label:has(> input[type='checkbox']),
+.ltkt-page-shell label:has(> input[type='radio']),
+.ltkt-page-shell label:has(> input[type='checkbox']) {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+
+.service-standard-page label > input[type='radio'],
+.service-standard-page label > input[type='checkbox'],
+.ltks-app-page label > input[type='radio'],
+.ltks-app-page label > input[type='checkbox'],
+.ltkt-page-shell label > input[type='radio'],
+.ltkt-page-shell label > input[type='checkbox'] {
+    flex: 0 0 auto;
+    margin: 0 !important;
+}
+
+.ltkt-form-frame input[type="radio"] {
+    border-radius: 50% !important;
+}
+
+/* ============================================================
+   RESPONSIVE SAFETY PASS — procedure pages
+   ============================================================ */
+@media (max-width: 768px) {
+    .dktt-main-content,
+    .tamtru-page,
+    .xctt-page,
+    .ltks-app-page .ltks-main {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .dktt-section-header,
+    .xctt-section-header,
+    .ltks-app-page .ltks-section-title,
+    .ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> span:first-child),
+    .ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > div:has(> h3),
+    .ltkt-form-frame .ltkt-public-service-form > .ltkt-form-card > h3 {
+        gap: 8px;
+        padding-right: 12px !important;
+        padding-left: 12px !important;
+    }
+
+    .ltks-app-page .ltks-inline-check {
+        grid-column: 1 / -1;
+        grid-row: auto;
+        justify-self: start;
+        white-space: normal;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card {
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 14px !important;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card > div[style*="display: flex"] {
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    .ltkt-public-service-form .ltkt-form-card > div[style*="width: 50%"] {
+        width: 100% !important;
+    }
+
+    .ltks-pdf-toolbar {
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 10px;
+    }
+
+    .ltks-pdf-toolbar-group {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .ltks-pdf-toolbar-group.center {
+        justify-content: center;
+    }
+
+    .ltks-pdf-toolbar-group strong {
+        min-width: 0;
+    }
+
+    .ltks-pdf-panel {
+        min-height: 520px;
+    }
+
+    .ltks-pdf-canvas {
+        padding: 12px;
+        overflow: auto;
+    }
+
+    .ltks-pdf-frame-shell,
+    .ltks-pdf-frame {
+        min-height: 520px;
+    }
+
+    .dktt-member-table-wrapper,
+    .ltks-upload-table-wrap,
+    .xctt-family-table-wrap {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .xctt-attachment-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 420px) {
+    .dktt-page-header,
+    .xctt-title-row,
+    .ltks-app-page .ltks-section-title {
+        overflow-wrap: anywhere;
+    }
+
+    .ltks-stepper {
+        grid-template-columns: 1fr;
+    }
+
+    .ltks-pdf-tabs button {
+        min-width: 180px;
+        white-space: normal;
+    }
+
+    .xctt-page {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
 }

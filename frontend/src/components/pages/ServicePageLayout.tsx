@@ -6,7 +6,6 @@ import { quickValidate, validateForm } from "../../utils/validator";
 import { ChevronRight, Home } from "lucide-react";
 import { applicationService } from "../../api/applicationService";
 import { ApiClientError } from "../../api/client";
-import ProcedureAiSupportCard from "./ProcedureAiSupportCard";
 
 // ============================================================
 // Reusable form field renderer
@@ -24,12 +23,13 @@ export const FormFieldInput: React.FC<FieldProps> = ({
   value,
   onChange,
   isAutofilled,
-  disabled = false,
+  disabled,
 }) => {
+  const finalDisabled = disabled !== undefined ? disabled : field.disabled;
   const [error, setError] = React.useState("");
   const { formState, setFieldError } = useForm();
   const mergedError = error || formState.errors[field.id] || "";
-  const isLockedValidValue = disabled && !!value.trim() && !quickValidate(field.id, value, field.label);
+  const isLockedValidValue = finalDisabled && !!value.trim() && !quickValidate(field.id, value, field.label);
   const displayError = isLockedValidValue ? "" : mergedError;
 
   const handleChange = (val: string) => {
@@ -66,7 +66,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           className={selectClass}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
-          disabled={disabled}
+          disabled={finalDisabled}
         >
           <option value="">— Chọn —</option>
           {field.options?.map((opt) => (
@@ -87,7 +87,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
           rows={3}
-          disabled={disabled}
+          disabled={finalDisabled}
         />
       );
       break;
@@ -107,7 +107,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
                 value={opt.value}
                 checked={value === opt.value}
                 onChange={() => handleChange(opt.value)}
-                disabled={disabled}
+                disabled={finalDisabled}
                 data-highlight-id={`${field.id}-${opt.value}`}
               />
               {opt.label}
@@ -132,7 +132,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
-          disabled={disabled}
+          disabled={finalDisabled}
           autoComplete={
             field.type === "phone"
               ? "tel"
@@ -482,8 +482,6 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
               </div>
             </div>
           </div>
-
-          <ProcedureAiSupportCard />
         </aside>
       </div>
     </div>

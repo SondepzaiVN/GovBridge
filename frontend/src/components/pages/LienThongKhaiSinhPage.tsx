@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw } from 'lucide-react';
+import { ChevronRight, Download, Menu, Minus, MoreVertical, Paperclip, Plus, Printer, RotateCw, Home } from 'lucide-react';
 import { useForm } from '../../contexts/FormContext';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import type { FormFieldOption } from '../../types';
-import ProcedureAiSupportCard from './ProcedureAiSupportCard';
+import { SERVICE_MAP } from '../../data/services';
 
 type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
 
@@ -149,8 +149,8 @@ const steps: LinkedStep[] = [
         fields: [
           { id: 'ltks_loaiKhaiSinh', label: 'Loại khai sinh', type: 'select', required: true, wide: true, options: birthTypeOptions },
           { id: 'ltks_tinhKhaiSinh', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
-          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, value: 'Phường Cái Khế' },
-          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
+          { id: 'ltks_phuongKhaiSinh', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, placeholder: '-- Chọn --' },
+          { id: 'ltks_coQuanDangKyKhaiSinh', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, placeholder: '-- Chọn --' },
           { id: 'ltks_truongHopKhaiSinh', label: 'Trường hợp khai sinh', type: 'select', required: true, wide: true, options: birthCaseOptions },
         ],
       },
@@ -159,8 +159,8 @@ const steps: LinkedStep[] = [
         sameArea: true,
         fields: [
           { id: 'ltks_tinhThuongTru', label: 'Tỉnh/Thành phố', type: 'select', required: true, options: provinceOptions, value: 'Thành phố Cần Thơ' },
-          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, value: 'Phường Cái Khế' },
-          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, value: 'Cơ quan X' },
+          { id: 'ltks_phuongThuongTru', label: 'Phường/Xã', type: 'select', required: true, options: wardOptions, placeholder: '-- Chọn --' },
+          { id: 'ltks_coQuanDangKyThuongTru', label: 'Cơ quan thực hiện', type: 'text', required: true, wide: true, dotted: true, readOnly: true, placeholder: '-- Chọn --' },
           { id: 'ltks_truongHopDangKyThuongTru', label: 'Trường hợp ĐKTT', type: 'select', required: true, wide: true, options: residenceCaseOptions },
         ],
       },
@@ -409,6 +409,7 @@ const parseStep = (stepSlug?: string) => {
 
 const LienThongKhaiSinhPage: React.FC = () => {
   const navigate = useNavigate();
+  const service = SERVICE_MAP['khai-sinh'] || { requiredDocs: [], steps: [], processingTime: '', fee: '', category: '' };
   const { stepSlug } = useParams();
   const { formState, setFieldValue, setFieldError, touchField, resetForm } = useForm();
   const [submitError, setSubmitError] = React.useState('');
@@ -571,7 +572,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
       const provinceValue = formState.values[provinceFieldId] ?? fieldDefaults.get(provinceFieldId) ?? '';
       return {
         ...field,
-        options: provinceValue ? wardOptionsByProvinceField[provinceFieldId] ?? [] : [],
+        options: provinceValue ? (wardOptionsByProvinceField[provinceFieldId] ?? []) : [],
         disabled: !provinceValue
           || Boolean(loadingWardFields[provinceFieldId])
           || (isSameRegistrationArea && field.id === 'ltks_phuongThuongTru'),
@@ -641,10 +642,17 @@ const LienThongKhaiSinhPage: React.FC = () => {
   return (
     <LienThongShell>
       <main className="ltks-main">
-        <nav className="ltks-breadcrumb" aria-label="Breadcrumb">
-          <ChevronRight size={20} />
-          <Link to="/">Trang chủ DVCLT</Link>
-          <span>/ THÊM MỚI HỒ SƠ DỊCH VỤ CÔNG LIÊN THÔNG ĐĂNG KÝ KHAI SINH, ĐĂNG KÝ THƯỜNG TRÚ, CẤP THẺ BHYT CHO TRẺ DƯỚI 6 TUỔI</span>
+        <nav className="breadcrumb" aria-label="Breadcrumb">
+          <Link to="/">
+            <Home size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />
+            Trang Chủ
+          </Link>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span>Hộ tịch</span>
+          <ChevronRight size={13} className="breadcrumb-sep" />
+          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+            Liên thông khai sinh
+          </span>
         </nav>
 
         <div className="ltks-stepper" role="tablist" aria-label="Các bước kê khai">
@@ -656,7 +664,6 @@ const LienThongKhaiSinhPage: React.FC = () => {
                 type="button"
                 className={`ltks-step ${state}`}
                 key={step.title}
-                onClick={() => goToStep(stepNo)}
                 role="tab"
                 aria-selected={stepNo === currentStep}
               >
@@ -782,7 +789,56 @@ const LienThongKhaiSinhPage: React.FC = () => {
             </div>
           )}
         </form>
-        <ProcedureAiSupportCard className="procedure-ai-support-wide" />
+        <aside className="service-sidebar dktt-service-sidebar" aria-label="Thông tin dịch vụ">
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Giấy tờ cần chuẩn bị</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <ul className="info-list">
+                {service.requiredDocs.map((doc, index) => (
+                  <li key={index} className="info-list-item">{doc}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Các bước thực hiện</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <ol className="steps-list">
+                {service.steps.map((step, index) => (
+                  <li key={index}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div className="sidebar-info-card">
+            <div className="sidebar-info-card-header">
+              <div className="sidebar-info-card-title">Thông tin dịch vụ</div>
+            </div>
+            <div className="sidebar-info-card-body">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Thời gian xử lý</span>
+                  <strong style={{ color: '#C8441A' }}>{service.processingTime}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Lệ phí</span>
+                  <strong style={{ color: 'var(--accent)' }}>{service.fee}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8375rem' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Danh mục</span>
+                  <strong>{service.category}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </aside>
       </main>
     </LienThongShell>
   );
@@ -940,7 +996,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       setActiveOption(options[Math.max(currentIndex - 1, 0)]);
     } else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      if (isOpen) selectOption(activeOption || options[0]);
+      if (isOpen) {
+        selectOption(activeOption === '-- Chọn --' || !activeOption ? '' : activeOption);
+      }
       setIsOpen(!isOpen);
     } else if (event.key === 'Escape') {
       setIsOpen(false);

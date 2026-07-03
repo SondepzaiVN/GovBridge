@@ -44,6 +44,7 @@ export interface TamTruDossierDocument {
     kind: string;
     required: boolean;
     quantity: string;
+    templateAvailable?: boolean;
 }
 
 export interface TamTruDossierCase {
@@ -58,6 +59,7 @@ const ct01 = {
     kind: 'Bản gốc',
     required: true,
     quantity: '1',
+    templateAvailable: true,
 };
 
 const residenceProof = {
