@@ -29,6 +29,8 @@ import { saveAttachmentFile } from '../../utils/attachmentStorage';
 
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
+const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
+
 const addYears = (date: Date, years: number) => {
     const next = new Date(date);
     next.setFullYear(next.getFullYear() + years);

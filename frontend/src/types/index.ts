@@ -107,6 +107,7 @@ export interface FormField {
   };
   // Maps to CCCD field for auto-fill
   cccdKey?: keyof CCCDInfo;
+  disabled?: boolean;
 }
 
 export interface FormValues {

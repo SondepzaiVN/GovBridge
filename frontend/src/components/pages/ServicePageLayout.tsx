@@ -23,12 +23,13 @@ export const FormFieldInput: React.FC<FieldProps> = ({
   value,
   onChange,
   isAutofilled,
-  disabled = false,
+  disabled,
 }) => {
+  const finalDisabled = disabled !== undefined ? disabled : field.disabled;
   const [error, setError] = React.useState("");
   const { formState, setFieldError } = useForm();
   const mergedError = error || formState.errors[field.id] || "";
-  const isLockedValidValue = disabled && !!value.trim() && !quickValidate(field.id, value, field.label);
+  const isLockedValidValue = finalDisabled && !!value.trim() && !quickValidate(field.id, value, field.label);
   const displayError = isLockedValidValue ? "" : mergedError;
 
   const handleChange = (val: string) => {
@@ -65,7 +66,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           className={selectClass}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
-          disabled={disabled}
+          disabled={finalDisabled}
         >
           <option value="">— Chọn —</option>
           {field.options?.map((opt) => (
@@ -86,7 +87,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
           rows={3}
-          disabled={disabled}
+          disabled={finalDisabled}
         />
       );
       break;
@@ -106,7 +107,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
                 value={opt.value}
                 checked={value === opt.value}
                 onChange={() => handleChange(opt.value)}
-                disabled={disabled}
+                disabled={finalDisabled}
                 data-highlight-id={`${field.id}-${opt.value}`}
               />
               {opt.label}
@@ -131,7 +132,7 @@ export const FormFieldInput: React.FC<FieldProps> = ({
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={field.placeholder}
-          disabled={disabled}
+          disabled={finalDisabled}
           autoComplete={
             field.type === "phone"
               ? "tel"
@@ -479,50 +480,6 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
                   <strong>{service.category}</strong>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* AI assistant prompt */}
-          <div
-            style={{
-              background: "linear-gradient(135deg, #8B1A1A, #C8441A)",
-              color: "white",
-              borderRadius: "var(--radius-lg)",
-              padding: "20px",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}><img src="/logo_Gov_Bridge.jpg" alt="AI" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.9)', padding: 2, background: 'white' }} /></div>
-            <div
-              style={{
-                fontWeight: 700,
-                marginBottom: 6,
-                fontSize: "0.9375rem",
-              }}
-            >
-              Cần hỗ trợ?
-            </div>
-            <p
-              style={{
-                fontSize: "0.8rem",
-                opacity: 0.9,
-                lineHeight: 1.5,
-                marginBottom: 12,
-              }}
-            >
-              Trợ lý AI sẵn sàng điền form tự động từ giọng nói hoặc ảnh CCCD
-              của bạn!
-            </p>
-            <div
-              style={{
-                background: "rgba(255,255,255,0.15)",
-                borderRadius: "var(--radius-sm)",
-                padding: "8px 12px",
-                fontSize: "0.8rem",
-                border: "1px solid rgba(255,255,255,0.25)",
-              }}
-            >
-              👉 Nhấn nút <img src="/logo_Gov_Bridge.jpg" alt="AI" style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover', verticalAlign: 'middle', margin: '0 4px', display: 'inline-block', border: '1px solid white' }} /> góc phải màn hình
             </div>
           </div>
         </aside>
