@@ -106,6 +106,16 @@ interface ActiveVoiceCapture {
 let activeCapture: ActiveVoiceCapture | null = null;
 let sharedStream: MediaStream | null = null;
 let sharedStreamPromise: Promise<MediaStream> | null = null;
+let sharedAudioContext: AudioContext | null = null;
+
+const getSharedAudioContext = (): AudioContext => {
+    if (!sharedAudioContext) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sharedAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    return sharedAudioContext;
+};
+
 const SPEECH_RMS_THRESHOLD = 0.018;
 const SILENCE_END_MS = 1200;
 const MAX_UTTERANCE_MS = 15000;
@@ -178,7 +188,7 @@ const encodeWav = (samples: Float32Array, sampleRate: number): Blob => {
 const disposeVoiceCapture = async (capture: ActiveVoiceCapture) => {
     capture.processor.disconnect();
     capture.source.disconnect();
-    await capture.audioContext.close().catch(() => undefined);
+    // Do not close the shared audio context
 };
 
 export const sttService = {
@@ -209,8 +219,8 @@ export const sttService = {
         
         const stream = await getSharedStream();
         
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        // Use shared audio context so we don't lose the first few hundred milliseconds of speech while it spins up
+        const audioContext = getSharedAudioContext();
         if (audioContext.state === 'suspended') {
             await audioContext.resume().catch(console.warn);
         }
