@@ -17,6 +17,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
+import { useForm } from '../../contexts/FormContext';
 import { ROUTE_TO_SERVICE_MAP } from '../../data/services';
 import {
     dateFormatOptions,
@@ -201,6 +202,7 @@ const agencyNameFromWard = (wardLabel: string) => (wardLabel ? `Công an ${wardL
 
 const DangKyTamTruPage: React.FC = () => {
     const navigate = useNavigate();
+    const { formState } = useForm();
     const service = ROUTE_TO_SERVICE_MAP['/dang-ky-tam-tru'] || {
         requiredDocs: [],
         steps: [],
@@ -230,6 +232,21 @@ const DangKyTamTruPage: React.FC = () => {
         setToast(message);
         window.setTimeout(() => setToast(''), 3200);
     };
+
+    useEffect(() => {
+        const ocrFields: Partial<TamTruApplicationData> = {};
+        (['fullName', 'dateOfBirth', 'gender', 'citizenId'] as const).forEach((fieldId) => {
+            const value = formState.values[fieldId];
+            if (formState.touched[fieldId] && value && form[fieldId] !== value) {
+                ocrFields[fieldId] = value;
+            }
+        });
+
+        if (Object.keys(ocrFields).length > 0) {
+            setForm((prev) => ({ ...prev, ...ocrFields }));
+            setReview(null);
+        }
+    }, [form, formState.touched, formState.values]);
 
     useEffect(() => {
         const controller = new AbortController();

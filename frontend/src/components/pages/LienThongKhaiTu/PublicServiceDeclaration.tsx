@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "../../../contexts/FormContext";
 
 // --- ĐỊNH NGHĨA KIỂU DỮ LIỆU ---
 interface ApplicantInfo {
@@ -46,6 +47,8 @@ const PublicServiceDeclaration: React.FC<{
   onNext: () => void;
   onBack: () => void;
 }> = ({ onNext, onBack }) => {
+  const { formState } = useForm();
+
   // 1. STATE THÔNG TIN NGƯỜI YÊU CẦU (Đã có sẵn từ tài khoản)
   const [applicantData, setApplicantData] = useState<ApplicantInfo>({
     fullName: "ĐẶNG LAM SƠN",
@@ -88,6 +91,30 @@ const PublicServiceDeclaration: React.FC<{
     deathProvince: "",
     deathWard: "",
   });
+
+  useEffect(() => {
+    const fieldMap: Partial<Record<keyof ApplicantInfo, string>> = {
+      fullName: "ltkt_fullName",
+      idNumber: "ltkt_idNumber",
+      dob: "ltkt_dob",
+      gender: "ltkt_gender",
+      idIssueDate: "ltkt_idIssueDate",
+      idIssuePlace: "ltkt_idIssuePlace",
+      addressDetail: "ltkt_addressDetail",
+    };
+
+    const nextApplicantData: Partial<ApplicantInfo> = {};
+    Object.entries(fieldMap).forEach(([applicantKey, formFieldId]) => {
+      const value = formState.values[formFieldId];
+      if (formState.touched[formFieldId] && value && applicantData[applicantKey as keyof ApplicantInfo] !== value) {
+        nextApplicantData[applicantKey as keyof ApplicantInfo] = value;
+      }
+    });
+
+    if (Object.keys(nextApplicantData).length > 0) {
+      setApplicantData((prev) => ({ ...prev, ...nextApplicantData }));
+    }
+  }, [applicantData, formState.touched, formState.values]);
 
   const handleApplicantChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
