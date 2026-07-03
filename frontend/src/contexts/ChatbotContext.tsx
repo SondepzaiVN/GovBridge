@@ -31,6 +31,7 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
       callStatus: action.payload.status,
       callStatusText: action.payload.text ?? null,
     };
+    case 'SET_REQUIRES_USER_ACTION': return { ...state, requiresUserAction: action.payload };
     case 'SET_HIGHLIGHT': return { ...state, highlightedElementId: action.payload };
     case 'SET_PENDING_NAV': return { ...state, pendingNavigation: action.payload };
     case 'SET_CURRENT_SERVICE': return { ...state, currentService: action.payload };
@@ -49,6 +50,7 @@ const initialState: ChatbotState = {
   isCallMode: false,
   callStatus: 'idle',
   callStatusText: null,
+  requiresUserAction: false,
   highlightedElementId: null,
   pendingNavigation: null,
   currentService: null,
@@ -178,6 +180,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           break;
 
         case 'REQUEST_CONFIRM_FILL':
+          dispatch({ type: 'OPEN' });
+          dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
           addBotMessage(
             event.message,
             'fill-confirm',
@@ -191,6 +195,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           break;
 
         case 'NAVIGATE':
+          dispatch({ type: 'OPEN' });
+          dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
           addBotMessage(event.message, 'navigation-confirm', undefined, event.suggestions);
           // Đặt pending navigation, user confirm thì mới navigate.
           dispatch({
@@ -260,6 +266,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         break;
       case 'NAVIGATE':
         if (response.data?.route && response.data?.serviceName) {
+          dispatch({ type: 'OPEN' });
+          dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
           dispatch({
             type: 'SET_PENDING_NAV',
             payload: { route: response.data.route, serviceName: response.data.serviceName },
@@ -278,6 +286,11 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           }
         }
         break;
+    }
+
+    if (response.intent === 'OCR_CONFIRM') {
+      dispatch({ type: 'OPEN' });
+      dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
     }
 
     if (callModeRef.current) {
@@ -373,6 +386,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     if (state.pendingNavigation) {
       onNavigateRef.current(state.pendingNavigation.route);
       dispatch({ type: 'SET_PENDING_NAV', payload: null });
+      dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
 
       const confirmMsg: ChatMessage = {
         id: createMessageId(),
@@ -384,14 +398,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       };
       dispatch({ type: 'ADD_MESSAGE', payload: confirmMsg });
 
-      if (window.innerWidth <= 768) {
-        setTimeout(() => dispatch({ type: 'CLOSE' }), 600);
-      }
+      setTimeout(() => dispatch({ type: 'CLOSE' }), 600);
     }
   }, [state.pendingNavigation]);
 
   const cancelNavigation = useCallback(() => {
     dispatch({ type: 'SET_PENDING_NAV', payload: null });
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
+    setTimeout(() => dispatch({ type: 'CLOSE' }), 200);
   }, []);
 
   return (

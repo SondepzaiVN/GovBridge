@@ -1,6 +1,6 @@
-﻿import React, { useRef, useEffect, useState, useCallback } from "react";
+﻿import React, { useRef, useEffect, useState } from "react";
 import { useChatbot } from "../../contexts/ChatbotContext";
-import { ocrService, smartbotService, sttService, ttsService } from "../../api/aiServices";
+import { ocrService, smartbotService } from "../../api/aiServices";
 import { Mic, MicOff, Send, Camera } from "lucide-react";
 
 interface ChatInputProps {
@@ -22,17 +22,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const { state, dispatch, handleAIResponse } = useChatbot();
   const [inputValue, setInputValue] = useState("");
-  const [interimText, setInterimText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const voiceConversationRef = useRef(false);
-  const stateRef = useRef(state);
   const [showCameraMenu, setShowCameraMenu] = useState(false);
 
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -54,7 +48,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     onBeforeSend?.();
     onSend(text);
     setInputValue("");
-    setInterimText("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   };
 
@@ -65,136 +58,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const finishVoiceUtterance = useCallback(async () => {
-    if (!stateRef.current.isListening) return;
-    let shouldClearSttLoading = true;
-    try {
-        dispatch({ type: "SET_LISTENING", payload: false });
-        dispatch({
-          type: "SET_CALL_STATUS",
-          payload: { status: "transcribing", text: "Đang gửi giọng nói lên VNPT SmartVoice..." },
-        });
-        dispatch({ type: "SET_LOADING", payload: true });
-        const transcript = (await sttService.stopListening()).trim();
-        const finalText = transcript || inputValue.trim() || interimText.trim();
-        if (finalText) {
-          setInputValue("");
-          setInterimText("");
-          dispatch({ type: "SET_LOADING", payload: false });
-          dispatch({
-            type: "SET_CALL_STATUS",
-            payload: { status: "thinking", text: "Trợ lý đang suy nghĩ..." },
-          });
-          shouldClearSttLoading = false;
-          await onSend(finalText);
-        } else {
-          dispatch({
-            type: "SET_CALL_STATUS",
-            payload: { status: "listening", text: "Không nghe thấy câu nói rõ ràng. Tôi đang lắng nghe lại..." },
-          });
-        }
-      } catch (error) {
-        voiceConversationRef.current = false;
-        dispatch({ type: "SET_CALL_MODE", payload: false });
-        dispatch({
-          type: "SET_CALL_STATUS",
-          payload: { status: "error", text: "Không thể nhận dạng giọng nói." },
-        });
-        console.warn("[ChatInput Voice] STT failed:", error);
-      handleAIResponse({
-        intent: "CHAT",
-        message: error instanceof Error
-          ? `Không thể nhận dạng giọng nói: ${error.message}`
-          : "Không thể nhận dạng giọng nói. Vui lòng thử lại.",
-        suggestions: ["Thử lại", "Nhập bằng bàn phím"],
-      });
-    } finally {
-      if (shouldClearSttLoading) dispatch({ type: "SET_LOADING", payload: false });
-    }
-  }, [dispatch, handleAIResponse, inputValue, interimText, onSend]);
-
-  const startVoiceListening = useCallback(async () => {
-    if (!voiceConversationRef.current || !stateRef.current.isCallMode || stateRef.current.isListening || stateRef.current.isLoading || stateRef.current.isSpeaking) return;
-    dispatch({
-      type: "SET_CALL_STATUS",
-      payload: { status: "connecting", text: "Đang kết nối microphone và VNPT SmartVoice..." },
-    });
-    dispatch({ type: "SET_LISTENING", payload: true });
-    setInterimText("");
-    setInputValue("");
-
-    try {
-      await sttService.startListening((transcript: string, isFinal: boolean) => {
-        if (isFinal) {
-          setInputValue(transcript);
-          setInterimText("");
-        } else {
-          setInterimText(transcript);
-        }
-      }, { onSilence: finishVoiceUtterance });
-      dispatch({
-        type: "SET_CALL_STATUS",
-        payload: { status: "listening", text: "Đang lắng nghe..." },
-      });
-    } catch (error) {
-      dispatch({ type: "SET_LISTENING", payload: false });
-      voiceConversationRef.current = false;
-      dispatch({ type: "SET_CALL_MODE", payload: false });
-      dispatch({
-        type: "SET_CALL_STATUS",
-        payload: { status: "error", text: "Không thể bật microphone." },
-      });
-      console.warn("[ChatInput Voice] Voice input unavailable:", error);
-      handleAIResponse({
-        intent: "CHAT",
-        message: error instanceof Error
-          ? `Không thể bật microphone: ${error.message}`
-          : "Không thể bật microphone. Vui lòng kiểm tra quyền truy cập.",
-        suggestions: ["Thử lại", "Nhập bằng bàn phím"],
-      });
-    }
-  }, [dispatch, finishVoiceUtterance, handleAIResponse]);
-
-  useEffect(() => {
-    if (!state.isCallMode || !voiceConversationRef.current || state.isListening || state.isLoading || state.isSpeaking) return;
-    const timer = window.setTimeout(() => {
-      void startVoiceListening();
-    }, 450);
-    return () => window.clearTimeout(timer);
-  }, [state.isCallMode, state.isListening, state.isLoading, state.isSpeaking, startVoiceListening]);
-
   // Voice recording toggle
-  const toggleRecording = async () => {
-    if (variant === "bar") {
-      onBeforeSend?.();
-      onFocusInput?.();
-      return;
-    }
-
-    if (voiceConversationRef.current || state.isListening) {
-      voiceConversationRef.current = false;
-      stateRef.current = { ...stateRef.current, isCallMode: false, isListening: false, isSpeaking: false };
+  const toggleRecording = () => {
+    if (state.isCallMode || state.isListening) {
       dispatch({ type: "SET_CALL_MODE", payload: false });
       dispatch({
         type: "SET_CALL_STATUS",
         payload: { status: "idle", text: null },
       });
-      ttsService.stop();
-      if (state.isListening) {
-        dispatch({ type: "SET_LISTENING", payload: false });
-        await sttService.stopListening().catch(() => "");
-      }
       return;
     }
 
-    voiceConversationRef.current = true;
-    stateRef.current = { ...stateRef.current, isCallMode: true };
     dispatch({ type: "SET_CALL_MODE", payload: true });
     dispatch({
       type: "SET_CALL_STATUS",
-      payload: { status: "connecting", text: "Đang bắt đầu cuộc gọi..." },
+        payload: { status: "connecting", text: "\u0110ang b\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi..." },
     });
-    await startVoiceListening();
   };
 
   // OCR image upload
@@ -261,9 +140,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const displayValue = state.isListening
-    ? interimText || inputValue
-    : inputValue;
+  const displayValue = inputValue;
 
   const callStatusLabel = state.callStatusText ?? (
     state.callStatus === "connecting" ? "Đang kết nối VNPT SmartVoice..."
@@ -301,7 +178,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <div className="voice-input-state">
             <div className="voice-status-left">
               <Mic size={16} />
-              <span>{interimText ? `"${interimText.slice(0, 28)}${interimText.length > 28 ? "..." : ""}"` : "Đang nghe..."}</span>
+              <span>Đang nghe...</span>
             </div>
             <div className="voice-waveform" aria-hidden="true">
               {Array.from({ length: 7 }).map((_, i) => (
@@ -401,9 +278,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <button
             className={`input-action-btn ${state.isListening ? "recording" : ""}`}
             onClick={toggleRecording}
-            title={variant === "bar" ? "Mở khung chat để gọi" : state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
-            disabled={disabled}
-            aria-label={variant === "bar" ? "Mở khung chat để gọi" : state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
+            title={state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
+            disabled={Boolean(disabled && !state.isCallMode)}
+            aria-label={state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
           >
             {state.isCallMode ? <MicOff size={16} /> : <Mic size={16} />}
           </button>
