@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Bot, ChevronDown, Mic, MicOff, Minimize2, Phone, RotateCcw, Sparkles, X } from 'lucide-react';
 import { smartbotService, sttService, ttsService } from '../../api/aiServices';
 import { useChatbot } from '../../contexts/ChatbotContext';
+import { useAuth } from '../../contexts/useAuth';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ChatInput from './ChatInput';
 import ChatWindow from './ChatWindow';
 
@@ -500,6 +502,10 @@ const ChatbotWidget: React.FC = () => {
 
 export const ChatbotFAB: React.FC = () => {
     const { state, dispatch } = useChatbot();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const callStatusLabel = getCallStatusLabel(state.callStatus, state.callStatusText);
     const isRealtime = state.conversationState === 'REALTIME';
     const isWaitingForConfirmation = state.conversationState === 'WAITING_FOR_CONFIRMATION';
@@ -510,6 +516,11 @@ export const ChatbotFAB: React.FC = () => {
         if (isRealtime || state.isListening) {
             dispatch({ type: 'SET_CALL_MODE', payload: false });
             dispatch({ type: 'SET_CALL_STATUS', payload: { status: 'idle', text: null } });
+            return;
+        }
+
+        if (!user) {
+            setShowAuthModal(true);
             return;
         }
 
@@ -582,6 +593,52 @@ export const ChatbotFAB: React.FC = () => {
                           : 'Gọi AI realtime'}
                 </div>
             </div>
+
+            {showAuthModal && (
+                <div className="auth-modal-overlay" onClick={() => setShowAuthModal(false)}>
+                    <div
+                        className="auth-modal-card"
+                        onClick={(e) => e.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="auth-modal-title"
+                    >
+                        <div className="auth-modal-header">
+                            <div className="auth-modal-icon">
+                                <Mic size={24} />
+                            </div>
+                            <div>
+                                <h3 id="auth-modal-title" className="auth-modal-title">
+                                    Yêu cầu đăng nhập
+                                </h3>
+                                <p className="auth-modal-desc">
+                                    Vui lòng đăng nhập để tiếp tục sử dụng tính năng gọi giọng nói realtime với Trợ lý AI.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="auth-modal-actions">
+                            <button
+                                type="button"
+                                onClick={() => setShowAuthModal(false)}
+                                className="auth-modal-btn auth-modal-btn--cancel"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowAuthModal(false);
+                                    navigate('/dang-nhap', { state: { from: location.pathname } });
+                                }}
+                                className="auth-modal-btn auth-modal-btn--primary"
+                            >
+                                Đăng nhập
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

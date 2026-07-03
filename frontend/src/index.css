@@ -10,6 +10,144 @@
     }
 }
 
+/* ── Premium Auth Modal ── */
+@keyframes modal-backdrop-fadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(6px);
+    }
+}
+
+@keyframes modal-popup-smooth {
+    0% {
+        opacity: 0;
+        transform: scale(0.9) translateY(16px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(15, 23, 42, 0.55);
+    padding: 16px;
+    animation: modal-backdrop-fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.auth-modal-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 26px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(200, 68, 26, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    animation: modal-popup-smooth 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
+}
+
+.auth-modal-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.auth-modal-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background-color: rgba(200, 68, 26, 0.1);
+    color: #c8441a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 6px rgba(200, 68, 26, 0.04);
+}
+
+.auth-modal-title {
+    margin: 0;
+    font-size: 1.18rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.01em;
+}
+
+.auth-modal-desc {
+    margin: 6px 0 0;
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.55;
+}
+
+.auth-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.auth-modal-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-modal-btn--cancel {
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    color: #475569;
+}
+
+.auth-modal-btn--cancel:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+    transform: translateY(-1px);
+}
+
+.auth-modal-btn--cancel:active {
+    transform: translateY(0);
+    background-color: #f1f5f9;
+}
+
+.auth-modal-btn--primary {
+    border: none;
+    background: linear-gradient(135deg, #d84e1f, #c8441a);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(200, 68, 26, 0.3);
+}
+
+.auth-modal-btn--primary:hover {
+    box-shadow: 0 6px 20px rgba(200, 68, 26, 0.45);
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #e05828, #d0491e);
+}
+
+.auth-modal-btn--primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(200, 68, 26, 0.3);
+}
+
 /* ---- CSS Variables ---- */
 :root {
     /* ── Government Brand Colors (dichvucong.gov.vn) ── */

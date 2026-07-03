@@ -2,6 +2,53 @@
   "schemaVersion": 1,
   "sessions": [
     {
+      "id": "a0984ef2-c0c0-4701-a73b-750cab81dda7",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_15f7983e-753f-4da8-af82-b3586f31759c",
+          "sessionId": "knowledge_efa28b5c-cb1f-42fc-9370-019ec060d04b"
+        }
+      },
+      "createdAt": "2026-07-03T10:23:52.165Z",
+      "updatedAt": "2026-07-03T10:25:55.871Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "đăng ký thường trú",
+          "createdAt": "2026-07-03T10:23:52.165Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T10:23:52.165Z"
+        },
+        {
+          "role": "user",
+          "content": "thủ tục đăng ký thường trú",
+          "createdAt": "2026-07-03T10:24:21.337Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
+          "createdAt": "2026-07-03T10:24:21.337Z"
+        },
+        {
+          "role": "user",
+          "content": "thủ tục đăng ký thường trú",
+          "createdAt": "2026-07-03T10:25:55.871Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
+          "createdAt": "2026-07-03T10:25:55.871Z"
+        }
+      ]
+    },
+    {
       "id": "19fcde34-7f5d-46a9-9afb-620e60df02f4",
       "currentRoute": "/",
       "state": {
