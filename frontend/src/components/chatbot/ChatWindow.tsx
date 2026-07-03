@@ -124,6 +124,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
     fillFields(fields);
     setFillDecision('confirmed');
     dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+    dispatch({ type: 'CLOSE' });
     if (state.confirmationSource === 'voice') {
       resumeRealtimeWithVoice(
         'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
@@ -266,6 +267,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
 
               fillFields(fields);
               dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+              dispatch({ type: 'CLOSE' });
               if (state.confirmationSource === 'voice') {
                 resumeRealtimeWithVoice(
                   'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',

@@ -486,6 +486,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       onNavigateRef.current(pendingNavigation.route);
       dispatch({ type: 'SET_PENDING_NAV', payload: null });
       dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+      dispatch({ type: 'CLOSE' });
 
       window.setTimeout(() => {
         if (state.confirmationSource === 'voice') {
