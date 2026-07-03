@@ -1,7 +1,9 @@
 import React from 'react';
 import { ArrowLeft, Calendar, ChevronRight, ChevronDown, FileText, Home, Paperclip, Save, Send, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { administrativeUnitService } from '../../api/administrativeUnitService';
+import { provinces, getResidenceAgencyName, useWards } from '../../hooks/useAdministrativeUnits';
+import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
+import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { SERVICE_MAP } from '../../data/services';
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
 
@@ -27,79 +29,6 @@ interface FamilyMember {
   quanHe: string;
 }
 
-const provinces = [
-  'Thành phố Hà Nội',
-  'Tỉnh Cao Bằng',
-  'Tỉnh Tuyên Quang',
-  'Tỉnh Điện Biên',
-  'Tỉnh Lai Châu',
-  'Tỉnh Sơn La',
-  'Tỉnh Lào Cai',
-  'Tỉnh Thái Nguyên',
-  'Tỉnh Lạng Sơn',
-  'Tỉnh Quảng Ninh',
-  'Tỉnh Bắc Ninh',
-  'Tỉnh Phú Thọ',
-  'Thành phố Hải Phòng',
-  'Tỉnh Hưng Yên',
-  'Tỉnh Ninh Bình',
-  'Tỉnh Thanh Hóa',
-  'Tỉnh Nghệ An',
-  'Tỉnh Hà Tĩnh',
-  'Tỉnh Quảng Trị',
-  'Thành phố Huế',
-  'Thành phố Đà Nẵng',
-  'Tỉnh Quảng Ngãi',
-  'Tỉnh Gia Lai',
-  'Tỉnh Khánh Hòa',
-  'Tỉnh Đắk Lắk',
-  'Tỉnh Lâm Đồng',
-  'Thành phố Đồng Nai',
-  'Thành phố Hồ Chí Minh',
-  'Tỉnh Tây Ninh',
-  'Tỉnh Đồng Tháp',
-  'Tỉnh Vĩnh Long',
-  'Tỉnh An Giang',
-  'Thành phố Cần Thơ',
-  'Tỉnh Cà Mau',
-];
-const provinceCodeByName: Record<string, string> = {
-  'Thành phố Hà Nội': '01',
-  'Tỉnh Cao Bằng': '04',
-  'Tỉnh Tuyên Quang': '08',
-  'Tỉnh Điện Biên': '11',
-  'Tỉnh Lai Châu': '12',
-  'Tỉnh Sơn La': '14',
-  'Tỉnh Lào Cai': '15',
-  'Tỉnh Thái Nguyên': '19',
-  'Tỉnh Lạng Sơn': '20',
-  'Tỉnh Quảng Ninh': '22',
-  'Tỉnh Bắc Ninh': '24',
-  'Tỉnh Phú Thọ': '25',
-  'Thành phố Hải Phòng': '31',
-  'Tỉnh Hưng Yên': '33',
-  'Tỉnh Ninh Bình': '37',
-  'Tỉnh Thanh Hóa': '38',
-  'Tỉnh Nghệ An': '40',
-  'Tỉnh Hà Tĩnh': '42',
-  'Tỉnh Quảng Trị': '44',
-  'Thành phố Huế': '46',
-  'Thành phố Đà Nẵng': '48',
-  'Tỉnh Quảng Ngãi': '51',
-  'Tỉnh Gia Lai': '52',
-  'Tỉnh Khánh Hòa': '56',
-  'Tỉnh Đắk Lắk': '66',
-  'Tỉnh Lâm Đồng': '68',
-  'Thành phố Đồng Nai': '75',
-  'Tỉnh Đồng Nai': '75',
-  'Thành phố Hồ Chí Minh': '79',
-  'Tỉnh Tây Ninh': '80',
-  'Tỉnh Đồng Tháp': '82',
-  'Tỉnh Vĩnh Long': '86',
-  'Tỉnh An Giang': '91',
-  'Thành phố Cần Thơ': '92',
-  'Tỉnh Cà Mau': '96',
-};
 const genderOptions = ['Chưa có thông tin', 'Nam', 'Nữ', 'Khác'];
 const ethnicityOptions = [
   'Kinh',
@@ -225,10 +154,6 @@ const createMember = (id: number): FamilyMember => ({
   quanHe: '',
 });
 
-const getResidenceAgencyName = (wardName: string): string => (
-  wardName ? `Công an ${wardName}` : 'Cơ quan X'
-);
-
 const getResidenceAgencyOptions = (wardName: string): string[] => (
   wardName ? [getResidenceAgencyName(wardName)] : []
 );
@@ -274,7 +199,7 @@ const createRequestFields = (
   { id: 'requestProvince', label: 'Tỉnh/ Thành phố', kind: 'select', required: true, placeholder: 'Chọn', options: provinces },
   { id: 'requestWard', label: 'Xã/Phường/Đặc khu', kind: 'select', required: true, placeholder: getWardFieldPlaceholder(selectedProvince, isLoading), options: wardOptions },
   { id: 'address', label: 'Địa chỉ (số nhà, đường phố, thôn, xóm, làng, ấp, bản, buôn, phum, sóc)', kind: 'text', required: true, placeholder: 'Địa chỉ nơi cư trú hiện tại của công dân', span: 2 },
-  { id: 'requestContent', label: 'Nội dung đề nghị', kind: 'textarea', required: true, span: 2 },
+  { id: 'requestContent', label: 'Nội dung đề nghị', kind: 'textarea', required: true, span: 2, readOnly: true },
 ];
 
 const initialValues: Record<string, string> = {
@@ -299,58 +224,12 @@ const XacNhanCuTruPage: React.FC = () => {
   });
   const [declareMode, setDeclareMode] = React.useState('proxy');
   const [members, setMembers] = React.useState<FamilyMember[]>([createMember(1)]);
-  const [uploadedFile, setUploadedFile] = React.useState('');
+  const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
   const [pledged, setPledged] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [draftSaved, setDraftSaved] = React.useState(false);
-  const [agencyWardOptions, setAgencyWardOptions] = React.useState<string[]>([]);
-  const [requestWardOptions, setRequestWardOptions] = React.useState<string[]>([]);
-  const [loadingAgencyWards, setLoadingAgencyWards] = React.useState(false);
-  const [loadingRequestWards, setLoadingRequestWards] = React.useState(false);
-
-  React.useEffect(() => {
-    const provinceCode = provinceCodeByName[values.provinceAgency || ''];
-
-    if (!provinceCode) {
-      setAgencyWardOptions([]);
-      return;
-    }
-
-    const controller = new AbortController();
-    setLoadingAgencyWards(true);
-    administrativeUnitService.getWards(provinceCode, controller.signal)
-      .then((options) => setAgencyWardOptions(options.map((option) => option.label)))
-      .catch((error) => {
-        if (error.name !== 'AbortError') setAgencyWardOptions([]);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoadingAgencyWards(false);
-      });
-
-    return () => controller.abort();
-  }, [values.provinceAgency]);
-
-  React.useEffect(() => {
-    const provinceCode = provinceCodeByName[values.requestProvince || ''];
-
-    if (!provinceCode) {
-      setRequestWardOptions([]);
-      return;
-    }
-
-    const controller = new AbortController();
-    setLoadingRequestWards(true);
-    administrativeUnitService.getWards(provinceCode, controller.signal)
-      .then((options) => setRequestWardOptions(options.map((option) => option.label)))
-      .catch((error) => {
-        if (error.name !== 'AbortError') setRequestWardOptions([]);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoadingRequestWards(false);
-      });
-
-    return () => controller.abort();
-  }, [values.requestProvince]);
+  const { wardOptions: agencyWardOptions, loading: loadingAgencyWards } = useWards(values.provinceAgency);
+  const { wardOptions: requestWardOptions, loading: loadingRequestWards } = useWards(values.requestProvince);
 
   const agencyFields = React.useMemo(
     () => createAgencyFields(agencyWardOptions, values.provinceAgency || '', values.wardAgency || '', loadingAgencyWards),
@@ -364,19 +243,32 @@ const XacNhanCuTruPage: React.FC = () => {
 
   const setFieldValue = (fieldId: string, value: string) => {
     setValues((current) => {
+      let nextValues = { ...current };
+      
       if (fieldId === 'provinceAgency') {
-        return { ...current, provinceAgency: value, wardAgency: '', residenceAgency: '' };
+        nextValues = { ...nextValues, provinceAgency: value, wardAgency: '', residenceAgency: '' };
+      } else if (fieldId === 'requestProvince') {
+        nextValues = { ...nextValues, requestProvince: value, requestWard: '' };
+      } else if (fieldId === 'wardAgency') {
+        nextValues = { ...nextValues, wardAgency: value, residenceAgency: value ? getResidenceAgencyName(value) : '' };
+      } else if (fieldId === 'birthType' && value !== current.birthType) {
+        nextValues = { ...nextValues, birthType: value, birthDate: '' };
+      } else {
+        nextValues = { ...nextValues, [fieldId]: value };
       }
 
-      if (fieldId === 'requestProvince') {
-        return { ...current, requestProvince: value, requestWard: '' };
+      if (['requestProvince', 'requestWard', 'address'].includes(fieldId)) {
+        const address = nextValues.address;
+        const wardName = nextValues.requestWard;
+        const provinceName = nextValues.requestProvince;
+        if (address && wardName && provinceName) {
+          nextValues.requestContent = `Xác nhận cư trú tại ${address}, ${wardName}, ${provinceName}.`;
+        } else {
+          nextValues.requestContent = '';
+        }
       }
 
-      if (fieldId === 'wardAgency') {
-        return { ...current, wardAgency: value, residenceAgency: value ? getResidenceAgencyName(value) : '' };
-      }
-
-      return { ...current, [fieldId]: value };
+      return nextValues;
     });
     setErrors((current) => {
       const nextErrors = { ...current, [fieldId]: '' };
@@ -411,11 +303,16 @@ const XacNhanCuTruPage: React.FC = () => {
 
     if (declareMode === 'proxy') {
       members.forEach((member) => {
-        (['hoTen', 'ngaySinh', 'gioiTinh', 'cccd', 'quanHe'] as const).forEach((key) => {
-          if (!String(member[key] || '').trim()) {
-            nextErrors[`member-${member.id}-${key}`] = 'Bắt buộc';
-          }
-        });
+        const hasAnyValue = (['hoTen', 'ngaySinh', 'gioiTinh', 'cccd', 'quanHe'] as const)
+          .some((key) => !!String(member[key] || '').trim());
+        
+        if (hasAnyValue) {
+          (['hoTen', 'ngaySinh', 'gioiTinh', 'cccd', 'quanHe'] as const).forEach((key) => {
+            if (!String(member[key] || '').trim()) {
+              nextErrors[`member-${member.id}-${key}`] = 'Bắt buộc';
+            }
+          });
+        }
       });
     }
 
@@ -424,9 +321,39 @@ const XacNhanCuTruPage: React.FC = () => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setDraftSaved(false);
     if (!validate()) return;
+    
+    const attachments = [];
+    if (uploadedFile) {
+        const metadata = await saveAttachmentFile(uploadedFile);
+        attachments.push(metadata);
+    }
+
+    const documents: DashboardDocument[] = uploadedFile
+      ? [{ name: uploadedFile.name, state: 'Đã có' }]
+      : [{ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' }];
+
+    saveApplicationToDashboard({
+      procedure: 'Xác nhận thông tin về cư trú',
+      applicant: values.fullName || values.xctt_hoTen || '',
+      citizenId: values.citizenId || values.xctt_cccd || '',
+      phone: values.phone || values.xctt_sdt || '',
+      email: values.email || values.xctt_email || '',
+      documents,
+      message: values.requestContent || 'Điền thiếu',
+      caseNote: 'Xác nhận cư trú',
+      details: {
+        'Tỉnh/Thành phố đề nghị': values.requestProvince || '',
+        'Phường/Xã đề nghị': values.requestWard || '',
+        'Địa chỉ hiện tại': values.address || '',
+        'Cơ quan tiếp nhận': values.residenceAgency || '',
+        'Trường hợp': values.caseType || '',
+      },
+      attachments,
+    });
+
     setShowSuccess(true);
   };
 
@@ -512,9 +439,9 @@ const XacNhanCuTruPage: React.FC = () => {
           <label className="xctt-upload-btn">
             <Paperclip size={18} />
             Chọn tệp tin
-            <input type="file" onChange={(event) => setUploadedFile(event.target.files?.[0]?.name || '')} />
+            <input type="file" onChange={(event) => setUploadedFile(event.target.files?.[0] || null)} />
           </label>
-          {uploadedFile && <strong>{uploadedFile}</strong>}
+          {uploadedFile && <strong>{uploadedFile.name}</strong>}
         </div>
       </XcttSection>
 
@@ -726,12 +653,12 @@ const BirthDateControl: React.FC<{
       <div className="xctt-date-input-shell">
         <input
           id={birthDateField.id}
-          type="text"
+          type={values[birthTypeField.id] === 'Năm' ? 'number' : values[birthTypeField.id] === 'Tháng năm' ? 'month' : 'date'}
           value={values[birthDateField.id] || ''}
           placeholder={birthDateField.placeholder}
           onChange={(event) => onChange(birthDateField.id, event.target.value)}
         />
-        <Calendar size={18} aria-hidden="true" />
+        <Calendar size={18} aria-hidden="true" style={{ pointerEvents: 'none' }} />
       </div>
     </div>
     {(errors.birthType || errors.birthDate) && <p className="xctt-error">{errors.birthType || errors.birthDate}</p>}

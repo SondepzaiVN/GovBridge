@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
-import { LogIn, Home, ChevronDown } from 'lucide-react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { LogIn, Home, ChevronDown, LogOut, UserPlus, UserRound } from 'lucide-react';
+import { useAuth } from '../../contexts/useAuth';
 
 const Header: React.FC = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
+
+    const handleLogout = () => {
+        setMobileMenuOpen(false);
+        logout();
+        window.setTimeout(() => navigate('/', { replace: true }), 0);
+    };
 
     return (
         <header className="app-header" role="banner">
@@ -12,6 +21,7 @@ const Header: React.FC = () => {
                 <div className="header-inner">
                     {/* Tên cổng */}
                     <Link to="/" className="header-logo" aria-label="Cổng Dịch Vụ Công Quốc Gia - Trang chủ">
+                        <img src="/quoc_huy.png" alt="Quốc huy Việt Nam" className="header-quoc-huy" />
                         <div className="header-logo-text">
                             <span className="header-logo-name">Cổng Dịch Vụ Công Quốc Gia</span>
                             <span className="header-logo-sub">
@@ -22,15 +32,33 @@ const Header: React.FC = () => {
 
                     {/* Right: Login */}
                     <div className="header-actions">
-                        <button
-                            className="btn-header-login"
-                            id="login-btn"
-                            data-highlight-id="login-btn"
-                            aria-label="Đăng nhập tài khoản"
-                        >
-                            <LogIn size={15} />
-                            <span>Đăng nhập</span>
-                        </button>
+                        {user ? (
+                            <>
+                                <Link to={user.role === 'can-bo' ? '/can-bo' : '/nguoi-dan'} className="header-user" aria-label="Mở khu vực tài khoản">
+                                    <UserRound size={20} />
+                                    <span><strong>{user.name}</strong><small>{user.role === 'can-bo' ? 'Cán bộ' : 'Người dân'}</small></span>
+                                </Link>
+                                <button className="btn-header-logout" type="button" onClick={handleLogout} aria-label="Đăng xuất">
+                                    <LogOut size={15} /><span>Đăng xuất</span>
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link className="btn-header-register" to="/dang-nhap?role=nguoi-dan" aria-label="Đăng ký tài khoản">
+                                    <UserPlus size={15} /><span>Đăng ký</span>
+                                </Link>
+                                <Link
+                                    className="btn-header-login"
+                                    id="login-btn"
+                                    data-highlight-id="login-btn"
+                                    aria-label="Đăng nhập tài khoản"
+                                    to="/dang-nhap"
+                                >
+                                    <LogIn size={15} />
+                                    <span>Đăng nhập</span>
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
