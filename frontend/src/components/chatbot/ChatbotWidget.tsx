@@ -503,7 +503,7 @@ const ChatbotWidget: React.FC = () => {
 };
 
 export const ChatbotFAB: React.FC = () => {
-    const { state, dispatch } = useChatbot();
+    const { state, dispatch, sendMessage, cancelNavigation } = useChatbot();
     const { user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -524,6 +524,16 @@ export const ChatbotFAB: React.FC = () => {
         }
 
         dispatch({ type: 'CLOSE' });
+        
+        if (state.requiresUserAction) {
+            if (state.pendingNavigation) {
+                cancelNavigation();
+            } else {
+                dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+                void sendMessage('Hủy');
+            }
+        }
+
         dispatch({ type: 'SET_CALL_MODE', payload: true });
         dispatch({
             type: 'SET_CALL_STATUS',
