@@ -153,7 +153,6 @@ const LoginPage: React.FC = () => {
 
             <div className="login-ref-vneid-brand">
                 <div className="login-ref-gov-brand">
-                    <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
                     <strong>{role === 'can-bo' ? 'Hệ thống cán bộ GovBridge' : 'Hệ thống công dân GovBridge'}</strong>
                 </div>
             </div>
