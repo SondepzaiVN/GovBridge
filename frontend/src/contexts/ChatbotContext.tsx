@@ -446,6 +446,12 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         suggestions: ['Thử lại', 'Tôi cần hỗ trợ'],
       };
       dispatch({ type: 'ADD_MESSAGE', payload: errMsg });
+
+      if (callModeRef.current) {
+        ttsService.speak(message, (isPlaying) => {
+          dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        });
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
