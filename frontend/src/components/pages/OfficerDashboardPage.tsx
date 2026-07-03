@@ -202,9 +202,17 @@ const OfficerDashboardPage: React.FC = () => {
             confirmAction === 'approve' ? 'Đã phê duyệt' : 'Đã từ chối';
             
         setApplications((current) => {
-            const newApps = current.map((application) => (
-                application.id === selectedApplication.id ? { ...application, status: nextStatus } : application
-            ));
+            const newApps = current.map((application) => {
+                if (application.id === selectedApplication.id) {
+                    const updates: Partial<Application> = { status: nextStatus };
+                    if (confirmAction === 'reject') {
+                        updates.returnReason = returnReason || 'Điền thiếu';
+                        updates.responseMessage = message || 'Điền thiếu';
+                    }
+                    return { ...application, ...updates };
+                }
+                return application;
+            });
             localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(newApps));
             return newApps;
         });

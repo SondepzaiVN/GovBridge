@@ -14,6 +14,7 @@ import {
     LayoutDashboard,
     Mail,
     MapPin,
+    MessageSquareText,
     Phone,
     UserRound,
     X,
@@ -241,6 +242,19 @@ const CitizenDashboardPage: React.FC = () => {
                                             {selectedApplication.requestContent !== MISSING_OFFICER_VALUE && <div><dt>Nội dung</dt><dd>{selectedApplication.requestContent}</dd></div>}
                                             {selectedApplication.message !== MISSING_OFFICER_VALUE && <div><dt>Tin nhắn</dt><dd>{selectedApplication.message}</dd></div>}
                                             {selectedApplication.caseNote !== MISSING_OFFICER_VALUE && <div><dt>Ghi chú hồ sơ</dt><dd>{selectedApplication.caseNote}</dd></div>}
+                                        </dl>
+                                    </section>
+                                )}
+
+                                {(selectedApplication.status === 'Đã từ chối' 
+                                    || selectedApplication.statusLabel === 'Đã từ chối' 
+                                    || selectedApplication.returnReason !== MISSING_OFFICER_VALUE 
+                                    || selectedApplication.responseMessage !== MISSING_OFFICER_VALUE) && (
+                                    <section className="officer-detail-section">
+                                        <h3><MessageSquareText size={17} /> Thông tin phản hồi</h3>
+                                        <dl className="officer-info-grid">
+                                            <div><dt>Lý do trả về</dt><dd>{selectedApplication.returnReason}</dd></div>
+                                            <div><dt>Tin nhắn kèm theo</dt><dd>{selectedApplication.responseMessage}</dd></div>
                                         </dl>
                                     </section>
                                 )}

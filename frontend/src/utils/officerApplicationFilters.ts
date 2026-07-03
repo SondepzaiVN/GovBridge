@@ -36,6 +36,8 @@ export type OfficerApplication = {
     message: string;
     caseNote: string;
     officerNote: string;
+    returnReason: string;
+    responseMessage: string;
     details: Record<string, string>;
     attachments: AttachmentMetadata[];
 };
@@ -157,6 +159,8 @@ export const normalizeOfficerApplication = (
         message: withFallback(raw.message),
         caseNote: withFallback(raw.caseNote),
         officerNote: raw.officerNote === undefined ? '' : String(raw.officerNote),
+        returnReason: firstValue(raw, ['returnReason', 'rejectReason', 'reason']),
+        responseMessage: firstValue(raw, ['responseMessage', 'officerMessage', 'attachedMessage']),
         details,
         attachments,
     };
