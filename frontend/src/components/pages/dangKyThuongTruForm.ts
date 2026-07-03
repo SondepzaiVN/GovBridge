@@ -455,8 +455,8 @@ export const validateServiceField = (field: FormField, value: string): string =>
   if (requiredError) return requiredError;
   if (!value.trim()) return '';
 
-  if (field.id === 'cccd') {
-    return isValidCitizenId(value, [12]) ? '' : 'Số CCCD phải có đúng 12 chữ số';
+  if (field.id === 'cccd' || field.id === 'soDinhDanh') {
+    return isValidCitizenId(value, [9, 12]) ? '' : 'Số CCCD/CMND phải có 9 hoặc 12 chữ số';
   }
 
   if (field.id === 'sdtCoQuan') {
@@ -508,7 +508,7 @@ export const getStandardMemberErrors = (
 
   if (!member.gender.trim()) errors.gender = 'Thiếu giới tính';
   if (!member.citizenId.trim()) errors.citizenId = 'Thiếu số định danh';
-  else if (!isValidCitizenId(member.citizenId, [12])) errors.citizenId = 'CCCD phải có 12 chữ số';
+  else if (!isValidCitizenId(member.citizenId, [9, 12])) errors.citizenId = 'CCCD/CMND phải có 9 hoặc 12 chữ số';
 
   if (!member.relationshipWithHouseholder.trim()) {
     errors.relationshipWithHouseholder = 'Thiếu quan hệ với chủ hộ';
