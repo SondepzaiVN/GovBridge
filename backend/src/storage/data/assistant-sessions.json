@@ -2,382 +2,59 @@
   "schemaVersion": 1,
   "sessions": [
     {
-      "id": "19fdb308-e404-4f23-89c3-a7798ab4bcc0",
-      "currentRoute": "/",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [
-          {
-            "id": "khai-sinh",
-            "confidence": 0.9,
-            "reason": "Thủ tục liên quan đến việc đăng ký khai sinh cho trẻ."
-          }
-        ],
-        "recentFacts": [],
-        "knowledgeSession": {
-          "senderId": "sender_60d08690-a6bb-4df0-a353-ff570f953acc",
-          "sessionId": "knowledge_4e16498d-9f35-4fc6-9552-bc3e7454c859"
-        }
-      },
-      "createdAt": "2026-07-02T05:06:50.521Z",
-      "updatedAt": "2026-07-02T05:12:24.516Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "hello",
-          "createdAt": "2026-07-02T05:06:50.521Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Hello! How can I assist you today?",
-          "createdAt": "2026-07-02T05:06:50.521Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới đẻ, làm gì h",
-          "createdAt": "2026-07-02T05:08:15.232Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chúc mừng bạn về sự ra đời của em bé! Bạn cần thực hiện thủ tục đăng ký khai sinh cho trẻ. Bạn đã biết về quy trình và giấy tờ cần thiết cho việc này chưa?",
-          "createdAt": "2026-07-02T05:08:15.232Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới đẻ, làm gì h",
-          "createdAt": "2026-07-02T05:11:36.235Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, chúc mừng gia đình bạn đã đón thêm thành viên mới! Để thực hiện thủ tục đăng ký khai sinh cho trẻ, bạn có thể làm theo quy trình sau:\n\n1. **Thực hiện đồng thời các thủ tục**: Bạn có thể thực hiện đăng ký khai sinh, đăng ký thường trú và cấp thẻ bảo hiểm y tế cho trẻ dưới 6 tuổi cùng lúc thông qua môi trường điện tử.\n\n2. **Cách thức thực hiện**: Truy cập vào **Cổng Dịch vụ công quốc gia** (dichvucong.gov.vn) hoặc sử dụng ứng dụng **VNeID**. Chọn mục liên quan đến \"Đăng ký khai sinh, đăng ký thường trú, cấp thẻ BHYT cho trẻ em dưới 6 tuổi\" và làm theo hướng dẫn.\n\n3. **Cơ quan giải quyết**: Ủy ban nhân dân cấp xã sẽ giải quyết phần đăng ký khai sinh. Phần đăng ký thường trú do Công an cấp xã xử lý, và thẻ BHYT sẽ do Bảo hiểm xã hội cấp huyện cấp.\n\n4. **Lưu ý về hồ sơ**: Thủ tục này áp dụng cho trẻ em dưới 6 tuổi, thường do cha, mẹ hoặc người giám hộ thực hiện. Bạn cần hoàn tất thủ tục đăng ký thường trú trong vòng 60 ngày kể từ khi khai sinh.\n\nBạn đã có Giấy chứng sinh của bé chưa? Và bạn dự định đăng ký thường trú cho bé theo nơi cư trú của cha hay mẹ?",
-          "createdAt": "2026-07-02T05:11:36.235Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi muốn đăng ký liên thông khai sinh, giúp tôi đi",
-          "createdAt": "2026-07-02T05:12:24.516Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, rất vui được hỗ trợ bạn thực hiện thủ tục **Liên thông khai sinh**. Dưới đây là quy trình chi tiết để bạn đăng ký trực tuyến:\n\n**1. Chuẩn bị hồ sơ và thông tin cần thiết**\n- Tài khoản đăng nhập Cổng Dịch vụ công hoặc ứng dụng VNeID đã được xác thực.\n- Thông tin của trẻ (họ tên, ngày sinh, giới tính...).\n- Thông tin của cha, mẹ hoặc người giám hộ.\n- Thông tin nơi cư trú dự kiến đăng ký thường trú cho trẻ.\n- Lựa chọn nơi khám chữa bệnh ban đầu để cấp thẻ BHYT.\n- Giấy chứng sinh điện tử hoặc giấy tờ thay thế (nếu chưa có giấy chứng sinh).\n- Giấy tờ cư trú (nếu trẻ đăng ký thường trú khác nơi thường trú của cha, mẹ).\n\n**2. Các bước thực hiện trên Cổng Dịch vụ công quốc gia hoặc VNeID**\n- **Bước 1:** Truy cập Cổng Dịch vụ công quốc gia (dichvucong.gov.vn) hoặc mở ứng dụng VNeID, đăng nhập vào tài khoản cá nhân.\n- **Bước 2:** Chọn mục \"Dịch vụ công liên thông khai sinh, khai tử\", sau đó chọn nhóm thủ tục \"Đăng ký khai sinh, đăng ký thường trú, cấp thẻ BHYT cho trẻ em dưới 6 tuổi\".\n- **Bước 3:** Chọn cơ quan thực hiện, tiến hành khai báo thông tin theo mẫu tờ khai điện tử. Hệ thống sẽ hiển thị các trường thông tin cần thiết; bạn tải lên các giấy tờ đính kèm nếu hệ thống yêu cầu.\n- **Bước 4:** Xem lại thông tin kê khai, chọn hình thức nhận kết quả (bản điện tử, bản giấy gửi về hoặc nhận trực tiếp), sau đó nộp hồ sơ. Hệ thống sẽ cấp mã hồ sơ để bạn tra cứu tiến độ xử lý.\n\n**3. Lưu ý về phí và kết quả**\n- Phần đăng ký khai sinh, đăng ký thường trú và cấp thẻ BHYT thường được miễn lệ phí theo quy định hiện hành. Tuy nhiên, nếu bạn yêu cầu cấp bản sao Giấy khai sinh, hệ thống có thể hiển thị mức phí trước khi nộp.\n- Sau khi hoàn tất, bạn sẽ nhận được Giấy khai sinh (bản điện tử/bản giấy), thông báo kết quả đăng ký thường trú và thẻ BHYT (bản điện tử/bản giấy) theo hình thức đã chọn.\n\nBạn đã có sẵn Giấy chứng sinh và thông tin về nơi cư trú dự kiến để đăng ký thường trú cho bé chưa?",
-          "createdAt": "2026-07-02T05:12:24.516Z"
-        }
-      ]
-    },
-    {
-      "id": "9a10521c-36cf-4e41-a43e-5a18699d8264",
+      "id": "19fcde34-7f5d-46a9-9afb-620e60df02f4",
       "currentRoute": "/",
       "state": {
         "formSnapshot": {},
         "candidateCases": [],
         "recentFacts": [],
         "knowledgeSession": {
-          "senderId": "sender_459a17ac-e51a-468c-8173-54dcb139cc39",
-          "sessionId": "knowledge_95170b53-1d52-4461-9241-9c3573c86a7a"
+          "senderId": "sender_4d4e91b7-04e8-4f07-ad8a-d77df39c6099",
+          "sessionId": "knowledge_afda6ad5-227d-4a76-bc84-be70b2c0ffd8"
         }
       },
-      "createdAt": "2026-07-02T04:54:43.306Z",
-      "updatedAt": "2026-07-02T05:06:26.877Z",
+      "createdAt": "2026-07-03T08:06:07.035Z",
+      "updatedAt": "2026-07-03T08:08:49.451Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "tôi mới từ nước ngoài về giờ cần phải làm gì",
-          "createdAt": "2026-07-02T04:54:43.306Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T04:54:43.306Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới từ nước ngoài về giờ cần phải làm gì",
-          "createdAt": "2026-07-02T04:55:06.859Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T04:55:06.859Z"
-        },
         {
           "role": "user",
           "content": "hi",
-          "createdAt": "2026-07-02T05:06:22.995Z"
+          "createdAt": "2026-07-03T08:06:07.035Z"
         },
         {
           "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T05:06:22.995Z"
+          "content": "Xin chào! Bạn cần trợ giúp gì về thủ tục hành chính?",
+          "createdAt": "2026-07-03T08:06:07.035Z"
         },
         {
           "role": "user",
-          "content": "hello",
-          "createdAt": "2026-07-02T05:06:26.877Z"
+          "content": "hahaaa",
+          "createdAt": "2026-07-03T08:06:17.887Z"
         },
         {
           "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T05:06:26.877Z"
-        }
-      ]
-    },
-    {
-      "id": "407fbb57-d96f-4d08-8c2d-4ab6f6ce4a56",
-      "currentRoute": "/",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [],
-        "recentFacts": [],
-        "knowledgeSession": {
-          "senderId": "sender_bcd58e34-d68c-49da-85a0-8511174a2d29",
-          "sessionId": "knowledge_bfbc0411-b981-40e3-9390-373f7e7d2caa"
-        }
-      },
-      "createdAt": "2026-07-02T04:47:50.088Z",
-      "updatedAt": "2026-07-02T04:48:05.440Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "hello",
-          "createdAt": "2026-07-02T04:47:50.088Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T04:47:50.088Z"
+          "content": "Có vẻ như bạn đang vui! Nếu bạn có câu hỏi nào về thủ tục hành chính, hãy cho tôi biết nhé!",
+          "createdAt": "2026-07-03T08:06:17.887Z"
         },
         {
           "role": "user",
-          "content": "tôi mới đẻ làm sao h",
-          "createdAt": "2026-07-02T04:48:05.440Z"
+          "content": "tôi mới đẻ",
+          "createdAt": "2026-07-03T08:06:27.163Z"
         },
         {
           "role": "assistant",
-          "content": "Mình có thể giúp bạn tìm thủ tục, xem giấy tờ cần chuẩn bị, thời gian xử lý và hướng dẫn điền biểu mẫu.",
-          "createdAt": "2026-07-02T04:48:05.440Z"
-        }
-      ]
-    },
-    {
-      "id": "275a3121-b858-4b7e-bb14-fec9a8c7ce53",
-      "currentRoute": "/",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [],
-        "recentFacts": [],
-        "knowledgeSession": {
-          "senderId": "sender_356b08fd-4714-4249-9d0b-376832636c40",
-          "sessionId": "knowledge_2844fcc7-89f1-4e4e-aceb-01b4452a7056"
-        }
-      },
-      "createdAt": "2026-07-02T00:54:09.896Z",
-      "updatedAt": "2026-07-02T03:35:00.565Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Hello",
-          "createdAt": "2026-07-02T00:54:09.896Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Hello! How can I assist you today?",
-          "createdAt": "2026-07-02T00:54:09.896Z"
+          "content": "Chúc mừng bạn đã chào đón thành viên mới trong gia đình! Để đăng ký khai sinh cho con, bạn cần thực hiện các bước sau:\n\n**1. Chuẩn bị trước khi kê khai:**\n- Tài khoản đăng nhập Cổng Dịch vụ công quốc gia hoặc ứng dụng VNeID.\n- Thông tin của trẻ (họ tên, ngày sinh, giới tính...).\n- Thông tin của cha, mẹ hoặc người giám hộ.\n- Giấy chứng sinh điện tử hoặc giấy tờ thay thế (nếu chưa có giấy chứng sinh).\n- Lựa chọn nơi khám chữa bệnh ban đầu để cấp thẻ BHYT và nơi dự kiến đăng ký thường trú cho trẻ.\n\n**2. Các bước thực hiện trực tuyến:**\n- **Bước 1:** Đăng nhập tài khoản định danh điện tử (VNeID) hoặc truy cập Cổng Dịch vụ công quốc gia.\n- **Bước 2:** Chọn mục dịch vụ công liên thông khai sinh, đăng ký thường trú, cấp thẻ BHYT cho trẻ em dưới 6 tuổi.\n- **Bước 3:** Kê khai thông tin người yêu cầu (cha/mẹ/người giám hộ).\n- **Bước 4:** Kê khai thông tin trẻ.\n- **Bước 5:** Điền thông tin nơi cư trú dự kiến đăng ký thường trú cho trẻ.\n- **Bước 6:** Lựa chọn nơi khám chữa bệnh ban đầu để cấp thẻ BHYT.\n- **Bước 7:** Xem lại toàn bộ thông tin đã kê khai, tải lên các giấy tờ đính kèm nếu hệ thống yêu cầu.\n- **Bước 8:** Chọn hình thức nhận kết quả và gửi hồ sơ.\n\n**3. Theo dõi tiến độ:**\nSau khi nộp hồ sơ, bạn sẽ nhận được mã số hồ sơ để theo dõi tình trạng xử lý.\n\nNếu bạn cần thêm thông tin chi tiết hoặc gặp vấn đề nào trong quá trình thực hiện, hãy cho tôi biết nhé!",
+          "createdAt": "2026-07-03T08:06:27.163Z"
         },
         {
           "role": "user",
-          "content": "Hello",
-          "createdAt": "2026-07-02T01:15:03.719Z"
+          "content": "Alo",
+          "createdAt": "2026-07-03T08:08:49.451Z"
         },
         {
           "role": "assistant",
-          "content": "Chào anh/chị, em là trợ lý ảo của VNPT AI.\n\nHiện tại, hệ thống của em đang cung cấp thông tin chi tiết về các quy trình thủ tục hành chính phổ biến như:\n- **Xác nhận thông tin về cư trú** (Mã thủ tục: 1.010041): Thực hiện qua Công an cấp xã hoặc trực tuyến qua VNeID/Cổng Dịch vụ công.\n- **Đăng ký khai tử** (Mã thủ tục: 1.000656): Thực hiện tại Ủy ban nhân dân cấp xã hoặc qua hình thức trực tuyến, có thể liên thông với các thủ tục xóa đăng ký thường trú và giải quyết trợ cấp mai táng, tử tuất.\n\nAnh/chị đang cần tìm hiểu chi tiết về quy trình của thủ tục hành chính cụ thể nào để em có thể hỗ trợ thông tin chính xác nhất ạ?",
-          "createdAt": "2026-07-02T01:15:03.719Z"
-        },
-        {
-          "role": "user",
-          "content": "Hello",
-          "createdAt": "2026-07-02T01:34:29.420Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị, em là trợ lý ảo của VNPT AI.\n\nEm đã nhận được yêu cầu tìm hiểu về thủ tục **Đăng ký thường trú** (Mã thủ tục: 1.004222). Dưới đây là các thông tin chính:\n\n**1. Thông tin chung về thủ tục**\n- **Tên thủ tục:** Đăng ký thường trú.\n- **Mã thủ tục:** 1.004222.\n- **Cơ quan có thẩm quyền:** Công an cấp xã.\n- **Đối tượng thực hiện:** Công dân Việt Nam và người Việt Nam định cư ở nước ngoài có nhu cầu đăng ký thường trú tại Việt Nam.\n- **Mục đích:** Xác lập nơi thường trú để phục vụ quản lý cư trú.\n\n**2. Hình thức thực hiện**\n- **Trực tuyến:** Qua Cổng Dịch vụ công quốc gia hoặc ứng dụng VNeID.\n- **Trực tiếp:** Nộp hồ sơ tại Công an cấp xã.\n\n**3. Hồ sơ cần chuẩn bị**\n- Tờ khai thay đổi thông tin cư trú (Mẫu CT01).\n- Giấy tờ chứng minh chỗ ở hợp pháp (nếu chưa có từ cơ sở dữ liệu).\n- Giấy tờ chứng minh quan hệ nhân thân (nếu đăng ký theo quan hệ gia đình).\n\n**4. Thời hạn và lệ phí**\n- **Thời hạn giải quyết:** 07 ngày làm việc.\n- **Lệ phí:** 10.000 đồng/lần trực tuyến và 20.000 đồng/lần trực tiếp (trừ trường hợp miễn).\n\nAnh/chị cần thêm thông tin gì cụ thể hơn không ạ?",
-          "createdAt": "2026-07-02T01:34:29.420Z"
-        },
-        {
-          "role": "user",
-          "content": "Hello",
-          "createdAt": "2026-07-02T01:50:41.621Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị! Em có thể giúp gì cho anh/chị hôm nay?",
-          "createdAt": "2026-07-02T01:50:41.621Z"
-        },
-        {
-          "role": "user",
-          "content": "Đăng ký khai sinh",
-          "createdAt": "2026-07-02T01:56:53.066Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Để đăng ký khai sinh, anh/chị cần cung cấp một số thông tin và chuẩn bị hồ sơ theo quy định. Dưới đây là thông tin chi tiết về thủ tục này:",
-          "createdAt": "2026-07-02T01:56:53.066Z"
-        },
-        {
-          "role": "user",
-          "content": "Thử lại",
-          "createdAt": "2026-07-02T02:04:25.060Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị! Để giúp em hỗ trợ anh/chị về quy trình đăng ký khai sinh một cách chính xác nhất, em xin phép làm rõ một chút về tình trạng hồ sơ hiện tại của anh/chị nhé:\n\n1. **Anh/chị đang muốn thử lại ở giai đoạn nào?**\n   * Mới bắt đầu điền thông tin trên Cổng Dịch vụ công/VNeID và chưa nộp?\n   * Hồ sơ đã nộp nhưng bị **trả lại** do thiếu giấy tờ hoặc sai thông tin?\n   * Hay anh/chị muốn xem lại toàn bộ các bước từ đầu để đảm bảo không bỏ sót gì?\n\n2. **Nếu hồ sơ đã bị trả lại:** Anh/chị đã nhận được thông báo cụ thể về lý do (ví dụ: sai họ tên trẻ, thiếu giấy chứng sinh, sai thông tin cha/mẹ...) chưa ạ?\n\nTheo quy định, nếu hồ sơ bị trả lại, anh/chị **không cần nộp lại từ đầu** mà chỉ cần truy cập vào mục \"Quản lý hồ sơ\" trên hệ thống, sửa đổi thông tin hoặc tải lên giấy tờ bổ sung theo yêu cầu cụ thể đã ghi trong thông báo.\n\nAnh/chị vui lòng cho em biết lý do hoặc tình trạng hiện tại của hồ sơ để em hướng dẫn chi tiết các bước tiếp theo ạ?",
-          "createdAt": "2026-07-02T02:04:25.060Z"
-        },
-        {
-          "role": "user",
-          "content": "quy trình làm giấy khai sinh",
-          "createdAt": "2026-07-02T02:05:32.470Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị,\n\nEm xin gửi đến anh/chị quy trình chi tiết để thực hiện thủ tục **Đăng ký khai sinh** dựa trên các quy định hiện hành, bao gồm cả hình thức trực tuyến qua Dịch vụ công liên thông và trực tiếp.\n\n**1. Quy trình thực hiện (Hình thức liên thông điện tử - Ưu tiên)**\n- **Bước 1: Truy cập và chọn dịch vụ**  \n  * Người yêu cầu truy cập **Cổng Dịch vụ công quốc gia** hoặc ứng dụng **VNeID**.  \n  * Chọn mục \"Dịch vụ công liên thông khai sinh, khai tử\".  \n  * Lựa chọn nhóm thủ tục liên thông phù hợp (ví dụ: Liên thông 3 thủ tục: Đăng ký khai sinh + Đăng ký thường trú + Cấp thẻ BHYT).  \n  * *Lưu ý:* Khi kê khai, anh/chị cần chọn đúng cơ quan thực hiện (UBND cấp xã nơi cha hoặc mẹ cư trú; trường hợp có yếu tố nước ngoài có thể thuộc cấp huyện).\n\n- **Bước 2: Nộp hồ sơ và nhận thông báo**  \n  * Hệ thống tiếp nhận hồ sơ đăng ký khai sinh.  \n  * Người dân điền thông tin theo mẫu hộ tịch điện tử, tải lên các giấy tờ cần thiết (Giấy chứng sinh, giấy tờ chứng minh chỗ ở hợp pháp, giấy tờ chứng minh quan hệ nếu có).  \n  * Hệ thống thông báo hẹn trả kết quả qua Cổng Dịch vụ công, ứng dụng VNeID và tin nhắn SMS.\n\n- **Bước 3: Giải quyết đăng ký khai sinh**  \n  * Công chức hộ tịch thực hiện giải quyết ngay trong ngày làm việc.  \n  * Trường hợp cần xác minh các nội dung trong tờ khai, thời hạn giải quyết không quá **03 ngày làm việc**.\n\n- **Bước 4: Thực hiện các thủ tục liên thông (Tự động)**  \n  * Sau khi cấp **Giấy chứng sinh** (hoặc Trích lục khai sinh), hệ thống sẽ tự động chuyển dữ liệu đến Hệ thống quản lý cư trú để thực hiện đăng ký thường trú cho trẻ và cấp thẻ BHYT cho trẻ dưới 6 tuổi.\n  * Kết quả điện tử có giá trị pháp lý tương đương bản giấy.\n\n**2. Quy trình thực hiện (Hình thức trực tiếp)**  \nNếu anh/chị lựa chọn nộp hồ sơ trực tiếp tại UBND cấp xã/huyện:\n- **Bước 1:** Chuẩn bị hồ sơ gồm: Giấy chứng sinh, giấy tờ chứng minh chỗ ở hợp pháp, giấy tờ tùy thân của cha/mẹ.\n- **Bước 2:** Nộp hồ sơ tại bộ phận \"Một cửa\" của UBND cấp xã/huyện có thẩm quyền.\n- **Bước 3:** Cán bộ tiếp nhận kiểm tra hồ sơ. Nếu đầy đủ, hợp lệ sẽ tiếp nhận và hẹn trả kết quả (thường trong 01 ngày làm việc, hoặc ngay trong ngày nếu nộp trước 15h).\n- **Bước 4:** Đến nhận Giấy khai sinh theo thời gian đã hẹn.\n\n**3. Chi phí và Lệ phí**  \n- Việc đăng ký khai sinh là **miễn phí**.  \n- Phí cấp bản sao trích lục (nếu có yêu cầu) sẽ được thu theo quy định của HĐND tỉnh nơi thực hiện thủ tục.\n\n**4. Thời gian giải quyết**  \n- **Không quá 01 ngày làm việc** kể từ khi nhận được hồ sơ hợp lệ.\n- Trong trường hợp cần xác minh: **Không quá 03 ngày làm việc**.\n\nAnh/chị có cần em hướng dẫn chi tiết về cách điền thông tin trên ứng dụng VNeID hoặc danh sách các giấy tờ cụ thể cần chuẩn bị cho trường hợp cụ thể của gia đình mình không ạ?",
-          "createdAt": "2026-07-02T02:05:32.470Z"
-        },
-        {
-          "role": "user",
-          "content": "hello",
-          "createdAt": "2026-07-02T02:31:52.583Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị! Có điều gì em có thể giúp anh/chị hôm nay không?",
-          "createdAt": "2026-07-02T02:31:52.583Z"
-        },
-        {
-          "role": "user",
-          "content": "Cấp lại CCCD",
-          "createdAt": "2026-07-02T03:01:02.173Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị,\n\nEm xin hướng dẫn chi tiết quy trình thực hiện thủ tục **Cấp lại Căn cước công dân (CCCD)** cho công dân Việt Nam trong các trường hợp CCCD bị mất, hỏng hoặc thay đổi thông tin.\n\n**1. Hồ sơ cần chuẩn bị**\n- **Tờ khai cấp lại CCCD:** Theo mẫu quy định hiện hành.\n- **CCCD cũ:** Nếu CCCD bị hỏng hoặc thay đổi thông tin (cần nộp lại CCCD cũ). Trường hợp bị mất thì không cần nộp.\n- **Giấy tờ chứng minh lý do cấp lại:** (Ví dụ: biên bản của công an xác nhận CCCD bị mất, hoặc giấy tờ chứng minh sự thay đổi thông tin nếu có).\n- *Lưu ý:* Nếu thực hiện trực tuyến, anh/chị cần có tài khoản định danh điện tử mức độ 2 trên ứng dụng **VNeID**.\n\n**2. Hình thức thực hiện**\n- **Trực tuyến:** Thực hiện qua ứng dụng **VNeID** hoặc **Cổng Dịch vụ công** (quốc gia hoặc của Bộ Công an).\n- **Trực tiếp:** Nộp hồ sơ tại **Công an cấp huyện** nơi anh/chị thường trú hoặc tạm trú.\n\n**3. Quy trình thực hiện chi tiết**\n- **Đối với hình thức trực tuyến:**\n    - **Bước 1:** Đăng nhập vào ứng dụng VNeID hoặc Cổng Dịch vụ công.\n    - **Bước 2:** Chọn thủ tục \"Cấp lại CCCD\" và khai báo thông tin cá nhân, lý do cấp lại.\n    - **Bước 3:** Tải lên các giấy tờ cần thiết (nếu có) theo yêu cầu hệ thống.\n    - **Bước 4:** Chọn hình thức nhận kết quả (nhận tại công an, qua bưu điện hoặc nhận điện tử nếu được hỗ trợ).\n    - **Bước 5:** Thanh toán lệ phí trực tuyến và nộp hồ sơ.\n    - **Bước 6:** Theo dõi trạng thái xử lý hồ sơ trên hệ thống. Khi có thông báo, anh/chị đến nhận CCCD mới hoặc nhận qua đường bưu điện.\n\n- **Đối với hình thức trực tiếp:**\n    - **Bước 1:** Mang hồ sơ đến Công an cấp huyện.\n    - **Bước 2:** Cán bộ tiếp nhận, kiểm tra hồ sơ và hướng dẫn anh/chị điền tờ khai.\n    - **Bước 3:** Chụp ảnh, lấy dấu vân tay và đo các chỉ số cơ thể (nếu cần thiết).\n    - **Bước 4:** Nộp lệ phí và nhận Phiếu tiếp nhận hồ sơ.\n    - **Bước 5:** Đến nhận CCCD mới theo thời gian hẹn trên Phiếu.\n\n**4. Thời gian và lệ phí**\n- **Thời gian giải quyết:** Thông thường từ **07 đến 15 ngày làm việc** kể từ ngày nhận đủ hồ sơ hợp lệ.\n- **Lệ phí:** **30.000 đồng/lần** (theo quy định hiện hành).\n\n**5. Lưu ý quan trọng**\n- Trong thời gian chờ nhận CCCD mới, anh/chị vẫn có thể sử dụng CCCD cũ (nếu còn hạn và không bị hỏng nặng) hoặc các giấy tờ khác để chứng minh danh tính trong các giao dịch cần thiết.\n- Nếu CCCD bị mất, anh/chị nên làm thủ tục cấp lại ngay để tránh bị người khác lợi dụng.\n\nAnh/chị đang muốn thực hiện thủ tục này theo hình thức trực tuyến hay trực tiếp để em có thể hướng dẫn cụ thể hơn về các bước kỹ thuật hoặc chuẩn bị giấy tờ cho trường hợp của mình ạ?",
-          "createdAt": "2026-07-02T03:01:02.173Z"
-        },
-        {
-          "role": "user",
-          "content": "Hello",
-          "createdAt": "2026-07-02T03:35:00.565Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị! Em có thể giúp gì cho anh/chị về quy trình cấp lại Căn cước công dân (CCCD) không? Nếu anh/chị có câu hỏi cụ thể hay cần thông tin chi tiết, xin hãy cho em biết!",
-          "createdAt": "2026-07-02T03:35:00.565Z"
-        }
-      ]
-    },
-    {
-      "id": "10e5c1cc-96f5-4c8e-9386-00554d84d013",
-      "currentRoute": "/",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [],
-        "recentFacts": []
-      },
-      "createdAt": "2026-07-02T02:28:49.536Z",
-      "updatedAt": "2026-07-02T02:42:18.440Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "giờ tôi mới đẻ, tôi nên làm gì",
-          "createdAt": "2026-07-02T02:28:49.536Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị, chúc mừng anh/chị đã đón thêm thành viên mới trong gia đình.\n\nHiện tại, em đang hỗ trợ tư vấn về quy trình **thủ tục hành chính liên thông** (đăng ký khai sinh, đăng ký thường trú và cấp thẻ BHYT) cho trẻ mới sinh dựa trên các quy định hiện hành, chưa có thông tin chi tiết về chuyên môn y tế hay cách chăm sóc sức khỏe hàng ngày cho bé.\n\nĐể anh/chị hoàn thành các thủ tục pháp lý quan trọng nhất cho bé ngay sau khi sinh, dưới đây là các bước cần thực hiện theo quy định:\n\n**1. Chuẩn bị giấy tờ cần thiết**\nTrước khi tiến hành kê khai, anh/chị cần chuẩn bị sẵn các thông tin và giấy tờ sau:\n- **Giấy chứng sinh:** Do cơ sở y tế nơi bé sinh ra cấp (hoặc giấy tờ thay thế nếu sinh không có y tế).\n- **Thông tin cá nhân:** Thông tin của cha, mẹ (hoặc người giám hộ) và trẻ (họ tên, ngày sinh, giới tính, dân tộc, quốc tịch...).\n- **Tài khoản định danh:** Tài khoản đăng nhập Cổng Dịch vụ công Quốc gia hoặc ứng dụng VNeID.\n- **Thông tin nơi cư trú:** Dự kiến đăng ký thường trú cho trẻ theo cha hay mẹ.\n- **Lựa chọn nơi khám chữa bệnh:** Chọn cơ sở y tế gần nơi cư trú để đăng ký làm nơi khám chữa bệnh ban đầu cho việc cấp thẻ BHYT.\n\n**2. Thực hiện đăng ký trực tuyến**\nAnh/chị có thể nộp hồ sơ thông qua hai kênh chính:\n- **Cổng Dịch vụ công Quốc gia:** Truy cập website `dichvucong.gov.vn`.\n- **Ứng dụng VNeID:** Đăng nhập và chọn mục dịch vụ công liên thông.\n\n**3. Quy trình thực hiện trên hệ thống**\n- **Bước 1:** Đăng nhập tài khoản và chọn nhóm thủ tục: \"Đăng ký khai sinh, đăng ký thường trú, cấp thẻ BHYT cho trẻ em dưới 6 tuổi\".\n- **Bước 2:** Chọn cơ quan thực hiện (thường là UBND cấp xã/phường nơi đăng ký thường trú).\n- **Bước 3:** Kê khai thông tin người yêu cầu (cha/mẹ/người giám hộ) và thông tin trẻ (họ tên, ngày sinh, nơi sinh, giới tính...). Nếu có Giấy chứng sinh điện tử, hệ thống có thể tự động điền một phần thông tin, anh/chị cần kiểm tra lại độ chính xác.\n- **Bước 4:** Tải lên các giấy tờ đính kèm (nếu hệ thống yêu cầu) và chọn hình thức nhận kết quả (nhận trực tiếp hoặc qua đường bưu điện).\n\n**Lưu ý quan trọng:**\n- Nếu bé sinh có yếu tố nước ngoài (cha/mẹ là người nước ngoài hoặc sinh tại nước ngoài), anh/chị cần liên hệ trực tiếp với **Ủy ban nhân dân cấp huyện** để được hướng dẫn thủ tục riêng.\n- Thời hạn thực hiện đăng ký thường trú cho trẻ là trong vòng **60 ngày** kể từ ngày đăng ký khai sinh.\n- Nếu hồ sơ thiếu giấy tờ hoặc thông tin không khớp, hệ thống sẽ thông báo để anh/chị bổ sung ngay, tránh việc hồ sơ bị trả lại.\n\nĐể em hỗ trợ cụ thể hơn, anh/chị vui lòng cho em biết: **Bé sinh tại bệnh viện hay sinh tại nhà, và anh/chị dự định đăng ký thường trú cho bé theo cha hay theo mẹ ạ?**",
-          "createdAt": "2026-07-02T02:28:49.536Z"
-        },
-        {
-          "role": "user",
-          "content": "bé sinh tại bệnh viện á, định thường trú theo cha mà đăng ký thường trú nhiều trường hợp quá, tôi không biết làm sao luôn",
-          "createdAt": "2026-07-02T02:42:18.440Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị, em hiểu sự lo lắng của anh/chị khi có quá nhiều thông tin về các trường hợp đăng ký thường trú. Vì bé sinh tại bệnh viện và anh/chị dự định đăng ký thường trú **theo cha**, quy trình sẽ đơn giản hơn so với việc đăng ký theo người khác.\n\nDưới đây là hướng dẫn chi tiết dựa trên quy định hiện hành để anh/chị yên tâm thực hiện:\n\n**1. Xác định nơi đăng ký thường trú**\n- Khi đăng ký thường trú theo cha, nơi đăng ký là **địa chỉ thường trú của cha** (thường là nơi cha đang cư trú hợp pháp theo sổ hộ khẩu hoặc giấy chứng nhận đăng ký cư trú).\n- Anh/chị cần xác định chính xác: Tỉnh/Thành phố, Quận/Huyện, Phường/Xã và số nhà/đường/thôn/xóm nơi cha đang thường trú.\n\n**2. Thành phần hồ sơ cần chuẩn bị**\nVì đăng ký theo cha (nơi thường trú của cha), anh/chị thường **không cần** thêm các giấy tờ phức tạp như \"ý kiến đồng ý của chủ hộ\" hay \"giấy tờ chứng minh quan hệ nhân thân\" nếu thông tin gia đình đã được hệ thống chia sẻ tự động. Tuy nhiên, anh/chị cần chuẩn bị:\n- **Tờ khai đăng ký thường trú:** Mẫu CT01 (thực hiện trực tuyến trên hệ thống).\n- **Giấy chứng sinh:** Bản điện tử từ bệnh viện hoặc bản chụp rõ nét nếu chưa có dữ liệu điện tử.\n- **Thông tin cư trú của cha:** Hệ thống sẽ tự động kiểm tra dữ liệu cư trú của cha trong Cơ sở dữ liệu quốc gia về dân cư. Nếu cha đã có hộ khẩu thường trú hoặc đăng ký cư trú tại nơi đó, việc này sẽ được thông qua ngay.\n\n**3. Quy trình thực hiện (Liên thông khai sinh - thường trú)**\nAnh/chị thực hiện một lần trên Cổng Dịch vụ công hoặc VNeID:\n- **Bước 1:** Chọn dịch vụ \"Đăng ký khai sinh, đăng ký thường trú, cấp thẻ BHYT cho trẻ em dưới 6 tuổi\".\n- **Bước 2:** Nhập thông tin bé, thông tin cha (người đăng ký thường trú).\n- **Bước 3:** Tại mục \"Nơi đăng ký thường trú\", anh/chị chọn chính xác địa chỉ nơi cha đang thường trú.\n- **Bước 4:** Hệ thống sẽ tự động chuyển hồ sơ đến **Công an cấp xã** để giải quyết phần đăng ký thường trú và **UBND cấp xã** để giải quyết phần khai sinh.\n\n**Lưu ý quan trọng:**\n- Nếu thông tin cư trú của cha **chưa được cập nhật** trong hệ thống quốc gia (ví dụ: cha mới chuyển đến nhưng chưa làm thủ tục thường trú, hoặc cha là người Việt Nam định cư ở nước ngoài chưa có hộ chiếu), hệ thống có thể yêu cầu bổ sung giấy tờ chứng minh chỗ ở hợp pháp.\n- Trường hợp đặc biệt: Nếu anh/chị muốn đăng ký thường trú cho bé tại **địa chỉ khác** với nơi thường trú của cha (ví dụ: ở nhà ông bà), thì mới cần chuẩn bị thêm giấy tờ chứng minh quan hệ nhân thân và ý kiến đồng ý của chủ hộ (theo quy định tại Luật Cư trú).\n\nĐể em xác định chính xác nhất xem anh/chị có cần chuẩn bị thêm giấy tờ gì ngoài Giấy chứng sinh hay không, anh/chị vui lòng cho em biết: **Hiện tại, cha của bé đã có sổ hộ khẩu hoặc đã đăng ký thường trú tại địa chỉ dự định cho bé chưa ạ?**",
-          "createdAt": "2026-07-02T02:42:18.440Z"
-        }
-      ]
-    },
-    {
-      "id": "8691f56e-80d5-4927-b38b-77497113604d",
-      "currentRoute": "/",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [],
-        "recentFacts": []
-      },
-      "createdAt": "2026-07-01T17:40:18.011Z",
-      "updatedAt": "2026-07-01T17:52:17.644Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "xác nhận cư trú là gì",
-          "createdAt": "2026-07-01T17:40:18.011Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào Anh/Chị,\n\nDựa trên thông tin từ hệ thống, **Xác nhận thông tin về cư trú** là một thủ tục hành chính thuộc lĩnh vực đăng ký, quản lý cư trú, do Bộ Công an ban hành và được thực hiện bởi Công an cấp xã.\n\nCụ thể, thủ tục này được hiểu như sau:\n\n**1. Định nghĩa và Mục đích**\n- Đây là thủ tục để cơ quan đăng ký cư trú cấp giấy xác nhận về thông tin cư trú cho các cơ quan, tổ chức hoặc cá nhân có nhu cầu.\n- Mục đích là cung cấp thông tin chính xác về nơi cư trú của công dân theo quy định của pháp luật.\n\n**2. Thông tin cơ bản về thủ tục**\n- **Tên thủ tục:** Xác nhận thông tin về cư trú.\n- **Mã hồ sơ:** 1.010041.\n- **Cơ quan thực hiện:** Công an cấp xã (hoặc Công an Xã).\n- **Mức độ dịch vụ:** Dịch vụ công trực tuyến toàn trình (có thể nộp trực tiếp hoặc trực tuyến).\n- **Lệ phí:** Không thu lệ phí.\n\n**3. Cách thức thực hiện**\nNgười dân có thể thực hiện theo hai cách:\n- **Nộp trực tiếp:** Tại Công an cấp xã nơi thuận lợi (không phụ thuộc vào nơi cư trú của công dân).\n- **Nộp trực tuyến:** Qua Cổng Dịch vụ công quốc gia, Cổng Dịch vụ công Bộ Công an hoặc Ứng dụng VNeID.\n\n**4. Thành phần hồ sơ**\nHồ sơ bao gồm:\n- Tờ khai thay đổi thông tin cư trú, Mẫu CT01 ban hành kèm theo Thông tư số 56/2021/TT-BCA (đã được sửa đổi, bổ sung bởi Thông tư số 53/2025/TT-BCA có hiệu lực từ 01/07/2025).\n- Số lượng: 01 bản chính.\n\n**5. Kết quả thực hiện**\n- Nếu hồ sơ hợp lệ: Cơ quan đăng ký cư trú sẽ cấp xác nhận thông tin về cư trú theo Mẫu CT07 ban hành kèm theo Thông tư số 66/2023/TT-BCA.\n- Nếu từ chối: Cơ quan có thẩm quyền sẽ trả lời bằng văn bản theo Mẫu CT06 ban hành kèm theo Thông tư số 66/2023/TT-BCA và nêu rõ lý do.\n\nAnh/Chị có đang cần hướng dẫn chi tiết về cách soạn thảo đơn đề nghị hoặc quy trình nộp hồ sơ trực tuyến trên ứng dụng VNeID không ạ?",
-          "createdAt": "2026-07-01T17:40:18.011Z"
-        },
-        {
-          "role": "user",
-          "content": "cư trú là gì",
-          "createdAt": "2026-07-01T17:41:02.339Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào Anh/Chị,\n\nEm rất tiếc, trong hệ thống tri thức hiện tại, em **không tìm thấy định nghĩa cụ thể về khái niệm \"cư trú\"** (ví dụ: thường trú, tạm trú, chỗ ở hiện tại là gì) mà chỉ có thông tin chi tiết về **thủ tục hành chính \"Xác nhận thông tin về cư trú\"**.\n\nCụ thể, các tài liệu hiện có chỉ đề cập đến quy trình, hồ sơ và cơ quan thực hiện thủ tục xác nhận này theo quy định của Luật Cư trú và các văn bản hướng dẫn thi hành (như Nghị định 154/2024/NĐ-CP), nhưng không nêu rõ định nghĩa pháp lý của từ \"cư trú\".\n\nĐể đảm bảo tính chính xác và tránh thông tin không đúng quy định, em chưa thể trả lời chi tiết về khái niệm này. Anh/Chị vui lòng mô tả rõ hơn về trường hợp cụ thể Anh/Chị đang gặp phải (ví dụ: phân biệt giữa thường trú và tạm trú, hay điều kiện để đăng ký cư trú) để em hỗ trợ tốt hơn dựa trên các quy định hiện hành ạ?",
-          "createdAt": "2026-07-01T17:41:02.339Z"
-        },
-        {
-          "role": "user",
-          "content": "liên thông khai sinh là sao ta ơi",
-          "createdAt": "2026-07-01T17:43:39.502Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào Anh/Chị,\n\n**Liên thông khai sinh** là một giải pháp hành chính hiện đại, giúp người dân thực hiện đồng thời nhiều thủ tục liên quan đến trẻ mới sinh chỉ trong **một lần** khai báo, thay vì phải đến nhiều cơ quan khác nhau.\n\nCụ thể, thủ tục này được quy định chi tiết tại **Nghị định số 63/2024/NĐ-CP** về thực hiện liên thông điện tử, bao gồm:\n\n*   **Ba thủ tục gộp chung:**\n    *   Đăng ký khai sinh cho trẻ.\n    *   Đăng ký thường trú cho trẻ.\n    *   Cấp thẻ bảo hiểm y tế (BHYT) cho trẻ em dưới 6 tuổi.\n*   **Cách thức hoạt động:**\n    *   Người dân (cha, mẹ hoặc người giám hộ) chỉ cần khai báo một lần trên môi trường điện tử (qua Cổng Dịch vụ công Quốc gia hoặc ứng dụng VNeID).\n    *   Hệ thống sẽ tự động tiếp nhận dữ liệu và phân tách, chuyển đến đúng các cơ quan có thẩm quyền: Cơ quan hộ tịch (UBND cấp xã), Công an cấp xã (đăng ký thường trú) và Bảo hiểm xã hội cấp huyện (cấp thẻ BHYT).\n*   **Lợi ích:**\n    *   Giảm bớt thủ tục giấy tờ, không cần nộp nhiều bộ hồ sơ riêng lẻ.\n    *   Rút ngắn thời gian chờ đợi và không phải di chuyển nhiều nơi.\n    *   Dữ liệu điện tử có ký số từ giấy chứng sinh do cơ sở y tế cấp có thể được liên thông trực tiếp vào hệ thống nếu bệnh viện đã triển khai.\n\nNhư vậy, thay vì phải làm 3 việc riêng biệt, gia đình chỉ cần thực hiện một lần trên hệ thống liên thông là hoàn thành cả 3 thủ tục trên.\n\nAnh/Chị có đang cần hướng dẫn cụ thể về cách đăng nhập và điền tờ khai liên thông khai sinh trên Cổng Dịch vụ công Quốc gia không ạ?",
-          "createdAt": "2026-07-01T17:43:39.502Z"
-        },
-        {
-          "role": "user",
-          "content": "hướng dẫn cụ thể cho tôi mới đẻ đi",
-          "createdAt": "2026-07-01T17:45:48.568Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào Anh/Chị,\n\nChúc mừng gia đình Anh/Chị đã đón thành viên mới! Dưới đây là hướng dẫn cụ thể từng bước để thực hiện thủ tục **Liên thông khai sinh** (bao gồm: Đăng ký khai sinh, Đăng ký thường trú và Cấp thẻ BHYT cho trẻ dưới 6 tuổi) cho trẻ sơ sinh ngay khi vừa mới đẻ, thực hiện trên **Cổng Dịch vụ công Quốc gia** hoặc **Ứng dụng VNeID**.\n\n### **1. Chuẩn bị trước khi thực hiện**\nTheo quy định, trước khi kê khai, Anh/Chị cần chuẩn bị các thông tin và giấy tờ sau:\n-   **Tài khoản định danh điện tử:** Tài khoản đã đăng nhập trên Cổng Dịch vụ công Quốc gia hoặc ứng dụng VNeID.\n-   **Giấy chứng sinh:** Bản gốc điện tử hoặc giấy tờ thay thế do cơ sở y tế nơi trẻ sinh ra cấp.\n-   **Thông tin cá nhân:**\n    -   Thông tin của trẻ (họ tên dự kiến, ngày tháng năm sinh, giới tính).\n    -   Thông tin của cha, mẹ hoặc người giám hộ (CCCD/CMND, số hộ khẩu nếu có).\n    -   Thông tin nơi cư trú dự kiến đăng ký thường trú cho trẻ.\n-   **Lựa chọn nơi khám chữa bệnh:** Thông tin về cơ sở y tế dự kiến để làm thẻ BHYT ban đầu cho trẻ.\n-   **Giấy tờ chứng minh chỗ ở hợp pháp:** (Nếu trẻ đăng ký thường trú khác nơi thường trú của cha/mẹ).\n\n### **2. Quy trình thực hiện chi tiết (4 Bước)**\n\n**Bước 1: Đăng nhập và chọn dịch vụ**\n-   Truy cập vào **Cổng Dịch vụ công Quốc gia** (dichvucong.gov.vn) hoặc mở **Ứng dụng VNeID**.\n-   Đăng nhập bằng tài khoản định danh điện tử mức 2.\n-   Chọn mục **\"Dịch vụ công\"** > Tìm kiếm hoặc chọn nhóm thủ tục: **\"Liên thông khai sinh, khai tử, đăng ký thường trú, cấp thẻ BHYT cho trẻ em dưới 6 tuổi\"**.\n\n**Bước 2: Kê khai thông tin và chọn cơ quan thực hiện**\n-   Chọn thủ tục cụ thể: **Đăng ký khai sinh, đăng ký thường trú, cấp thẻ BHYT**.\n-   Chọn **Cơ quan thực hiện**: Hệ thống sẽ tự động định vị hoặc Anh/Chị chọn UBND cấp xã (nơi đăng ký khai sinh), Công an cấp xã (nơi đăng ký thường trú) và BHXH cấp huyện (nơi cấp thẻ BHYT) theo địa chỉ nơi cư trú dự kiến.\n-   **Điền thông tin tờ khai điện tử:**\n    -   Nhập thông tin trẻ, cha, mẹ.\n    -   Chọn hình thức đăng ký thường trú (theo cha hay theo mẹ).\n    -   Nhập thông tin nơi khám chữa bệnh ban đầu.\n    -   Xác nhận thông tin cư trú (nếu hệ thống yêu cầu xác nhận qua VNeID).\n\n**Bước 3: Đính kèm giấy tờ và Chọn hình thức nhận kết quả**\n-   **Tải lên giấy tờ:** Hệ thống có thể yêu cầu tải lên bản scan/chụp ảnh **Giấy chứng sinh**, **Giấy tờ chứng minh chỗ ở hợp pháp** (nếu cần). Nếu dữ liệu đã có trong cơ sở dữ liệu quốc gia, Anh/Chị có thể chọn khai thác dữ liệu để không cần tải lên.\n-   **Chọn hình thức nhận kết quả:**\n    *   Nhận bản điện tử (hiển thị trên VNeID/Cổng Dịch vụ công).\n    *   Nhận bản giấy (gửi qua đường bưu điện hoặc đến nhận trực tiếp).\n-   **Thanh toán lệ phí:** Phần đăng ký khai sinh, thường trú và cấp thẻ BHYT thường được **miễn lệ phí**. Nếu Anh/Chị yêu cầu cấp bản sao Giấy khai sinh, hệ thống sẽ hiển thị mức phí (thường khoảng 8.000 đồng/bản) trước khi nộp.\n\n**Bước 4: Gửi hồ sơ và Theo dõi**\n-   Kiểm tra lại toàn bộ thông tin đã kê khai.\n-   Tích chọn **\"Cam kết chịu trách nhiệm trước pháp luật về lời khai\"**.\n-   Nhấn **\"Gửi hồ sơ\"**.\n-   Hệ thống sẽ cấp **Mã hồ sơ**. Anh/Chị ghi lại mã này để theo dõi tiến độ xử lý trên mục \"Quản lý hồ sơ đã nộp\".\n\n### **3. Kết quả nhận được**\nSau khi hồ sơ được xử lý xong, Anh/Chị sẽ nhận được:\n-   **Giấy khai sinh** (bản điện tử và bản giấy nếu có yêu cầu).\n-   **Thông báo kết quả đăng ký thường trú**.\n-   **Thẻ BHYT** (bản điện tử trên VNeID và bản giấy nếu có yêu cầu).\n-   Kết quả có thể được gửi thông báo qua SMS, ứng dụng VNeID hoặc Cổng Dịch vụ công.\n\n**Lưu ý quan trọng:**\n-   Thủ tục này chỉ áp dụng cho trẻ **dưới 6 tuổi**.\n-   Nếu Anh/Chị chỉ muốn làm một trong ba thủ tục (ví dụ chỉ khai sinh), vẫn có thể thực hiện nhưng cần chọn đúng mục trên hệ thống.\n-   Hệ thống liên thông sẽ tự động chuyển dữ liệu đến các cơ quan: UBND cấp xã, Công an cấp xã và BHXH cấp huyện, Anh/Chị không cần phải tự tách hồ sơ đi từng nơi.\n\nAnh/Chị đã có Giấy chứng sinh của bé chưa và bé dự kiến sẽ đăng ký thường trú theo cha hay theo mẹ ạ?",
-          "createdAt": "2026-07-01T17:45:48.568Z"
-        },
-        {
-          "role": "user",
-          "content": "cư trú là gì ta ơi tôi không hiểu",
-          "createdAt": "2026-07-01T17:51:47.689Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào Anh/Chị,\n\nEm rất hiểu sự băn khoăn của Anh/Chị. Để giải thích đơn giản và dễ hiểu nhất, **Cư trú** chính là việc công dân **sống ổn định tại một nơi cụ thể** và thực hiện thủ tục đăng ký với cơ quan nhà nước để cơ quan đó biết được Anh/Chị đang ở đâu, từ đó quản lý và hỗ trợ các quyền lợi công dân.\n\nTheo quy định của **Luật Cư trú 2020**, khái niệm này được cụ thể hóa qua hai hình thức chính mà Anh/Chị thường gặp hàng ngày:\n\n**1. Thường trú**\n-   Là nơi Anh/Chị sinh sống **ổn định, lâu dài** và đã được đăng ký với cơ quan công an.\n-   Đây chính là \"địa chỉ thường trú\" hay \"hộ khẩu\" mà mọi người thường nhắc đến trước đây.\n-   Tại nơi thường trú, Anh/Chị có quyền sử dụng các dịch vụ công như: làm CCCD, đăng ký khai sinh cho con, đăng ký kinh doanh, hay thực hiện các thủ tục hành chính liên quan đến địa phương đó.\n\n**2. Tạm trú**\n-   Là nơi Anh/Chị sinh sống **chưa được đăng ký thường trú** nhưng có thời gian dự kiến từ **30 ngày trở lên**.\n-   Ví dụ: Anh/Chị đi làm thuê, học tập, hoặc công tác tại một địa phương khác với nơi thường trú trong thời gian dài (trên 30 ngày) thì cần đăng ký tạm trú tại nơi đó.\n-   Việc đăng ký tạm trú giúp cơ quan quản lý biết được Anh/Chị đang sống ở đâu để hỗ trợ khi có vấn đề phát sinh hoặc trong các trường hợp khẩn cấp.\n\n**Điều kiện để được đăng ký cư trú:**\nĐể có thể đăng ký (dù là thường trú hay tạm trú), Anh/Chị cần có **chỗ ở hợp pháp**. Chỗ ở hợp pháp là nơi có căn cứ pháp lý để sử dụng, bao gồm:\n-   Nhà ở thuộc quyền sở hữu của mình.\n-   Nhà ở do thuê, mượn, ở nhờ của người khác (có hợp đồng hoặc văn bản đồng ý).\n-   Phương tiện giao thông (như xe ô tô, tàu thuyền) được dùng làm nơi ở hợp pháp theo quy định.\n\nTóm lại, **Cư trú** là việc xác định rõ \"Anh/Chị đang sống ở đâu\" một cách hợp pháp để Nhà nước quản lý và Anh/Chị dễ dàng thực hiện các quyền lợi của mình.\n\nAnh/Chị đang có dự định chuyển đến sinh sống tại địa phương mới hay cần hỗ trợ cụ thể về thủ tục đăng ký thường trú/tạm trú cho trường hợp nào ạ?",
-          "createdAt": "2026-07-01T17:51:47.689Z"
-        },
-        {
-          "role": "user",
-          "content": "khai tử là gì ta ơi",
-          "createdAt": "2026-07-01T17:52:17.644Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào Anh/Chị,\n\n**Khai tử** là thủ tục hành chính bắt buộc để đăng ký việc mất của một công dân với cơ quan nhà nước có thẩm quyền. Khi một người qua đời, việc khai tử giúp cơ quan chức năng cập nhật thông tin vào hệ thống hộ tịch, từ đó cấp **Giấy chứng tử** chính thức.\n\nDưới đây là những thông tin cốt lõi về thủ tục này theo quy định hiện hành:\n\n*   **Mục đích chính:**\n    *   Xác nhận pháp lý về việc một công dân đã qua đời.\n    *   Làm cơ sở để giải quyết các quyền lợi pháp lý sau khi mất như: **Bảo hiểm nhân thọ**, **Bảo hiểm xã hội** (hưởng chế độ tử tuất, mai táng phí), **thừa kế tài sản**, và **hủy bỏ các giấy tờ cá nhân** (CCCD, sổ đỏ, v.v.).\n\n*   **Thời hạn thực hiện:**\n    *   Người có trách nhiệm phải đi đăng ký khai tử trong thời hạn **15 ngày** kể từ ngày người đó qua đời.\n\n*   **Người có trách nhiệm đi khai:**\n    *   Vợ, chồng, con, cha, mẹ hoặc người thân thích khác của người chết.\n    *   Trường hợp người chết không có người thân thích, thì đại diện của cơ quan, tổ chức, cá nhân liên quan có trách nhiệm thực hiện.\n\n*   **Cơ quan thực hiện:**\n    *   Ủy ban Nhân dân (UBND) cấp xã, phường, thị trấn nơi người chết cư trú cuối cùng hoặc nơi người chết chết.\n\n*   **Giấy tờ cần chuẩn bị (căn cứ theo quy định):**\n    *   **Giấy báo tử** hoặc giấy tờ thay thế do cơ quan có thẩm quyền cấp (bản chính).\n    *   **Giấy tờ tùy thân** của người đi khai tử (CCCD, CMND, Hộ chiếu...).\n    *   Tờ khai đăng ký khai tử (theo mẫu).\n    *   Trong một số trường hợp đặc biệt (người chết đã lâu, không có giấy báo tử), cần có văn bản, tài liệu chứng minh sự kiện chết do cơ quan có thẩm quyền cấp.\n\nViệc thực hiện thủ tục này đúng thời hạn và đầy đủ giấy tờ sẽ giúp gia đình nhanh chóng nhận được Giấy chứng tử để giải quyết các vấn đề hậu sự và quyền lợi liên quan.\n\nAnh/Chị có cần hướng dẫn cụ thể về quy trình nộp hồ sơ khai tử qua đường bưu điện hoặc trực tuyến trên ứng dụng VNeID không ạ?",
-          "createdAt": "2026-07-01T17:52:17.644Z"
+          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
+          "createdAt": "2026-07-03T08:08:49.451Z"
         }
       ]
     }
