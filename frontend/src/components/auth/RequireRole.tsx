@@ -28,6 +28,7 @@ const RequireRole: React.FC<RequireRoleProps> = ({ role, children }) => {
             navigate(`/dang-nhap?role=${role}`, { replace: true, state: { from: location.pathname } });
         };
 
+        return (
             <div style={{ minHeight: '65vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
                 <div className="auth-modal-overlay" onClick={handleCancel}>
                     <div
