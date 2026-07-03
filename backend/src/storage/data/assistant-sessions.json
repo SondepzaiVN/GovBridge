@@ -8,7 +8,10 @@
         "formSnapshot": {
           "thuTuc": "dktt",
           "loaiDKTT": "lap_ho_moi",
-          "hoTen": "Trần Minh Hùng"
+          "hoTen": "Trần Minh Hùng",
+          "ngaySinh": "2006-02-23",
+          "danToc": "kinh",
+          "cccd": "093206008464"
         },
         "candidateCases": [],
         "recentFacts": [
@@ -23,6 +26,54 @@
             "value": "23/2/2006",
             "confidence": 0.9,
             "source": "chat"
+          },
+          {
+            "fieldHint": "name",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "name",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "họ tên",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "null",
+            "value": "Chú",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "hoTen",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "danToc",
+            "value": "kinh",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "cccd",
+            "value": "093206008464",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "sdt",
+            "value": "0793920853",
+            "confidence": 0.9,
+            "source": "chat"
           }
         ],
         "knowledgeSession": {
@@ -31,37 +82,107 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T19:57:46.093Z",
+      "updatedAt": "2026-07-03T20:10:04.868Z",
       "messages": [
         {
           "role": "user",
-          "content": "Đến trang đăng ký thường trú",
-          "createdAt": "2026-07-03T19:56:59.068Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T19:56:59.068Z"
-        },
-        {
-          "role": "user",
-          "content": "Giúp tôi họ tên trần minh hùng",
-          "createdAt": "2026-07-03T19:57:21.317Z"
+          "content": "Giúp tôi thông tin họ tên trần minh hùng",
+          "createdAt": "2026-07-03T20:06:17.689Z"
         },
         {
           "role": "assistant",
           "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T19:57:21.317Z"
+          "createdAt": "2026-07-03T20:06:17.689Z"
         },
         {
           "role": "user",
-          "content": "Giúp tôi ngày sinh 23/2/2006",
-          "createdAt": "2026-07-03T19:57:46.093Z"
+          "content": "Dân tộc giúp tôi dân tộc và dân tộc kinh",
+          "createdAt": "2026-07-03T20:06:51.069Z"
         },
         {
           "role": "assistant",
           "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T19:57:46.093Z"
+          "createdAt": "2026-07-03T20:06:51.069Z"
+        },
+        {
+          "role": "user",
+          "content": "Của tôi có tôn giáo",
+          "createdAt": "2026-07-03T20:07:14.314Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn có muốn cung cấp thêm thông tin về tôn giáo của mình không? Hiện tại, bạn chưa điền thông tin này trong biểu mẫu.\n\nBạn có muốn bổ sung thông tin về tôn giáo không?",
+          "createdAt": "2026-07-03T20:07:14.314Z"
+        },
+        {
+          "role": "user",
+          "content": "Thông tin tôn giáo giúp tôi",
+          "createdAt": "2026-07-03T20:07:47.514Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn cần cung cấp thông tin về tôn giáo của mình trong biểu mẫu. Các tùy chọn tôn giáo bao gồm:\n- Không\n- Phật giáo\n- Công giáo\n- Tin lành\n- Cao Đài\n- Hoà Hảo\n- Hồi giáo\n- Khác\n\nBạn hãy chọn một trong các tùy chọn trên để điền vào biểu mẫu nhé!",
+          "createdAt": "2026-07-03T20:07:47.514Z"
+        },
+        {
+          "role": "user",
+          "content": "Phật giáo",
+          "createdAt": "2026-07-03T20:08:31.242Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đã chọn tôn giáo là \"Phật giáo\".",
+          "createdAt": "2026-07-03T20:08:31.242Z"
+        },
+        {
+          "role": "user",
+          "content": "Đúng vậy hãy chọn giúp tôi",
+          "createdAt": "2026-07-03T20:08:41.932Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôn giáo đã được chọn là \"Phật giáo\". Bạn có cần giúp tôi chọn thêm thông tin gì khác không?",
+          "createdAt": "2026-07-03T20:08:41.932Z"
+        },
+        {
+          "role": "user",
+          "content": "Thay đổi thông tin trong biểu mẫu tôn giáo thành phật giáo",
+          "createdAt": "2026-07-03T20:08:58.988Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôn giáo đã được thay đổi thành \"Phật giáo\". Bạn còn cần hỗ trợ gì thêm không?",
+          "createdAt": "2026-07-03T20:08:58.988Z"
+        },
+        {
+          "role": "user",
+          "content": "điền giúp tôi thông tin tôn giáo: Phật giáo",
+          "createdAt": "2026-07-03T20:09:18.981Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôn giáo đã được điền là \"Phật giáo\". Bạn còn cần nhập thêm thông tin nào không?",
+          "createdAt": "2026-07-03T20:09:18.981Z"
+        },
+        {
+          "role": "user",
+          "content": "điền giúp tôi số căn cước công dân là 093206008464",
+          "createdAt": "2026-07-03T20:09:43.724Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T20:09:43.724Z"
+        },
+        {
+          "role": "user",
+          "content": "Điền giúp tôi số điện thoại liên hệ là 0793920853",
+          "createdAt": "2026-07-03T20:10:04.868Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-03T20:10:04.868Z"
         }
       ]
     },

@@ -470,7 +470,7 @@ const ChatbotWidget: React.FC = () => {
                                 variant="panel"
                                 autoFocus
                                 onSend={sendMessage}
-                                disabled={state.isLoading || state.requiresUserAction}
+                                disabled={state.isLoading || (state.requiresUserAction && state.confirmationSource === 'voice')}
                             />
                         </section>
                     </div>
@@ -494,7 +494,7 @@ const ChatbotWidget: React.FC = () => {
                     {!state.isMinimized && (
                         <>
                             <ChatWindow messages={state.messages} isLoading={state.isLoading} />
-                            <ChatInput onSend={sendMessage} disabled={state.isLoading || state.requiresUserAction} />
+                            <ChatInput onSend={sendMessage} disabled={state.isLoading || (state.requiresUserAction && state.confirmationSource === 'voice')} />
                         </>
                     )}
                 </div>
