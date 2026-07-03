@@ -363,7 +363,7 @@ const ChatbotWidget: React.FC = () => {
     const desktopPanelRef = useRef<HTMLElement | null>(null);
 
     const handleClose = () => {
-        if (state.requiresUserAction) return;
+        if (state.requiresUserAction && state.confirmationSource === 'voice') return;
         setIsExiting(true);
         window.setTimeout(() => {
             dispatch({ type: 'CLOSE' });
@@ -412,7 +412,7 @@ const ChatbotWidget: React.FC = () => {
             window.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('pointerdown', handlePointerDown);
         };
-    }, [state.isOpen, state.requiresUserAction]);
+    }, [state.isOpen, state.requiresUserAction, state.confirmationSource]);
 
     return (
         <>
@@ -437,13 +437,13 @@ const ChatbotWidget: React.FC = () => {
             {state.isOpen && (
                 <>
                     <div
-                        className={`chatbot-soft-backdrop${state.requiresUserAction ? ' chatbot-soft-backdrop--confirmation' : ''}`}
+                        className={`chatbot-soft-backdrop${state.requiresUserAction && state.confirmationSource === 'voice' ? ' chatbot-soft-backdrop--confirmation' : ''}`}
                         aria-hidden="true"
                     />
                     <div className={`chatbot-desktop-overlay ${isExiting ? 'chatbot-exit' : 'chatbot-enter'}`}>
                         <section
                             ref={desktopPanelRef}
-                            className={`chatbot-overlay-panel${state.requiresUserAction ? ' chatbot-overlay-panel--confirmation' : ''}`}
+                            className={`chatbot-overlay-panel${state.requiresUserAction && state.confirmationSource === 'voice' ? ' chatbot-overlay-panel--confirmation' : ''}`}
                             role="dialog"
                             aria-label="Trợ lý AI Dịch Vụ Công"
                             aria-modal="true"
@@ -453,9 +453,9 @@ const ChatbotWidget: React.FC = () => {
                                     className="chatbot-panel-control chatbot-panel-control--center"
                                     type="button"
                                     onClick={handleClose}
-                                    title={state.requiresUserAction ? 'Vui lòng hoàn tất xác nhận' : 'Thu nhỏ'}
-                                    aria-label={state.requiresUserAction ? 'Đang chờ xác nhận, chưa thể thu nhỏ' : 'Thu nhỏ chatbot'}
-                                    disabled={state.requiresUserAction}
+                                    title={state.requiresUserAction && state.confirmationSource === 'voice' ? 'Vui lòng hoàn tất xác nhận' : 'Thu nhỏ'}
+                                    aria-label={state.requiresUserAction && state.confirmationSource === 'voice' ? 'Đang chờ xác nhận, chưa thể thu nhỏ' : 'Thu nhỏ chatbot'}
+                                    disabled={state.requiresUserAction && state.confirmationSource === 'voice'}
                                 >
                                     <ChevronDown size={18} />
                                 </button>
