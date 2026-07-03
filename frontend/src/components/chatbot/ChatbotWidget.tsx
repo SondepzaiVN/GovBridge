@@ -581,11 +581,7 @@ export const ChatbotFAB: React.FC = () => {
                     role="status"
                     aria-live="polite"
                 >
-                    {isWaitingForConfirmation
-                        ? 'Vui lòng xác nhận trong khung chat'
-                        : isRealtime
-                          ? callStatusLabel
-                          : 'Gọi AI realtime'}
+                    {isRealtime ? callStatusLabel : 'Gọi AI realtime'}
                 </div>
             </div>
 
