@@ -187,7 +187,6 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
                         type: 'select',
                         required: true,
                         options: provinceOptions,
-                        value: 'Thành phố Cần Thơ',
                     },
                     {
                         id: 'ltks_phuongKhaiSinh',
@@ -227,7 +226,6 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
                         type: 'select',
                         required: true,
                         options: provinceOptions,
-                        value: 'Thành phố Cần Thơ',
                     },
                     {
                         id: 'ltks_phuongThuongTru',
@@ -851,6 +849,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
     const [loadingWardFields, setLoadingWardFields] = React.useState<Record<string, boolean>>({});
     const [isLoadingProvinces, setIsLoadingProvinces] = React.useState(true);
     const [isSameRegistrationArea, setIsSameRegistrationArea] = React.useState(true);
+    const wardRequestKeysRef = React.useRef(new Set<string>());
 
     const currentStep = parseStep(stepSlug);
     const current = steps[currentStep - 1];
@@ -874,6 +873,16 @@ const LienThongKhaiSinhPage: React.FC = () => {
         administrativeProvinceOptions.forEach((option) => nextMap.set(option.label, option.value));
         return nextMap;
     }, [administrativeProvinceOptions]);
+    const selectedProvinceLoadKey = React.useMemo(
+        () =>
+            JSON.stringify(
+                Object.keys(addressFieldPairs).map((provinceFieldId) => [
+                    provinceFieldId,
+                    formState.values[provinceFieldId] ?? '',
+                ]),
+            ),
+        [formState.values],
+    );
 
     React.useEffect(() => {
         const controller = new AbortController();
@@ -893,37 +902,41 @@ const LienThongKhaiSinhPage: React.FC = () => {
     }, []);
 
     React.useEffect(() => {
-        const requestsToLoad = Object.keys(addressFieldPairs).flatMap((provinceFieldId) => {
-            const provinceLabel = formState.values[provinceFieldId] ?? fieldDefaults.get(provinceFieldId) ?? '';
+        const selectedProvinceEntries = JSON.parse(selectedProvinceLoadKey) as Array<[string, string]>;
+        const requestsToLoad = selectedProvinceEntries.flatMap(([provinceFieldId, provinceLabel]) => {
             const provinceCode = provinceCodeByLabel.get(provinceLabel);
-            if (!provinceCode || wardOptionsByProvinceField[provinceFieldId] || loadingWardFields[provinceFieldId])
+            const requestKey = `${provinceFieldId}:${provinceCode}`;
+            if (!provinceCode || wardOptionsByProvinceField[provinceFieldId] || wardRequestKeysRef.current.has(requestKey))
                 return [];
-            return [{ provinceFieldId, provinceCode }];
+            return [{ provinceFieldId, provinceCode, requestKey }];
         });
 
         if (requestsToLoad.length === 0) return;
 
         const controller = new AbortController();
-        Promise.resolve().then(() => {
-            setLoadingWardFields((previous) => ({
-                ...previous,
-                ...Object.fromEntries(requestsToLoad.map(({ provinceFieldId }) => [provinceFieldId, true])),
-            }));
-        });
+        requestsToLoad.forEach(({ requestKey }) => wardRequestKeysRef.current.add(requestKey));
+        setLoadingWardFields((previous) => ({
+            ...previous,
+            ...Object.fromEntries(requestsToLoad.map(({ provinceFieldId }) => [provinceFieldId, true])),
+        }));
 
         Promise.all(
-            requestsToLoad.map(async ({ provinceFieldId, provinceCode }) => {
+            requestsToLoad.map(async ({ provinceFieldId, provinceCode, requestKey }) => {
                 try {
                     const options = await administrativeUnitService.getWards(provinceCode, controller.signal);
-                    return { provinceFieldId, options: options.map((option) => option.label) };
+                    return { provinceFieldId, requestKey, options: options.map((option) => option.label) };
                 } catch (error: unknown) {
                     if (error instanceof DOMException && error.name === 'AbortError') return;
-                    return { provinceFieldId, options: [] };
+                    return { provinceFieldId, requestKey, options: [] };
                 }
             }),
         ).then((results) => {
+            requestsToLoad.forEach(({ requestKey }) => wardRequestKeysRef.current.delete(requestKey));
             if (controller.signal.aborted) return;
-            const loadedResults = results.filter(Boolean) as Array<{ provinceFieldId: string; options: string[] }>;
+            const loadedResults = results.filter(Boolean) as Array<{
+                provinceFieldId: string;
+                options: string[];
+            }>;
             setWardOptionsByProvinceField((previous) => ({
                 ...previous,
                 ...Object.fromEntries(loadedResults.map(({ provinceFieldId, options }) => [provinceFieldId, options])),
@@ -934,8 +947,11 @@ const LienThongKhaiSinhPage: React.FC = () => {
             }));
         });
 
-        return () => controller.abort();
-    }, [fieldDefaults, formState.values, loadingWardFields, provinceCodeByLabel, wardOptionsByProvinceField]);
+        return () => {
+            controller.abort();
+            requestsToLoad.forEach(({ requestKey }) => wardRequestKeysRef.current.delete(requestKey));
+        };
+    }, [provinceCodeByLabel, selectedProvinceLoadKey, wardOptionsByProvinceField]);
 
     React.useEffect(() => {
         Object.entries(addressFieldPairs).forEach(([provinceFieldId, wardFieldId]) => {
@@ -1006,7 +1022,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
 
         const provinceFieldId = wardToProvinceFieldMap[field.id];
         if (provinceFieldId) {
-            const provinceValue = formState.values[provinceFieldId] ?? fieldDefaults.get(provinceFieldId) ?? '';
+            const provinceValue = formState.values[provinceFieldId] ?? '';
             return {
                 ...field,
                 options: provinceValue ? (wardOptionsByProvinceField[provinceFieldId] ?? []) : [],
