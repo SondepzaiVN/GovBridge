@@ -10684,6 +10684,11 @@ a:hover {
     color: #22743b;
 }
 
+.officer-status.approved {
+    background: #e6f4ed;
+    color: #176b42;
+}
+
 .officer-status.rejected {
     background: #fde9e8;
     color: #a32824;
@@ -11605,4 +11610,77 @@ a:hover {
     text-align: center;
     padding: 20px;
     color: #525b64;
+}
+
+/* Citizen application dashboard reuses the officer read-only workspace. */
+.citizen-workspace.list-only {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.citizen-detail-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.citizen-detail-close {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border: 1px solid #d4d9de;
+    border-radius: 3px;
+    background: #fff;
+    color: #5f6872;
+    cursor: pointer;
+}
+
+.citizen-detail-close:hover {
+    border-color: #9d211d;
+    color: #9d211d;
+}
+
+.citizen-empty-attachments {
+    color: #737c85;
+    font-size: 0.66rem;
+}
+
+.citizen-application-table td:nth-child(2),
+.citizen-application-table td:nth-child(3) {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+    .citizen-application-table th:nth-child(3),
+    .citizen-application-table td:nth-child(3) {
+        display: none;
+    }
+
+    .citizen-application-table th:nth-child(1) {
+        width: 39%;
+    }
+
+    .citizen-application-table th:nth-child(2) {
+        width: 20%;
+    }
+
+    .citizen-application-table th:nth-child(4) {
+        width: 33%;
+    }
+
+    .citizen-application-table th:nth-child(5) {
+        width: 8%;
+    }
+
+    .officer-attachment-item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .officer-attachment-actions {
+        width: 100%;
+        margin-left: 0;
+    }
 }
