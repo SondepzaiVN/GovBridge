@@ -46,19 +46,23 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const confirmFill = (fields: Record<string, string>) => {
     fillFields(fields);
     setFillDecision('confirmed');
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
     handleAIResponse({
       intent: 'CHAT',
       message: 'Đã điền các thông tin bạn vừa xác nhận. Bạn kiểm tra lại trên biểu mẫu trước khi tiếp tục nhé.',
       suggestions: ['Cần điền thêm gì?', 'Giải thích trường tiếp theo'],
     });
+    setTimeout(() => dispatch({ type: 'CLOSE' }), 600);
   };
 
   const cancelFill = () => {
     setFillDecision('cancelled');
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
     handleAIResponse({
       intent: 'CHAT',
       message: 'Mình chưa thay đổi biểu mẫu. Bạn có thể gửi lại thông tin đúng khi sẵn sàng.',
     });
+    setTimeout(() => dispatch({ type: 'CLOSE' }), 400);
   };
 
   const renderNavConfirmCard = () => (
@@ -129,6 +133,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
               }
 
               fillFields(fields);
+              dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
               handleAIResponse({
                 intent: 'FILL_FORM',
                 message: 'Đã tự động điền thông tin từ CCCD vào form.\n\nVui lòng kiểm tra và bổ sung các thông tin còn thiếu trước khi nộp hồ sơ.',
@@ -136,16 +141,18 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
                 suggestions: ['Nút nộp ở đâu?', 'Cần điền thêm gì?', 'Cảm ơn'],
               });
 
-              if (window.innerWidth <= 768) {
-                setTimeout(() => dispatch({ type: 'CLOSE' }), 1200);
-              }
+              setTimeout(() => dispatch({ type: 'CLOSE' }), 800);
             }}
           >
             Xác nhận và điền
           </button>
           <button
             className="btn btn-ghost btn-sm"
-            onClick={() => sendMessage('Thông tin CCCD cần sửa lại')}
+            onClick={() => {
+              dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
+              setTimeout(() => dispatch({ type: 'CLOSE' }), 400);
+              sendMessage('Thông tin CCCD cần sửa lại');
+            }}
           >
             Hủy
           </button>

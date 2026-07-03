@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bot, ChevronDown, Minimize2, Phone, RotateCcw, Sparkles, X } from 'lucide-react';
-import { smartbotService } from '../../api/aiServices';
+import { Bot, ChevronDown, Mic, MicOff, Minimize2, Phone, RotateCcw, Sparkles, X } from 'lucide-react';
+import { smartbotService, sttService, ttsService } from '../../api/aiServices';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import ChatInput from './ChatInput';
 import ChatWindow from './ChatWindow';
@@ -114,6 +114,153 @@ const WelcomeState: React.FC = () => {
     );
 };
 
+const getCallStatusLabel = (
+    callStatus: ReturnType<typeof useChatbot>['state']['callStatus'],
+    callStatusText: string | null,
+) => callStatusText ?? (
+    callStatus === 'connecting' ? 'Đang kết nối VNPT SmartVoice...'
+        : callStatus === 'listening' ? 'Đang lắng nghe...'
+        : callStatus === 'transcribing' ? 'Đang nhận dạng giọng nói...'
+        : callStatus === 'thinking' ? 'Trợ lý đang suy nghĩ...'
+        : callStatus === 'speaking' ? 'Trợ lý đang trả lời...'
+        : callStatus === 'error' ? 'Cuộc gọi gặp lỗi'
+        : 'Sẵn sàng lắng nghe'
+);
+
+const VoiceCallController: React.FC = () => {
+    const { state, dispatch, sendMessage, handleAIResponse } = useChatbot();
+    const stateRef = useRef(state);
+    const sendMessageRef = useRef(sendMessage);
+    const isFinishingRef = useRef(false);
+
+    useEffect(() => {
+        stateRef.current = state;
+        sendMessageRef.current = sendMessage;
+    }, [state, sendMessage]);
+
+    const finishVoiceUtterance = async () => {
+        if (!stateRef.current.isCallMode || !stateRef.current.isListening || isFinishingRef.current) return;
+        isFinishingRef.current = true;
+        let shouldClearLoading = true;
+
+        try {
+            dispatch({ type: 'SET_LISTENING', payload: false });
+            dispatch({
+                type: 'SET_CALL_STATUS',
+                payload: { status: 'transcribing', text: 'Đang gửi giọng nói lên VNPT SmartVoice...' },
+            });
+            dispatch({ type: 'SET_LOADING', payload: true });
+
+            const transcript = (await sttService.stopListening()).trim();
+            if (!stateRef.current.isCallMode) return;
+
+            if (transcript) {
+                dispatch({ type: 'SET_LOADING', payload: false });
+                dispatch({
+                    type: 'SET_CALL_STATUS',
+                    payload: { status: 'thinking', text: 'Trợ lý đang suy nghĩ...' },
+                });
+                shouldClearLoading = false;
+                await sendMessageRef.current(transcript);
+            } else {
+                dispatch({
+                    type: 'SET_CALL_STATUS',
+                    payload: { status: 'listening', text: 'Không nghe thấy câu nói rõ ràng. Tôi đang lắng nghe lại...' },
+                });
+            }
+        } catch (error) {
+            dispatch({ type: 'SET_CALL_MODE', payload: false });
+            dispatch({ type: 'SET_LISTENING', payload: false });
+            dispatch({
+                type: 'SET_CALL_STATUS',
+                payload: { status: 'error', text: 'Không thể nhận dạng giọng nói.' },
+            });
+            console.warn('[VoiceCallController] STT failed:', error);
+            handleAIResponse({
+                intent: 'CHAT',
+                message: error instanceof Error
+                    ? `Không thể nhận dạng giọng nói: ${error.message}`
+                    : 'Không thể nhận dạng giọng nói. Vui lòng thử lại.',
+                suggestions: ['Thử lại', 'Nhập bằng bàn phím'],
+            });
+        } finally {
+            isFinishingRef.current = false;
+            if (shouldClearLoading) dispatch({ type: 'SET_LOADING', payload: false });
+        }
+    };
+
+    const startVoiceListening = async () => {
+        if (
+            !stateRef.current.isCallMode
+            || stateRef.current.isListening
+            || stateRef.current.isLoading
+            || stateRef.current.isSpeaking
+            || stateRef.current.requiresUserAction
+            || isFinishingRef.current
+        ) {
+            return;
+        }
+
+        dispatch({
+            type: 'SET_CALL_STATUS',
+            payload: { status: 'connecting', text: 'Đang kết nối microphone và VNPT SmartVoice...' },
+        });
+        dispatch({ type: 'SET_LISTENING', payload: true });
+
+        try {
+            await sttService.startListening(() => undefined, { onSilence: finishVoiceUtterance });
+            if (!stateRef.current.isCallMode) {
+                dispatch({ type: 'SET_LISTENING', payload: false });
+                await sttService.cancelListening().catch(() => undefined);
+                return;
+            }
+
+            dispatch({
+                type: 'SET_CALL_STATUS',
+                payload: { status: 'listening', text: 'Đang lắng nghe...' },
+            });
+        } catch (error) {
+            dispatch({ type: 'SET_LISTENING', payload: false });
+            dispatch({ type: 'SET_CALL_MODE', payload: false });
+            dispatch({
+                type: 'SET_CALL_STATUS',
+                payload: { status: 'error', text: 'Không thể bật microphone.' },
+            });
+            console.warn('[VoiceCallController] Voice input unavailable:', error);
+            handleAIResponse({
+                intent: 'CHAT',
+                message: error instanceof Error
+                    ? `Không thể bật microphone: ${error.message}`
+                    : 'Không thể bật microphone. Vui lòng kiểm tra quyền truy cập.',
+                suggestions: ['Thử lại', 'Nhập bằng bàn phím'],
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (!state.isCallMode) {
+            ttsService.stop();
+            dispatch({ type: 'SET_LISTENING', payload: false });
+            void sttService.cancelListening().catch(() => undefined);
+            return;
+        }
+
+        if (state.isListening || state.isLoading || state.isSpeaking || state.requiresUserAction) return;
+        const timer = window.setTimeout(() => {
+            void startVoiceListening();
+        }, 450);
+        return () => window.clearTimeout(timer);
+    }, [
+        state.isCallMode,
+        state.isListening,
+        state.isLoading,
+        state.isSpeaking,
+        state.requiresUserAction,
+    ]);
+
+    return null;
+};
+
 const ChatbotWidget: React.FC = () => {
     const { state, dispatch, sendMessage, openChatbot } = useChatbot();
     const [isExiting, setIsExiting] = useState(false);
@@ -172,6 +319,8 @@ const ChatbotWidget: React.FC = () => {
 
     return (
         <>
+            <VoiceCallController />
+
             {!state.isOpen && (
                 <div className="desktop-chat-bar" aria-label="Thanh chat Trợ lý AI Dịch Vụ Công">
                     <div className="desktop-chat-bar-brand">
@@ -254,6 +403,7 @@ const ChatbotWidget: React.FC = () => {
 
 export const ChatbotFAB: React.FC = () => {
     const { state, openChatbot, dispatch } = useChatbot();
+    const callStatusLabel = getCallStatusLabel(state.callStatus, state.callStatusText);
 
     const handleClick = () => {
         if (state.isOpen) {
@@ -263,15 +413,36 @@ export const ChatbotFAB: React.FC = () => {
         }
     };
 
+    const handleCallToggle = () => {
+        if (state.isCallMode || state.isListening) {
+            dispatch({ type: 'SET_CALL_MODE', payload: false });
+            dispatch({ type: 'SET_CALL_STATUS', payload: { status: 'idle', text: null } });
+            return;
+        }
+
+        dispatch({ type: 'SET_CALL_MODE', payload: true });
+        dispatch({
+            type: 'SET_CALL_STATUS',
+            payload: { status: 'connecting', text: '\u0110ang b\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi...' },
+        });
+    };
+
     const unreadCount = !state.isOpen ? state.messages.filter((m) => m.role === 'bot').length : 0;
 
     return (
-        <div className={`chatbot-fab${state.isOpen ? ' chatbot-fab--open' : ''}`}>
+        <div className={`chatbot-fab${state.isOpen ? ' chatbot-fab--open' : ''}${state.isCallMode ? ' chatbot-fab--calling' : ''}`}>
+            {!state.isOpen && state.isCallMode && (
+                <div className={`chatbot-fab-call-status call-mode-panel--${state.callStatus}`} role="status">
+                    <span className="chatbot-fab-call-dot" aria-hidden="true" />
+                    <span>{callStatusLabel}</span>
+                </div>
+            )}
+
             <button
                 className="chatbot-fab-btn"
                 onClick={handleClick}
-                aria-label={state.isOpen ? 'Đóng trợ lý AI' : 'Mở trợ lý AI Dịch Vụ Công'}
-                title="Trợ lý AI Dịch Vụ Công"
+                aria-label={state.isOpen ? '\u0110\u00f3ng tr\u1ee3 l\u00fd AI' : 'M\u1edf tr\u1ee3 l\u00fd AI D\u1ecbch V\u1ee5 C\u00f4ng'}
+                title="Tr\u1ee3 l\u00fd AI D\u1ecbch V\u1ee5 C\u00f4ng"
                 id="chatbot-fab"
                 type="button"
             >
@@ -296,13 +467,25 @@ export const ChatbotFAB: React.FC = () => {
                         />
                     )}
                 </div>
-                {unreadCount > 0 && !state.isOpen && (
+                {unreadCount > 0 && !state.isOpen && !state.isCallMode && (
                     <span className="chatbot-fab-badge" style={{ zIndex: 2 }}>
                         {unreadCount}
                     </span>
                 )}
             </button>
-            <div className="chatbot-fab-tooltip">Trợ lý AI 24/7</div>
+
+            {!state.isOpen && (
+                <button
+                    className={`chatbot-fab-call-btn ${state.isCallMode ? 'active' : ''}`}
+                    type="button"
+                    onClick={handleCallToggle}
+                    title={state.isCallMode ? 'K\u1ebft th\u00fac cu\u1ed9c g\u1ecdi' : 'B\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi'}
+                    aria-label={state.isCallMode ? 'K\u1ebft th\u00fac cu\u1ed9c g\u1ecdi' : 'B\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi'}
+                >
+                    {state.isCallMode ? <MicOff size={17} /> : <Mic size={17} />}
+                </button>
+            )}
+            <div className="chatbot-fab-tooltip">Tr\u1ee3 l\u00fd AI 24/7</div>
         </div>
     );
 };

@@ -155,6 +155,13 @@ const encodeWav = (samples: Float32Array, sampleRate: number): Blob => {
     return new Blob([buffer], { type: 'audio/wav' });
 };
 
+const disposeVoiceCapture = async (capture: ActiveVoiceCapture) => {
+    capture.processor.disconnect();
+    capture.source.disconnect();
+    capture.stream.getTracks().forEach((track) => track.stop());
+    await capture.audioContext.close().catch(() => undefined);
+};
+
 export const sttService = {
     startListening: async (
         callback: (transcript: string, isFinal: boolean) => void,
@@ -231,10 +238,7 @@ export const sttService = {
         if (!capture) return '';
         activeCapture = null;
 
-        capture.processor.disconnect();
-        capture.source.disconnect();
-        capture.stream.getTracks().forEach((track) => track.stop());
-        await capture.audioContext.close().catch(() => undefined);
+        await disposeVoiceCapture(capture);
 
         const speechMs = (capture.speechSampleCount / capture.sampleRate) * 1000;
         if (speechMs < MIN_SPEECH_MS) {
@@ -257,6 +261,12 @@ export const sttService = {
         const transcript = result.transcript.trim();
         if (transcript) capture.callback(transcript, true);
         return transcript;
+    },
+    cancelListening: async (): Promise<void> => {
+        const capture = activeCapture;
+        if (!capture) return;
+        activeCapture = null;
+        await disposeVoiceCapture(capture);
     },
 };
 

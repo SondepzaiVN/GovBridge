@@ -1214,6 +1214,85 @@ a:hover {
     animation: badge-bounce 0.5s ease;
 }
 
+.chatbot-fab-call-btn {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    border: 2px solid white;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #c8441a;
+    background: white;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.22);
+    cursor: pointer;
+    transition: transform var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+}
+
+.chatbot-fab-call-btn:hover {
+    transform: translateY(-1px) scale(1.04);
+}
+
+.chatbot-fab-call-btn.active {
+    color: white;
+    background: #c8441a;
+}
+
+.chatbot-fab-call-status {
+    position: absolute;
+    right: 76px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: min(250px, calc(100vw - 116px));
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 12px;
+    border: 1px solid rgba(200, 68, 26, 0.22);
+    border-radius: 16px;
+    color: #7c2d12;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.chatbot-fab-call-dot {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 10px;
+    border-radius: 50%;
+    background: #c8441a;
+    box-shadow: 0 0 0 5px rgba(200, 68, 26, 0.12);
+}
+
+.chatbot-fab-call-status.call-mode-panel--listening .chatbot-fab-call-dot,
+.chatbot-fab-call-status.call-mode-panel--connecting .chatbot-fab-call-dot {
+    animation: callPulse 1.4s infinite ease-in-out;
+}
+
+.chatbot-fab-call-status.call-mode-panel--thinking .chatbot-fab-call-dot,
+.chatbot-fab-call-status.call-mode-panel--transcribing .chatbot-fab-call-dot {
+    background: #0f766e;
+    box-shadow: 0 0 0 5px rgba(15, 118, 110, 0.12);
+}
+
+.chatbot-fab-call-status.call-mode-panel--speaking .chatbot-fab-call-dot {
+    background: #2563eb;
+    box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.12);
+}
+
+.chatbot-fab-call-status.call-mode-panel--error .chatbot-fab-call-dot {
+    background: #dc2626;
+    box-shadow: 0 0 0 5px rgba(220, 38, 38, 0.12);
+}
+
 @keyframes badge-bounce {
     0% {
         transform: scale(0);
@@ -1354,6 +1433,20 @@ a:hover {
         padding: 0;
         border: 0;
         background: transparent;
+    }
+
+    .desktop-chat-bar .chatbot-input-area--bar.call-mode {
+        gap: 6px;
+    }
+
+    .desktop-chat-bar .call-mode-panel {
+        padding: 7px 10px;
+        border-radius: 16px;
+        box-shadow: none;
+    }
+
+    .desktop-chat-bar .call-mode-title {
+        display: none;
     }
 
     .desktop-chat-bar .chatbot-input-row {
