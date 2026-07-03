@@ -3,19 +3,9 @@
   "sessions": [
     {
       "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
-      "currentRoute": "/ho-khau",
+      "currentRoute": "/dang-ky-tam-tru",
       "state": {
-        "formSnapshot": {
-          "thuTuc": "dktt",
-          "loaiDKTT": "lap_ho_moi",
-          "hoTen": "Trần Văn A",
-          "ngaySinh": "2006-02-23",
-          "gioiTinh": "Nam",
-          "danToc": "kinh",
-          "cccd": "093206008464",
-          "sdt": "0793920853",
-          "email": "abc@gmail.com"
-        },
+        "formSnapshot": {},
         "candidateCases": [],
         "recentFacts": [
           {
@@ -115,78 +105,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T21:03:32.596Z",
+      "updatedAt": "2026-07-03T21:10:58.738Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "Thử lại",
-          "createdAt": "2026-07-03T20:43:42.240Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:43:42.240Z"
-        },
-        {
-          "role": "user",
-          "content": "chuyển đến trang tạm trú",
-          "createdAt": "2026-07-03T20:47:40.090Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:47:40.090Z"
-        },
-        {
-          "role": "user",
-          "content": "hi",
-          "createdAt": "2026-07-03T20:50:05.348Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin chào! Bạn cần hỗ trợ gì về thủ tục hành chính không?",
-          "createdAt": "2026-07-03T20:50:05.348Z"
-        },
-        {
-          "role": "user",
-          "content": "chuyển đến trang tạm trú",
-          "createdAt": "2026-07-03T20:50:17.970Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:50:17.970Z"
-        },
-        {
-          "role": "user",
-          "content": "chuyển đến trang thường trú",
-          "createdAt": "2026-07-03T20:50:33.978Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:50:33.978Z"
-        },
-        {
-          "role": "user",
-          "content": "chuyển đến trnag thường trú",
-          "createdAt": "2026-07-03T20:54:59.735Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:54:59.735Z"
-        },
-        {
-          "role": "user",
-          "content": "Đến trang đăng ký tạm trú",
-          "createdAt": "2026-07-03T20:55:59.954Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:55:59.954Z"
-        },
         {
           "role": "user",
           "content": "chuyển đến trnag đăng ký thường trú",
@@ -216,6 +136,76 @@
           "role": "assistant",
           "content": "Thủ tục là quy trình hoặc các bước mà cá nhân hoặc tổ chức cần thực hiện để hoàn thành một yêu cầu cụ thể liên quan đến hành chính, pháp lý hoặc dịch vụ công. Trong ngữ cảnh bạn đang hỏi, thủ tục có thể liên quan đến việc đăng ký thường trú, tạm trú, hoặc các giao dịch hành chính khác.",
           "createdAt": "2026-07-03T21:03:32.596Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang cư trú",
+          "createdAt": "2026-07-03T21:07:35.410Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:07:35.410Z"
+        },
+        {
+          "role": "user",
+          "content": "Đến trang cư trú",
+          "createdAt": "2026-07-03T21:07:49.562Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:07:49.562Z"
+        },
+        {
+          "role": "user",
+          "content": "Ok",
+          "createdAt": "2026-07-03T21:09:02.243Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:09:02.243Z"
+        },
+        {
+          "role": "user",
+          "content": "Tạm trú",
+          "createdAt": "2026-07-03T21:09:27.737Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:09:27.737Z"
+        },
+        {
+          "role": "user",
+          "content": "Ok không có gì",
+          "createdAt": "2026-07-03T21:10:36.491Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Nếu bạn cần thêm thông tin hoặc có câu hỏi nào khác, hãy cho mình biết!",
+          "createdAt": "2026-07-03T21:10:36.491Z"
+        },
+        {
+          "role": "user",
+          "content": "Ok",
+          "createdAt": "2026-07-03T21:10:45.996Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Nếu bạn cần hỗ trợ gì thêm, hãy cho tôi biết!",
+          "createdAt": "2026-07-03T21:10:45.996Z"
+        },
+        {
+          "role": "user",
+          "content": "Ok",
+          "createdAt": "2026-07-03T21:10:58.738Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Nếu bạn có câu hỏi cụ thể hoặc cần hỗ trợ về thủ tục hành chính nào, hãy cho tôi biết!",
+          "createdAt": "2026-07-03T21:10:58.738Z"
         }
       ]
     },
