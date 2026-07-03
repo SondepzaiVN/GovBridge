@@ -1,6 +1,6 @@
 ﻿import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useChatbot } from "../../contexts/ChatbotContext";
-import { ocrService, smartbotService, sttService } from "../../api/aiServices";
+import { ocrService, smartbotService, sttService, ttsService } from "../../api/aiServices";
 import { Mic, MicOff, Send, Camera } from "lucide-react";
 
 interface ChatInputProps {
@@ -20,7 +20,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onFocusInput,
   onBeforeSend,
 }) => {
-  const { state, dispatch, handleAIResponse, setEnableVoiceResponse } = useChatbot();
+  const { state, dispatch, handleAIResponse } = useChatbot();
   const [inputValue, setInputValue] = useState("");
   const [interimText, setInterimText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -69,21 +69,38 @@ const ChatInput: React.FC<ChatInputProps> = ({
     if (!stateRef.current.isListening) return;
     let shouldClearSttLoading = true;
     try {
-      dispatch({ type: "SET_LISTENING", payload: false });
-      dispatch({ type: "SET_LOADING", payload: true });
-      const transcript = (await sttService.stopListening()).trim();
-      const finalText = transcript || inputValue.trim() || interimText.trim();
-      if (finalText) {
-        setEnableVoiceResponse(true);
-        setInputValue("");
-        setInterimText("");
-        dispatch({ type: "SET_LOADING", payload: false });
-        shouldClearSttLoading = false;
-        await onSend(finalText);
-      }
-    } catch (error) {
-      voiceConversationRef.current = false;
-      console.warn("[ChatInput Voice] STT failed:", error);
+        dispatch({ type: "SET_LISTENING", payload: false });
+        dispatch({
+          type: "SET_CALL_STATUS",
+          payload: { status: "transcribing", text: "Đang gửi giọng nói lên VNPT SmartVoice..." },
+        });
+        dispatch({ type: "SET_LOADING", payload: true });
+        const transcript = (await sttService.stopListening()).trim();
+        const finalText = transcript || inputValue.trim() || interimText.trim();
+        if (finalText) {
+          setInputValue("");
+          setInterimText("");
+          dispatch({ type: "SET_LOADING", payload: false });
+          dispatch({
+            type: "SET_CALL_STATUS",
+            payload: { status: "thinking", text: "Trợ lý đang suy nghĩ..." },
+          });
+          shouldClearSttLoading = false;
+          await onSend(finalText);
+        } else {
+          dispatch({
+            type: "SET_CALL_STATUS",
+            payload: { status: "listening", text: "Không nghe thấy câu nói rõ ràng. Tôi đang lắng nghe lại..." },
+          });
+        }
+      } catch (error) {
+        voiceConversationRef.current = false;
+        dispatch({ type: "SET_CALL_MODE", payload: false });
+        dispatch({
+          type: "SET_CALL_STATUS",
+          payload: { status: "error", text: "Không thể nhận dạng giọng nói." },
+        });
+        console.warn("[ChatInput Voice] STT failed:", error);
       handleAIResponse({
         intent: "CHAT",
         message: error instanceof Error
@@ -94,10 +111,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
     } finally {
       if (shouldClearSttLoading) dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, [dispatch, handleAIResponse, inputValue, interimText, onSend, setEnableVoiceResponse]);
+  }, [dispatch, handleAIResponse, inputValue, interimText, onSend]);
 
   const startVoiceListening = useCallback(async () => {
-    if (!voiceConversationRef.current || stateRef.current.isListening || stateRef.current.isLoading || stateRef.current.isSpeaking) return;
+    if (!voiceConversationRef.current || !stateRef.current.isCallMode || stateRef.current.isListening || stateRef.current.isLoading || stateRef.current.isSpeaking) return;
+    dispatch({
+      type: "SET_CALL_STATUS",
+      payload: { status: "connecting", text: "Đang kết nối microphone và VNPT SmartVoice..." },
+    });
     dispatch({ type: "SET_LISTENING", payload: true });
     setInterimText("");
     setInputValue("");
@@ -111,9 +132,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
           setInterimText(transcript);
         }
       }, { onSilence: finishVoiceUtterance });
+      dispatch({
+        type: "SET_CALL_STATUS",
+        payload: { status: "listening", text: "Đang lắng nghe..." },
+      });
     } catch (error) {
       dispatch({ type: "SET_LISTENING", payload: false });
       voiceConversationRef.current = false;
+      dispatch({ type: "SET_CALL_MODE", payload: false });
+      dispatch({
+        type: "SET_CALL_STATUS",
+        payload: { status: "error", text: "Không thể bật microphone." },
+      });
       console.warn("[ChatInput Voice] Voice input unavailable:", error);
       handleAIResponse({
         intent: "CHAT",
@@ -126,17 +156,30 @@ const ChatInput: React.FC<ChatInputProps> = ({
   }, [dispatch, finishVoiceUtterance, handleAIResponse]);
 
   useEffect(() => {
-    if (!voiceConversationRef.current || state.isListening || state.isLoading || state.isSpeaking) return;
+    if (!state.isCallMode || !voiceConversationRef.current || state.isListening || state.isLoading || state.isSpeaking) return;
     const timer = window.setTimeout(() => {
       void startVoiceListening();
     }, 450);
     return () => window.clearTimeout(timer);
-  }, [state.isListening, state.isLoading, state.isSpeaking, startVoiceListening]);
+  }, [state.isCallMode, state.isListening, state.isLoading, state.isSpeaking, startVoiceListening]);
 
   // Voice recording toggle
   const toggleRecording = async () => {
+    if (variant === "bar") {
+      onBeforeSend?.();
+      onFocusInput?.();
+      return;
+    }
+
     if (voiceConversationRef.current || state.isListening) {
       voiceConversationRef.current = false;
+      stateRef.current = { ...stateRef.current, isCallMode: false, isListening: false, isSpeaking: false };
+      dispatch({ type: "SET_CALL_MODE", payload: false });
+      dispatch({
+        type: "SET_CALL_STATUS",
+        payload: { status: "idle", text: null },
+      });
+      ttsService.stop();
       if (state.isListening) {
         dispatch({ type: "SET_LISTENING", payload: false });
         await sttService.stopListening().catch(() => "");
@@ -145,7 +188,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
 
     voiceConversationRef.current = true;
-    setEnableVoiceResponse(true);
+    stateRef.current = { ...stateRef.current, isCallMode: true };
+    dispatch({ type: "SET_CALL_MODE", payload: true });
+    dispatch({
+      type: "SET_CALL_STATUS",
+      payload: { status: "connecting", text: "Đang bắt đầu cuộc gọi..." },
+    });
     await startVoiceListening();
   };
 
@@ -217,8 +265,37 @@ const ChatInput: React.FC<ChatInputProps> = ({
     ? interimText || inputValue
     : inputValue;
 
+  const callStatusLabel = state.callStatusText ?? (
+    state.callStatus === "connecting" ? "Đang kết nối VNPT SmartVoice..."
+      : state.callStatus === "listening" ? "Đang lắng nghe..."
+      : state.callStatus === "transcribing" ? "Đang nhận dạng giọng nói..."
+      : state.callStatus === "thinking" ? "Trợ lý đang suy nghĩ..."
+      : state.callStatus === "speaking" ? "Trợ lý đang trả lời..."
+      : state.callStatus === "error" ? "Cuộc gọi gặp lỗi"
+      : "Sẵn sàng lắng nghe"
+  );
+
   return (
-    <div className={`chatbot-input-area chatbot-input-area--${variant}`}>
+    <div className={`chatbot-input-area chatbot-input-area--${variant} ${state.isCallMode ? "call-mode" : ""}`}>
+      {state.isCallMode && (
+        <div className={`call-mode-panel call-mode-panel--${state.callStatus}`}>
+          <div className="call-mode-orb" aria-hidden="true">
+            <Mic size={14} />
+          </div>
+          <div className="call-mode-copy">
+            <div className="call-mode-title">Đang trong cuộc gọi với Trợ lý AI</div>
+            <div className="call-mode-status">{callStatusLabel}</div>
+          </div>
+          <button
+            className="call-mode-end-btn"
+            type="button"
+            onClick={toggleRecording}
+            aria-label="Kết thúc cuộc gọi"
+          >
+            Kết thúc
+          </button>
+        </div>
+      )}
       <div className={`chatbot-input-row ${state.isListening ? "is-recording" : ""}`}>
         {state.isListening ? (
           <div className="voice-input-state">
@@ -324,11 +401,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
           <button
             className={`input-action-btn ${state.isListening ? "recording" : ""}`}
             onClick={toggleRecording}
-            title={state.isListening ? "Dừng ghi âm" : "Ghi âm giọng nói"}
-            disabled={disabled || state.isLoading}
-            aria-label={state.isListening ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
+            title={variant === "bar" ? "Mở khung chat để gọi" : state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
+            disabled={disabled}
+            aria-label={variant === "bar" ? "Mở khung chat để gọi" : state.isCallMode ? "Kết thúc cuộc gọi" : "Bắt đầu cuộc gọi"}
           >
-            {state.isListening ? <MicOff size={16} /> : <Mic size={16} />}
+            {state.isCallMode ? <MicOff size={16} /> : <Mic size={16} />}
           </button>
 
           {/* Send button */}

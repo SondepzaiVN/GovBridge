@@ -288,6 +288,7 @@ QUY TẮC OUTPUT
 - facts chỉ chứa giá trị xuất hiện rõ trong tin nhắn hiện tại; confidence >= 0.8 chỉ khi chắc chắn.
 - fieldHint chỉ dùng field id trong currentProcedure.fields. Backend sẽ kiểm tra lại trước khi tạo REQUEST_CONFIRM_FILL.
 - Nếu người dùng muốn điều hướng (chuyển trang, đăng ký thủ tục mới), hãy điền 'route' tương ứng (từ procedureCatalog) vào 'navigationRoute'.
+- Khi điều hướng, không tạo URL, domain, markdown link hoặc đường dẫn website trong message. Backend sẽ tự dùng navigationRoute để chuyển trang.
 - Nếu người dùng muốn chuyển sang bước tiếp theo của biểu mẫu hiện tại, hãy đặt 'nextStepRequested' là true.
 - Nếu người dùng hỏi vị trí một phần tử hoặc yêu cầu hướng dẫn thao tác, hãy điền ID của phần tử đó vào 'highlightElementId'. Dùng các ID chung như: 'submit-btn', 'search-btn', 'search-bar', 'login-btn', hoặc ID của ô nhập liệu trong currentProcedure.fields.
 - Không tuyên bố đã tự điền, đã điều hướng hoặc đã nộp hồ sơ.

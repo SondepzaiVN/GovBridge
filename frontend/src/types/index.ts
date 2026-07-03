@@ -149,6 +149,9 @@ export interface ChatbotState {
   isLoading: boolean;
   isListening: boolean;
   isSpeaking: boolean;
+  isCallMode: boolean;
+  callStatus: 'idle' | 'connecting' | 'listening' | 'transcribing' | 'thinking' | 'speaking' | 'error';
+  callStatusText: string | null;
   highlightedElementId: string | null;
   pendingNavigation: { route: string; serviceName: string } | null;
   currentService: string | null;
@@ -162,6 +165,11 @@ export type ChatbotAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_LISTENING'; payload: boolean }
   | { type: 'SET_SPEAKING'; payload: boolean }
+  | { type: 'SET_CALL_MODE'; payload: boolean }
+  | {
+      type: 'SET_CALL_STATUS';
+      payload: { status: ChatbotState['callStatus']; text?: string | null };
+    }
   | { type: 'SET_HIGHLIGHT'; payload: string | null }
   | { type: 'SET_PENDING_NAV'; payload: { route: string; serviceName: string } | null }
   | { type: 'SET_CURRENT_SERVICE'; payload: string | null }

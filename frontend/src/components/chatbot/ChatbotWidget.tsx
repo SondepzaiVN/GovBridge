@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Bot, ChevronDown, Minimize2, RotateCcw, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { Bot, ChevronDown, Minimize2, Phone, RotateCcw, Sparkles, X } from 'lucide-react';
 import { smartbotService } from '../../api/aiServices';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import ChatInput from './ChatInput';
@@ -20,7 +20,12 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     onClose,
     onMinimize,
 }) => {
-    const { state, enableVoiceResponse, setEnableVoiceResponse } = useChatbot();
+    const { state } = useChatbot();
+    const statusText = state.isCallMode
+        ? state.callStatusText ?? 'Đang trong cuộc gọi'
+        : state.isLoading
+          ? 'Trợ lý đang tra cứu...'
+          : subtitle;
 
     return (
         <div className="chatbot-header">
@@ -35,28 +40,15 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
 
             <div className="chatbot-header-info">
                 <div className="chatbot-header-name">{title}</div>
-                <div className="chatbot-header-status">
-                    {state.isListening
-                        ? 'Đang nghe...'
-                        : state.isSpeaking
-                          ? 'Đang nói...'
-                          : state.isLoading
-                            ? 'Trợ lý đang tra cứu...'
-                            : subtitle}
-                </div>
+                <div className="chatbot-header-status">{statusText}</div>
             </div>
 
-            <button
-                className={`voice-toggle ${enableVoiceResponse ? 'active' : ''}`}
-                onClick={() => setEnableVoiceResponse(!enableVoiceResponse)}
-                title={enableVoiceResponse ? 'Tắt giọng đọc' : 'Bật giọng đọc'}
-                aria-label={enableVoiceResponse ? 'Tắt giọng đọc' : 'Bật giọng đọc'}
-                id="voice-response-toggle"
-                type="button"
-            >
-                {enableVoiceResponse ? <Volume2 size={13} /> : <VolumeX size={13} />}
-                {enableVoiceResponse ? 'Tắt' : 'Giọng'}
-            </button>
+            {state.isCallMode && (
+                <div className="call-header-pill" aria-label="Đang trong cuộc gọi">
+                    <Phone size={13} />
+                    Cuộc gọi
+                </div>
+            )}
 
             <div className="chatbot-header-actions">
                 <button
@@ -261,20 +253,9 @@ const ChatbotWidget: React.FC = () => {
 };
 
 export const ChatbotFAB: React.FC = () => {
-    const { state, openChatbot, dispatch, sendMessage } = useChatbot();
-    const pttTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-    const [isPTT, setIsPTT] = React.useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recognitionRef = React.useRef<any>(null);
-    const pttActivatedRef = React.useRef(false);
+    const { state, openChatbot, dispatch } = useChatbot();
 
-    const handleClick = (e: React.MouseEvent) => {
-        if (pttActivatedRef.current) {
-            e.preventDefault();
-            e.stopPropagation();
-            pttActivatedRef.current = false;
-            return;
-        }
+    const handleClick = () => {
         if (state.isOpen) {
             dispatch({ type: 'CLOSE' });
         } else {
@@ -282,56 +263,13 @@ export const ChatbotFAB: React.FC = () => {
         }
     };
 
-    const handlePointerDown = () => {
-        if (state.isOpen) return;
-        pttTimerRef.current = setTimeout(() => {
-            pttActivatedRef.current = true;
-            setIsPTT(true);
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-            if (!SR) return;
-            const recognition: any = new SR();
-            /* eslint-enable @typescript-eslint/no-explicit-any */
-            recognition.lang = 'vi-VN';
-            recognition.interimResults = false;
-            recognition.onresult = (e: SpeechRecognitionEvent) => {
-                const transcript = e.results[0][0].transcript;
-                dispatch({ type: 'OPEN' });
-                void sendMessage(transcript);
-            };
-            recognition.onend = () => {
-                setIsPTT(false);
-                recognitionRef.current = null;
-            };
-            recognition.onerror = () => {
-                setIsPTT(false);
-                recognitionRef.current = null;
-            };
-            recognition.start();
-            recognitionRef.current = recognition;
-        }, 400);
-    };
-
-    const handlePointerUp = () => {
-        if (pttTimerRef.current) {
-            clearTimeout(pttTimerRef.current);
-            pttTimerRef.current = null;
-        }
-        if (recognitionRef.current) {
-            recognitionRef.current.stop();
-        }
-    };
-
     const unreadCount = !state.isOpen ? state.messages.filter((m) => m.role === 'bot').length : 0;
 
     return (
-        <div className={`chatbot-fab${state.isOpen ? ' chatbot-fab--open' : ''}${isPTT ? ' chatbot-fab--ptt' : ''}`}>
+        <div className={`chatbot-fab${state.isOpen ? ' chatbot-fab--open' : ''}`}>
             <button
                 className="chatbot-fab-btn"
                 onClick={handleClick}
-                onPointerDown={handlePointerDown}
-                onPointerUp={handlePointerUp}
-                onPointerLeave={handlePointerUp}
                 aria-label={state.isOpen ? 'Đóng trợ lý AI' : 'Mở trợ lý AI Dịch Vụ Công'}
                 title="Trợ lý AI Dịch Vụ Công"
                 id="chatbot-fab"
@@ -344,8 +282,6 @@ export const ChatbotFAB: React.FC = () => {
                 >
                     {state.isOpen ? (
                         <X size={24} />
-                    ) : isPTT ? (
-                        <Bot size={28} />
                     ) : (
                         <img
                             src="/logo_Gov_Bridge.jpg"
@@ -366,7 +302,7 @@ export const ChatbotFAB: React.FC = () => {
                     </span>
                 )}
             </button>
-            <div className="chatbot-fab-tooltip">{isPTT ? 'Đang nghe...' : 'Trợ lý AI 24/7'}</div>
+            <div className="chatbot-fab-tooltip">Trợ lý AI 24/7</div>
         </div>
     );
 };
