@@ -364,6 +364,31 @@ const ChatbotWidget: React.FC = () => {
 
     const handleClose = () => {
         if (state.requiresUserAction && state.confirmationSource === 'voice') return;
+
+        if (state.requiresUserAction) {
+            dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+            dispatch({
+                type: 'ADD_MESSAGE',
+                payload: {
+                    id: `msg_${Date.now()}_cancel_user`,
+                    role: 'user',
+                    type: 'text',
+                    content: 'Hủy',
+                    timestamp: new Date()
+                }
+            });
+            dispatch({
+                type: 'ADD_MESSAGE',
+                payload: {
+                    id: `msg_${Date.now()}_cancel_bot`,
+                    role: 'bot',
+                    type: 'text',
+                    content: 'Đã hủy thao tác xác nhận.',
+                    timestamp: new Date()
+                }
+            });
+        }
+
         setIsExiting(true);
         window.setTimeout(() => {
             dispatch({ type: 'CLOSE' });

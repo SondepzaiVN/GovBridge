@@ -115,48 +115,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T20:37:57.597Z",
+      "updatedAt": "2026-07-03T20:43:42.240Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "Khái niệm thần chú là gì",
-          "createdAt": "2026-07-03T20:30:11.925Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Khái niệm \"thần chú\" thường được hiểu là những câu nói, câu văn hoặc từ ngữ được sử dụng trong các nghi lễ, nghi thức tôn giáo hoặc trong các hoạt động ma thuật với ý nghĩa đặc biệt. Thần chú thường được cho là có sức mạnh, khả năng tạo ra ảnh hưởng hoặc hiệu ứng nhất định, và được sử dụng để cầu nguyện, bảo vệ, hoặc gọi đến các thế lực siêu nhiên. Trong nhiều nền văn hóa, thần chú có thể được viết hoặc nói lên trong các tình huống cụ thể để đạt được mục tiêu mong muốn.",
-          "createdAt": "2026-07-03T20:30:11.925Z"
-        },
-        {
-          "role": "user",
-          "content": "Email giúp tôi là 123",
-          "createdAt": "2026-07-03T20:30:45.622Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Vui lòng cung cấp một địa chỉ email đầy đủ và chính xác để tôi có thể hỗ trợ bạn tốt hơn.\n\nBạn có muốn cung cấp thêm thông tin về địa chỉ email không?",
-          "createdAt": "2026-07-03T20:30:45.622Z"
-        },
-        {
-          "role": "user",
-          "content": "BCA còng gờ meo chấm com",
-          "createdAt": "2026-07-03T20:31:11.025Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Địa chỉ email bạn cung cấp có vẻ chưa chính xác hoặc không đầy đủ. Địa chỉ email hợp lệ cần có định dạng như `tênngười@miền.com`. Bạn có thể kiểm tra lại và cung cấp một địa chỉ email khác không?\n\nBạn có muốn thử cung cấp lại địa chỉ email không?",
-          "createdAt": "2026-07-03T20:31:11.025Z"
-        },
-        {
-          "role": "user",
-          "content": "abc@gmail.com",
-          "createdAt": "2026-07-03T20:31:29.472Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T20:31:29.472Z"
-        },
         {
           "role": "user",
           "content": "Giúp tôi giới tính là nam",
@@ -216,6 +176,46 @@
           "role": "assistant",
           "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
           "createdAt": "2026-07-03T20:37:57.597Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang đăng ký tạm trú",
+          "createdAt": "2026-07-03T20:42:09.154Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:42:09.154Z"
+        },
+        {
+          "role": "user",
+          "content": "Đến trang đăng ký thường trú",
+          "createdAt": "2026-07-03T20:42:40.322Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:42:40.322Z"
+        },
+        {
+          "role": "user",
+          "content": "Thỉnh cần thơ giúp tôi",
+          "createdAt": "2026-07-03T20:43:02.031Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:43:02.031Z"
+        },
+        {
+          "role": "user",
+          "content": "Thử lại",
+          "createdAt": "2026-07-03T20:43:42.240Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:43:42.240Z"
         }
       ]
     },
