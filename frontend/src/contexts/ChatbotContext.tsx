@@ -25,7 +25,13 @@ const toSpeechText = (message: string) =>
 const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotState => {
   switch (action.type) {
     case 'OPEN': return { ...state, isOpen: true, isMinimized: false };
-    case 'CLOSE': return state.requiresUserAction ? state : { ...state, isOpen: false };
+    case 'CLOSE': return {
+      ...state,
+      isOpen: false,
+      isCallMode: false,
+      callStatus: 'idle',
+      callStatusText: null,
+    };
     case 'MINIMIZE': return { ...state, isMinimized: !state.isMinimized };
     case 'ADD_MESSAGE': return { ...state, messages: [...state.messages, action.payload] };
     case 'SET_LOADING': return { ...state, isLoading: action.payload };
