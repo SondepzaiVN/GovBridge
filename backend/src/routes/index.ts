@@ -10,6 +10,10 @@ import { createProcedureRouter } from '../modules/procedures/procedure.routes.js
 import type { ProcedureService } from '../modules/procedures/procedure.service.js';
 import { createSpeechRouter } from '../modules/speech/speech.routes.js';
 import type { SpeechService } from '../modules/speech/speech.service.js';
+import {
+  createVnptChatRouter,
+  type VnptChatRouteOptions,
+} from '../integrations/vnpt/vnpt-chat.routes.js';
 
 export interface ApiDependencies {
   applicationService: ApplicationService;
@@ -18,6 +22,7 @@ export interface ApiDependencies {
   procedureService: ProcedureService;
   speechService: SpeechService;
   uploadMaxMb: number;
+  vnptChat: VnptChatRouteOptions;
   providerNames: {
     assistant: string;
     knowledge: string;
@@ -41,5 +46,6 @@ export const createApiRouter = (dependencies: ApiDependencies): Router => {
   router.use('/assistant', createAssistantRouter(dependencies.assistantService));
   router.use('/identity', createIdentityRouter(dependencies.identityService, dependencies.uploadMaxMb));
   router.use('/speech', createSpeechRouter(dependencies.speechService, dependencies.uploadMaxMb));
+  router.use(createVnptChatRouter(dependencies.vnptChat));
   return router;
 };

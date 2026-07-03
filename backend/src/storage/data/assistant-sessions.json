@@ -2,6 +2,70 @@
   "schemaVersion": 1,
   "sessions": [
     {
+      "id": "cf4b8200-34ea-4948-86eb-b6f81a0fcbab",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_8488fafb-b04d-42d7-a3e6-cea7131fd12e",
+          "sessionId": "knowledge_2fcf64a7-5dfa-4506-a4a0-e315c5efd8b1"
+        }
+      },
+      "createdAt": "2026-07-03T19:40:27.020Z",
+      "updatedAt": "2026-07-03T19:40:27.020Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "đăng ký thường trú có bao nhiêu trường hợp kể ra",
+          "createdAt": "2026-07-03T19:40:27.020Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hiện có **7 trường hợp** đăng ký thường trú như sau:\n\n1. Đăng ký vào chỗ ở hợp pháp thuộc quyền sở hữu của mình.\n2. Đăng ký vào chỗ ở hợp pháp không thuộc quyền sở hữu của mình theo quan hệ nhân thân (vợ, chồng, con cái, v.v.).\n3. Đăng ký vào chỗ ở hợp pháp do thuê, mượn, ở nhờ với sự đồng ý của chủ hộ.\n4. Người được chăm sóc, nuôi dưỡng tại cơ sở hoặc hộ gia đình.\n5. Người sinh sống, làm nghề lưu động trên phương tiện.\n6. Đăng ký tại nơi đơn vị đóng quân trong Công an nhân dân, Quân đội nhân dân.\n\nNếu bạn cần thêm thông tin về từng trường hợp, hãy cho tôi biết!",
+          "createdAt": "2026-07-03T19:40:27.020Z"
+        }
+      ]
+    },
+    {
+      "id": "478c0932-d89f-4b12-87eb-b43a638544ae",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_ad6a1fb0-a0f6-450c-b930-691cb95a29e3",
+          "sessionId": "knowledge_ecdd8472-897f-4d47-b2f3-05e759b8e89e"
+        }
+      },
+      "createdAt": "2026-07-03T19:37:59.887Z",
+      "updatedAt": "2026-07-03T19:38:11.974Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "đăng ký thường trú là gì, có bao nhiêu bước? có bao nhiêu trường hợp?",
+          "createdAt": "2026-07-03T19:37:59.887Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Đăng ký thường trú là thủ tục cho phép công dân Việt Nam đăng ký nơi cư trú chính thức tại một địa điểm cụ thể, thường được thực hiện tại Công an xã/phường/thị trấn nơi cư trú. Thủ tục này thường bao gồm các bước như chuẩn bị hồ sơ, nộp hồ sơ, và nhận kết quả đăng ký.\n\nSố bước và trường hợp cụ thể có thể khác nhau tùy theo quy định và tình huống cá nhân. Để biết chi tiết về các bước thực hiện và các trường hợp cụ thể, bạn có muốn tôi cung cấp thông tin chính thức về quy trình này không?",
+          "createdAt": "2026-07-03T19:37:59.887Z"
+        },
+        {
+          "role": "user",
+          "content": "chi tiết",
+          "createdAt": "2026-07-03T19:38:11.974Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
+          "createdAt": "2026-07-03T19:38:11.974Z"
+        }
+      ]
+    },
+    {
       "id": "a0984ef2-c0c0-4701-a73b-750cab81dda7",
       "currentRoute": "/",
       "state": {
