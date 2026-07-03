@@ -137,6 +137,7 @@ const THINKING_ANNOUNCEMENTS = [
 ];
 
 const INTRO_GREETING = 'Xin chào! Tôi là trợ lý VNPT AI, sẵn sàng hỗ trợ dịch vụ công cho bạn. Hãy nói điều bạn cần!';
+const SUBSEQUENT_GREETING = 'Lại là tôi đây, bạn cần tui giúp gì nữa không?';
 
 const VoiceCallController: React.FC = () => {
     const { state, dispatch, sendMessage, handleAIResponse } = useChatbot();
@@ -160,6 +161,8 @@ const VoiceCallController: React.FC = () => {
         if (introPlayedRef.current) return;
         introPlayedRef.current = true;
 
+        const greeting = state.messages.length === 0 ? INTRO_GREETING : SUBSEQUENT_GREETING;
+
         // Warm-up mic: xin quyền sớm trong lúc TTS đang nói
         void navigator.mediaDevices?.getUserMedia({ audio: true })
             .then((stream) => { stream.getTracks().forEach((t) => t.stop()); })
@@ -167,19 +170,19 @@ const VoiceCallController: React.FC = () => {
 
         dispatch({
             type: 'SET_CALL_STATUS',
-            payload: { status: 'speaking', text: INTRO_GREETING },
+            payload: { status: 'speaking', text: greeting },
         });
-        void ttsService.speak(INTRO_GREETING, (isPlaying) => {
+        void ttsService.speak(greeting, (isPlaying) => {
             dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
             dispatch({
                 type: 'SET_CALL_STATUS',
                 payload: {
                     status: isPlaying ? 'speaking' : 'listening',
-                    text: isPlaying ? INTRO_GREETING : 'Đang lắng nghe...',
+                    text: isPlaying ? greeting : 'Đang lắng nghe...',
                 },
             });
         });
-    }, [state.isCallMode, dispatch]);
+    }, [state.isCallMode, dispatch, state.messages.length]);
 
     useEffect(() => {
         if (!state.isCallMode || !state.isLoading || state.requiresUserAction) return;
