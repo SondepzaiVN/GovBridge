@@ -143,6 +143,8 @@ export interface PublicService {
 // ============================================================
 // Chatbot State
 // ============================================================
+export type ConversationState = 'IDLE' | 'REALTIME' | 'WAITING_FOR_CONFIRMATION';
+
 export interface ChatbotState {
   isOpen: boolean;
   isMinimized: boolean;
@@ -153,6 +155,7 @@ export interface ChatbotState {
   isCallMode: boolean;
   callStatus: 'idle' | 'connecting' | 'listening' | 'transcribing' | 'thinking' | 'speaking' | 'error';
   callStatusText: string | null;
+  conversationState: ConversationState;
   requiresUserAction: boolean;
   highlightedElementId: string | null;
   pendingNavigation: { route: string; serviceName: string } | null;

@@ -124,8 +124,15 @@ const getCallStatusLabel = (
         : callStatus === 'thinking' ? 'Trợ lý đang suy nghĩ...'
         : callStatus === 'speaking' ? 'Trợ lý đang trả lời...'
         : callStatus === 'error' ? 'Cuộc gọi gặp lỗi'
-        : 'Sẵn sàng lắng nghe'
+    : 'Sẵn sàng lắng nghe'
 );
+
+const THINKING_ANNOUNCEMENTS = [
+    'Tôi đã nghe câu hỏi của bạn, tôi sẽ giúp bạn ngay lập tức, đợi tôi suy nghĩ nhó',
+    'Tôi đang suy nghĩ, bạn chờ tôi một chút nhé!',
+    'Tôi sắp suy nghĩ xong rồi, bạn chờ tôi thêm một chút nhé!',
+    'Sắp xong rồi, tôi đang hoàn thiện câu trả lời cho bạn.',
+];
 
 const VoiceCallController: React.FC = () => {
     const { state, dispatch, sendMessage, handleAIResponse } = useChatbot();
@@ -137,6 +144,45 @@ const VoiceCallController: React.FC = () => {
         stateRef.current = state;
         sendMessageRef.current = sendMessage;
     }, [state, sendMessage]);
+
+    useEffect(() => {
+        if (!state.isCallMode || !state.isLoading || state.requiresUserAction) return;
+
+        let phraseIndex = 0;
+        const announceThinking = () => {
+            if (
+                !stateRef.current.isCallMode
+                || !stateRef.current.isLoading
+                || stateRef.current.requiresUserAction
+            ) {
+                return;
+            }
+
+            const phrase = THINKING_ANNOUNCEMENTS[phraseIndex % THINKING_ANNOUNCEMENTS.length];
+            phraseIndex += 1;
+            dispatch({
+                type: 'SET_CALL_STATUS',
+                payload: { status: 'thinking', text: phrase },
+            });
+            void ttsService.speak(phrase, (isPlaying) => {
+                dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+                dispatch({
+                    type: 'SET_CALL_STATUS',
+                    payload: {
+                        status: 'thinking',
+                        text: isPlaying ? phrase : 'Trợ lý đang suy nghĩ...',
+                    },
+                });
+            });
+        };
+
+        const firstAnnouncement = window.setTimeout(announceThinking, 600);
+        const announcementInterval = window.setInterval(announceThinking, 4200);
+        return () => {
+            window.clearTimeout(firstAnnouncement);
+            window.clearInterval(announcementInterval);
+        };
+    }, [dispatch, state.isCallMode, state.isLoading, state.requiresUserAction]);
 
     const finishVoiceUtterance = async () => {
         if (!stateRef.current.isCallMode || !stateRef.current.isListening || isFinishingRef.current) return;
@@ -176,6 +222,7 @@ const VoiceCallController: React.FC = () => {
                 payload: { status: 'error', text: 'Không thể nhận dạng giọng nói.' },
             });
             console.warn('[VoiceCallController] STT failed:', error);
+            dispatch({ type: 'OPEN' });
             handleAIResponse({
                 intent: 'CHAT',
                 message: error instanceof Error
@@ -227,6 +274,7 @@ const VoiceCallController: React.FC = () => {
                 payload: { status: 'error', text: 'Không thể bật microphone.' },
             });
             console.warn('[VoiceCallController] Voice input unavailable:', error);
+            dispatch({ type: 'OPEN' });
             handleAIResponse({
                 intent: 'CHAT',
                 message: error instanceof Error
@@ -248,7 +296,7 @@ const VoiceCallController: React.FC = () => {
         if (state.isListening || state.isLoading || state.isSpeaking || state.requiresUserAction) return;
         const timer = window.setTimeout(() => {
             void startVoiceListening();
-        }, 450);
+        }, 800);
         return () => window.clearTimeout(timer);
     }, [
         state.isCallMode,
@@ -267,6 +315,7 @@ const ChatbotWidget: React.FC = () => {
     const desktopPanelRef = useRef<HTMLElement | null>(null);
 
     const handleClose = () => {
+        if (state.requiresUserAction) return;
         setIsExiting(true);
         window.setTimeout(() => {
             dispatch({ type: 'CLOSE' });
@@ -315,13 +364,13 @@ const ChatbotWidget: React.FC = () => {
             window.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('pointerdown', handlePointerDown);
         };
-    }, [state.isOpen]);
+    }, [state.isOpen, state.requiresUserAction]);
 
     return (
         <>
             <VoiceCallController />
 
-            {!state.isOpen && (
+            {!state.isOpen && !state.isCallMode && (
                 <div className="desktop-chat-bar" aria-label="Thanh chat Trợ lý AI Dịch Vụ Công">
                     <div className="desktop-chat-bar-brand">
                         <img src="/logo_Gov_Bridge.jpg" alt="" />
@@ -339,11 +388,14 @@ const ChatbotWidget: React.FC = () => {
 
             {state.isOpen && (
                 <>
-                    <div className="chatbot-soft-backdrop" aria-hidden="true" />
+                    <div
+                        className={`chatbot-soft-backdrop${state.requiresUserAction ? ' chatbot-soft-backdrop--confirmation' : ''}`}
+                        aria-hidden="true"
+                    />
                     <div className={`chatbot-desktop-overlay ${isExiting ? 'chatbot-exit' : 'chatbot-enter'}`}>
                         <section
                             ref={desktopPanelRef}
-                            className="chatbot-overlay-panel"
+                            className={`chatbot-overlay-panel${state.requiresUserAction ? ' chatbot-overlay-panel--confirmation' : ''}`}
                             role="dialog"
                             aria-label="Trợ lý AI Dịch Vụ Công"
                             aria-modal="true"
@@ -353,8 +405,9 @@ const ChatbotWidget: React.FC = () => {
                                     className="chatbot-panel-control chatbot-panel-control--center"
                                     type="button"
                                     onClick={handleClose}
-                                    title="Thu nhỏ"
-                                    aria-label="Thu nhỏ chatbot"
+                                    title={state.requiresUserAction ? 'Vui lòng hoàn tất xác nhận' : 'Thu nhỏ'}
+                                    aria-label={state.requiresUserAction ? 'Đang chờ xác nhận, chưa thể thu nhỏ' : 'Thu nhỏ chatbot'}
+                                    disabled={state.requiresUserAction}
                                 >
                                     <ChevronDown size={18} />
                                 </button>
@@ -368,7 +421,7 @@ const ChatbotWidget: React.FC = () => {
                                 variant="panel"
                                 autoFocus
                                 onSend={sendMessage}
-                                disabled={state.isLoading}
+                                disabled={state.isLoading || state.requiresUserAction}
                             />
                         </section>
                     </div>
@@ -392,7 +445,7 @@ const ChatbotWidget: React.FC = () => {
                     {!state.isMinimized && (
                         <>
                             <ChatWindow messages={state.messages} isLoading={state.isLoading} />
-                            <ChatInput onSend={sendMessage} disabled={state.isLoading} />
+                            <ChatInput onSend={sendMessage} disabled={state.isLoading || state.requiresUserAction} />
                         </>
                     )}
                 </div>
@@ -402,91 +455,90 @@ const ChatbotWidget: React.FC = () => {
 };
 
 export const ChatbotFAB: React.FC = () => {
-    const { state, openChatbot, dispatch } = useChatbot();
+    const { state, dispatch } = useChatbot();
     const callStatusLabel = getCallStatusLabel(state.callStatus, state.callStatusText);
-
-    const handleClick = () => {
-        if (state.isOpen) {
-            dispatch({ type: 'CLOSE' });
-        } else {
-            openChatbot();
-        }
-    };
+    const isRealtime = state.conversationState === 'REALTIME';
+    const isWaitingForConfirmation = state.conversationState === 'WAITING_FOR_CONFIRMATION';
 
     const handleCallToggle = () => {
-        if (state.isCallMode || state.isListening) {
+        if (isWaitingForConfirmation) return;
+
+        if (isRealtime || state.isListening) {
             dispatch({ type: 'SET_CALL_MODE', payload: false });
             dispatch({ type: 'SET_CALL_STATUS', payload: { status: 'idle', text: null } });
             return;
         }
 
+        dispatch({ type: 'CLOSE' });
         dispatch({ type: 'SET_CALL_MODE', payload: true });
         dispatch({
             type: 'SET_CALL_STATUS',
-            payload: { status: 'connecting', text: '\u0110ang b\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi...' },
+            payload: { status: 'connecting', text: 'Đang bắt đầu trò chuyện realtime...' },
         });
     };
 
-    const unreadCount = !state.isOpen ? state.messages.filter((m) => m.role === 'bot').length : 0;
+    const buttonLabel = isWaitingForConfirmation
+        ? 'Đang chờ xác nhận trong khung chat'
+        : isRealtime
+          ? 'Tắt trò chuyện realtime bằng giọng nói'
+          : 'Bắt đầu trò chuyện realtime bằng giọng nói';
 
     return (
-        <div className={`chatbot-fab${state.isOpen ? ' chatbot-fab--open' : ''}${state.isCallMode ? ' chatbot-fab--calling' : ''}`}>
-            {!state.isOpen && state.isCallMode && (
-                <div className={`chatbot-fab-call-status call-mode-panel--${state.callStatus}`} role="status">
-                    <span className="chatbot-fab-call-dot" aria-hidden="true" />
-                    <span>{callStatusLabel}</span>
-                </div>
-            )}
-
-            <button
-                className="chatbot-fab-btn"
-                onClick={handleClick}
-                aria-label={state.isOpen ? '\u0110\u00f3ng tr\u1ee3 l\u00fd AI' : 'M\u1edf tr\u1ee3 l\u00fd AI D\u1ecbch V\u1ee5 C\u00f4ng'}
-                title="Tr\u1ee3 l\u00fd AI D\u1ecbch V\u1ee5 C\u00f4ng"
-                id="chatbot-fab"
-                type="button"
+        <>
+            <div
+                className={[
+                    'realtime-voice-control',
+                    isRealtime ? 'realtime-voice-control--active' : '',
+                    isWaitingForConfirmation ? 'realtime-voice-control--waiting' : '',
+                    `realtime-voice-control--${state.callStatus}`,
+                ].filter(Boolean).join(' ')}
+                data-conversation-state={state.conversationState}
             >
-                <div className="chatbot-fab-pulse" />
-                <div
-                    className="chatbot-fab-icon"
-                    style={!state.isOpen ? { width: 64, height: 64, borderRadius: '50%', padding: 2 } : {}}
-                >
-                    {state.isOpen ? (
-                        <X size={24} />
-                    ) : (
-                        <img
-                            src="/logo_Gov_Bridge.jpg"
-                            alt="Gov Bridge"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                borderRadius: '50%',
-                                objectFit: 'cover',
-                                background: 'white',
-                            }}
-                        />
-                    )}
-                </div>
-                {unreadCount > 0 && !state.isOpen && !state.isCallMode && (
-                    <span className="chatbot-fab-badge" style={{ zIndex: 2 }}>
-                        {unreadCount}
-                    </span>
+                {isRealtime && (
+                    <div className="realtime-voice-rings" aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
+                    </div>
                 )}
-            </button>
 
-            {!state.isOpen && (
                 <button
-                    className={`chatbot-fab-call-btn ${state.isCallMode ? 'active' : ''}`}
+                    className="realtime-voice-button"
                     type="button"
+                    id="realtime-voice-button"
                     onClick={handleCallToggle}
-                    title={state.isCallMode ? 'K\u1ebft th\u00fac cu\u1ed9c g\u1ecdi' : 'B\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi'}
-                    aria-label={state.isCallMode ? 'K\u1ebft th\u00fac cu\u1ed9c g\u1ecdi' : 'B\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi'}
+                    disabled={isWaitingForConfirmation}
+                    aria-label={buttonLabel}
+                    aria-pressed={isRealtime}
+                    aria-describedby="realtime-voice-status"
+                    title={buttonLabel}
                 >
-                    {state.isCallMode ? <MicOff size={17} /> : <Mic size={17} />}
+                    <span className="realtime-voice-icon" aria-hidden="true">
+                        {isRealtime ? <MicOff size={30} /> : <Mic size={26} />}
+                    </span>
+                    {isRealtime && (
+                        <span className="realtime-voice-equalizer" aria-hidden="true">
+                            {Array.from({ length: 5 }).map((_, index) => (
+                                <span key={index} style={{ animationDelay: `${index * 90}ms` }} />
+                            ))}
+                        </span>
+                    )}
                 </button>
-            )}
-            <div className="chatbot-fab-tooltip">Tr\u1ee3 l\u00fd AI 24/7</div>
-        </div>
+
+                <div
+                    className="realtime-voice-status"
+                    id="realtime-voice-status"
+                    role="status"
+                    aria-live="polite"
+                >
+                    {isWaitingForConfirmation
+                        ? 'Vui lòng xác nhận trong khung chat'
+                        : isRealtime
+                          ? callStatusLabel
+                          : 'Gọi AI realtime'}
+                </div>
+            </div>
+        </>
     );
 };
 

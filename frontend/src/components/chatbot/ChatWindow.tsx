@@ -32,37 +32,34 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
     state,
     confirmNavigation,
     cancelNavigation,
+    reviewNavigation,
+    resumeRealtimeWithVoice,
     sendMessage,
-    dispatch,
-    handleAIResponse,
   } = useChatbot();
   const { fillFields } = useForm();
   const location = useLocation();
   const [fillDecision, setFillDecision] = useState<'confirmed' | 'cancelled' | null>(null);
 
   const isBot = message.role === 'bot';
+  const isActiveConfirmation = state.requiresUserAction
+    && state.messages[state.messages.length - 1]?.id === message.id;
   const time = message.timestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
   const confirmFill = (fields: Record<string, string>) => {
     fillFields(fields);
     setFillDecision('confirmed');
-    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
-    handleAIResponse({
-      intent: 'CHAT',
-      message: 'Đã điền các thông tin bạn vừa xác nhận. Bạn kiểm tra lại trên biểu mẫu trước khi tiếp tục nhé.',
-      suggestions: ['Cần điền thêm gì?', 'Giải thích trường tiếp theo'],
-    });
-    setTimeout(() => dispatch({ type: 'CLOSE' }), 600);
+    resumeRealtimeWithVoice(
+      'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+      ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
+    );
   };
 
   const cancelFill = () => {
     setFillDecision('cancelled');
-    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
-    handleAIResponse({
-      intent: 'CHAT',
-      message: 'Mình chưa thay đổi biểu mẫu. Bạn có thể gửi lại thông tin đúng khi sẵn sàng.',
-    });
-    setTimeout(() => dispatch({ type: 'CLOSE' }), 400);
+    resumeRealtimeWithVoice(
+      'Dạ, em chưa thay đổi biểu mẫu. Anh/Chị muốn gửi lại thông tin, giải thích thêm hay tiếp tục bằng giọng nói?',
+      ['Gửi lại thông tin', 'Giải thích thêm', 'Tiếp tục bằng giọng nói'],
+    );
   };
 
   const renderNavConfirmCard = () => (
@@ -70,12 +67,18 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
       <div className="nav-confirm-title">
         Chuyển đến: {state.pendingNavigation?.serviceName}
       </div>
+      <div className="confirmation-required-note">
+        Chọn Đồng ý, Từ chối hoặc Xem lại thông tin.
+      </div>
       <div className="nav-confirm-actions">
         <button className="btn btn-primary btn-sm" onClick={confirmNavigation} id="nav-confirm-yes">
           Đồng ý
         </button>
         <button className="btn btn-ghost btn-sm" onClick={cancelNavigation} id="nav-confirm-no">
-          Ở lại
+          Từ chối
+        </button>
+        <button className="btn btn-ghost btn-sm" onClick={reviewNavigation} id="nav-confirm-review">
+          Xem lại thông tin
         </button>
       </div>
     </div>
@@ -83,7 +86,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
 
   const renderCCCDPreviewCard = () => {
     const info = message.data?.cccdInfo as Record<string, string> | undefined;
-    if (!info) return null;
+    if (!info || !isActiveConfirmation) return null;
 
     return (
       <div className="cccd-preview" style={{ marginTop: 10 }}>
@@ -124,24 +127,18 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
               });
 
               if (Object.keys(fields).length === 0) {
-                handleAIResponse({
-                  intent: 'CHAT',
-                  message: 'Thủ tục hiện tại chưa khai báo trường nào để tự điền từ CCCD.',
-                  suggestions: ['Nhập thông tin thủ công', 'Chọn thủ tục khác'],
-                });
+                resumeRealtimeWithVoice(
+                  'Thủ tục hiện tại chưa có trường phù hợp để tự điền từ CCCD. Anh/Chị muốn nhập thủ công hay chọn thủ tục khác?',
+                  ['Nhập thông tin thủ công', 'Chọn thủ tục khác'],
+                );
                 return;
               }
 
               fillFields(fields);
-              dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
-              handleAIResponse({
-                intent: 'FILL_FORM',
-                message: 'Đã tự động điền thông tin từ CCCD vào form.\n\nVui lòng kiểm tra và bổ sung các thông tin còn thiếu trước khi nộp hồ sơ.',
-                data: { fields },
-                suggestions: ['Nút nộp ở đâu?', 'Cần điền thêm gì?', 'Cảm ơn'],
-              });
-
-              setTimeout(() => dispatch({ type: 'CLOSE' }), 800);
+              resumeRealtimeWithVoice(
+                'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+                ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
+              );
             }}
           >
             Xác nhận và điền
@@ -149,9 +146,10 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => {
-              dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
-              setTimeout(() => dispatch({ type: 'CLOSE' }), 400);
-              sendMessage('Thông tin CCCD cần sửa lại');
+              resumeRealtimeWithVoice(
+                'Dạ, em chưa dùng thông tin CCCD này. Anh/Chị muốn gửi ảnh khác, nhập thủ công hay tiếp tục bằng giọng nói?',
+                ['Gửi ảnh khác', 'Nhập thông tin thủ công', 'Tiếp tục bằng giọng nói'],
+              );
             }}
           >
             Hủy
@@ -170,6 +168,11 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
     return (
       <div className="fill-confirm-card">
         <div className="fill-confirm-title">Thông tin sẽ điền</div>
+        {fillDecision === null && (
+          <div className="confirmation-required-note">
+            Chọn Xác nhận và điền hoặc Không điền.
+          </div>
+        )}
         <div className="fill-confirm-fields">
           {Object.entries(fields).map(([fieldId, value]) => (
             <div className="fill-confirm-field" key={fieldId}>
@@ -234,7 +237,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   };
 
   return (
-    <div className={`message-wrapper ${message.role}`}>
+    <div className={`message-wrapper ${message.role}${isActiveConfirmation ? ' message-wrapper--confirmation' : ''}`}>
       <div className="message-avatar">
         {isBot
           ? <img src="/logo_Gov_Bridge.jpg" alt="AI" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
@@ -244,15 +247,15 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '80%' }}>
         <div className="message-bubble">
           <div className="message-content">{renderContent(message.content)}</div>
-          {message.type === 'navigation-confirm' && state.pendingNavigation && renderNavConfirmCard()}
+          {message.type === 'navigation-confirm' && state.pendingNavigation && isActiveConfirmation && renderNavConfirmCard()}
           {message.type === 'cccd-preview' && renderCCCDPreviewCard()}
-          {message.type === 'fill-confirm' && renderFillConfirmCard()}
+          {message.type === 'fill-confirm' && (isActiveConfirmation || fillDecision) && renderFillConfirmCard()}
           {message.type === 'validation-result' && renderValidationCard()}
         </div>
 
         <span className="message-time">{time}</span>
 
-        {isBot && message.suggestions && message.suggestions.length > 0 && (
+        {isBot && !isActiveConfirmation && message.suggestions && message.suggestions.length > 0 && (
           <div className="suggestion-chips">
             {message.suggestions.map((suggestion, index) => (
               <button

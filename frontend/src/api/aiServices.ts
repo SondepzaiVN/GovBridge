@@ -271,6 +271,8 @@ export const sttService = {
 };
 
 let activeAudio: HTMLAudioElement | null = null;
+let activeSpeechId = 0;
+let resolveActiveAudio: (() => void) | null = null;
 
 const speakWithBrowser = (text: string): Promise<void> =>
     new Promise((resolve) => {
@@ -290,12 +292,14 @@ const speakWithBrowser = (text: string): Promise<void> =>
 export const ttsService = {
     speak: async (text: string, onStatusChange?: (isPlaying: boolean) => void) => {
         ttsService.stop();
+        const speechId = activeSpeechId;
         onStatusChange?.(true);
         try {
             const result = await apiClient<TTSApiResult>('/speech/tts', {
                 method: 'POST',
                 body: JSON.stringify({ text }),
             });
+            if (speechId !== activeSpeechId) return;
 
             if (!result.audioUrl || result.useBrowserFallback) {
                 await speakWithBrowser(text);
@@ -303,22 +307,30 @@ export const ttsService = {
             }
 
             await new Promise<void>((resolve, reject) => {
+                resolveActiveAudio = resolve;
                 activeAudio = new Audio(result.audioUrl!);
                 activeAudio.onended = () => resolve();
                 activeAudio.onerror = () => reject(new Error('Không phát được audio từ backend.'));
                 activeAudio.play().catch(reject);
             });
         } catch (error) {
+            if (speechId !== activeSpeechId) return;
             console.warn('[TTS] Backend unavailable, using browser fallback:', error);
             await speakWithBrowser(text);
         } finally {
-            activeAudio = null;
-            onStatusChange?.(false);
+            if (speechId === activeSpeechId) {
+                activeAudio = null;
+                resolveActiveAudio = null;
+                onStatusChange?.(false);
+            }
         }
     },
     stop: () => {
+        activeSpeechId += 1;
         activeAudio?.pause();
         activeAudio = null;
+        resolveActiveAudio?.();
+        resolveActiveAudio = null;
         window.speechSynthesis.cancel();
     },
 };

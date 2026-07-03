@@ -1,7 +1,7 @@
 ﻿import React, { useRef, useEffect, useState } from 'react';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import { ocrService, smartbotService } from '../../api/aiServices';
-import { Mic, MicOff, Send, Camera } from 'lucide-react';
+import { Send, Camera } from 'lucide-react';
 
 interface ChatInputProps {
     onSend: (text: string) => void | Promise<void>;
@@ -55,24 +55,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
             e.preventDefault();
             handleSend();
         }
-    };
-
-    // Voice recording toggle
-    const toggleRecording = () => {
-        if (state.isCallMode || state.isListening) {
-            dispatch({ type: 'SET_CALL_MODE', payload: false });
-            dispatch({
-                type: 'SET_CALL_STATUS',
-                payload: { status: 'idle', text: null },
-            });
-            return;
-        }
-
-        dispatch({ type: 'SET_CALL_MODE', payload: true });
-        dispatch({
-            type: 'SET_CALL_STATUS',
-            payload: { status: 'connecting', text: '\u0110ang b\u1eaft \u0111\u1ea7u cu\u1ed9c g\u1ecdi...' },
-        });
     };
 
     // OCR image upload
@@ -137,74 +119,22 @@ const ChatInput: React.FC<ChatInputProps> = ({
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const displayValue = inputValue;
-    const showInlineVoiceState = state.isListening && !state.isCallMode;
-
-    const callStatusLabel =
-        state.callStatusText ??
-        (state.callStatus === 'connecting'
-            ? 'Đang kết nối VNPT SmartVoice...'
-            : state.callStatus === 'listening'
-              ? 'Đang lắng nghe...'
-              : state.callStatus === 'transcribing'
-                ? 'Đang nhận dạng giọng nói...'
-                : state.callStatus === 'thinking'
-                  ? 'Trợ lý đang suy nghĩ...'
-                  : state.callStatus === 'speaking'
-                    ? 'Trợ lý đang trả lời...'
-                    : state.callStatus === 'error'
-                      ? 'Cuộc gọi gặp lỗi'
-                      : 'Sẵn sàng lắng nghe');
-
     return (
-        <div className={`chatbot-input-area chatbot-input-area--${variant} ${state.isCallMode ? 'call-mode' : ''}`}>
-            {state.isCallMode && (
-                <div className={`call-mode-panel call-mode-panel--${state.callStatus}`}>
-                    <div className="call-mode-orb" aria-hidden="true">
-                        <Mic size={14} />
-                    </div>
-                    <div className="call-mode-copy">
-                        <div className="call-mode-title">Đang trong cuộc gọi với Trợ lý AI</div>
-                        <div className="call-mode-status">{callStatusLabel}</div>
-                    </div>
-                    <button
-                        className="call-mode-end-btn"
-                        type="button"
-                        onClick={toggleRecording}
-                        aria-label="Kết thúc cuộc gọi"
-                    >
-                        Kết thúc
-                    </button>
-                </div>
-            )}
-            <div className={`chatbot-input-row ${showInlineVoiceState ? 'is-recording' : ''}`}>
-                {showInlineVoiceState ? (
-                    <div className="voice-input-state">
-                        <div className="voice-status-left">
-                            <Mic size={16} />
-                            <span>Đang nghe...</span>
-                        </div>
-                        <div className="voice-waveform" aria-hidden="true">
-                            {Array.from({ length: 7 }).map((_, i) => (
-                                <span key={i} style={{ animationDelay: `${i * 90}ms` }} />
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <textarea
-                        ref={textareaRef}
-                        className="chatbot-input-field"
-                        value={displayValue}
-                        onChange={(e) => !state.isListening && setInputValue(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        onFocus={onFocusInput}
-                        placeholder={variant === 'bar' ? 'Bạn có cần Agent giúp?' : 'Nhập tin nhắn hoặc câu hỏi...'}
-                        disabled={disabled || state.isLoading}
-                        rows={1}
-                        aria-label="Nhập tin nhắn"
-                        id="chat-input-field"
-                    />
-                )}
+        <div className={`chatbot-input-area chatbot-input-area--${variant}`}>
+            <div className="chatbot-input-row">
+                <textarea
+                    ref={textareaRef}
+                    className="chatbot-input-field"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={onFocusInput}
+                    placeholder={variant === 'bar' ? 'Bạn có cần Agent giúp?' : 'Nhập tin nhắn hoặc câu hỏi...'}
+                    disabled={disabled || state.isLoading}
+                    rows={1}
+                    aria-label="Nhập tin nhắn"
+                    id="chat-input-field"
+                />
 
                 <div className="chatbot-input-actions">
                     {/* Image upload menu */}
@@ -213,7 +143,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                             className="input-action-btn"
                             onClick={() => setShowCameraMenu(!showCameraMenu)}
                             title="Upload hoặc chụp ảnh CCCD"
-                            disabled={disabled || state.isLoading || state.isListening}
+                            disabled={disabled || state.isLoading}
                             aria-label="Upload ảnh CCCD"
                         >
                             <Camera size={16} />
@@ -298,17 +228,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
                             style={{ display: 'none' }}
                         />
                     </div>
-
-                    {/* Mic button */}
-                    <button
-                        className={`input-action-btn ${state.isListening ? 'recording' : ''}`}
-                        onClick={toggleRecording}
-                        title={state.isCallMode ? 'Kết thúc cuộc gọi' : 'Bắt đầu cuộc gọi'}
-                        disabled={Boolean(disabled && !state.isCallMode)}
-                        aria-label={state.isCallMode ? 'Kết thúc cuộc gọi' : 'Bắt đầu cuộc gọi'}
-                    >
-                        {state.isCallMode ? <MicOff size={16} /> : <Mic size={16} />}
-                    </button>
 
                     {/* Send button */}
                     <button
