@@ -11480,7 +11480,7 @@ a:hover {
     flex-direction: column;
     gap: 10px;
 }
-.officer-attachment-item {
+ul.officer-attachment-list li.officer-attachment-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -11674,7 +11674,7 @@ a:hover {
         width: 8%;
     }
 
-    .officer-attachment-item {
+    ul.officer-attachment-list li.officer-attachment-item {
         align-items: flex-start;
         flex-direction: column;
     }
