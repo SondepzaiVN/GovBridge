@@ -864,7 +864,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
             });
         });
         return defaults;
-    }, []);
+    }, [steps]);
     const provinceLabels = React.useMemo(
         () => administrativeProvinceOptions.map((option) => option.label),
         [administrativeProvinceOptions],
@@ -935,7 +935,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
         });
 
         return () => controller.abort();
-    }, [fieldDefaults, formState.values, provinceCodeByLabel, wardOptionsByProvinceField]);
+    }, [fieldDefaults, formState.values, loadingWardFields, provinceCodeByLabel, wardOptionsByProvinceField]);
 
     React.useEffect(() => {
         Object.entries(addressFieldPairs).forEach(([provinceFieldId, wardFieldId]) => {
