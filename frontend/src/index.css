@@ -9890,7 +9890,7 @@ a:hover {
     padding: 28px 24px 80px;
     overflow: hidden;
     background-color: #5f0004;
-    background-image: url('/auth/background-login.png');
+    background-image: url('../public/auth/background-login.png');
     background-position: center top;
     background-repeat: no-repeat;
     background-size: cover;
