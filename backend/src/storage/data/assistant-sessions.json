@@ -3,9 +3,19 @@
   "sessions": [
     {
       "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
-      "currentRoute": "/",
+      "currentRoute": "/ho-khau",
       "state": {
-        "formSnapshot": {},
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi",
+          "hoTen": "Trần Văn A",
+          "ngaySinh": "2006-02-23",
+          "gioiTinh": "Nam",
+          "danToc": "kinh",
+          "cccd": "093206008464",
+          "sdt": "0793920853",
+          "email": "abc@gmail.com"
+        },
         "candidateCases": [],
         "recentFacts": [
           {
@@ -105,38 +115,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T20:55:59.954Z",
+      "updatedAt": "2026-07-03T21:03:32.596Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "chuyển đến trang đăng ký tạm trú",
-          "createdAt": "2026-07-03T20:42:09.154Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:42:09.154Z"
-        },
-        {
-          "role": "user",
-          "content": "Đến trang đăng ký thường trú",
-          "createdAt": "2026-07-03T20:42:40.322Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:42:40.322Z"
-        },
-        {
-          "role": "user",
-          "content": "Thỉnh cần thơ giúp tôi",
-          "createdAt": "2026-07-03T20:43:02.031Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:43:02.031Z"
-        },
         {
           "role": "user",
           "content": "Thử lại",
@@ -206,6 +186,36 @@
           "role": "assistant",
           "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
           "createdAt": "2026-07-03T20:55:59.954Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trnag đăng ký thường trú",
+          "createdAt": "2026-07-03T21:01:45.623Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:01:45.623Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang đăng ký Tạm trú",
+          "createdAt": "2026-07-03T21:02:37.512Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T21:02:37.512Z"
+        },
+        {
+          "role": "user",
+          "content": "Thủ tục là gì",
+          "createdAt": "2026-07-03T21:03:32.596Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Thủ tục là quy trình hoặc các bước mà cá nhân hoặc tổ chức cần thực hiện để hoàn thành một yêu cầu cụ thể liên quan đến hành chính, pháp lý hoặc dịch vụ công. Trong ngữ cảnh bạn đang hỏi, thủ tục có thể liên quan đến việc đăng ký thường trú, tạm trú, hoặc các giao dịch hành chính khác.",
+          "createdAt": "2026-07-03T21:03:32.596Z"
         }
       ]
     },
