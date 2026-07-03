@@ -240,13 +240,11 @@ const VoiceCallController: React.FC = () => {
                 type: 'SET_CALL_STATUS',
                 payload: { status: 'transcribing', text: 'Đang gửi giọng nói lên VNPT SmartVoice...' },
             });
-            dispatch({ type: 'SET_LOADING', payload: true });
 
             const transcript = (await sttService.stopListening()).trim();
             if (!stateRef.current.isCallMode) return;
 
             if (transcript) {
-                dispatch({ type: 'SET_LOADING', payload: false });
                 dispatch({
                     type: 'SET_CALL_STATUS',
                     payload: { status: 'thinking', text: 'Trợ lý đang suy nghĩ...' },
@@ -277,7 +275,10 @@ const VoiceCallController: React.FC = () => {
             });
         } finally {
             isFinishingRef.current = false;
-            if (shouldClearLoading) dispatch({ type: 'SET_LOADING', payload: false });
+            // SET_LISTENING: false was already dispatched at the top of the try block, so no need to do it here
+            if (shouldClearLoading) {
+                dispatch({ type: 'SET_LOADING', payload: false });
+            }
         }
     };
 
