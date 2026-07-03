@@ -8,7 +8,7 @@
         "formSnapshot": {
           "thuTuc": "dktt",
           "loaiDKTT": "lap_ho_moi",
-          "hoTen": "Trần Minh Hùng",
+          "hoTen": "Trần Văn A",
           "ngaySinh": "2006-02-23",
           "gioiTinh": "Nam",
           "danToc": "kinh",
@@ -115,28 +115,8 @@
         }
       },
       "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T20:33:37.550Z",
+      "updatedAt": "2026-07-03T20:37:57.597Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "456",
-          "createdAt": "2026-07-03T20:25:24.185Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Có vẻ như anh/chị đã nhập một chuỗi số mà không có ngữ cảnh rõ ràng. Nếu anh/chị đang muốn cung cấp thông tin nào đó liên quan đến thủ tục Liên thông Khai sinh, vui lòng cho biết thêm chi tiết. Hoặc nếu có câu hỏi khác, anh/chị cũng có thể chia sẻ!",
-          "createdAt": "2026-07-03T20:25:24.185Z"
-        },
-        {
-          "role": "user",
-          "content": "Đến trang đăng ký thường trú",
-          "createdAt": "2026-07-03T20:29:53.412Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T20:29:53.412Z"
-        },
         {
           "role": "user",
           "content": "Khái niệm thần chú là gì",
@@ -216,6 +196,26 @@
           "role": "assistant",
           "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
           "createdAt": "2026-07-03T20:33:37.550Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang chủ",
+          "createdAt": "2026-07-03T20:37:41.973Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đã được chuyển đến trang chủ.",
+          "createdAt": "2026-07-03T20:37:41.973Z"
+        },
+        {
+          "role": "user",
+          "content": "chuyển đến trang đăng ký tạm trú",
+          "createdAt": "2026-07-03T20:37:57.597Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-03T20:37:57.597Z"
         }
       ]
     },
