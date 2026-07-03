@@ -229,14 +229,6 @@ a:hover {
     color: inherit;
 }
 
-.header-quoc-huy {
-    width: 60px;
-    height: 60px;
-    object-fit: contain;
-    flex-shrink: 0;
-    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
-}
-
 .header-logo-text {
     display: flex;
     flex-direction: column;

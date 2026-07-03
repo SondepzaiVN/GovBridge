@@ -21,7 +21,6 @@ const Header: React.FC = () => {
                 <div className="header-inner">
                     {/* Tên cổng */}
                     <Link to="/" className="header-logo" aria-label="Cổng Dịch Vụ Công Quốc Gia - Trang chủ">
-                        <img src="/quoc_huy.png" alt="Quốc huy Việt Nam" className="header-quoc-huy" />
                         <div className="header-logo-text">
                             <span className="header-logo-name">Cổng Dịch Vụ Công Quốc Gia</span>
                             <span className="header-logo-sub">
@@ -34,18 +33,36 @@ const Header: React.FC = () => {
                     <div className="header-actions">
                         {user ? (
                             <>
-                                <Link to={user.role === 'can-bo' ? '/can-bo' : '/nguoi-dan'} className="header-user" aria-label="Mở khu vực tài khoản">
+                                <Link
+                                    to={user.role === 'can-bo' ? '/can-bo' : '/nguoi-dan'}
+                                    className="header-user"
+                                    aria-label="Mở khu vực tài khoản"
+                                >
                                     <UserRound size={20} />
-                                    <span><strong>{user.name}</strong><small>{user.role === 'can-bo' ? 'Cán bộ' : 'Người dân'}</small></span>
+                                    <span>
+                                        <strong>{user.name}</strong>
+                                        <small>{user.role === 'can-bo' ? 'Cán bộ' : 'Người dân'}</small>
+                                    </span>
                                 </Link>
-                                <button className="btn-header-logout" type="button" onClick={handleLogout} aria-label="Đăng xuất">
-                                    <LogOut size={15} /><span>Đăng xuất</span>
+                                <button
+                                    className="btn-header-logout"
+                                    type="button"
+                                    onClick={handleLogout}
+                                    aria-label="Đăng xuất"
+                                >
+                                    <LogOut size={15} />
+                                    <span>Đăng xuất</span>
                                 </button>
                             </>
                         ) : (
                             <>
-                                <Link className="btn-header-register" to="/dang-nhap?role=nguoi-dan" aria-label="Đăng ký tài khoản">
-                                    <UserPlus size={15} /><span>Đăng ký</span>
+                                <Link
+                                    className="btn-header-register"
+                                    to="/dang-nhap?role=nguoi-dan"
+                                    aria-label="Đăng ký tài khoản"
+                                >
+                                    <UserPlus size={15} />
+                                    <span>Đăng ký</span>
                                 </Link>
                                 <Link
                                     className="btn-header-login"
