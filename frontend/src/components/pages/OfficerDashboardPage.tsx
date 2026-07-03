@@ -52,7 +52,7 @@ const statusClassName = (status: ApplicationStatus) => {
 const OfficerDashboardPage: React.FC = () => {
     const { user } = useAuth();
     const [applications, setApplications] = useState<Application[]>(loadDashboardApplications);
-    const [selectedId, setSelectedId] = useState(INITIAL_DASHBOARD_APPLICATIONS[0].id);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<OfficerApplicationFilters['status']>('Tất cả');
     const [returnReason, setReturnReason] = useState('');
     const [message, setMessage] = useState('');
@@ -75,7 +75,7 @@ const OfficerDashboardPage: React.FC = () => {
     const selectedApplication = filteredApplications.find((application) => application.id === selectedId)
         ?? filteredApplications[0]
         ?? applications[0];
-    const officerNote = officerNoteDrafts[selectedApplication.id] ?? selectedApplication.officerNote;
+    const officerNote = selectedApplication ? (officerNoteDrafts[selectedApplication.id] ?? selectedApplication.officerNote) : '';
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -88,6 +88,7 @@ const OfficerDashboardPage: React.FC = () => {
     }, []);
 
     const handleSaveOfficerNote = () => {
+        if (!selectedApplication) return;
         setApplications((current) => {
             const newApps = current.map((application) => (
                 application.id === selectedApplication.id ? { ...application, officerNote } : application
@@ -206,6 +207,7 @@ const OfficerDashboardPage: React.FC = () => {
 
     const completeAction = () => {
         if (!confirmAction) return;
+        if (!selectedApplication) return;
         const nextStatus: ApplicationStatus = 
             confirmAction === 'accept' ? 'Đã tiếp nhận' :
             confirmAction === 'process' ? 'Đang xử lí' :
