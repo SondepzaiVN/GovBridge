@@ -30,6 +30,8 @@ export type OfficerApplication = {
     provinceName: string;
     districtName: string;
     wardName: string;
+    address: string;
+    requestContent: string;
     documents: Array<{ name: string; state: 'Đã có' | 'Cần kiểm tra' }>;
     message: string;
     caseNote: string;
@@ -96,6 +98,13 @@ export const normalizeOfficerApplication = (
     const details = Object.fromEntries(
         Object.entries(rawDetails).map(([key, value]) => [key, withFallback(value)]),
     );
+    const detailValue = (...keys: string[]) => {
+        for (const key of keys) {
+            const value = details[key];
+            if (value && value !== MISSING_OFFICER_VALUE) return value;
+        }
+        return MISSING_OFFICER_VALUE;
+    };
     const documents = Array.isArray(raw.documents)
         ? raw.documents.map((item) => {
             const document = asRecord(item);
@@ -128,10 +137,22 @@ export const normalizeOfficerApplication = (
         channel: withFallback(raw.channel),
         status,
         statusLabel: status,
-        receivingAgency: firstValue(raw, ['receivingAgency', 'agency']),
-        provinceName: firstValue(raw, ['provinceName', 'province']),
-        districtName: firstValue(raw, ['districtName', 'district']),
-        wardName: firstValue(raw, ['wardName', 'ward']),
+        receivingAgency: firstValue(raw, ['receivingAgency', 'agency']) !== MISSING_OFFICER_VALUE
+            ? firstValue(raw, ['receivingAgency', 'agency'])
+            : detailValue('Cơ quan tiếp nhận', 'Cơ quan thực hiện'),
+        provinceName: firstValue(raw, ['provinceName', 'province']) !== MISSING_OFFICER_VALUE
+            ? firstValue(raw, ['provinceName', 'province'])
+            : detailValue('Tỉnh/Thành phố đề nghị', 'Tỉnh/Thành phố tạm trú'),
+        districtName: firstValue(raw, ['districtName', 'district']) !== MISSING_OFFICER_VALUE
+            ? firstValue(raw, ['districtName', 'district'])
+            : detailValue('Quận/Huyện đề nghị'),
+        wardName: firstValue(raw, ['wardName', 'ward']) !== MISSING_OFFICER_VALUE
+            ? firstValue(raw, ['wardName', 'ward'])
+            : detailValue('Phường/Xã đề nghị', 'Phường/Xã tạm trú'),
+        address: firstValue(raw, ['address', 'applicantAddress']) !== MISSING_OFFICER_VALUE
+            ? firstValue(raw, ['address', 'applicantAddress'])
+            : detailValue('Địa chỉ hiện tại', 'Địa chỉ tạm trú'),
+        requestContent: firstValue(raw, ['requestContent', 'message']),
         documents,
         message: withFallback(raw.message),
         caseNote: withFallback(raw.caseNote),
