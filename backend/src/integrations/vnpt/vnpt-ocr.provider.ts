@@ -17,8 +17,24 @@ interface VnptOcrConfig {
 const formatVnptError = (payload: unknown): string => {
   const root = asRecord(payload);
   const error = asRecord(root.error);
+  const messageFields = Array.isArray(root.messageFields)
+    ? root.messageFields
+        .map((item) => {
+          const field = asRecord(item);
+          const fieldName = stringValue(field.fieldName);
+          const fieldMessage = stringValue(field.message);
+          return [fieldName, fieldMessage].filter(Boolean).join(':');
+        })
+        .filter(Boolean)
+        .join('; ')
+    : '';
+  const errors = Array.isArray(root.errors)
+    ? root.errors.filter((item) => typeof item === 'string').join('; ')
+    : '';
   const message = stringValue(
     root.message,
+    errors,
+    messageFields,
     root.error_description,
     root.description,
     error.message,
@@ -48,13 +64,13 @@ export class VnptOcrProvider implements IdentityOcrProvider {
   async extractCccd(image: { buffer: Buffer; mimetype: string; filename: string }): Promise<CCCDInfo> {
     const hash = await this.upload(image);
     const tokenId = this.config.tokenId.trim();
-    const clientSession = 'GOV_BRIDGE_' + Date.now();
+    const clientSession = 'WEB_govbridge_web_Browser_1.0_GOVBRIDGE_' + Date.now();
     const body = {
       img_front: hash,
-      img_back: '',
       client_session: clientSession,
       type: -1,
       validate_postcode: false,
+      crop_param: '0.0,0.0',
       ...(tokenId ? { token: tokenId } : {}),
     };
     let response = await this.callOcr(body);
@@ -65,6 +81,9 @@ export class VnptOcrProvider implements IdentityOcrProvider {
         img_front: hash,
         img_back: '',
         client_session: clientSession,
+        type: -1,
+        validate_postcode: false,
+        crop_param: '0.0,0.0',
         ...(tokenId ? { token: tokenId } : {}),
       });
       payload = await response.json().catch(() => ({}));
@@ -76,26 +95,43 @@ export class VnptOcrProvider implements IdentityOcrProvider {
   }
 
   private async callOcr(body: Record<string, unknown>): Promise<Response> {
-    return fetchVnpt(this.config.baseUrl + '/ai/v1/ocr/id', {
+    let response = await fetchVnpt(this.config.baseUrl + '/ai/v1/web/ocr/id', {
       method: 'POST',
       headers: { ...await this.headers(), 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(25_000),
     });
+    if (this.shouldRefreshAuthorization(response)) {
+      this.cachedAuthorization = null;
+      response = await fetchVnpt(this.config.baseUrl + '/ai/v1/web/ocr/id', {
+        method: 'POST',
+        headers: { ...await this.headers(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(25_000),
+      });
+    }
+    return response;
   }
 
   private async upload(image: { buffer: Buffer; mimetype: string; filename: string }): Promise<string> {
-    const form = new FormData();
-    form.append('file', new Blob([new Uint8Array(image.buffer)], { type: image.mimetype }), image.filename);
-    form.append('title', 'CCCD');
-    form.append('description', 'Front image');
+    const send = async (): Promise<Response> => {
+      const form = new FormData();
+      form.append('file', new Blob([new Uint8Array(image.buffer)], { type: image.mimetype }), image.filename);
+      form.append('title', 'ocr front');
+      form.append('description', 'ocr front old type ');
+      return fetchVnpt(this.config.baseUrl + '/file-service/v1/addFile', {
+        method: 'POST',
+        headers: await this.headers(),
+        body: form,
+        signal: AbortSignal.timeout(25_000),
+      });
+    };
 
-    const response = await fetchVnpt(this.config.baseUrl + '/file-service/v1/addFile', {
-      method: 'POST',
-      headers: await this.headers(),
-      body: form,
-      signal: AbortSignal.timeout(25_000),
-    });
+    let response = await send();
+    if (this.shouldRefreshAuthorization(response)) {
+      this.cachedAuthorization = null;
+      response = await send();
+    }
     const payload: unknown = await response.json().catch(() => ({}));
     if (!response.ok) {
       throw new ExternalServiceError('Không tải được ảnh lên VNPT eKYC' + formatVnptError(payload));
@@ -104,6 +140,11 @@ export class VnptOcrProvider implements IdentityOcrProvider {
     const hash = stringValue(object.hash);
     if (!hash) throw new ExternalServiceError('VNPT eKYC không trả về mã ảnh hợp lệ.');
     return hash;
+  }
+
+  private shouldRefreshAuthorization(response: Response): boolean {
+    const hasClientCredentials = Boolean(this.config.clientId?.trim() && this.config.clientSecret?.trim());
+    return hasClientCredentials && (response.status === 401 || response.status === 403);
   }
 
   private async headers(): Promise<Record<string, string>> {
