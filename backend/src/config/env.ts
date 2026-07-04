@@ -40,6 +40,12 @@ const envSchema = z.object({
   VNPT_EKYC_TOKEN_ID: z.string().default(''),
   VNPT_EKYC_TOKEN_KEY: z.string().default(''),
   VNPT_MAC_ADDRESS: z.string().default('GOV_BRIDGE_BACKEND'),
+  VNPT_SMARTREADER_URL: z.string().url().default('https://api.idg.vnpt.vn'),
+  VNPT_SMARTREADER_ACCESS_TOKEN: z.string().default(''),
+  VNPT_SMARTREADER_TOKEN_ID: z.string().default(''),
+  VNPT_SMARTREADER_TOKEN_KEY: z.string().default(''),
+  VNPT_SMARTREADER_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).default(45_000),
+  DOCUMENT_RULES_PATH: z.string().optional(),
   VNPT_TTS_URL: z.string().url().default('https://api.idg.vnpt.vn/tts-service/v2/grpc'),
   VNPT_TTS_ACCESS_TOKEN: z.string().default(''),
   VNPT_TTS_TOKEN_ID: z.string().default(''),
@@ -107,4 +113,5 @@ export const env = {
     .map((origin) => origin.trim())
     .filter(Boolean),
   DATA_DIR: path.resolve(parsed.data.DATA_DIR ?? path.join(backendRoot, 'src/storage/data')),
+  DOCUMENT_RULES_PATH: path.resolve(parsed.data.DOCUMENT_RULES_PATH ?? path.join(backendRoot, '..', 'Rules.md')),
 } as const;

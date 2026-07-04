@@ -42,6 +42,7 @@ import {
 } from '../../utils/validateTamTruApplication';
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { registerPendingDocumentForReview } from '../../utils/documentReviewRegistry';
 
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
@@ -404,6 +405,22 @@ const DangKyTamTruPage: React.FC = () => {
             },
         }));
         setReview(null);
+    };
+
+    const updateAttachmentFile = (documentId: string, file: File | undefined, quantity: string) => {
+        if (!file) return;
+        updateAttachment(documentId, {
+            checked: true,
+            file,
+            fileName: file.name,
+            quantity,
+        });
+        registerPendingDocumentForReview({
+            file,
+            documentId,
+            route: '/dang-ky-tam-tru',
+            label: documentId.toUpperCase(),
+        });
     };
 
     const updateMember = (id: number, patch: Partial<TamTruHouseholdMember>) => {
@@ -1134,15 +1151,11 @@ const DangKyTamTruPage: React.FC = () => {
                                                                                     type="file"
                                                                                     accept="image/png,image/jpeg,application/pdf"
                                                                                     onChange={(event) =>
-                                                                                        updateAttachment(document.id, {
-                                                                                            checked: true,
-                                                                                            fileName:
-                                                                                                event.target.files?.[0]
-                                                                                                    ?.name || '',
-                                                                                            quantity:
-                                                                                                draft?.quantity ||
-                                                                                                document.quantity,
-                                                                                        })
+                                                                                        updateAttachmentFile(
+                                                                                            document.id,
+                                                                                            event.target.files?.[0],
+                                                                                            draft?.quantity || document.quantity,
+                                                                                        )
                                                                                     }
                                                                                 />
                                                                                 <Paperclip size={14} />
@@ -1185,16 +1198,11 @@ const DangKyTamTruPage: React.FC = () => {
                                                                                     type="file"
                                                                                     accept="image/png,image/jpeg,application/pdf"
                                                                                     onChange={(event) =>
-                                                                                        updateAttachment(document.id, {
-                                                                                            checked: true,
-                                                                                            fileName:
-                                                                                                event.target.files?.[0]
-                                                                                                    ?.name ||
-                                                                                                `${document.id}-demo.pdf`,
-                                                                                            quantity:
-                                                                                                draft?.quantity ||
-                                                                                                document.quantity,
-                                                                                        })
+                                                                                        updateAttachmentFile(
+                                                                                            document.id,
+                                                                                            event.target.files?.[0],
+                                                                                            draft?.quantity || document.quantity,
+                                                                                        )
                                                                                     }
                                                                                 />
                                                                                 <Plus size={14} />

@@ -1,5 +1,5 @@
 import type { AgentEvent } from '../utils/eventBus';
-import type { AIResponse, CCCDInfo } from '../types';
+import type { AIResponse, CCCDInfo, DocumentReviewResult } from '../types';
 import { apiClient } from './client';
 
 interface AssistantApiResult {
@@ -30,6 +30,8 @@ interface STTApiResult {
     confidence: number | null;
     audioDuration: number | null;
 }
+
+interface DocumentReviewApiResult extends DocumentReviewResult {}
 
 const CHAT_SESSION_KEY = 'gov-bridge-chat-session-id';
 let currentRoute = '/';
@@ -345,5 +347,21 @@ export const ocrService = {
             body: formData,
         });
         return result.info;
+    },
+};
+
+export const documentReviewService = {
+    reviewCt01: async (
+        file: File,
+        context: { currentRoute?: string; formValues?: Record<string, string> } = {},
+    ): Promise<DocumentReviewResult> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('currentRoute', context.currentRoute || currentRoute);
+        formData.append('formValues', JSON.stringify(context.formValues || {}));
+        return apiClient<DocumentReviewApiResult>('/document-review/ct01', {
+            method: 'POST',
+            body: formData,
+        });
     },
 };
