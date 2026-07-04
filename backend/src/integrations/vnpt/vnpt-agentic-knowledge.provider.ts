@@ -25,9 +25,9 @@ import { serializeVnptKnowledgeText } from './vnpt-agentic-knowledge.serializer.
 export interface VnptAgenticKnowledgeOptions {
   url: string;
   accessToken: string;
-  tokenId: string;
-  tokenKey: string;
   botId: string;
+  senderId?: string;
+  referer?: string;
   timeoutMs?: number;
   fetchImpl?: typeof fetch;
 }
@@ -35,9 +35,9 @@ export interface VnptAgenticKnowledgeOptions {
 interface VnptAgenticKnowledgeConfig {
   url: string;
   authorization: string;
-  tokenId: string;
-  tokenKey: string;
   botId: string;
+  senderId: string;
+  referer: string;
   timeoutMs: number;
   fetchImpl: typeof fetch;
 }
@@ -53,16 +53,15 @@ const authorizationValue = (accessToken: string): string => {
 const buildConfig = (options: VnptAgenticKnowledgeOptions): VnptAgenticKnowledgeConfig => {
   const url = options.url.trim();
   const authorization = authorizationValue(options.accessToken);
-  const tokenId = options.tokenId.trim();
-  const tokenKey = options.tokenKey.trim();
   const botId = options.botId.trim();
+  const senderId = options.senderId?.trim() || 'team.25@vnptai.io';
+  const referer = options.referer?.trim() || 'https://livechat.vnpt.vn/';
   const timeoutMs = options.timeoutMs ?? 30_000;
   const missing = [
     !url ? 'VNPT_AGENTIC_URL' : null,
-    !authorization ? 'VNPT_AGENTIC_ACCESS_TOKEN' : null,
-    !tokenId ? 'VNPT_AGENTIC_TOKEN_ID' : null,
-    !tokenKey ? 'VNPT_AGENTIC_TOKEN_KEY' : null,
-    !botId ? 'VNPT_AGENTIC_BOT_ID' : null,
+    !authorization ? 'VNPT_ASSISTANT_TOKEN' : null,
+    !botId ? 'VNPT_ASSISTANT_BOT_ID' : null,
+    !senderId ? 'VNPT_ASSISTANT_SENDER_ID' : null,
   ].filter((name): name is string => name !== null);
   if (missing.length > 0) {
     throw new ConfigurationError(
@@ -74,16 +73,17 @@ const buildConfig = (options: VnptAgenticKnowledgeOptions): VnptAgenticKnowledge
   }
   try {
     new URL(url);
+    new URL(referer);
   } catch {
-    throw new ConfigurationError('VNPT_AGENTIC_URL không hợp lệ.');
+    throw new ConfigurationError('URL cấu hình VNPT Assistant không hợp lệ.');
   }
 
   return {
     url,
     authorization,
-    tokenId,
-    tokenKey,
     botId,
+    senderId,
+    referer,
     timeoutMs,
     fetchImpl: options.fetchImpl ?? fetch,
   };
@@ -101,20 +101,24 @@ export class VnptAgenticKnowledgeProvider implements KnowledgeProvider {
     const outbound = prepareVnptKnowledgeOutbound(request);
     const headers = new Headers({
       Authorization: this.config.authorization,
-      'Token-id': this.config.tokenId,
-      'Token-key': this.config.tokenKey,
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
+      Referer: this.config.referer,
     });
     const payload: VnptConversationPayload = {
       bot_id: this.config.botId,
-      sender_id: request.identity.senderId,
+      sender_id: this.config.senderId,
       text: serializeVnptKnowledgeText(outbound.dto),
       input_channel: 'livechat',
       session_id: request.identity.sessionId,
-      metadata: {
-        button_variables: [],
+      metadata: {},
+      settings: {
+        enable_chunk_stream: 1,
       },
+      stream: '1',
+      tts_model: 'news',
+      tts_region: 'female_north',
+      user_auth_level: 2,
     };
     assertSafeVnptOutboundPayload(payload, request.privacy.knownPii);
 

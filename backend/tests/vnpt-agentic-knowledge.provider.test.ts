@@ -42,9 +42,9 @@ const createKnowledgeResponse = (): Response => {
 const validOptions = (fetchImpl: typeof fetch) => ({
   url: 'https://assistant-stream.vnpt.vn/v1/conversation',
   accessToken: 'access-token',
-  tokenId: 'token-id',
-  tokenKey: 'token-key',
   botId: 'bot-id',
+  senderId: 'team.25@vnptai.io',
+  referer: 'https://livechat.vnpt.vn/',
   fetchImpl,
 });
 
@@ -68,15 +68,21 @@ describe('VnptAgenticKnowledgeProvider', () => {
     expect(headers.get('Content-Type')).toBe('application/json');
     expect(headers.get('Accept')).toBe('text/event-stream');
     expect(headers.get('Authorization')).toBe('Bearer access-token');
-    expect(headers.get('Token-id')).toBe('token-id');
-    expect(headers.get('Token-key')).toBe('token-key');
+    expect(headers.get('Referer')).toBe('https://livechat.vnpt.vn/');
+    expect(headers.has('Token-id')).toBe(false);
+    expect(headers.has('Token-key')).toBe(false);
     expect(payload).toEqual({
       bot_id: 'bot-id',
-      sender_id: 'sender_opaque_12345678',
+      sender_id: 'team.25@vnptai.io',
       text: expect.stringContaining('[CÂU HỎI CỦA NGƯỜI DÂN]'),
       input_channel: 'livechat',
       session_id: 'knowledge_opaque_12345678',
-      metadata: { button_variables: [] },
+      metadata: {},
+      settings: { enable_chunk_stream: 1 },
+      stream: '1',
+      tts_model: 'news',
+      tts_region: 'female_north',
+      user_auth_level: 2,
     });
     expect(Object.keys(payload).sort()).toEqual([
       'bot_id',
@@ -84,7 +90,12 @@ describe('VnptAgenticKnowledgeProvider', () => {
       'metadata',
       'sender_id',
       'session_id',
+      'settings',
+      'stream',
       'text',
+      'tts_model',
+      'tts_region',
+      'user_auth_level',
     ]);
     expect(result).toEqual({
       answer: 'Phần một [Nguồn 1]\n\nPhần hai\n\nNguồn tham khảo',
@@ -119,7 +130,7 @@ describe('VnptAgenticKnowledgeProvider', () => {
     expect(new Headers(capturedInit?.headers).get('Authorization')).not.toContain('Bearer Bearer');
   });
 
-  it('uses only the opaque identities prepared by the session layer', async () => {
+  it('uses the configured VNPT sender and opaque session identity', async () => {
     const payloads: Array<Record<string, unknown>> = [];
     const fetchImpl = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       payloads.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
@@ -137,9 +148,10 @@ describe('VnptAgenticKnowledgeProvider', () => {
       },
     });
 
-    expect(payloads[0]?.sender_id).toBe(payloads[1]?.sender_id);
+    expect(payloads[0]?.sender_id).toBe('team.25@vnptai.io');
+    expect(payloads[1]?.sender_id).toBe('team.25@vnptai.io');
     expect(payloads[0]?.session_id).toBe(payloads[1]?.session_id);
-    expect(payloads[2]?.sender_id).not.toBe(payloads[0]?.sender_id);
+    expect(payloads[2]?.sender_id).toBe(payloads[0]?.sender_id);
     expect(payloads[2]?.session_id).not.toBe(payloads[0]?.session_id);
   });
 
@@ -184,7 +196,6 @@ describe('VnptAgenticKnowledgeProvider', () => {
     await provider.query(knowledgeRequest);
 
     for (const forbidden of [
-      'settings',
       'system_prompt',
       'advance_prompt',
       'assistant_context',
@@ -204,7 +215,7 @@ describe('VnptAgenticKnowledgeProvider', () => {
 
     expect(() => new VnptAgenticKnowledgeProvider({
       ...validOptions(fetchImpl),
-      tokenKey: ' ',
+      accessToken: ' ',
     })).toThrow(expect.objectContaining({
       code: 'PROVIDER_NOT_CONFIGURED',
       message: expect.not.stringContaining('access-token'),
