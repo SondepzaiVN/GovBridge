@@ -11,6 +11,8 @@ const KhaiSinhPage: React.FC = () => (
         id: 'father',
         label: 'Thông tin cha',
         insertBeforeFieldId: 'cccdCha',
+        expectedGender: 'male',
+        duplicateWithFieldIds: ['cccdMe'],
         fieldMap: {
           cccdCha: 'id',
           hoTenCha: 'hoTen',
@@ -21,6 +23,8 @@ const KhaiSinhPage: React.FC = () => (
         id: 'mother',
         label: 'Thông tin mẹ',
         insertBeforeFieldId: 'cccdMe',
+        expectedGender: 'female',
+        duplicateWithFieldIds: ['cccdCha'],
         fieldMap: {
           cccdMe: 'id',
           hoTenMe: 'hoTen',

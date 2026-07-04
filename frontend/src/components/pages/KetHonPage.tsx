@@ -11,6 +11,8 @@ const KetHonPage: React.FC = () => (
         id: 'male',
         label: 'Thông tin bên Nam',
         insertBeforeFieldId: 'hoTenNam',
+        expectedGender: 'male',
+        duplicateWithFieldIds: ['cccdNu'],
         fieldMap: {
           hoTenNam: 'hoTen',
           cccdNam: 'id',
@@ -22,6 +24,8 @@ const KetHonPage: React.FC = () => (
         id: 'female',
         label: 'Thông tin bên Nữ',
         insertBeforeFieldId: 'hoTenNu',
+        expectedGender: 'female',
+        duplicateWithFieldIds: ['cccdNam'],
         fieldMap: {
           hoTenNu: 'hoTen',
           cccdNu: 'id',
