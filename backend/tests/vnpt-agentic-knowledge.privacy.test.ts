@@ -106,6 +106,7 @@ describe('VNPT outbound privacy boundary', () => {
         diaChi: '12 Lê Lợi, phường 1',
       },
       missingRequiredFields: [],
+      importantVisibleFields: [],
       recentChanges: {},
       candidateCases: [],
       recentOcrFacts: { hoChieu: 'B1234567' },
