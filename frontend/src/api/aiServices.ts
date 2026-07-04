@@ -341,7 +341,38 @@ export const ttsService = {
 };
 
 export const ocrService = {
-    resizeImage: async (file: File) => file,
+    resizeImage: async (file: File): Promise<File> => {
+        if (!file.type.startsWith('image/')) return file;
+
+        const imageUrl = URL.createObjectURL(file);
+        try {
+            const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => reject(new Error('Không đọc được ảnh CCCD.'));
+                img.src = imageUrl;
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const context = canvas.getContext('2d');
+            if (!context) return file;
+            context.drawImage(image, 0, 0);
+
+            const blob = await new Promise<Blob>((resolve, reject) => {
+                canvas.toBlob(
+                    (nextBlob) => nextBlob ? resolve(nextBlob) : reject(new Error('Không thể chuẩn hóa ảnh CCCD.')),
+                    'image/jpeg',
+                    0.92,
+                );
+            });
+            const baseName = file.name.replace(/\.[^.]+$/, '') || 'cccd-front';
+            return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+        } finally {
+            URL.revokeObjectURL(imageUrl);
+        }
+    },
     extractCCCDInfo: async (file: File): Promise<CCCDInfo> => {
         notifyCccdOcrExternalProcessing();
         const formData = new FormData();
