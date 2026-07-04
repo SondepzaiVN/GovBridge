@@ -44,27 +44,20 @@ const extractText = (output: unknown[]): string => {
   return texts.join('\n').trim();
 };
 
-const compactFormValues = (values: Record<string, string>): Record<string, string> =>
-  Object.fromEntries(
-    Object.entries(values)
-      .filter(([, value]) => typeof value === 'string' && value.trim())
-      .slice(0, 80)
-      .map(([key, value]) => [key, value.trim().slice(0, 500)]),
-  );
-
 const buildInstructions = () => `Bạn là công cụ kiểm tra văn bản hồ sơ cư trú của GovBridge.
 
 Nhiệm vụ:
 - Đọc OCR_TEXT của văn bản người dân nộp.
-- Đối chiếu với RULES và FORM_VALUES nếu có.
+- Đối chiếu với RULES của đúng loại giấy tờ đang kiểm tra.
 - Trả về JSON duy nhất gồm:
-  - text: nhận xét ngắn gọn bằng tiếng Việt, nêu rõ hợp lệ/chưa hợp lệ, lý do chính và việc cần sửa.
-  - flag: "green" nếu văn bản nhìn chung hợp lệ theo rules; "red" nếu thiếu thông tin quan trọng, sai mục đích, mâu thuẫn với form, hoặc OCR quá thiếu để kết luận.
+  - text: nhận xét ngắn gọn bằng tiếng Việt, nêu rõ hợp lệ/chưa hợp lệ, liệt kê tất cả lỗi quan trọng phát hiện được và việc cần sửa.
+  - flag: "green" nếu văn bản nhìn chung hợp lệ theo RULES; "red" nếu thiếu thông tin quan trọng, sai loại giấy tờ, sai mục đích, mâu thuẫn nội bộ, hoặc OCR quá thiếu để kết luận.
 
 Nguyên tắc:
 - Không bịa thông tin ngoài OCR_TEXT.
-- Nếu OCR_TEXT không đủ đọc hoặc không giống tờ khai/giấy tờ cư trú cần kiểm tra, flag phải là "red".
-- Nếu có khác biệt giữa FORM_VALUES và OCR_TEXT ở họ tên, số CCCD, ngày sinh, địa chỉ, nội dung đề nghị hoặc thủ tục, flag phải là "red".
+- Không so sánh với thông tin biểu mẫu của người dùng, vì backend không gửi FORM_VALUES cho bước kiểm tra này.
+- Nếu OCR_TEXT không đủ đọc hoặc không giống loại giấy tờ cần kiểm tra, flag phải là "red".
+- Nếu flag là "red", không dừng ở lỗi đầu tiên; phải nêu các lỗi độc lập khác nếu OCR_TEXT thể hiện rõ.
 - Không đưa markdown/code fence.`;
 
 export class OpenAiDocumentReviewerProvider implements DocumentReviewerProvider {
@@ -75,9 +68,9 @@ export class OpenAiDocumentReviewerProvider implements DocumentReviewerProvider 
   async review(input: DocumentReviewInput): Promise<{ text: string; flag: 'green' | 'red' }> {
     const payload = {
       currentRoute: input.currentRoute,
+      documentType: input.documentType,
       fileName: input.fileName,
       readerWarnings: input.readerWarnings,
-      formValues: compactFormValues(input.formValues),
       rules: input.rules.slice(0, 12_000),
       ocrText: input.recognizedText.slice(0, 30_000),
     };

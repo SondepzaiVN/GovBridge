@@ -3312,9 +3312,10 @@ button.header-nav-link.active {
 }
 
 .document-review-card.valid {
-    border-color: color-mix(in srgb, var(--success) 40%, var(--border));
-    background: color-mix(in srgb, var(--success) 8%, white);
-    color: #166534;
+    border-color: #16a34a;
+    background: #dcfce7;
+    color: #14532d;
+    box-shadow: inset 4px 0 0 #16a34a;
 }
 
 .document-review-card.invalid {
@@ -3378,9 +3379,10 @@ button.header-nav-link.active {
 }
 
 .attachment-review-badge.valid {
-    color: var(--success);
-    background: color-mix(in srgb, var(--success) 10%, white);
-    border-color: color-mix(in srgb, var(--success) 45%, var(--border));
+    color: #ffffff;
+    background: #16a34a;
+    border-color: #15803d;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
 }
 
 .attachment-review-badge.invalid,
@@ -3483,7 +3485,13 @@ button.header-nav-link.active {
 }
 
 .attachment-review-floating-tooltip.valid {
-    border-color: color-mix(in srgb, var(--success) 38%, var(--border));
+    border-color: #16a34a;
+    background: #f0fdf4;
+    box-shadow: 0 18px 45px rgba(22, 101, 52, 0.18);
+}
+
+.attachment-review-floating-tooltip.valid strong {
+    color: #14532d;
 }
 
 .attachment-review-floating-tooltip.invalid,

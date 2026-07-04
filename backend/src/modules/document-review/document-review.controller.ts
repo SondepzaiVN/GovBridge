@@ -9,7 +9,7 @@ export class DocumentReviewController {
     return sendSuccess(response, await this.service.reviewCt01({
       file: request.file,
       currentRoute: request.body.currentRoute,
-      formValues: request.body.formValues,
+      documentType: request.body.documentType,
     }));
   };
 }

@@ -1,9 +1,11 @@
+import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { AppError } from '../../common/errors/app-error.js';
 import type {
   DocumentReaderProvider,
   DocumentReviewerProvider,
   DocumentReviewResult,
+  DocumentReviewRuleType,
 } from './document-review.types.js';
 
 const isSupportedDocument = (file: Express.Multer.File): boolean => {
@@ -14,32 +16,28 @@ const isSupportedDocument = (file: Express.Multer.File): boolean => {
   return jpeg || png || pdf;
 };
 
-const parseFormValues = (value: unknown): Record<string, string> => {
-  if (typeof value !== 'string' || !value.trim()) return {};
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    return Object.fromEntries(
-      Object.entries(parsed as Record<string, unknown>)
-        .filter(([, item]) => typeof item === 'string')
-        .map(([key, item]) => [key, String(item)]),
-    );
-  } catch {
-    return {};
-  }
+const DOCUMENT_RULE_FILES: Record<DocumentReviewRuleType, string> = {
+  ct01: 'ct01.md',
+  chung_minh_cho_o_hop_phap: 'chung_minh_cho_o_hop_phap.md',
+};
+
+const parseDocumentType = (value: unknown): DocumentReviewRuleType => {
+  if (typeof value !== 'string') return 'ct01';
+  if (value in DOCUMENT_RULE_FILES) return value as DocumentReviewRuleType;
+  throw new AppError(400, 'UNSUPPORTED_DOCUMENT_RULE', 'Chưa có bộ quy tắc kiểm tra tự động cho loại giấy tờ này.');
 };
 
 interface ReviewDocumentInput {
   file: Express.Multer.File | undefined;
   currentRoute?: unknown;
-  formValues?: unknown;
+  documentType?: unknown;
 }
 
 export class DocumentReviewService {
   constructor(
     private readonly reader: DocumentReaderProvider,
     private readonly reviewer: DocumentReviewerProvider,
-    private readonly rulesPath: string,
+    private readonly rulesDirectory: string,
   ) {}
 
   async reviewCt01(input: ReviewDocumentInput): Promise<DocumentReviewResult> {
@@ -48,20 +46,23 @@ export class DocumentReviewService {
       throw new AppError(415, 'UNSUPPORTED_DOCUMENT', 'Chỉ chấp nhận ảnh JPEG, PNG hoặc PDF hợp lệ.');
     }
 
+    const documentType = parseDocumentType(input.documentType);
+    const rulesPath = path.join(this.rulesDirectory, DOCUMENT_RULE_FILES[documentType]);
+
     const [readerResult, rules] = await Promise.all([
       this.reader.read({
         buffer: input.file.buffer,
         mimetype: input.file.mimetype,
         filename: input.file.originalname,
       }),
-      readFile(this.rulesPath, 'utf8'),
+      readFile(rulesPath, 'utf8'),
     ]);
 
     const review = await this.reviewer.review({
       recognizedText: readerResult.text,
       rules,
+      documentType,
       currentRoute: typeof input.currentRoute === 'string' ? input.currentRoute : '/',
-      formValues: parseFormValues(input.formValues),
       fileName: input.file.originalname,
       readerWarnings: readerResult.warnings,
     });

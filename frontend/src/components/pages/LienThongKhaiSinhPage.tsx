@@ -1077,7 +1077,6 @@ const LienThongKhaiSinhPage: React.FC = () => {
             file,
             label: title,
             currentRoute: '/khai-sinh',
-            formValues: formState.values,
             onStatusChange: (documentReview) => {
                 setAttachmentReviews((prev) => ({ ...prev, [title]: documentReview }));
             },
