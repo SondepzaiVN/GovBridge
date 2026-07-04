@@ -3998,6 +3998,7 @@ button.header-nav-link.active {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    margin-left: auto;
     flex-shrink: 0;
 }
 
@@ -4042,6 +4043,31 @@ button.header-nav-link.active {
 
 .dktt-hidden-file-input {
     display: none;
+}
+
+.service-ocr-actions {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.service-ocr-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    grid-column: 1 / -1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.service-ocr-action-title {
+    min-width: 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
 .dktt-section-number {
