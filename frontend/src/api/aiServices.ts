@@ -11,6 +11,7 @@ interface AssistantApiResult {
 interface AssistantContext {
     currentRoute?: string;
     formValues?: Record<string, string>;
+    visibleFieldIds?: string[];
 }
 
 interface OCRApiResult {
@@ -75,6 +76,7 @@ export const smartbotService = {
                 message,
                 currentRoute: context.currentRoute ?? currentRoute,
                 formValues: context.formValues ?? {},
+                visibleFieldIds: context.visibleFieldIds ?? [],
                 recentOcrFacts,
             }),
         });
