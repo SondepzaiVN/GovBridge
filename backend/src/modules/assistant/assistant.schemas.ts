@@ -7,6 +7,7 @@ export const assistantMessageSchema = z.object({
   formValues: z.record(z.string().max(10_000)).default({}),
   currentSection: z.string().trim().max(100).optional(),
   recentOcrFacts: z.record(z.string().max(2_000)).default({}),
+  visibleFieldIds: z.array(z.string().trim().min(1).max(100)).max(50).default([]),
 }).strict();
 
 export const assistantSessionParamsSchema = z.object({

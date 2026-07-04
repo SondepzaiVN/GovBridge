@@ -1,4 +1,4 @@
-import type { Procedure } from '../procedures/procedure.types.js';
+import type { Procedure, ProcedureField } from '../procedures/procedure.types.js';
 import type { KnowledgeSessionIdentity } from './knowledge.types.js';
 
 export type AIIntent = 'CHAT' | 'FILL_FORM' | 'NAVIGATE' | 'HIGHLIGHT' | 'VALIDATE' | 'OCR_CONFIRM' | 'CLARIFY';
@@ -52,6 +52,7 @@ export interface AssistantMessageInput {
   formValues?: Record<string, string>;
   currentSection?: string;
   recentOcrFacts?: Record<string, string>;
+  visibleFieldIds?: string[];
 }
 
 export interface AssistantResult {
@@ -102,6 +103,14 @@ export interface AssistantFormContext {
   currentSection: string | null;
   knownFields: Record<string, string>;
   missingRequiredFields: Array<{ id: string; label: string }>;
+  importantVisibleFields: Array<{
+    id: string;
+    label: string;
+    type: ProcedureField['type'];
+    required: boolean;
+    isEmpty: boolean;
+    priority: 'high';
+  }>;
   recentChanges: Record<string, string>;
   candidateCases: CaseSuggestion[];
   recentOcrFacts: Record<string, string>;
