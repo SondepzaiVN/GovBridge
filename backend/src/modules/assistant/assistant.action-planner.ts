@@ -12,6 +12,15 @@ import { NextStepTool } from './tools/next-step.tool.js';
 const MIN_FILL_CONFIDENCE = 0.8;
 type ConfirmFillAction = Extract<AgentAction, { type: 'REQUEST_CONFIRM_FILL' }>;
 
+const isExplicitNextStepRequest = (normalizedMessage: string): boolean => [
+  /\btiep tuc\b/u,
+  /\bsang buoc (?:sau|tiep theo)\b/u,
+  /\bdi tiep\b/u,
+  /\bbuoc (?:ke tiep|tiep theo)\b/u,
+  /\bxong buoc nay\b/u,
+  /\bqua buoc (?:sau|tiep theo)\b/u,
+].some((pattern) => pattern.test(normalizedMessage));
+
 // Các giá trị này do hệ thống hoặc logic nghiệp vụ của biểu mẫu quản lý.
 const SYSTEM_MANAGED_FIELDS = new Set([
   'thuTuc',
@@ -45,7 +54,85 @@ const findField = (fact: ExtractedFact, fields: ProcedureField[]): ProcedureFiel
   ) ?? null;
 };
 
+const isAdministrativeUnitField = (field: ProcedureField): boolean => {
+  if (field.type !== 'select') return false;
+  const normalizedField = normalizeText(`${field.id} ${field.label}`).replace(/\s+/g, '');
+  return [
+    'tinhthanh',
+    'xaphuong',
+    'province',
+    'ward',
+  ].some((token) => normalizedField.includes(token));
+};
+
+const isProvinceField = (field: ProcedureField): boolean => {
+  const normalizedField = normalizeText(`${field.id} ${field.label}`).replace(/\s+/g, '');
+  return normalizedField.includes('tinhthanh') || normalizedField.includes('province');
+};
+
+const isWardField = (field: ProcedureField): boolean => {
+  const normalizedField = normalizeText(`${field.id} ${field.label}`).replace(/\s+/g, '');
+  return normalizedField.includes('xaphuong') || normalizedField.includes('ward');
+};
+
+const extractVisibleAdministrativeFacts = (
+  context: AssistantToolContext,
+  existingFacts: ExtractedFact[],
+): ExtractedFact[] => {
+  if (!context.currentProcedure) return [];
+
+  const visibleFieldIds = new Set(
+    context.formContext.importantVisibleFields.map((field) => field.id),
+  );
+  const visibleFields = context.currentProcedure.fields.filter(
+    (field) => visibleFieldIds.has(field.id),
+  );
+  const existingFactFieldIds = new Set(
+    existingFacts
+      .map((fact) => findField(fact, context.currentProcedure?.fields ?? [])?.id)
+      .filter((fieldId): fieldId is string => Boolean(fieldId)),
+  );
+  const extractedFacts: ExtractedFact[] = [];
+
+  const addLocationFact = (
+    fieldMatcher: (field: ProcedureField) => boolean,
+    pattern: RegExp,
+  ) => {
+    const candidates = visibleFields.filter(
+      (field) => fieldMatcher(field) && !existingFactFieldIds.has(field.id),
+    );
+    if (candidates.length !== 1) return;
+
+    const match = context.message.match(pattern);
+    const value = match?.[0]?.trim();
+    const field = candidates[0];
+    if (!field || !value) return;
+
+    extractedFacts.push({
+      fieldHint: field.id,
+      value: value.charAt(0).toLocaleUpperCase('vi-VN') + value.slice(1),
+      confidence: 1,
+      source: 'chat',
+      evidence: value,
+    });
+  };
+
+  addLocationFact(
+    isProvinceField,
+    /(?:thành\s+phố|tỉnh|tp\.?)\s+[^,;.\n]+?(?=\s*(?:,|;|\.|\n|phường|xã|thị\s+trấn|đặc\s+khu|$))/iu,
+  );
+  addLocationFact(
+    isWardField,
+    /(?:phường|xã|thị\s+trấn|đặc\s+khu)\s+[^,;.\n]+?(?=\s*(?:,|;|\.|\n|$))/iu,
+  );
+
+  return extractedFacts;
+};
+
 const normalizeSelectValue = (field: ProcedureField, value: string): string | null => {
+  // Danh mục tỉnh/phường trên UI được tải động và dùng mã hành chính thật.
+  // Giữ nhãn người dùng nói để frontend đối chiếu với option đang hiển thị.
+  if (isAdministrativeUnitField(field)) return value.trim();
   if (!field.options?.length) return value.trim();
   const normalizedValue = normalizeText(value);
   const option = field.options.find((candidate) =>
@@ -162,7 +249,13 @@ export const planAssistantResult = (
   if (understanding.navigationRoute) {
     const targetProcedure = context.procedures.find((p) => p.route === understanding.navigationRoute);
     if (targetProcedure) {
-      const navigationMessage = `Mình tìm thấy trang **${targetProcedure.name}**. Bạn có muốn chuyển đến trang này không?`;
+      const navigationConfirmation = `Mình tìm thấy trang **${targetProcedure.name}**. Bạn có muốn chuyển đến trang này không?`;
+      const navigationExplanation = finalMessage.trim()
+        || `Với thông tin bạn vừa chia sẻ, thủ tục phù hợp là **${targetProcedure.name}**.`;
+      const navigationMessage = mergeConfirmationMessage(
+        navigationExplanation,
+        navigationConfirmation,
+      );
       actions.push({
         type: 'NAVIGATE',
         route: targetProcedure.route,
@@ -225,7 +318,10 @@ export const planAssistantResult = (
   }
 
   // 2. Handle Next Step
-  if (understanding.nextStepRequested) {
+  if (
+    understanding.nextStepRequested
+    && isExplicitNextStepRequest(context.normalizedMessage)
+  ) {
     const nextStepTool = new NextStepTool();
     const nextResult = nextStepTool.execute(context);
     if (nextResult.response.intent === 'VALIDATE') {
@@ -239,8 +335,12 @@ export const planAssistantResult = (
   // 3. Handle Form Fill
   const fields: Record<string, string> = {};
   const fieldLabels: Record<string, string> = {};
+  const formFacts = [
+    ...understanding.facts,
+    ...extractVisibleAdministrativeFacts(context, understanding.facts),
+  ];
 
-  for (const fact of understanding.facts) {
+  for (const fact of formFacts) {
     if (fact.confidence < MIN_FILL_CONFIDENCE) continue;
     if (fact.source !== 'chat' && fact.source !== 'ocr') continue;
     const field = findField(fact, context.currentProcedure.fields);
@@ -255,9 +355,8 @@ export const planAssistantResult = (
     const action = createConfirmAction(context, fields, fieldLabels);
     finalSuggestions = mergeSuggestions(finalSuggestions, action.suggestions);
     finalIntent = 'CLARIFY';
-    finalMessage = providerResult.responseProvenance === 'knowledge_composer'
-      ? mergeConfirmationMessage(finalMessage, action.message)
-      : action.message;
+    finalMessage = finalMessage.trim() || action.message;
+    action.message = finalMessage;
     finalData = { ...finalData, fields, fieldLabels, previousValues: action.previousValues };
     actions.push(action);
   } else {
