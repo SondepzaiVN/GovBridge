@@ -33,7 +33,7 @@ interface STTApiResult {
     audioDuration: number | null;
 }
 
-interface DocumentReviewApiResult extends DocumentReviewResult {}
+type DocumentReviewApiResult = DocumentReviewResult;
 
 const CHAT_SESSION_KEY = 'gov-bridge-chat-session-id';
 let currentRoute = '/';
