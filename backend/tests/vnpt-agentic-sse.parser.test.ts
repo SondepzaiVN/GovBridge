@@ -73,9 +73,9 @@ const requestFixture: KnowledgeProviderRequest = {
 const providerOptions = (fetchImpl: typeof fetch) => ({
   url: 'https://assistant-stream.vnpt.vn/v1/conversation',
   accessToken: 'access-token',
-  tokenId: 'token-id',
-  tokenKey: 'token-key',
   botId: 'bot-id',
+  senderId: 'team.25@vnptai.io',
+  referer: 'https://livechat.vnpt.vn/',
   fetchImpl,
 });
 
@@ -149,6 +149,38 @@ describe('independent SSE decoder and VNPT stream parser', () => {
     ]));
 
     expect(output.answer).toBe('Phần một\n\nPhần hai\n\nPhần ba');
+  });
+
+  it('replaces chunk deltas with the final VNPT snapshot from a real stream shape', async () => {
+    const chunkEvent = (text: string): string => JSON.stringify({
+      object: {
+        sb: {
+          text_id: 'response-id',
+          card_data: [{ text, status: 1 }],
+          card_data_info: { status: 1 },
+        },
+      },
+    });
+    const finalEvent = JSON.stringify({
+      object: {
+        sb: {
+          text_id: 'response-id',
+          card_data: [{
+            text: 'Chào bạn, hồ sơ cần Mẫu CT01 và giấy tờ chứng minh chỗ ở.',
+            status: 2,
+          }],
+          card_data_info: { status: 2 },
+        },
+      },
+    });
+
+    const output = await parseVnptKnowledgeStream(streamFromChunks([
+      sse(chunkEvent('Ch'), chunkEvent('ào bạn,'), chunkEvent(' hồ sơ'), finalEvent),
+    ]));
+
+    expect(output.answer).toBe(
+      'Chào bạn, hồ sơ cần Mẫu CT01 và giấy tờ chứng minh chỗ ở.',
+    );
   });
 
   it('keeps intentionally repeated identical fragments when they have no identity', async () => {
