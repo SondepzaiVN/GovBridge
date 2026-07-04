@@ -1,4 +1,5 @@
 import { dossierCases } from '../data/tamTruMockData';
+import type { DocumentReviewUiState } from '../types';
 
 export type TamTruReviewStatus = 'VALID' | 'NEED_REVIEW' | 'INVALID';
 
@@ -19,6 +20,7 @@ export interface TamTruAttachmentDraft {
     quantity: string;
     note: string;
     file?: File;
+    documentReview?: DocumentReviewUiState;
 }
 
 export interface TamTruApplicationData {

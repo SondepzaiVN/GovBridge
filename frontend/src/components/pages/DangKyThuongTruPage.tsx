@@ -4,11 +4,13 @@ import { ArrowLeft, Camera, ChevronRight, ChevronDown, ChevronUp, Home, Send, Sa
 import { SERVICE_MAP } from '../../data/services';
 import { useForm } from '../../contexts/FormContext';
 import { FormFieldInput } from './ServicePageLayout';
-import type { CCCDInfo, FormField } from '../../types';
+import type { CCCDInfo, DocumentReviewUiState, FormField } from '../../types';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import { ocrService } from '../../api/aiServices';
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
+import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
 import {
   buildOptions,
   compareDates,
@@ -104,6 +106,7 @@ interface UploadRequirementDraft {
   fileNames: string[];
   files: File[];
   useSpecializedData: boolean;
+  reviewByFileName?: Record<string, DocumentReviewUiState>;
 }
 
 const getUploadDraftKey = (caseId: string, requirementId: string) => `${caseId}:${requirementId}`;
@@ -116,6 +119,7 @@ const createUploadDraft = (requirement: ResidenceDocumentRequirement): UploadReq
   fileNames: [],
   files: [],
   useSpecializedData: false,
+  reviewByFileName: {},
 });
 
 interface SectionDef {
@@ -763,7 +767,9 @@ const DangKyThuongTruPage: React.FC = () => {
         quantity: '',
         note: '',
         fileNames: [],
+        files: [],
         useSpecializedData: false,
+        reviewByFileName: {},
       });
   };
 
@@ -777,6 +783,7 @@ const DangKyThuongTruPage: React.FC = () => {
       useSpecializedData: checked,
       fileNames: checked ? [] : getUploadDraft(caseId, requirement).fileNames,
       files: checked ? [] : getUploadDraft(caseId, requirement).files,
+      reviewByFileName: checked ? {} : getUploadDraft(caseId, requirement).reviewByFileName,
       quantity: getUploadDraft(caseId, requirement).quantity || '1',
     });
   };
@@ -790,6 +797,9 @@ const DangKyThuongTruPage: React.FC = () => {
     const nextFiles = Array.from(inputFiles || []);
     const nextNames = nextFiles.map((file) => file.name);
     const currentDraft = getUploadDraft(caseId, requirement);
+    const nextReviewByFileName = mode === 'append'
+      ? { ...(currentDraft.reviewByFileName || {}) }
+      : {};
     patchUploadDraft(caseId, requirement, {
       checked: true,
       useSpecializedData: false,
@@ -799,7 +809,32 @@ const DangKyThuongTruPage: React.FC = () => {
       files: mode === 'append'
         ? [...currentDraft.files, ...nextFiles]
         : nextFiles,
+      reviewByFileName: nextReviewByFileName,
       quantity: currentDraft.quantity || '1',
+    });
+    nextFiles.forEach((file) => {
+      void reviewUploadedDocument({
+        file,
+        label: requirement.name,
+        currentRoute: '/dang-ky-thuong-tru',
+        formValues: formState.values,
+        onStatusChange: (documentReview) => {
+          setUploadDrafts((prev) => {
+            const key = getUploadDraftKey(caseId, requirement.id);
+            const draft = prev[key] || createUploadDraft(requirement);
+            return {
+              ...prev,
+              [key]: {
+                ...draft,
+                reviewByFileName: {
+                  ...(draft.reviewByFileName || {}),
+                  [file.name]: documentReview,
+                },
+              },
+            };
+          });
+        },
+      });
     });
   };
 
@@ -1643,7 +1678,10 @@ const DangKyThuongTruPage: React.FC = () => {
                                   {!(canUseSpecializedData && draft.useSpecializedData) && draft.fileNames.length > 0 && (
                                     <div className="dktt-doc-file-list">
                                       {draft.fileNames.slice(0, 3).map((fileName) => (
-                                        <span key={fileName}>{fileName}</span>
+                                        <span key={fileName} className="attachment-review-inline">
+                                          <span>{fileName}</span>
+                                          <AttachmentReviewBadge review={draft.reviewByFileName?.[fileName]} />
+                                        </span>
                                       ))}
                                       {draft.fileNames.length > 3 && (
                                         <span>+{draft.fileNames.length - 3} file khác</span>
