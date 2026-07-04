@@ -1306,7 +1306,7 @@ const DangKyTamTruPage: React.FC = () => {
                                                                             <label className="dktt-doc-attach">
                                                                                 <input
                                                                                     type="file"
-                                                                                    accept="image/png,image/jpeg,application/pdf"
+                                                                                    accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
                                                                                     onChange={(event) =>
                                                                                         updateAttachmentFile(
                                                                                             document.id,
@@ -1354,7 +1354,7 @@ const DangKyTamTruPage: React.FC = () => {
                                                                             >
                                                                                 <input
                                                                                     type="file"
-                                                                                    accept="image/png,image/jpeg,application/pdf"
+                                                                                    accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
                                                                                     onChange={(event) =>
                                                                                         updateAttachmentFile(
                                                                                             document.id,

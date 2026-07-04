@@ -748,7 +748,11 @@ const XacNhanCuTruPage: React.FC = () => {
                     <label className="xctt-upload-btn">
                         <Paperclip size={18} />
                         Chọn tệp tin
-                        <input type="file" onChange={(event) => handleAttachmentFileChange(event.target.files?.[0])} />
+                        <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
+                            onChange={(event) => handleAttachmentFileChange(event.target.files?.[0])}
+                        />
                     </label>
                     {uploadedFile && (
                         <strong className="attachment-review-inline">
