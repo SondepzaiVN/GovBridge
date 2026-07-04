@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
     BadgeCheck,
@@ -17,7 +17,8 @@ import type { UserRole } from '../../services/authService';
 type LoginMethod = 'vneid' | 'dvc' | 'officer';
 type FormErrors = Partial<Record<'agency' | 'username' | 'password' | 'credentials', string>>;
 
-const getDashboardRoute = (role: UserRole) => role === 'can-bo' ? '/can-bo' : '/nguoi-dan';
+const getPostLoginRoute = (role: UserRole, previousRoute?: string) =>
+    role === 'can-bo' ? previousRoute ?? '/can-bo' : '/';
 
 const LoginPage: React.FC = () => {
     const location = useLocation();
@@ -45,7 +46,7 @@ const LoginPage: React.FC = () => {
 
     React.useEffect(() => {
         if (user && !isSubmitting && !successMessage) {
-            navigate(from ?? getDashboardRoute(user.role), { replace: true });
+            navigate(getPostLoginRoute(user.role, from), { replace: true });
             localStorage.removeItem('redirect_after_login');
         }
     }, [user, navigate, from, isSubmitting, successMessage]);
@@ -85,9 +86,9 @@ const LoginPage: React.FC = () => {
                 return;
             }
             setSuccessMessage('Đăng nhập thành công. Đang chuyển hướng...');
-            // Sau 600ms navigate về trang ban đầu hoặc dashboard
+            // Công dân về trang chủ; cán bộ trở lại trang trước đó hoặc dashboard.
             window.setTimeout(() => {
-                navigate(from ?? getDashboardRoute(role), { replace: true });
+                navigate(getPostLoginRoute(role, from), { replace: true });
                 localStorage.removeItem('redirect_after_login');
             }, 700);
         }, 650);
