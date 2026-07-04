@@ -291,9 +291,10 @@ const buildOrchestratorInstructions = (request: OrchestratorRequest): string => 
         })),
         knownFields,
         missingRequiredFields: context.formContext.missingRequiredFields,
+        importantVisibleFields: context.formContext.importantVisibleFields,
     };
 
-    return `Bạn là OpenAI Orchestrator của GovBridge. Nhiệm vụ của bạn là hiểu ý định thật của người dân, trích xuất dữ liệu biểu mẫu họ thực sự nói, điều phối đúng luồng xử lý và trả JSON đúng response schema. Luôn dựa vào runtimeContext, currentRoute, currentProcedure, procedureCatalog, knownFields, missingRequiredFields và lịch sử gần nhất. Không tự thực hiện thay backend, không tuyên bố đã điền, đã chuyển trang, đã nộp, đã duyệt hoặc đã hoàn tất nếu backend/người dân chưa xác nhận.
+    return `Bạn là OpenAI Orchestrator của GovBridge. Nhiệm vụ của bạn là hiểu ý định thật của người dân, trích xuất dữ liệu biểu mẫu họ thực sự nói, điều phối đúng luồng xử lý và trả JSON đúng response schema. Luôn dựa vào runtimeContext, currentRoute, currentProcedure, procedureCatalog, knownFields, missingRequiredFields, importantVisibleFields và lịch sử gần nhất. Không tự thực hiện thay backend, không tuyên bố đã điền, đã chuyển trang, đã nộp, đã duyệt hoặc đã hoàn tất nếu backend/người dân chưa xác nhận.
 
 BƯỚC 1 — HIỂU Ý ĐỊNH
 Hiểu toàn câu và ngữ cảnh, không quyết định chỉ bằng một từ khóa. Người dân có thể nói ngắn, sai chính tả, dùng từ đời thường hoặc mô tả hoàn cảnh thay vì nói đúng tên thủ tục. Ưu tiên tin nhắn mới nhất, đặc biệt là phủ định, sửa đổi, xác nhận hoặc hủy bỏ. Đối chiếu ngữ nghĩa với name, shortName, description và keywords của toàn bộ procedureCatalog. Chỉ hỏi lại khi sự mơ hồ có thể làm chọn sai thủ tục, sai field hoặc sai hành động.
@@ -305,6 +306,8 @@ Nếu người dân chỉ chào hỏi, cảm ơn, tạm biệt, hỏi “bạn l
 
 BƯỚC 3 — TRÍCH XUẤT FACTS
 Chỉ tạo facts khi currentProcedure tồn tại, field có thật trong currentProcedure.fields, giá trị xuất hiện rõ trong tin nhắn hiện tại và chủ thể dữ liệu rõ ràng. facts chỉ lấy từ lời người dân trong tin nhắn hiện tại, không lấy từ lịch sử hoặc KnowledgeResult. fieldHint phải là field id có thật; source = "chat"; evidence là câu làm căn cứ; confidence >= 0.8 chỉ khi chắc chắn. Không suy luận giới tính, ngày tháng, địa chỉ, quan hệ, chủ thể hoặc dữ liệu còn thiếu. Không nói đã điền form. Nếu chưa rõ field hoặc chủ thể, hỏi lại một câu ngắn.
+
+importantVisibleFields là các trường backend đã xác minh đang hiện trước mắt người dân và phải được ưu tiên cao. Khi tin nhắn hiện tại cung cấp hoặc sửa dữ liệu cá nhân khớp rõ với một trường trong danh sách này, bắt buộc tạo fact cho đúng field id để backend kích hoạt luồng xác nhận điền form, kể cả khi người dân nói tự nhiên mà không đọc tên field. Nếu câu nói có cả tỉnh/thành phố và phường/xã tương ứng đang hiển thị, tạo đủ fact cho cả hai trường và giữ nguyên tên địa danh người dân nói. Danh sách option hành chính tĩnh có thể khác danh mục động trên UI, nên không loại địa danh rõ ràng chỉ vì chưa thấy trong options. message có thể hỏi người dân có muốn cập nhật biểu mẫu, nhưng đồng thời vẫn phải xuất facts để backend hiển thị bảng “Xác nhận và điền” ngay bên dưới. Nếu một giá trị có thể thuộc nhiều trường hoặc chưa rõ chủ thể thì hỏi lại, không đoán.
 
 BƯỚC 4 — ĐIỀU HƯỚNG
 Nếu người dân muốn làm, đăng ký, bắt đầu khai, chuyển trang hoặc thực hiện một thủ tục, hãy xác định thủ tục phù hợp từ procedureCatalog. Đặt navigationRoute khi xác định được đúng một thủ tục phù hợp, route tồn tại chính xác trong procedureCatalog và người dân chưa ở đúng route đó. Không tạo URL, domain, markdown link hoặc route ngoài procedureCatalog. Backend sẽ tự dùng navigationRoute để hiển thị chức năng xác nhận điều hướng cho người dân.
@@ -509,25 +512,111 @@ const toAssistantUnderstanding = (snapshot: UserUnderstandingSnapshot): Assistan
     nextStepRequested: snapshot.nextStepRequested,
 });
 
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+        ? value as Record<string, unknown>
+        : null;
+
+const cleanString = (value: unknown, maxLength: number): string | null =>
+    typeof value === 'string' && value.trim()
+        ? value.trim().slice(0, maxLength)
+        : null;
+
+const normalizeNonconformingOrchestratorOutput = (value: unknown): unknown => {
+    const raw = asRecord(value);
+    if (!raw) return value;
+
+    const facts = Array.isArray(raw.facts)
+        ? raw.facts.flatMap((candidate) => {
+              const fact = asRecord(candidate);
+              const fieldHint = cleanString(fact?.fieldHint, 100);
+              const factValue = cleanString(fact?.value, 2_000);
+              if (!fact || !fieldHint || !factValue) return [];
+              const rawConfidence = typeof fact.confidence === 'number' && Number.isFinite(fact.confidence)
+                  ? fact.confidence
+                  : 0.8;
+              return [{
+                  fieldHint,
+                  value: factValue,
+                  confidence: Math.min(1, Math.max(0, rawConfidence)),
+                  source: fact.source === 'inference' ? 'inference' as const : 'chat' as const,
+                  evidence: cleanString(fact.evidence, 500),
+              }];
+          }).slice(0, 20)
+        : [];
+
+    const rawCaseSuggestion = asRecord(raw.caseSuggestion);
+    const caseId = cleanString(rawCaseSuggestion?.id, 100);
+    const caseReason = cleanString(rawCaseSuggestion?.reason, 1_000);
+    const caseConfidence = rawCaseSuggestion?.confidence;
+    const caseSuggestion =
+        caseId
+        && caseReason
+        && typeof caseConfidence === 'number'
+        && Number.isFinite(caseConfidence)
+            ? {
+                  id: caseId,
+                  confidence: Math.min(1, Math.max(0, caseConfidence)),
+                  reason: caseReason,
+              }
+            : null;
+
+    const rawFieldExplanation = asRecord(raw.fieldExplanation);
+    const explanationFieldId = cleanString(rawFieldExplanation?.fieldId, 100);
+    const explanation = cleanString(rawFieldExplanation?.explanation, 2_000);
+    const fieldExplanation = explanationFieldId && explanation
+        ? { fieldId: explanationFieldId, explanation }
+        : null;
+
+    return {
+        message: cleanString(raw.message, 8_000) ?? 'Mình đã nhận được thông tin bạn cung cấp.',
+        intent: raw.intent === 'CLARIFY' ? 'CLARIFY' : 'CHAT',
+        facts,
+        caseSuggestion,
+        followUpQuestion: cleanString(raw.followUpQuestion, 1_000),
+        fieldExplanation,
+        navigationRoute: cleanString(raw.navigationRoute, 200),
+        highlightElementId: cleanString(raw.highlightElementId, 200),
+        nextStepRequested: raw.nextStepRequested === true,
+        suggestions: Array.isArray(raw.suggestions)
+            ? raw.suggestions
+                  .map((suggestion) => cleanString(suggestion, 80))
+                  .filter((suggestion): suggestion is string => suggestion !== null)
+                  .slice(0, 3)
+            : [],
+    };
+};
+
 const parseOrchestratorOutput = (outputText: string): z.infer<typeof orchestratorOutputSchema> => {
     if (!outputText) {
         throw new AppError(502, 'EMPTY_ORCHESTRATOR_RESPONSE', 'OpenAI Orchestrator không trả về câu trả lời cuối.');
     }
-    const parsed = orchestratorOutputSchema.safeParse(
-        parseJson(
-            outputText,
-            'INVALID_ORCHESTRATOR_RESPONSE',
-            'OpenAI Orchestrator trả về output không phải JSON hợp lệ.',
-        ),
+    const rawOutput = parseJson(
+        outputText,
+        'INVALID_ORCHESTRATOR_RESPONSE',
+        'OpenAI Orchestrator trả về output không phải JSON hợp lệ.',
     );
-    if (!parsed.success) {
+    const parsed = orchestratorOutputSchema.safeParse(rawOutput);
+    if (parsed.success) return parsed.data;
+
+    const repaired = orchestratorOutputSchema.safeParse(
+        normalizeNonconformingOrchestratorOutput(rawOutput),
+    );
+    if (!repaired.success) {
         throw new AppError(
             502,
             'INVALID_ORCHESTRATOR_RESPONSE',
             'OpenAI Orchestrator trả về output không đúng schema.',
         );
     }
-    return parsed.data;
+    console.warn(
+        '[OpenAI Orchestrator] Đã chuẩn hóa output lệch schema.',
+        parsed.error.issues.map((issue) => ({
+            path: issue.path.join('.'),
+            code: issue.code,
+        })),
+    );
+    return repaired.data;
 };
 
 const toOrchestratorFinalResult = (

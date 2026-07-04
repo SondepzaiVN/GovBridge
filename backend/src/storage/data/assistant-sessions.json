@@ -2,6 +2,174 @@
   "schemaVersion": 1,
   "sessions": [
     {
+      "id": "217973c6-89ae-4b70-ab8c-55d2b412a2d2",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi",
+          "hoTen": "Lê Hoàng Anh",
+          "gioiTinh": "Nam",
+          "danToc": "kinh",
+          "cccd": "092206003988",
+          "sdt": "0948084556",
+          "diaChiDN": "94 a đường tầm vu",
+          "noiDungDN": "Đăng ký thường trú tại 94 a đường tầm vu"
+        },
+        "candidateCases": [],
+        "recentFacts": [
+          {
+            "fieldHint": "diaChiDN",
+            "value": "94 a đường tầm vu",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Địa chỉ nhà của tôi là 94 a đường tầm vu"
+          },
+          {
+            "fieldHint": "hoTen",
+            "value": "Lê Hoàng Anh",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Lê hoàng anh"
+          },
+          {
+            "fieldHint": "gioiTinh",
+            "value": "Nam",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "giới tính nam"
+          },
+          {
+            "fieldHint": "danToc",
+            "value": "kinh",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "dân tộc là kinh"
+          },
+          {
+            "fieldHint": "hoTen",
+            "value": "Lê Hoàng Anh",
+            "confidence": 0.9,
+            "source": "chat"
+          },
+          {
+            "fieldHint": "sdt",
+            "value": "0948084556",
+            "confidence": 0.9,
+            "source": "chat"
+          }
+        ],
+        "knowledgeSession": {
+          "senderId": "sender_070c7f48-6159-40b6-8a51-2f44180008e5",
+          "sessionId": "knowledge_01d2828d-6498-4d91-acc2-23af24dac0a5"
+        }
+      },
+      "createdAt": "2026-07-04T08:54:49.976Z",
+      "updatedAt": "2026-07-04T09:29:13.412Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi muốn đăng ký thường trú",
+          "createdAt": "2026-07-04T08:54:49.976Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn muốn đăng ký thường trú. Thủ tục này được thực hiện tại Công an xã/phường/thị trấn nơi bạn đăng ký. Hãy để tôi hướng dẫn bạn đến trang thủ tục này để bạn có thể bắt đầu.\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-04T08:54:49.976Z"
+        },
+        {
+          "role": "user",
+          "content": "Địa chỉ nhà của tôi là 94 a đường tầm vu giúp tôi điền thông tin nhé",
+          "createdAt": "2026-07-04T08:55:32.018Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-04T08:55:32.018Z"
+        },
+        {
+          "role": "user",
+          "content": "Lê hoàng anh sinh ngày 18/10/2006 giới tính nam dân tộc là kinh",
+          "createdAt": "2026-07-04T08:59:52.409Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 3 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-04T08:59:52.409Z"
+        },
+        {
+          "role": "user",
+          "content": "Email của tôi là lê hoàng anh 18102 ca 6 a còng gồm meo chấm com số điện thoại số điện thoại liên hệ là 0948084556",
+          "createdAt": "2026-07-04T09:00:24.341Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
+          "createdAt": "2026-07-04T09:00:24.341Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi sống ở thành phố cần thơ phường ninh kiều",
+          "createdAt": "2026-07-04T09:01:11.905Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã nhận diện thêm thông tin bạn sống ở Thành phố Cần Thơ, Phường Ninh Kiều. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé!",
+          "createdAt": "2026-07-04T09:01:11.905Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi sống ở thành phố cần thơ phường ninh kiều",
+          "createdAt": "2026-07-04T09:12:49.644Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã ghi nhận bạn sống ở Thành phố Cần Thơ, Phường Ninh Kiều. Bạn vui lòng xác nhận để mình cập nhật thông tin này vào biểu mẫu nhé!",
+          "createdAt": "2026-07-04T09:12:49.644Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi sống ở thành phố cần thơ, phường ninh kiều",
+          "createdAt": "2026-07-04T09:13:34.011Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình đã ghi nhận bạn sống ở Thành phố Cần Thơ, Phường Ninh Kiều. Đây là thông tin cần thiết để hoàn thành hồ sơ đăng ký thường trú. Bạn có muốn mình cập nhật thông tin này vào biểu mẫu không?",
+          "createdAt": "2026-07-04T09:13:34.011Z"
+        },
+        {
+          "role": "user",
+          "content": "tôi ở thành phố cần thơ, phường ninh kiều",
+          "createdAt": "2026-07-04T09:26:05.166Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn cần hoàn thành các ô bắt buộc của bước hiện tại trước khi chuyển tiếp.",
+          "createdAt": "2026-07-04T09:26:05.166Z"
+        },
+        {
+          "role": "user",
+          "content": "Điền thông tin còn thiếu",
+          "createdAt": "2026-07-04T09:26:17.413Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn cần cung cấp một số thông tin còn thiếu để hoàn thành hồ sơ đăng ký thường trú. Cụ thể, bạn cần điền:\n\n1. **Cơ quan đăng ký cư trú** (Công an xã/phường/thị trấn)\n2. **Trường hợp** (Đăng ký thường trú cả hộ, Đăng ký thường trú lần đầu, Đăng ký thường trú nhân khẩu)\n3. **Ngày sinh**\n4. **Tỉnh/Thành phố (nơi đề nghị ĐKTT)** (Thành phố Cần Thơ)\n5. **Xã/Phường/Đặc khu** (Phường Ninh Kiều)\n\nBạn có thể cung cấp từng thông tin một nhé!",
+          "createdAt": "2026-07-04T09:26:17.413Z"
+        },
+        {
+          "role": "user",
+          "content": "tôi ở thành phố cần thơ, phường ninh kiều",
+          "createdAt": "2026-07-04T09:29:13.412Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi đã ghi nhận bạn ở **Thành phố Cần Thơ** và **Phường Ninh Kiều**. Nếu bạn muốn cập nhật thông tin này vào hồ sơ đăng ký thường trú, vui lòng cho biết thêm các thông tin sau:\n\n1. **Cơ quan đăng ký cư trú** (Công an xã/phường/thị trấn)\n2. **Trường hợp** (Đăng ký thường trú cả hộ, Đăng ký thường trú lần đầu, Đăng ký thường trú nhân khẩu)\n3. **Ngày sinh**\n\nXin hãy cung cấp thông tin còn thiếu để hoàn thiện hồ sơ nhé!",
+          "createdAt": "2026-07-04T09:29:13.412Z"
+        }
+      ]
+    },
+    {
       "id": "30b138ef-1a45-442c-978a-ae2a8af243e9",
       "currentRoute": "/ho-khau",
       "state": {

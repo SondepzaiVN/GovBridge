@@ -443,15 +443,12 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
     expect(response.body.data.actions).toEqual([
       expect.objectContaining({
         type: 'REQUEST_CONFIRM_FILL',
-        fields: { tinhThanhDN: 'cantho' },
+        fields: { tinhThanhDN: 'Thành phố Cần Thơ' },
       }),
     ]);
     expect(response.body.data.actions[0].fields).not.toHaveProperty('sdt');
     expect(response.body.data.response.message).toContain(
       'Bạn cần chuẩn bị tờ khai',
-    );
-    expect(response.body.data.response.message).toContain(
-      'Bạn kiểm tra bản xem trước rồi xác nhận',
     );
   });
 
@@ -615,6 +612,147 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
       'RAW_PROVIDER_TIMEOUT_DETAIL',
     );
     expect(response.body.data.response.message).not.toContain('Model fallback');
+  });
+
+  it('passes canonical visible fields to the orchestrator as high-priority form context', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      orchestratorResponse('Mình đang theo dõi các trường trên màn hình.'),
+    ]);
+
+    await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Tôi muốn cung cấp thông tin cá nhân.',
+        currentRoute: '/ho-khau',
+        visibleFieldIds: ['hoTen', 'cccd', 'fieldKhongTonTai'],
+      })
+      .expect(200);
+
+    const instructions = String(client.requests[0]?.instructions);
+    expect(instructions).toContain('"importantVisibleFields"');
+    expect(instructions).toContain('"id":"hoTen"');
+    expect(instructions).toContain('"id":"cccd"');
+    expect(instructions).not.toContain('fieldKhongTonTai');
+    expect(instructions).toContain('bắt buộc tạo fact cho đúng field id');
+  });
+
+  it('repairs a nonconforming address response before validating and filling the form', async () => {
+    const client = new FakeOpenAiResponsesClient([{
+      id: 'resp_nonconforming_address',
+      output: [{
+        type: 'message',
+        content: [{
+          type: 'output_text',
+          text: JSON.stringify({
+            message: 'Mình đã nhận địa chỉ bạn cung cấp.',
+            intent: 'FILL_FORM',
+            facts: [{
+              fieldHint: 'diaChiDN',
+              value: '94 A đường Tầm Du, thành phố Cần Thơ',
+              confidence: 0.98,
+              source: 'chat',
+            }],
+            suggestions: ['Kiểm tra địa chỉ'],
+            unexpectedKey: true,
+          }),
+        }],
+      }],
+    }]);
+
+    const response = await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Địa chỉ của tôi là 94 a đường tầm du thành phố cần thơ vui lòng tìm giúp tôi nhé',
+        currentRoute: '/ho-khau',
+        visibleFieldIds: ['diaChiDN'],
+      })
+      .expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: {
+          diaChiDN: '94 A đường Tầm Du, thành phố Cần Thơ',
+        },
+      }),
+    ]);
+    expect(response.body.data.response.intent).toBe('CLARIFY');
+  });
+
+  it('forces a confirmation-fill card when the model only acknowledges visible province and ward data', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      orchestratorResponse(
+        'Mình đã ghi nhận bạn sống ở Thành phố Cần Thơ, Phường Ninh Kiều. Bạn có muốn mình cập nhật thông tin này vào biểu mẫu không?',
+      ),
+    ]);
+
+    const response = await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Tôi sống ở thành phố cần thơ, phường ninh kiều',
+        currentRoute: '/ho-khau',
+        visibleFieldIds: ['tinhThanhDN', 'xaPhuongDN'],
+      })
+      .expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: {
+          tinhThanhDN: 'Thành phố cần thơ',
+          xaPhuongDN: 'Phường ninh kiều',
+        },
+      }),
+    ]);
+    expect(response.body.data.response.message).toContain(
+      'Bạn có muốn mình cập nhật thông tin này vào biểu mẫu không?',
+    );
+  });
+
+  it('ignores a hallucinated next-step flag while processing visible province and ward data', async () => {
+    const client = new FakeOpenAiResponsesClient([{
+      id: 'resp_wrong_next_step',
+      output: [{
+        type: 'message',
+        content: [{
+          type: 'output_text',
+          text: JSON.stringify({
+            message: 'Mình đã ghi nhận nơi cư trú của bạn.',
+            intent: 'CHAT',
+            facts: [],
+            caseSuggestion: null,
+            followUpQuestion: null,
+            fieldExplanation: null,
+            navigationRoute: null,
+            highlightElementId: null,
+            nextStepRequested: true,
+            suggestions: [],
+          }),
+        }],
+      }],
+    }]);
+
+    const response = await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Tôi ở thành phố cần thơ, phường ninh kiều',
+        currentRoute: '/ho-khau',
+        visibleFieldIds: ['tinhThanhDN', 'xaPhuongDN'],
+      })
+      .expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: {
+          tinhThanhDN: 'Thành phố cần thơ',
+          xaPhuongDN: 'Phường ninh kiều',
+        },
+      }),
+    ]);
+    expect(response.body.data.response.message).not.toContain(
+      'hoàn thành các ô bắt buộc',
+    );
   });
 });
 

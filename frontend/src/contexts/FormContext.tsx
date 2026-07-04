@@ -39,6 +39,40 @@ const loadInitialState = (): FormState => {
   }
 };
 
+const normalizeOptionLabel = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('vi-VN')
+    .replace(/đ/g, 'd')
+    .replace(/\b(?:tinh|thanh pho|phuong|xa|thi tran|dac khu)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+const resolveRenderedSelectValue = (
+  fieldId: string,
+  value: string,
+): { isSelect: boolean; resolvedValue: string | null } => {
+  if (typeof document === 'undefined') return { isSelect: false, resolvedValue: null };
+  const control = document.getElementById(fieldId);
+  if (!(control instanceof HTMLSelectElement)) {
+    return { isSelect: false, resolvedValue: null };
+  }
+
+  const options = [...control.options].filter((option) => option.value);
+  const directMatch = options.find((option) => option.value === value);
+  if (directMatch) return { isSelect: true, resolvedValue: directMatch.value };
+
+  const normalizedValue = normalizeOptionLabel(value);
+  const labelMatch = options.find(
+    (option) => normalizeOptionLabel(option.label) === normalizedValue,
+  );
+  return {
+    isSelect: true,
+    resolvedValue: labelMatch?.value ?? null,
+  };
+};
+
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [formState, setFormState] = useState<FormState>(loadInitialState);
 
@@ -78,10 +112,21 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Called by chatbot to auto-fill form fields
   const fillFields = useCallback((fields: Record<string, string>) => {
-    const updatedFieldIds = Object.keys(fields);
+    const preparedFields: Record<string, string> = {};
+    const pendingSelectFields: Record<string, string> = {};
+
+    Object.entries(fields).forEach(([fieldId, value]) => {
+      const resolution = resolveRenderedSelectValue(fieldId, value);
+      preparedFields[fieldId] = resolution.resolvedValue ?? value;
+      if (resolution.isSelect && !resolution.resolvedValue) {
+        pendingSelectFields[fieldId] = value;
+      }
+    });
+
+    const updatedFieldIds = Object.keys(preparedFields);
     setFormState((prev) => ({
       ...prev,
-      values: { ...prev.values, ...fields },
+      values: { ...prev.values, ...preparedFields },
       errors: {
         ...prev.errors,
         ...Object.fromEntries(updatedFieldIds.map((fieldId) => [fieldId, ''])),
@@ -91,6 +136,35 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...Object.fromEntries(updatedFieldIds.map((fieldId) => [fieldId, true])),
       },
     }));
+
+    // Select phụ thuộc (phường/xã) chỉ có options sau khi tỉnh/thành phố được điền.
+    // Thử đối chiếu lại trong vài giây để lấy đúng mã option từ danh mục động.
+    if (typeof window !== 'undefined' && Object.keys(pendingSelectFields).length > 0) {
+      const deadline = Date.now() + 5_000;
+      const reconcilePendingSelects = () => {
+        const resolvedFields: Record<string, string> = {};
+
+        Object.entries(pendingSelectFields).forEach(([fieldId, value]) => {
+          const resolution = resolveRenderedSelectValue(fieldId, value);
+          if (!resolution.resolvedValue) return;
+          resolvedFields[fieldId] = resolution.resolvedValue;
+          delete pendingSelectFields[fieldId];
+        });
+
+        if (Object.keys(resolvedFields).length > 0) {
+          setFormState((prev) => ({
+            ...prev,
+            values: { ...prev.values, ...resolvedFields },
+          }));
+        }
+
+        if (Object.keys(pendingSelectFields).length > 0 && Date.now() < deadline) {
+          window.setTimeout(reconcilePendingSelects, 100);
+        }
+      };
+
+      window.setTimeout(reconcilePendingSelects, 100);
+    }
   }, []);
 
   const resetForm = useCallback(() => {
@@ -111,6 +185,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useForm = () => {
   const ctx = useContext(FormContext);
   if (!ctx) throw new Error('useForm must be used within FormProvider');
@@ -118,6 +193,7 @@ export const useForm = () => {
 };
 
 // Optional: standalone hook for form with values
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFormValues = (): FormValues => {
   const { formState } = useForm();
   return formState.values;

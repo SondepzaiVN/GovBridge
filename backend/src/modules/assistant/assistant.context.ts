@@ -7,6 +7,7 @@ import type {
 
 const MAX_CONTEXT_VALUE_LENGTH = 500;
 const MAX_CONTEXT_FIELDS = 40;
+const MAX_VISIBLE_FIELDS = 40;
 
 const compactValue = (value: string): string => value.trim().slice(0, MAX_CONTEXT_VALUE_LENGTH);
 
@@ -48,6 +49,11 @@ export const buildAssistantFormContext = (
   const knownFields = selectSchemaValues(currentProcedure, input.formValues);
   const previousValues = existing?.state?.formSnapshot ?? {};
   const currentStep = getCurrentStep(currentRoute);
+  const visibleFieldIds = new Set(
+    (input.visibleFieldIds ?? [])
+      .map((fieldId) => fieldId.trim())
+      .filter(Boolean),
+  );
 
   const recentChanges = Object.fromEntries(
     Object.entries(knownFields)
@@ -64,11 +70,26 @@ export const buildAssistantFormContext = (
     .slice(0, 20)
     .map((field) => ({ id: field.id, label: field.label })) ?? [];
 
+  // IDs từ trình duyệt chỉ là gợi ý. Luôn dựng lại metadata từ schema backend
+  // để frontend không thể tự tạo field hoặc thay đổi nhãn/kiểu dữ liệu.
+  const importantVisibleFields = currentProcedure?.fields
+    .filter((field) => visibleFieldIds.has(field.id))
+    .slice(0, MAX_VISIBLE_FIELDS)
+    .map((field) => ({
+      id: field.id,
+      label: field.label,
+      type: field.type,
+      required: field.required,
+      isEmpty: !knownFields[field.id]?.trim(),
+      priority: 'high' as const,
+    })) ?? [];
+
   return {
     currentStep,
     currentSection: input.currentSection?.trim() || null,
     knownFields,
     missingRequiredFields,
+    importantVisibleFields,
     recentChanges,
     candidateCases: existing?.state?.candidateCases ?? [],
     recentOcrFacts: selectSchemaValues(currentProcedure, input.recentOcrFacts, true),

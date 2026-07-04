@@ -209,4 +209,118 @@ describe('Gov Bridge API', () => {
       }),
     ]);
   });
+
+  it('canonicalizes visible frontend fields before marking them as important', async () => {
+    let importantVisibleFields: unknown = null;
+    const orchestratorProvider: OrchestratorProvider = {
+      name: 'visible-fields-test',
+      async orchestrate(orchestratorRequest) {
+        importantVisibleFields = orchestratorRequest.context.formContext.importantVisibleFields;
+        return {
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: 'Mình đã nhận ngữ cảnh biểu mẫu.',
+            },
+            actions: [],
+          },
+        };
+      },
+    };
+
+    await request(createApp({
+      dataDirectory,
+      ocrProvider: new MockOcrProvider(),
+      ttsProvider: new MockTtsProvider(),
+      orchestratorProvider,
+      knowledgeProvider: new MockKnowledgeProvider(),
+    })).post('/api/v1/assistant/messages').send({
+      message: 'Tôi muốn cập nhật thông tin cá nhân.',
+      currentRoute: '/ho-khau',
+      formValues: { hoTen: 'Nguyễn Thị Lan' },
+      visibleFieldIds: ['hoTen', 'cccd', 'fieldKhongTonTai'],
+    }).expect(200);
+
+    expect(importantVisibleFields).toEqual([
+      {
+        id: 'hoTen',
+        label: 'Họ tên',
+        type: 'text',
+        required: true,
+        isEmpty: false,
+        priority: 'high',
+      },
+      {
+        id: 'cccd',
+        label: 'Số ĐDCN (CCCD)',
+        type: 'text',
+        required: true,
+        isEmpty: true,
+        priority: 'high',
+      },
+    ]);
+  });
+
+  it('keeps dynamic province and ward labels for the frontend to resolve', async () => {
+    const orchestratorProvider: OrchestratorProvider = {
+      name: 'administrative-fields-test',
+      async orchestrate() {
+        return {
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: 'Mình đã nhận thông tin nơi cư trú.',
+            },
+            actions: [],
+            understanding: {
+              facts: [
+                {
+                  fieldHint: 'tinhThanhDN',
+                  value: 'Thành phố Cần Thơ',
+                  confidence: 0.99,
+                  source: 'chat',
+                },
+                {
+                  fieldHint: 'xaPhuongDN',
+                  value: 'Phường Ninh Kiều',
+                  confidence: 0.99,
+                  source: 'chat',
+                },
+              ],
+              caseSuggestion: null,
+              followUpQuestion: null,
+              fieldExplanation: null,
+              navigationRoute: null,
+              highlightElementId: null,
+              nextStepRequested: false,
+            },
+          },
+        };
+      },
+    };
+
+    const response = await request(createApp({
+      dataDirectory,
+      ocrProvider: new MockOcrProvider(),
+      ttsProvider: new MockTtsProvider(),
+      orchestratorProvider,
+      knowledgeProvider: new MockKnowledgeProvider(),
+    })).post('/api/v1/assistant/messages').send({
+      message: 'Tôi sống ở thành phố Cần Thơ, phường Ninh Kiều.',
+      currentRoute: '/ho-khau',
+      visibleFieldIds: ['tinhThanhDN', 'xaPhuongDN'],
+    }).expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: {
+          tinhThanhDN: 'Thành phố Cần Thơ',
+          xaPhuongDN: 'Phường Ninh Kiều',
+        },
+      }),
+    ]);
+  });
 });
