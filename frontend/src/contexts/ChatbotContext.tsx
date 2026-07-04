@@ -5,6 +5,7 @@ import { ttsService } from '../api/aiServices';
 import { ApiClientError } from '../api/client';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
+import { collectVisibleFormFieldIds } from '../utils/visibleFormFields';
 
 const CONFIRMATION_GUIDANCE = 'Vui lòng lựa chọn để tiếp tục cuộc trò chuyện.';
 
@@ -425,6 +426,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       const result = await smartbotService.sendMessage(text, {
         currentRoute: currentRouteRef.current,
         formValues: formValuesRef.current,
+        visibleFieldIds: collectVisibleFormFieldIds(),
       });
 
       if (result.actions.length > 0) {
