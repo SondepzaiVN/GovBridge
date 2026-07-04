@@ -262,9 +262,9 @@ describe('Gov Bridge API', () => {
     ]);
   });
 
-  it('keeps dynamic province and ward labels for the frontend to resolve', async () => {
+  it('resolves select values with options to their canonical option value', async () => {
     const orchestratorProvider: OrchestratorProvider = {
-      name: 'administrative-fields-test',
+      name: 'select-normalization-test',
       async orchestrate() {
         return {
           kind: 'final',
@@ -313,12 +313,13 @@ describe('Gov Bridge API', () => {
       visibleFieldIds: ['tinhThanhDN', 'xaPhuongDN'],
     }).expect(200);
 
+    // tinhThanhDN has 'Thành phố Cần Thơ' as an option label → resolves to 'cantho'
+    // xaPhuongDN has no matching option → rejected by generic normalizeSelectValue
     expect(response.body.data.actions).toEqual([
       expect.objectContaining({
         type: 'REQUEST_CONFIRM_FILL',
         fields: {
-          tinhThanhDN: 'Thành phố Cần Thơ',
-          xaPhuongDN: 'Phường Ninh Kiều',
+          tinhThanhDN: 'cantho',
         },
       }),
     ]);

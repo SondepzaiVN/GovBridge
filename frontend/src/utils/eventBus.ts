@@ -24,6 +24,10 @@ export type AgentEvent =
       suggestions?: string[];
     }
   | {
+      type: 'HIGHLIGHT_READY';
+      message: string;
+    }
+  | {
       type: 'FILL_FORM';
       fields: Record<string, string>;
       message: string;

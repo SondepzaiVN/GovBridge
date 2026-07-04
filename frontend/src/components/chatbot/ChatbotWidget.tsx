@@ -332,7 +332,11 @@ const VoiceCallController: React.FC = () => {
 
     useEffect(() => {
         if (!state.isCallMode) {
-            ttsService.stop();
+            // Khi vào confirmation mode (navigate/fill), speakConfirmation đang đọc tin nhắn.
+            // Không stop TTS nếu đang chờ xác nhận.
+            if (!state.requiresUserAction) {
+                ttsService.stop();
+            }
             dispatch({ type: 'SET_LISTENING', payload: false });
             void sttService.cancelListening().catch(() => undefined);
             return;
