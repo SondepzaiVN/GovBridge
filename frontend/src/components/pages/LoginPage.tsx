@@ -38,21 +38,29 @@ const LoginPage: React.FC = () => {
     const [successMessage, setSuccessMessage] = useState('');
 
     // Lấy trang muốn vào trước khi bị redirect về đăng nhập
-    const from = (location.state as { from?: string } | null)?.from;
+    let from = localStorage.getItem('redirect_after_login') || undefined;
+    if (from?.startsWith('/dang-nhap')) {
+        from = undefined;
+    }
 
-    if (user) return <Navigate to={from ?? getDashboardRoute(user.role)} replace />;
+    React.useEffect(() => {
+        if (user && !isSubmitting && !successMessage) {
+            navigate(from ?? getDashboardRoute(user.role), { replace: true });
+            localStorage.removeItem('redirect_after_login');
+        }
+    }, [user, navigate, from, isSubmitting, successMessage]);
 
     const openMethod = (nextMethod: LoginMethod) => {
         const nextRole = nextMethod === 'officer' ? 'can-bo' : 'nguoi-dan';
         setErrors({});
         setSuccessMessage('');
-        navigate(`/dang-nhap?role=${nextRole}&method=${nextMethod}`);
+        navigate(`/dang-nhap?role=${nextRole}&method=${nextMethod}`, { state: location.state });
     };
 
     const returnToChooser = () => {
         setErrors({});
         setSuccessMessage('');
-        navigate('/dang-nhap', { replace: true });
+        navigate('/dang-nhap', { replace: true, state: location.state });
     };
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -80,6 +88,7 @@ const LoginPage: React.FC = () => {
             // Sau 600ms navigate về trang ban đầu hoặc dashboard
             window.setTimeout(() => {
                 navigate(from ?? getDashboardRoute(role), { replace: true });
+                localStorage.removeItem('redirect_after_login');
             }, 700);
         }, 650);
     };
@@ -206,17 +215,8 @@ const LoginPage: React.FC = () => {
                 </div>
 
                 <aside className="login-ref-side-pane">
-                    {isVneid ? (
-                        <>
-                            <div className="login-ref-qr" aria-label="Mã QR đăng nhập mô phỏng"><span>MÔ PHỎNG</span></div>
-                            <p>Hoặc quét mã QR bằng ứng dụng VNeID để đăng nhập.</p>
-                        </>
-                    ) : (
-                        <>
-                            <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
-                            <p>{role === 'can-bo' ? 'Dành cho cán bộ tiếp nhận và xử lý hồ sơ hành chính.' : 'Xác thực bằng tài khoản GovBridge.'}</p>
-                        </>
-                    )}
+                    <img src="/logo_Gov_Bridge.jpg" alt="GovBridge" />
+                    <p>{role === 'can-bo' ? 'Dành cho cán bộ tiếp nhận và xử lý hồ sơ hành chính.' : 'Xác thực bằng tài khoản GovBridge.'}</p>
                 </aside>
             </main>
 

@@ -77,6 +77,7 @@ const Header: React.FC = () => {
                                 <Link
                                     className="btn-header-register"
                                     to="/dang-nhap?role=nguoi-dan"
+                                    onClick={() => localStorage.setItem('redirect_after_login', location.pathname + location.search)}
                                     aria-label="Đăng ký tài khoản"
                                 >
                                     <UserPlus size={15} />
@@ -88,6 +89,7 @@ const Header: React.FC = () => {
                                     data-highlight-id="login-btn"
                                     aria-label="Đăng nhập tài khoản"
                                     to="/dang-nhap"
+                                    onClick={() => localStorage.setItem('redirect_after_login', location.pathname + location.search)}
                                 >
                                     <LogIn size={15} />
                                     <span>Đăng nhập</span>
