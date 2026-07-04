@@ -1,11 +1,13 @@
 import React from 'react';
-import { ArrowLeft, Calendar, ChevronRight, ChevronDown, FileText, Home, Paperclip, Save, Send, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Camera, ChevronRight, ChevronDown, FileText, Home, Paperclip, Save, Send, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { provinces, getResidenceAgencyName, useWards } from '../../hooks/useAdministrativeUnits';
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { SERVICE_MAP } from '../../data/services';
 import { useForm } from '../../contexts/FormContext';
+import { ocrService } from '../../api/aiServices';
+import type { CCCDInfo } from '../../types';
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
 
 interface FieldConfig {
@@ -29,6 +31,23 @@ interface FamilyMember {
     cccd: string;
     quanHe: string;
 }
+
+type XcttCccdTarget = 'applicant' | 'member';
+
+const normalizeGenderFromCccd = (value: string) => {
+    const normalized = value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    if (normalized.includes('nu')) return 'Nữ';
+    if (normalized.includes('nam')) return 'Nam';
+    return '';
+};
+
+const normalizeCccdNumber = (value: string) => value.replace(/\D/g, '');
+
+const isBlankMember = (member: FamilyMember) =>
+    !member.hoTen && !member.ngaySinh && !member.gioiTinh && !member.cccd && !member.quanHe;
 
 const genderOptions = ['Chưa có thông tin', 'Nam', 'Nữ', 'Khác'];
 const ethnicityOptions = [
@@ -303,8 +322,17 @@ const XacNhanCuTruPage: React.FC = () => {
     const [pledged, setPledged] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
     const [draftSaved, setDraftSaved] = React.useState(false);
+    const [ocrNotice, setOcrNotice] = React.useState('');
+    const [isReadingCccd, setIsReadingCccd] = React.useState(false);
+    const cccdInputRef = React.useRef<HTMLInputElement>(null);
+    const cccdTargetRef = React.useRef<XcttCccdTarget>('applicant');
     const { wardOptions: agencyWardOptions, loading: loadingAgencyWards } = useWards(values.provinceAgency);
     const { wardOptions: requestWardOptions, loading: loadingRequestWards } = useWards(values.requestProvince);
+
+    const showOcrNotice = (message: string) => {
+        setOcrNotice(message);
+        window.setTimeout(() => setOcrNotice(''), 3200);
+    };
 
     React.useEffect(() => {
         const ocrFields: Record<string, string> = {};
@@ -393,6 +421,105 @@ const XacNhanCuTruPage: React.FC = () => {
         setMembers((current) => current.map((member) => (member.id === id ? { ...member, [key]: value } : member)));
         setErrors((current) => ({ ...current, [`member-${id}-${key}`]: '' }));
     };
+
+    const applyCccdToApplicant = (info: CCCDInfo) => {
+        const nextValues: Record<string, string> = {
+            fullName: info.hoTen || values.fullName || '',
+            birthDate: info.ngaySinh || values.birthDate || '',
+            gender: normalizeGenderFromCccd(info.gioiTinh) || values.gender || '',
+            citizenId: normalizeCccdNumber(info.id || values.citizenId || ''),
+        };
+        setValues((current) => ({ ...current, ...nextValues }));
+        setErrors((current) => ({
+            ...current,
+            fullName: '',
+            birthDate: '',
+            gender: '',
+            citizenId: '',
+        }));
+    };
+
+    const applyCccdToMember = (info: CCCDInfo) => {
+        const citizenId = normalizeCccdNumber(info.id || '');
+        const duplicatedMember = citizenId
+            ? normalizeCccdNumber(values.citizenId || '') === citizenId ||
+              members.some((member) => normalizeCccdNumber(member.cccd) === citizenId)
+            : false;
+
+        if (duplicatedMember) {
+            showOcrNotice('Trùng thông tin: số CCCD này đã có trong danh sách thành viên.');
+            return false;
+        }
+
+        const cccdMember: Omit<FamilyMember, 'id'> = {
+            hoTen: info.hoTen || '',
+            ngaySinh: info.ngaySinh || '',
+            gioiTinh: normalizeGenderFromCccd(info.gioiTinh),
+            cccd: citizenId,
+            quanHe: '',
+        };
+        const blankMember = members.find(isBlankMember);
+
+        if (blankMember) {
+            setMembers((current) =>
+                current.map((member) => (member.id === blankMember.id ? { ...member, ...cccdMember } : member)),
+            );
+            setErrors((current) => ({
+                ...current,
+                [`member-${blankMember.id}-hoTen`]: '',
+                [`member-${blankMember.id}-ngaySinh`]: '',
+                [`member-${blankMember.id}-gioiTinh`]: '',
+                [`member-${blankMember.id}-cccd`]: '',
+            }));
+            return true;
+        }
+
+        setMembers((current) => [...current, { id: current.length + 1, ...cccdMember }]);
+        return true;
+    };
+
+    const handleSectionCccdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsReadingCccd(true);
+        try {
+            const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file));
+            if (cccdTargetRef.current === 'applicant') {
+                applyCccdToApplicant(info);
+                showOcrNotice('Đã điền thông tin người đề nghị từ CCCD.');
+            } else if (applyCccdToMember(info)) {
+                showOcrNotice('Đã thêm thông tin thành viên từ CCCD.');
+            }
+        } catch (error) {
+            console.error('Không đọc được CCCD cho xác nhận cư trú:', error);
+            showOcrNotice('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
+        } finally {
+            setIsReadingCccd(false);
+            event.target.value = '';
+        }
+    };
+
+    const openSectionCccdCamera = (target: XcttCccdTarget) => {
+        cccdTargetRef.current = target;
+        cccdInputRef.current?.click();
+    };
+
+    const renderCccdHeaderAction = (target: XcttCccdTarget, label: string) => (
+        <button
+            type="button"
+            className="dktt-section-camera-btn"
+            onClick={(event) => {
+                event.stopPropagation();
+                openSectionCccdCamera(target);
+            }}
+            disabled={isReadingCccd}
+            title={label}
+            aria-label={label}
+        >
+            <Camera size={16} />
+        </button>
+    );
 
     const validate = () => {
         const nextErrors: Record<string, string> = {};
@@ -499,6 +626,14 @@ const XacNhanCuTruPage: React.FC = () => {
                 <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc
                 phải nhập
             </p>
+            <input
+                ref={cccdInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="dktt-hidden-file-input"
+                onChange={handleSectionCccdUpload}
+            />
 
             <XcttSection
                 id="agency"
@@ -526,6 +661,7 @@ const XacNhanCuTruPage: React.FC = () => {
                 title="THÔNG TIN NGƯỜI XÁC NHẬN THÔNG TIN VỀ CƯ TRÚ"
                 open={openSections.applicant}
                 onToggle={toggleSection}
+                action={renderCccdHeaderAction('applicant', 'Đọc CCCD cho người đề nghị')}
             >
                 <div className="dktt-choice-group" style={{ marginBottom: 20 }}>
                     <div className="dktt-choice-grid">
@@ -563,6 +699,7 @@ const XacNhanCuTruPage: React.FC = () => {
                     onAdd={() => setMembers((current) => [...current, createMember(current.length + 1)])}
                     onRemove={(id) => setMembers((current) => current.filter((m) => m.id !== id))}
                     onChange={updateMember}
+                    action={renderCccdHeaderAction('member', 'Đọc CCCD và thêm thành viên')}
                 />
             </XcttSection>
 
@@ -711,6 +848,15 @@ const XacNhanCuTruPage: React.FC = () => {
                 </div>
             </aside>
 
+            {ocrNotice && (
+                <div
+                    className={`dktt-toast ocr-toast${/Trùng|Giới tính|Không đọc/.test(ocrNotice) ? ' error' : ''}`}
+                    role="alert"
+                >
+                    {ocrNotice}
+                </div>
+            )}
+
             {showSuccess && (
                 <div
                     className="xctt-modal-backdrop"
@@ -747,10 +893,11 @@ interface SectionProps {
     title: string;
     open: boolean;
     onToggle: (id: string) => void;
+    action?: React.ReactNode;
     children: React.ReactNode;
 }
 
-const XcttSection: React.FC<SectionProps> = ({ id, number, title, open, onToggle, children }) => (
+const XcttSection: React.FC<SectionProps> = ({ id, number, title, open, onToggle, action, children }) => (
     <div className={`dktt-section${open ? ' open' : ''}`} id={`section-${id}`}>
         <div
             className="dktt-section-header"
@@ -769,6 +916,7 @@ const XcttSection: React.FC<SectionProps> = ({ id, number, title, open, onToggle
                 <span className="dktt-section-number">{number}</span>
                 <h3 className="dktt-section-title">{title}</h3>
             </div>
+            {action && <div className="dktt-section-header-action">{action}</div>}
             <ChevronDown size={20} className="dktt-section-chevron" />
         </div>
         <div className="dktt-section-body">{children}</div>
@@ -950,13 +1098,17 @@ const FamilyMemberTable: React.FC<{
     onAdd: () => void;
     onRemove: (id: number) => void;
     onChange: (id: number, key: keyof Omit<FamilyMember, 'id'>, value: string) => void;
-}> = ({ members, errors, onAdd, onRemove, onChange }) => (
+    action?: React.ReactNode;
+}> = ({ members, errors, onAdd, onRemove, onChange, action }) => (
     <div style={{ marginTop: 28 }}>
         <div className="dktt-table-caption">
             <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none' }}>
                 Những thành viên trong hộ gia đình cùng thay đổi
             </div>
-            <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
+            <div className="dktt-table-caption-actions">
+                <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
+                {action}
+            </div>
         </div>
         <div className="dktt-member-table-wrapper">
             <table className="dktt-member-table">
