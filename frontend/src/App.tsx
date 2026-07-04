@@ -9,6 +9,7 @@ import Header from './components/layout/Header';
 import RequireRole from './components/auth/RequireRole';
 import RequireAuth from './components/auth/RequireAuth';
 import SplashScreen from './components/layout/SplashScreen';
+import { ExternalProcessingNoticeHost } from './components/common/ExternalProcessingNoticeHost';
 import './index.css';
 
 // Lazy-load pages
@@ -87,6 +88,7 @@ const AppInner: React.FC = () => {
                         </>
                     )}
                     <Header />
+                    <ExternalProcessingNoticeHost />
                 </>
             )}
 

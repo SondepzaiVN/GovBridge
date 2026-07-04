@@ -44,7 +44,8 @@ import {
 } from '../../utils/validateTamTruApplication';
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
-import { registerPendingDocumentForReview } from '../../utils/documentReviewRegistry';
+import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
+import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
 
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
@@ -442,11 +443,12 @@ const DangKyTamTruPage: React.FC = () => {
             fileName: file.name,
             quantity,
         });
-        registerPendingDocumentForReview({
+        void reviewUploadedDocument({
             file,
-            documentId,
-            route: '/dang-ky-tam-tru',
             label: documentId.toUpperCase(),
+            currentRoute: '/dang-ky-tam-tru',
+            formValues: { ...formState.values, ...form },
+            onStatusChange: (documentReview) => updateAttachment(documentId, { documentReview }),
         });
     };
 
@@ -1311,8 +1313,9 @@ const DangKyTamTruPage: React.FC = () => {
                                                                                     }
                                                                                 />
                                                                                 <Paperclip size={14} />
-                                                                                <span>
-                                                                                    {draft?.fileName || 'Chọn file'}
+                                                                                <span className="attachment-review-inline">
+                                                                                    <span>{draft?.fileName || 'Chọn file'}</span>
+                                                                                    <AttachmentReviewBadge review={draft?.documentReview} />
                                                                                 </span>
                                                                             </label>
                                                                         </td>
@@ -1358,6 +1361,7 @@ const DangKyTamTruPage: React.FC = () => {
                                                                                     }
                                                                                 />
                                                                                 <Plus size={14} />
+                                                                                <AttachmentReviewBadge review={draft?.documentReview} />
                                                                             </label>
                                                                         </td>
                                                                     </tr>

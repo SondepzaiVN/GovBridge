@@ -14,6 +14,25 @@ interface VnptOcrConfig {
   clientSecret?: string;
 }
 
+const formatVnptError = (payload: unknown): string => {
+  const root = asRecord(payload);
+  const error = asRecord(root.error);
+  const message = stringValue(
+    root.message,
+    root.error_description,
+    root.description,
+    error.message,
+    error.error_description,
+    error.description,
+  );
+  const code = stringValue(root.code, root.error, error.code);
+  const parts = [
+    code ? 'code=' + code : '',
+    message ? 'message=' + message : '',
+  ].filter(Boolean);
+  return parts.length > 0 ? ' (' + parts.join(', ') + ').' : '.';
+};
+
 export class VnptOcrProvider implements IdentityOcrProvider {
   readonly name = 'vnpt' as const;
   private cachedAuthorization: { value: string; expiresAt: number } | null = null;
@@ -28,22 +47,41 @@ export class VnptOcrProvider implements IdentityOcrProvider {
 
   async extractCccd(image: { buffer: Buffer; mimetype: string; filename: string }): Promise<CCCDInfo> {
     const hash = await this.upload(image);
-    const response = await fetchVnpt(this.config.baseUrl + '/ai/v1/ocr/id', {
+    const tokenId = this.config.tokenId.trim();
+    const clientSession = 'GOV_BRIDGE_' + Date.now();
+    const body = {
+      img_front: hash,
+      img_back: '',
+      client_session: clientSession,
+      type: -1,
+      validate_postcode: false,
+      ...(tokenId ? { token: tokenId } : {}),
+    };
+    let response = await this.callOcr(body);
+
+    let payload: unknown = await response.json().catch(() => ({}));
+    if (!response.ok && response.status === 400) {
+      response = await this.callOcr({
+        img_front: hash,
+        img_back: '',
+        client_session: clientSession,
+        ...(tokenId ? { token: tokenId } : {}),
+      });
+      payload = await response.json().catch(() => ({}));
+    }
+    if (!response.ok) {
+      throw new ExternalServiceError('VNPT eKYC trả về HTTP ' + response.status + formatVnptError(payload) + this.configHint());
+    }
+    return this.parse(payload);
+  }
+
+  private async callOcr(body: Record<string, unknown>): Promise<Response> {
+    return fetchVnpt(this.config.baseUrl + '/ai/v1/ocr/id', {
       method: 'POST',
       headers: { ...await this.headers(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        img_front: hash,
-        client_session: 'GOV_BRIDGE_' + Date.now(),
-        type: -1,
-        validate_postcode: false,
-        ...(this.config.tokenId ? { token: this.config.tokenId } : {}),
-      }),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(25_000),
     });
-
-    const payload: unknown = await response.json().catch(() => ({}));
-    if (!response.ok) throw new ExternalServiceError('VNPT eKYC trả về HTTP ' + response.status + '.');
-    return this.parse(payload);
   }
 
   private async upload(image: { buffer: Buffer; mimetype: string; filename: string }): Promise<string> {
@@ -59,7 +97,9 @@ export class VnptOcrProvider implements IdentityOcrProvider {
       signal: AbortSignal.timeout(25_000),
     });
     const payload: unknown = await response.json().catch(() => ({}));
-    if (!response.ok) throw new ExternalServiceError('Không tải được ảnh lên VNPT eKYC.');
+    if (!response.ok) {
+      throw new ExternalServiceError('Không tải được ảnh lên VNPT eKYC' + formatVnptError(payload));
+    }
     const object = asRecord(asRecord(payload).object);
     const hash = stringValue(object.hash);
     if (!hash) throw new ExternalServiceError('VNPT eKYC không trả về mã ảnh hợp lệ.');
@@ -67,13 +107,22 @@ export class VnptOcrProvider implements IdentityOcrProvider {
   }
 
   private async headers(): Promise<Record<string, string>> {
+    const tokenId = this.config.tokenId.trim();
+    const tokenKey = this.config.tokenKey.trim();
+    const hasTokenPair = Boolean(tokenId && tokenKey);
     return {
       Authorization: await this.getAuthorization(),
-      ...(this.config.tokenId ? { 'Token-id': this.config.tokenId } : {}),
-      ...(this.config.tokenKey ? { 'Token-key': this.config.tokenKey } : {}),
+      ...(hasTokenPair ? { 'Token-id': tokenId, 'Token-key': tokenKey } : {}),
       'mac-address': this.config.macAddress,
       Accept: 'application/json',
     };
+  }
+
+  private configHint(): string {
+    if (this.config.tokenKey.trim() && !this.config.tokenId.trim()) {
+      return ' Cấu hình hiện có VNPT_EKYC_TOKEN_KEY nhưng thiếu VNPT_EKYC_TOKEN_ID.';
+    }
+    return '';
   }
 
   private async getAuthorization(): Promise<string> {
@@ -97,7 +146,9 @@ export class VnptOcrProvider implements IdentityOcrProvider {
       signal: AbortSignal.timeout(15_000),
     });
     const payload: unknown = await response.json().catch(() => ({}));
-    if (!response.ok) throw new ExternalServiceError('Không lấy được access token VNPT eKYC.');
+    if (!response.ok) {
+      throw new ExternalServiceError('Không lấy được access token VNPT eKYC' + formatVnptError(payload));
+    }
 
     const object = asRecord(payload);
     const accessToken = stringValue(object.access_token, object.accessToken, object.token);
