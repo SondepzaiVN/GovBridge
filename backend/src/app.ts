@@ -119,14 +119,6 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
     identityService: new IdentityService(ocrProvider),
     speechService: new SpeechService(ttsProvider, sttProvider),
     uploadMaxMb: env.UPLOAD_MAX_MB,
-    vnptChat: {
-      url: env.VNPT_AGENTIC_URL,
-      token: env.VNPT_ASSISTANT_TOKEN,
-      botId: env.VNPT_ASSISTANT_BOT_ID,
-      senderId: env.VNPT_ASSISTANT_SENDER_ID,
-      referer: env.VNPT_ASSISTANT_REFERER,
-      timeoutMs: env.VNPT_AGENTIC_TIMEOUT_MS,
-    },
     providerNames: {
       assistant: orchestratorProvider.name,
       knowledge: knowledgeProvider.name,
