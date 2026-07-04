@@ -5,6 +5,45 @@
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>GovBridge</title>
+        <script type="text/javascript">
+            var VNPT = VNPT || {};
+            VNPT.q = VNPT.q || [];
+
+            VNPT.app_key = '7ae9c22b655ecf19b293228a9c0d7dc172eefcb7';
+            VNPT.url = 'https://console-smartux.vnpt.vn';
+
+            VNPT.q.push(['track_sessions']);
+            VNPT.q.push(['track_pageview']);
+            VNPT.q.push(['track_clicks']);
+            VNPT.q.push(['track_scrolls']);
+            VNPT.q.push(['track_errors']);
+            VNPT.q.push(['track_links']);
+            VNPT.q.push(['track_forms']);
+            VNPT.q.push(['collect_from_forms']);
+
+            (function () {
+                const paths = [
+                    'https://console-smartux.vnpt.vn/sdk/web/core-track.js',
+                    'https://console-smartux.vnpt.vn/sdk/web/minify.min.js',
+                ];
+                for (let i in paths) {
+                    var cly = document.createElement('script');
+                    cly.type = 'text/javascript';
+                    cly.async = true;
+                    cly.src = paths[i];
+                    cly.onload =
+                        i == 0
+                            ? function () {
+                                  VNPT.init();
+                              }
+                            : function () {
+                                  window.minify = require('html-minifier').minify;
+                              };
+                    var s = document.getElementsByTagName('script')[0];
+                    s.parentNode.insertBefore(cly, s);
+                }
+            })();
+        </script>
     </head>
     <body>
         <div id="root"></div>
