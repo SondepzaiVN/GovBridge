@@ -75,6 +75,41 @@ const isWardField = (field: ProcedureField): boolean => {
   return normalizedField.includes('xaphuong') || normalizedField.includes('ward');
 };
 
+interface LocationMatch {
+  value: string;
+  evidence: string;
+}
+
+const findLocationMatch = (
+  message: string,
+  patterns: RegExp[],
+): LocationMatch | null => {
+  for (const pattern of patterns) {
+    const match = message.match(pattern);
+    const value = match?.[1]?.trim();
+    if (!match?.[0] || !value) continue;
+    return {
+      value: value.charAt(0).toLocaleUpperCase('vi-VN') + value.slice(1),
+      evidence: match[0].trim(),
+    };
+  }
+  return null;
+};
+
+const findProvinceMatch = (message: string): LocationMatch | null =>
+  findLocationMatch(message, [
+    /thuộc\s+(?:(?:thành\s+phố|tỉnh|tp\.?)\s+)?([^,;.\n]+?)(?=\s+(?:điền|cập\s+nhật|giúp|vui\s+lòng)\b|\s*(?:,|;|\.|\n|$))/iu,
+    /(?:thành\s+phố|tỉnh|tp\.?)\s+(?:(?:của\s+)?(?:tôi|mình)\s+)?(?:(?:đang\s+)?(?:sống|ở|cư\s+trú)\s+)?(?:là|ở|tại)\s+([^,;.\n]+)/iu,
+    /(?:(?:tôi|mình)\s+)?(?:(?:đang\s+)?(?:sống|ở|cư\s+trú))\s+(?:tại\s+|ở\s+)?(?:thành\s+phố|tỉnh|tp\.?)\s+([^,;.\n]+?)(?=\s*(?:,|;|\.|\n|phường|xã|thị\s+trấn|đặc\s+khu|$))/iu,
+    /(?:thành\s+phố|tỉnh|tp\.?)\s+([^,;.\n]+?)(?=\s*(?:,|;|\.|\n|phường|xã|thị\s+trấn|đặc\s+khu|$))/iu,
+  ]);
+
+const findWardMatch = (message: string): LocationMatch | null =>
+  findLocationMatch(message, [
+    /(?:phường|xã|thị\s+trấn|đặc\s+khu)\s+(?:(?:của\s+)?(?:tôi|mình)\s+)?(?:(?:đang\s+)?(?:sống|ở|cư\s+trú)\s+)?(?:là|ở|tại)\s+([^,;.\n]+)/iu,
+    /(?:phường|xã|thị\s+trấn|đặc\s+khu)\s+([^,;.\n]+?)(?=\s+(?:thuộc|điền|cập\s+nhật|giúp|vui\s+lòng)\b|\s*(?:,|;|\.|\n|$))/iu,
+  ]);
+
 const extractVisibleAdministrativeFacts = (
   context: AssistantToolContext,
   existingFacts: ExtractedFact[],
@@ -96,35 +131,27 @@ const extractVisibleAdministrativeFacts = (
 
   const addLocationFact = (
     fieldMatcher: (field: ProcedureField) => boolean,
-    pattern: RegExp,
+    locationMatch: LocationMatch | null,
   ) => {
     const candidates = visibleFields.filter(
       (field) => fieldMatcher(field) && !existingFactFieldIds.has(field.id),
     );
     if (candidates.length !== 1) return;
 
-    const match = context.message.match(pattern);
-    const value = match?.[0]?.trim();
     const field = candidates[0];
-    if (!field || !value) return;
+    if (!field || !locationMatch) return;
 
     extractedFacts.push({
       fieldHint: field.id,
-      value: value.charAt(0).toLocaleUpperCase('vi-VN') + value.slice(1),
+      value: locationMatch.value,
       confidence: 1,
       source: 'chat',
-      evidence: value,
+      evidence: locationMatch.evidence,
     });
   };
 
-  addLocationFact(
-    isProvinceField,
-    /(?:thành\s+phố|tỉnh|tp\.?)\s+[^,;.\n]+?(?=\s*(?:,|;|\.|\n|phường|xã|thị\s+trấn|đặc\s+khu|$))/iu,
-  );
-  addLocationFact(
-    isWardField,
-    /(?:phường|xã|thị\s+trấn|đặc\s+khu)\s+[^,;.\n]+?(?=\s*(?:,|;|\.|\n|$))/iu,
-  );
+  addLocationFact(isProvinceField, findProvinceMatch(context.message));
+  addLocationFact(isWardField, findWardMatch(context.message));
 
   return extractedFacts;
 };
@@ -132,7 +159,12 @@ const extractVisibleAdministrativeFacts = (
 const normalizeSelectValue = (field: ProcedureField, value: string): string | null => {
   // Danh mục tỉnh/phường trên UI được tải động và dùng mã hành chính thật.
   // Giữ nhãn người dùng nói để frontend đối chiếu với option đang hiển thị.
-  if (isAdministrativeUnitField(field)) return value.trim();
+  if (isAdministrativeUnitField(field)) {
+    const compactValue = value
+      .replace(/\s+(?:thuộc|điền|cập\s+nhật|giúp|vui\s+lòng)\b.*$/iu, '')
+      .trim();
+    return compactValue || null;
+  }
   if (!field.options?.length) return value.trim();
   const normalizedValue = normalizeText(value);
   const option = field.options.find((candidate) =>
