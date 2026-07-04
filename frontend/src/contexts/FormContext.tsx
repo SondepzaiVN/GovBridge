@@ -49,6 +49,16 @@ const normalizeOptionLabel = (value: string): string =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
+const getOptionLookupKeys = (value: string): string[] => {
+  const normalizedValue = normalizeOptionLabel(value);
+  const trailingValue = normalizedValue
+    .split(/\b(?:la|tai|o)\b/g)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .at(-1);
+  return [...new Set([normalizedValue, trailingValue].filter(Boolean) as string[])];
+};
+
 const resolveRenderedSelectValue = (
   fieldId: string,
   value: string,
@@ -63,9 +73,9 @@ const resolveRenderedSelectValue = (
   const directMatch = options.find((option) => option.value === value);
   if (directMatch) return { isSelect: true, resolvedValue: directMatch.value };
 
-  const normalizedValue = normalizeOptionLabel(value);
+  const lookupKeys = getOptionLookupKeys(value);
   const labelMatch = options.find(
-    (option) => normalizeOptionLabel(option.label) === normalizedValue,
+    (option) => lookupKeys.includes(normalizeOptionLabel(option.label)),
   );
   return {
     isSelect: true,

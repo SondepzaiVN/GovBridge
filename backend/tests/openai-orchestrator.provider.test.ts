@@ -699,8 +699,8 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
       expect.objectContaining({
         type: 'REQUEST_CONFIRM_FILL',
         fields: {
-          tinhThanhDN: 'Thành phố cần thơ',
-          xaPhuongDN: 'Phường ninh kiều',
+          tinhThanhDN: 'Cần thơ',
+          xaPhuongDN: 'Ninh kiều',
         },
       }),
     ]);
@@ -745,14 +745,77 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
       expect.objectContaining({
         type: 'REQUEST_CONFIRM_FILL',
         fields: {
-          tinhThanhDN: 'Thành phố cần thơ',
-          xaPhuongDN: 'Phường ninh kiều',
+          tinhThanhDN: 'Cần thơ',
+          xaPhuongDN: 'Ninh kiều',
         },
       }),
     ]);
     expect(response.body.data.response.message).not.toContain(
       'hoàn thành các ô bắt buộc',
     );
+  });
+
+  it('extracts only the option name from an inverted province sentence', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      orchestratorResponse(
+        'Tôi đã ghi nhận bạn đang sống tại Thành phố Cần Thơ. Bạn có muốn cập nhật thêm thông tin gì khác không?',
+      ),
+    ]);
+
+    const response = await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'thành phố tôi đang sống là cần thơ',
+        currentRoute: '/ho-khau',
+        visibleFieldIds: ['tinhThanhCQ'],
+      })
+      .expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: {
+          tinhThanhCQ: 'Cần thơ',
+        },
+      }),
+    ]);
+    expect(response.body.data.actions[0].fields.tinhThanhCQ).not.toContain(
+      'tôi đang sống',
+    );
+  });
+
+  it('separates ward, province and the fill request in a relational address sentence', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      orchestratorResponse(
+        'Bạn là cư dân của phường Tân An thuộc thành phố Cần Thơ. Bạn có muốn xác nhận không?',
+        [{
+          fieldHint: 'xaPhuongDN',
+          value: 'Tân an thuộc cần thơ điền giúp tôi',
+          confidence: 0.99,
+          source: 'chat',
+          evidence: 'phường tân an thuộc cần thơ điền giúp tôi',
+        }],
+      ),
+    ]);
+
+    const response = await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'tôi là cư dân của phường tân an thuộc cần thơ điền giúp tôi',
+        currentRoute: '/ho-khau',
+        visibleFieldIds: ['tinhThanhDN', 'xaPhuongDN'],
+      })
+      .expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: {
+          tinhThanhDN: 'Cần thơ',
+          xaPhuongDN: 'Tân an',
+        },
+      }),
+    ]);
   });
 });
 
