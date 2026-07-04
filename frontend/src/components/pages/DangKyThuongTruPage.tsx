@@ -2087,6 +2087,23 @@ const DangKyThuongTruPage: React.FC = () => {
       }
     });
 
+    let aggregatedOfficerNote = '';
+    let finalFlag = '';
+    Object.values(uploadDrafts).forEach((draft) => {
+      if (draft.checked && draft.reviewByFileName) {
+        Object.entries(draft.reviewByFileName).forEach(([fileName, review]) => {
+          if (review.text) {
+            aggregatedOfficerNote += `[${fileName}]: ${review.text}\n\n`;
+            if (review.flag === 'red') {
+              finalFlag = 'red';
+            } else if (!finalFlag) {
+              finalFlag = review.flag;
+            }
+          }
+        });
+      }
+    });
+
     saveApplicationToDashboard({
       procedure: 'Đăng ký thường trú',
       applicant: formState.values.hoTen || '',
@@ -2105,7 +2122,9 @@ const DangKyThuongTruPage: React.FC = () => {
         'Chủ hộ': formState.values.hoTenChuHo || '',
         'Quan hệ với chủ hộ': formState.values.quanHeVoiChuHo || '',
         'Lý do/Trường hợp': formState.values.truongHop || '',
-      }
+      },
+      officerNote: aggregatedOfficerNote.trim(),
+      officerNoteFlag: finalFlag,
     });
 
     setSubmitted(true);
