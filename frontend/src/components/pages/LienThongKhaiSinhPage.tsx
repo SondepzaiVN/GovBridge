@@ -67,6 +67,7 @@ interface ReviewTab {
     formTitle: string;
     recipient: string;
     description: string;
+    downloadName?: string;
 }
 
 interface UploadDocument {
@@ -166,6 +167,305 @@ const reviewTabs: ReviewTab[] = [
         description: 'Phiếu thông tin dùng trong quy trình liên thông khai sinh, thường trú, BHYT.',
     },
 ];
+
+const escapeHtml = (value: string) =>
+    value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+const getFormText = (values: Record<string, string>, fieldId: string, fallback = '') =>
+    (values[fieldId] || fallback).trim();
+
+const joinNonEmpty = (items: string[], separator = ', ') => items.map((item) => item.trim()).filter(Boolean).join(separator);
+
+const formatDateForDeclaration = (value: string) => {
+    if (!value) return '';
+    const [year, month, day] = value.split('-');
+    if (!year || !month || !day) return value;
+    return `${day}/${month}/${year}`;
+};
+
+const buildNameFromFields = (values: Record<string, string>, hoId: string, chuDemId: string, tenId: string) =>
+    joinNonEmpty([
+        getFormText(values, hoId),
+        getFormText(values, chuDemId),
+        getFormText(values, tenId),
+    ], ' ');
+
+const buildDeclarationAddress = (
+    values: Record<string, string>,
+    detailFieldId: string,
+    wardFieldId: string,
+    provinceFieldId: string,
+) => joinNonEmpty([
+    getFormText(values, detailFieldId),
+    getFormText(values, wardFieldId),
+    getFormText(values, provinceFieldId),
+]);
+
+interface GeneratedDeclarationSection {
+    title: string;
+    rows: Array<[string, string]>;
+}
+
+interface GeneratedDeclaration {
+    title: string;
+    formTitle: string;
+    recipient: string;
+    description: string;
+    signerName: string;
+    downloadName: string;
+    sections: GeneratedDeclarationSection[];
+}
+
+const buildDeclarationHtml = ({
+    title,
+    recipient,
+    description,
+    signerName,
+    sections,
+}: {
+    title: string;
+    recipient: string;
+    description: string;
+    signerName?: string;
+    sections: GeneratedDeclarationSection[];
+}) => `<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(title)}</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef2f7; color: #000; font-family: "Times New Roman", serif; }
+    .sheet { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 22mm 20mm; background: #fff; }
+    .national { text-align: center; font-weight: 700; line-height: 1.45; }
+    .national .underline { display: inline-block; border-bottom: 1px solid #000; padding: 0 18px 3px; }
+    h1 { margin: 26px 0 8px; text-align: center; font-size: 21px; letter-spacing: 0; text-transform: uppercase; }
+    .recipient { text-align: center; margin: 0 0 18px; font-size: 15px; }
+    .description { margin: 0 0 18px; font-style: italic; }
+    h2 { margin: 18px 0 8px; font-size: 16px; text-transform: uppercase; }
+    .field-line { display: flex; align-items: baseline; gap: 6px; margin: 8px 0; font-size: 15.5px; line-height: 1.45; }
+    .field-line strong { flex: 0 0 auto; font-weight: 700; }
+    .field-line .value { flex: 1 1 auto; min-width: 90px; padding-left: 4px; }
+    .empty { color: #9ca3af; font-style: italic; }
+    .signature { width: 70mm; margin: 34px 0 0 auto; text-align: center; }
+    .signature strong { display: block; margin-top: 42px; }
+    @media print { body { background: #fff; } .sheet { margin: 0; width: auto; min-height: auto; padding: 0; } }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <div class="national">
+      <div>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+      <div class="underline">Độc lập - Tự do - Hạnh phúc</div>
+    </div>
+    <h1>${escapeHtml(title)}</h1>
+    <p class="recipient">Kính gửi: ${escapeHtml(recipient)}</p>
+    <p class="description">${escapeHtml(description)}</p>
+    ${sections.map((section) => `
+      <section>
+        <h2>${escapeHtml(section.title)}</h2>
+        ${section.rows.map(([label, value]) => `
+          <div class="field-line">
+            <strong>${escapeHtml(label)}:</strong>
+            <span class="value">${value ? escapeHtml(value) : '<span class="empty">Chưa có thông tin</span>'}</span>
+          </div>
+        `).join('')}
+      </section>
+    `).join('')}
+    <div class="signature">
+      <div>Người yêu cầu</div>
+      <em>(Ký, ghi rõ họ tên)</em>
+      <strong>${escapeHtml(signerName || '')}</strong>
+    </div>
+  </main>
+</body>
+</html>`;
+
+const createDeclarationBlobUrl = (html: string) =>
+    URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+
+const buildGeneratedReviewTabs = (values: Record<string, string>): ReviewTab[] => {
+    const requesterName = getFormText(values, 'ltks_hoTenNguoiYeuCau');
+    const childName = buildNameFromFields(values, 'ltks_hoTre', 'ltks_chuDemTre', 'ltks_tenTre');
+    const motherName = buildNameFromFields(values, 'ltks_hoMe', 'ltks_chuDemMe', 'ltks_tenMe');
+    const fatherName = buildNameFromFields(values, 'ltks_hoCha', 'ltks_chuDemCha', 'ltks_tenCha');
+    const childBirthPlace = buildDeclarationAddress(values, 'ltks_chiTietNoiSinh', 'ltks_phuongNoiSinh', 'ltks_tinhNoiSinh');
+    const childPermanentAddress = buildDeclarationAddress(
+        values,
+        'ltks_chiTietDangKyThuongTru',
+        'ltks_phuongDangKyThuongTru',
+        'ltks_tinhDangKyThuongTru',
+    );
+    const requesterAddress = buildDeclarationAddress(
+        values,
+        'ltks_chiTietNguoiYeuCau',
+        'ltks_phuongNguoiYeuCau',
+        'ltks_tinhNguoiYeuCau',
+    );
+    const motherAddress = buildDeclarationAddress(values, 'ltks_chiTietMe', 'ltks_phuongMe', 'ltks_tinhMe');
+    const fatherAddress = buildDeclarationAddress(values, 'ltks_chiTietCha', 'ltks_phuongCha', 'ltks_tinhCha');
+    const residenceAddress = buildDeclarationAddress(
+        values,
+        'ltks_chiTietDangKyThuongTru',
+        'ltks_phuongDangKyThuongTru',
+        'ltks_tinhDangKyThuongTru',
+    ) || childPermanentAddress;
+
+    const declarations: GeneratedDeclaration[] = [
+        {
+            title: 'Tờ khai đăng ký khai sinh',
+            formTitle: 'TỜ KHAI ĐĂNG KÝ KHAI SINH',
+            recipient: getFormText(values, 'ltks_coQuanDangKyKhaiSinh', 'Ủy ban nhân dân cấp xã nơi đăng ký khai sinh'),
+            description: 'Tờ khai được sinh tự động từ thông tin đã nhập ở các bước trước.',
+            signerName: requesterName,
+            downloadName: 'to-khai-dang-ky-khai-sinh.doc',
+            sections: [
+                {
+                    title: 'Thông tin người yêu cầu',
+                    rows: [
+                        ['Họ và tên', requesterName],
+                        ['Số định danh cá nhân', getFormText(values, 'ltks_soDinhDanhNguoiYeuCau')],
+                        ['Quan hệ với trẻ', getFormText(values, 'ltks_quanHeVoiTre')],
+                        ['Số điện thoại', getFormText(values, 'ltks_sdtNguoiYeuCau')],
+                        ['Email', getFormText(values, 'ltks_emailNguoiYeuCau')],
+                        ['Địa chỉ liên hệ', requesterAddress],
+                    ],
+                },
+                {
+                    title: 'Thông tin trẻ được khai sinh',
+                    rows: [
+                        ['Họ và tên', childName],
+                        ['Ngày sinh', formatDateForDeclaration(getFormText(values, 'ltks_ngaySinhTre'))],
+                        ['Giới tính', getFormText(values, 'ltks_gioiTinhTre')],
+                        ['Nơi sinh', childBirthPlace],
+                        ['Quê quán', buildDeclarationAddress(values, 'ltks_chiTietQueQuan', 'ltks_phuongQueQuan', 'ltks_tinhQueQuan')],
+                        ['Dân tộc', getFormText(values, 'ltks_danTocTre')],
+                        ['Quốc tịch', getFormText(values, 'ltks_quocTichTre')],
+                        ['Mã giấy chứng sinh', getFormText(values, 'ltks_maGiayChungSinh')],
+                    ],
+                },
+                {
+                    title: 'Thông tin cha, mẹ',
+                    rows: [
+                        ['Họ tên mẹ', motherName],
+                        ['Số định danh mẹ', getFormText(values, 'ltks_soDinhDanhMe')],
+                        ['Địa chỉ mẹ', motherAddress],
+                        ['Họ tên cha', fatherName],
+                        ['Số định danh cha', getFormText(values, 'ltks_soDinhDanhCha')],
+                        ['Địa chỉ cha', fatherAddress],
+                    ],
+                },
+            ],
+        },
+        {
+            title: 'Tờ khai thay đổi thông tin cư trú (CT01)',
+            formTitle: 'TỜ KHAI THAY ĐỔI THÔNG TIN CƯ TRÚ',
+            recipient: getFormText(values, 'ltks_coQuanDangKyThuongTru', 'Cơ quan đăng ký cư trú'),
+            description: 'Tờ khai phục vụ đăng ký thường trú cho trẻ sau khi đăng ký khai sinh.',
+            signerName: requesterName,
+            downloadName: 'to-khai-thay-doi-thong-tin-cu-tru-ct01.doc',
+            sections: [
+                {
+                    title: 'Thông tin người được đăng ký cư trú',
+                    rows: [
+                        ['Họ và tên', childName],
+                        ['Ngày sinh', formatDateForDeclaration(getFormText(values, 'ltks_ngaySinhTre'))],
+                        ['Giới tính', getFormText(values, 'ltks_gioiTinhTre')],
+                        ['Nơi đề nghị đăng ký thường trú', residenceAddress],
+                        ['Trường hợp đăng ký', getFormText(values, 'ltks_truongHopDangKyThuongTru')],
+                        ['Nội dung đề nghị', residenceAddress ? `Đăng ký thường trú tại ${residenceAddress}` : 'Đăng ký thường trú cho trẻ sau khai sinh'],
+                    ],
+                },
+                {
+                    title: 'Thông tin chủ hộ/chủ sở hữu chỗ ở hợp pháp',
+                    rows: [
+                        ['Họ tên chủ hộ', getFormText(values, 'ltks_hoTenChuHo')],
+                        ['Số định danh chủ hộ', getFormText(values, 'ltks_soDinhDanhChuHo')],
+                        ['Quan hệ với chủ hộ', getFormText(values, 'ltks_quanHeVoiChuHo')],
+                        ['Loại chủ sở hữu chỗ ở hợp pháp', getFormText(values, 'ltks_loaiChuSoHuuChoO')],
+                        ['Hình thức xác nhận', getFormText(values, 'ltks_xacNhanDangKyThuongTru')],
+                    ],
+                },
+            ],
+        },
+        {
+            title: 'Tờ khai tham gia, điều chỉnh thông tin BHXH, BHYT (TK1-TS)',
+            formTitle: 'TỜ KHAI THAM GIA, ĐIỀU CHỈNH THÔNG TIN BHXH, BHYT',
+            recipient: getFormText(values, 'ltks_coQuanCapBhyt', 'Cơ quan Bảo hiểm xã hội'),
+            description: 'Tờ khai cấp thẻ bảo hiểm y tế cho trẻ em dưới 6 tuổi.',
+            signerName: requesterName,
+            downloadName: 'to-khai-bhyt-tk1-ts.doc',
+            sections: [
+                {
+                    title: 'Thông tin người tham gia',
+                    rows: [
+                        ['Họ và tên', childName],
+                        ['Ngày sinh', formatDateForDeclaration(getFormText(values, 'ltks_ngaySinhTre'))],
+                        ['Giới tính', getFormText(values, 'ltks_gioiTinhTre')],
+                        ['Dân tộc', getFormText(values, 'ltks_danTocTre')],
+                        ['Quốc tịch', getFormText(values, 'ltks_quocTichTre')],
+                        ['Địa chỉ nhận thẻ', childPermanentAddress || requesterAddress],
+                    ],
+                },
+                {
+                    title: 'Thông tin liên hệ/người giám hộ',
+                    rows: [
+                        ['Người yêu cầu', requesterName],
+                        ['Số điện thoại', getFormText(values, 'ltks_sdtNguoiYeuCau')],
+                        ['Email', getFormText(values, 'ltks_emailNguoiYeuCau')],
+                        ['Nơi đăng ký khám chữa bệnh ban đầu', getFormText(values, 'ltks_noiKhamChuaBenhBanDau')],
+                        ['Hình thức nhận thẻ BHYT', getFormText(values, 'ltks_nhanTheBhyt', defaultBhytReceiveResult)],
+                    ],
+                },
+            ],
+        },
+        {
+            title: 'Phiếu thông tin hồ sơ liên thông',
+            formTitle: 'PHIẾU THÔNG TIN HỒ SƠ LIÊN THÔNG',
+            recipient: 'Cơ quan tiếp nhận hồ sơ liên thông',
+            description: 'Phiếu tổng hợp thông tin phục vụ quy trình liên thông khai sinh, thường trú, BHYT.',
+            signerName: requesterName,
+            downloadName: 'phieu-thong-tin-ho-so-lien-thong.doc',
+            sections: [
+                {
+                    title: 'Cơ quan thực hiện',
+                    rows: [
+                        ['Đăng ký khai sinh', getFormText(values, 'ltks_coQuanDangKyKhaiSinh')],
+                        ['Đăng ký thường trú', getFormText(values, 'ltks_coQuanDangKyThuongTru')],
+                        ['Cấp thẻ BHYT', getFormText(values, 'ltks_coQuanCapBhyt')],
+                    ],
+                },
+                {
+                    title: 'Thông tin hồ sơ',
+                    rows: [
+                        ['Người yêu cầu', requesterName],
+                        ['Trẻ được khai sinh', childName],
+                        ['Địa chỉ thường trú đề nghị', residenceAddress || childPermanentAddress],
+                        ['Hình thức nhận kết quả khai sinh', getFormText(values, 'ltks_nhanKhaiSinh', defaultBirthReceiveResult)],
+                        ['Hình thức nhận kết quả thường trú', getFormText(values, 'ltks_nhanThuongTru', defaultResidenceReceiveResult)],
+                        ['Hình thức nhận thẻ BHYT', getFormText(values, 'ltks_nhanTheBhyt', defaultBhytReceiveResult)],
+                    ],
+                },
+            ],
+        },
+    ];
+
+    return declarations.map((declaration) => ({
+        title: declaration.title,
+        formTitle: declaration.formTitle,
+        recipient: declaration.recipient,
+        description: declaration.description,
+        pageCount: 1,
+        downloadName: declaration.downloadName,
+        url: createDeclarationBlobUrl(buildDeclarationHtml(declaration)),
+    }));
+};
 
 const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
     {
@@ -845,6 +1145,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
 
     const [submitError, setSubmitError] = React.useState('');
     const [activeReviewTab, setActiveReviewTab] = React.useState(0);
+    const [generatedReviewTabs, setGeneratedReviewTabs] = React.useState<ReviewTab[]>([]);
     const [uploadedFiles, setUploadedFiles] = React.useState<Record<string, File>>({});
     const [attachmentReviews, setAttachmentReviews] = React.useState<Record<string, DocumentReviewUiState>>({});
     const [administrativeProvinceOptions, setAdministrativeProvinceOptions] = React.useState<FormFieldOption[]>([]);
@@ -886,6 +1187,20 @@ const LienThongKhaiSinhPage: React.FC = () => {
             ),
         [formState.values],
     );
+
+    React.useEffect(() => {
+        const tabs = buildGeneratedReviewTabs(formState.values);
+        setGeneratedReviewTabs(tabs);
+        return () => {
+            tabs.forEach((tab) => URL.revokeObjectURL(tab.url));
+        };
+    }, [formState.values]);
+
+    React.useEffect(() => {
+        if (activeReviewTab >= generatedReviewTabs.length) {
+            setActiveReviewTab(0);
+        }
+    }, [activeReviewTab, generatedReviewTabs.length]);
 
     React.useEffect(() => {
         const controller = new AbortController();
@@ -1132,7 +1447,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     aggregatedOfficerNote += `[${fileName}]: ${review.text}\n\n`;
                     if (review.flag === 'red') {
                         finalFlag = 'red';
-                    } else if (!finalFlag) {
+                    } else if (!finalFlag && review.flag) {
                         finalFlag = review.flag;
                     }
                 }
@@ -1277,7 +1592,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
                                 {section.note && <p className="ltks-note">{section.note}</p>}
                                 {section.reviewTabs && (
                                     <PdfReviewTabs
-                                        tabs={section.reviewTabs}
+                                        tabs={generatedReviewTabs.length ? generatedReviewTabs : section.reviewTabs}
                                         activeIndex={activeReviewTab}
                                         onTabChange={setActiveReviewTab}
                                     />
@@ -1912,7 +2227,7 @@ const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabC
                         <button type="button" aria-label="In tờ khai" title="In tờ khai" onClick={handlePrint}>
                             <Printer size={18} />
                         </button>
-                        <a href={activeTab.url} download title="Tải tờ khai" aria-label="Tải tờ khai">
+                        <a href={activeTab.url} download={activeTab.downloadName || true} title="Tải tờ khai" aria-label="Tải tờ khai">
                             <Download size={18} />
                         </a>
                         <button
