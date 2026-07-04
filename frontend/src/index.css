@@ -3994,6 +3994,82 @@ button.header-nav-link.active {
     min-width: 0;
 }
 
+.dktt-section-header-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.dktt-section-camera-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--primary-dark);
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(185, 54, 22, 0.18);
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dktt-section-camera-btn:hover:not(:disabled) {
+    background: var(--white);
+    color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(185, 54, 22, 0.24);
+}
+
+.dktt-section-camera-btn:disabled {
+    cursor: wait;
+    opacity: 0.74;
+}
+
+.dktt-table-caption-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dktt-hidden-file-input {
+    display: none;
+}
+
+.service-ocr-actions {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.service-ocr-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    grid-column: 1 / -1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.service-ocr-action-title {
+    min-width: 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
 .dktt-section-number {
     display: flex;
     align-items: center;
@@ -4776,6 +4852,14 @@ button.header-nav-link.active {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.dktt-toast.ocr-toast {
+    background: var(--primary-dark);
+}
+
+.dktt-toast.ocr-toast.error {
+    background: var(--danger);
 }
 
 @keyframes dktt-toast-in {
