@@ -1,11 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import type { PublicService, FormField } from "../../types";
+import type { CCCDInfo, PublicService, FormField } from "../../types";
 import { useForm } from "../../contexts/FormContext";
 import { quickValidate, validateForm } from "../../utils/validator";
-import { ChevronRight, Home } from "lucide-react";
+import { Camera, ChevronRight, Home } from "lucide-react";
 import { applicationService } from "../../api/applicationService";
 import { ApiClientError } from "../../api/client";
+import { ocrService } from "../../api/aiServices";
 
 // ============================================================
 // Reusable form field renderer
@@ -178,11 +179,40 @@ export const FormFieldInput: React.FC<FieldProps> = ({
 interface ServicePageProps {
   service: PublicService;
   categoryLabel: string;
+  cccdOcrActions?: CccdOcrAction[];
 }
+
+export interface CccdOcrAction {
+  id: string;
+  label: string;
+  fieldMap: Record<string, keyof CCCDInfo>;
+  insertBeforeFieldId?: string;
+  expectedGender?: "male" | "female";
+  duplicateWithFieldIds?: string[];
+}
+
+const normalizeOcrText = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+const normalizeCccdNumber = (value: string) => value.replace(/\D/g, "");
+
+const getGenderCode = (value: string) => {
+  const normalized = normalizeOcrText(value);
+  if (normalized.includes("nu")) return "female";
+  if (normalized.includes("nam")) return "male";
+  return "";
+};
+
+const getExpectedGenderLabel = (expectedGender: CccdOcrAction["expectedGender"]) =>
+  expectedGender === "male" ? "Nam" : expectedGender === "female" ? "Nữ" : "";
 
 export const ServicePageLayout: React.FC<ServicePageProps> = ({
   service,
   categoryLabel,
+  cccdOcrActions = [],
 }) => {
   const {
     formState,
@@ -193,6 +223,106 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
   } = useForm();
   const [submittedId, setSubmittedId] = React.useState("");
   const [submitError, setSubmitError] = React.useState("");
+  const [ocrNotice, setOcrNotice] = React.useState("");
+  const [isReadingCccd, setIsReadingCccd] = React.useState(false);
+  const cccdInputRef = React.useRef<HTMLInputElement>(null);
+  const activeOcrActionRef = React.useRef<CccdOcrAction | null>(null);
+
+  const showOcrNotice = (message: string) => {
+    setOcrNotice(message);
+    window.setTimeout(() => setOcrNotice(""), 3200);
+  };
+
+  const getOcrFieldValue = (fieldId: string, cccdKey: keyof CCCDInfo, info: CCCDInfo) => {
+    const rawValue = String(info[cccdKey] || "");
+    if (cccdKey === "id") return normalizeCccdNumber(rawValue);
+    if (cccdKey !== "gioiTinh") return rawValue;
+
+    const normalizedGender = normalizeOcrText(rawValue);
+    const field = service.fields.find((item) => item.id === fieldId);
+    const matchedOption = field?.options?.find((option) => {
+      const optionValue = normalizeOcrText(option.value);
+      const optionLabel = normalizeOcrText(option.label);
+      if (normalizedGender.includes("nu")) return optionValue === "nu" || optionLabel === "nu";
+      if (normalizedGender.includes("nam")) return optionValue === "nam" || optionLabel === "nam";
+      return false;
+    });
+
+    if (matchedOption) return matchedOption.value;
+    if (normalizedGender.includes("nu")) return "Nữ";
+    if (normalizedGender.includes("nam")) return "Nam";
+    return "";
+  };
+
+  const handleOpenCccdOcr = (action: CccdOcrAction) => {
+    activeOcrActionRef.current = action;
+    cccdInputRef.current?.click();
+  };
+
+  const handleCccdOcrUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    const action = activeOcrActionRef.current;
+    if (!file || !action) return;
+
+    setIsReadingCccd(true);
+    try {
+      const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file));
+      const genderCode = getGenderCode(info.gioiTinh || "");
+      if (action.expectedGender && genderCode && genderCode !== action.expectedGender) {
+        showOcrNotice(
+          `Giới tính trên CCCD không phù hợp với ${action.label.toLowerCase()} (yêu cầu ${getExpectedGenderLabel(
+            action.expectedGender,
+          )}).`,
+        );
+        return;
+      }
+
+      const citizenId = normalizeCccdNumber(info.id || "");
+      const duplicatedFieldId = citizenId
+        ? action.duplicateWithFieldIds?.find((fieldId) => normalizeCccdNumber(formState.values[fieldId] || "") === citizenId)
+        : undefined;
+      if (duplicatedFieldId) {
+        showOcrNotice("Trùng thông tin: số CCCD này đã được dùng trong hồ sơ.");
+        return;
+      }
+
+      Object.entries(action.fieldMap).forEach(([fieldId, cccdKey]) => {
+        const value = getOcrFieldValue(fieldId, cccdKey, info);
+        if (!value) return;
+        setFieldValue(fieldId, value);
+        touchField(fieldId);
+        setFieldError(fieldId, "");
+      });
+      showOcrNotice(`Đã điền ${action.label.toLowerCase()} từ CCCD.`);
+    } catch (error) {
+      console.error("Không đọc được CCCD cho biểu mẫu:", error);
+      showOcrNotice("Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.");
+    } finally {
+      setIsReadingCccd(false);
+      event.target.value = "";
+    }
+  };
+
+  const renderOcrAction = (action: CccdOcrAction) => (
+    <div className="service-ocr-action-row" key={`ocr-${action.id}`}>
+      <span className="service-ocr-action-title">{action.label}</span>
+      <button
+        type="button"
+        className="dktt-section-camera-btn"
+        onClick={() => handleOpenCccdOcr(action)}
+        disabled={isReadingCccd}
+        title={`Đọc CCCD cho ${action.label.toLowerCase()}`}
+        aria-label={`Đọc CCCD cho ${action.label.toLowerCase()}`}
+      >
+        <Camera size={16} />
+      </button>
+    </div>
+  );
+
+  const renderOcrActionsBeforeField = (fieldId: string) =>
+    cccdOcrActions
+      .filter((action) => action.insertBeforeFieldId === fieldId)
+      .map(renderOcrAction);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -313,16 +443,32 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
 
             {/* Form body */}
             <form className="form-body" onSubmit={handleSubmit} noValidate>
+              {cccdOcrActions.length > 0 && (
+                <input
+                  ref={cccdInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="dktt-hidden-file-input"
+                  onChange={handleCccdOcrUpload}
+                />
+              )}
+
               {/* Form fields */}
               <div className="form-grid">
+                {cccdOcrActions
+                  .filter((action) => !action.insertBeforeFieldId)
+                  .map(renderOcrAction)}
                 {service.fields.map((field) => (
-                  <FormFieldInput
-                    key={field.id}
-                    field={field}
-                    value={getFieldValue(field.id)}
-                    onChange={(val) => setFieldValue(field.id, val)}
-                    isAutofilled={isAutofilled(field.id)}
-                  />
+                  <React.Fragment key={field.id}>
+                    {renderOcrActionsBeforeField(field.id)}
+                    <FormFieldInput
+                      field={field}
+                      value={getFieldValue(field.id)}
+                      onChange={(val) => setFieldValue(field.id, val)}
+                      isAutofilled={isAutofilled(field.id)}
+                    />
+                  </React.Fragment>
                 ))}
               </div>
 
@@ -384,6 +530,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
                     </span>
                   </div>
                 )}
+
               </div>
             </form>
           </div>
@@ -484,6 +631,14 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
           </div>
         </aside>
       </div>
+      {ocrNotice && (
+        <div
+          className={`dktt-toast ocr-toast${/Trùng|Giới tính|Không đọc/.test(ocrNotice) ? " error" : ""}`}
+          role="alert"
+        >
+          {ocrNotice}
+        </div>
+      )}
     </div>
   );
 };

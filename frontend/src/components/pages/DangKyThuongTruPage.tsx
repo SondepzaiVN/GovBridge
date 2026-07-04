@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronDown, ChevronUp, Home, Send, Save, ArrowLeft, Info, FileDown, Paperclip, Plus, Database } from 'lucide-react';
+import { ArrowLeft, Camera, ChevronRight, ChevronDown, ChevronUp, Home, Send, Save, Info, FileDown, Paperclip, Plus, Database } from 'lucide-react';
 import { SERVICE_MAP } from '../../data/services';
 import { useForm } from '../../contexts/FormContext';
 import { FormFieldInput } from './ServicePageLayout';
-import type { FormField } from '../../types';
+import type { CCCDInfo, FormField } from '../../types';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
+import { ocrService } from '../../api/aiServices';
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import {
@@ -47,6 +48,27 @@ const OVERSEAS_PHOTO_FIELD_ID = 'ct02Photo';
 const COLLAPSED_UPLOAD_CASE = '__collapsed__';
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 const SPECIALIZED_DATA_TEMP_DISABLED = true;
+type ThuongTruCccdTarget = 'applicant' | 'familyMember';
+
+const normalizeGenderFromCccd = (value: string) => {
+  const normalized = value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+  if (normalized.includes('nu')) return 'Nữ';
+  if (normalized.includes('nam')) return 'Nam';
+  return '';
+};
+
+const normalizeCccdNumber = (value: string) => value.replace(/\D/g, '');
+
+const isBlankFamilyMember = (member: FamilyMember) => (
+  !member.fullName
+  && !member.dateOfBirth
+  && !member.gender
+  && !member.citizenId
+  && !member.relationshipWithHouseholder
+);
 
 const toResidenceAgencyLabel = (wardName: string) => (
   wardName
@@ -253,6 +275,7 @@ const DangKyThuongTruPage: React.FC = () => {
   const [administrativeError, setAdministrativeError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [savedDraft, setSavedDraft] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const [agreedLegal, setAgreedLegal] = useState(false);
 
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([createBlankFamilyMember(1)]);
@@ -279,6 +302,9 @@ const DangKyThuongTruPage: React.FC = () => {
   const previousOverseasToggleRef = useRef(formState.values[OVERSEAS_TOGGLE_FIELD] === 'true');
   const autoHouseholderDocumentRef = useRef('');
   const previousAutoRequestContentRef = useRef('');
+  const cccdInputRef = useRef<HTMLInputElement>(null);
+  const cccdTargetRef = useRef<ThuongTruCccdTarget>('applicant');
+  const [isReadingCccd, setIsReadingCccd] = useState(false);
 
   const selectedAgencyProvince = formState.values.tinhThanhCQ || '';
   const selectedAgencyWard = formState.values.xaPhuongCQ || '';
@@ -312,6 +338,11 @@ const DangKyThuongTruPage: React.FC = () => {
       ? uploadOpenCaseOverride
       : null;
   const openUploadCaseId = resolvedUploadOpenCaseId === null ? preferredUploadCaseId : resolvedUploadOpenCaseId;
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    window.setTimeout(() => setToastMessage(''), 3200);
+  };
 
   useEffect(() => {
     if (!formState.values.thuTuc) setFieldValue('thuTuc', 'dktt');
@@ -805,6 +836,96 @@ const DangKyThuongTruPage: React.FC = () => {
     setFamilyMembers((prev) => prev.filter((member) => member.id !== id));
   };
 
+  const applyCccdToApplicant = (info: CCCDInfo) => {
+    setFieldValue('hoTen', info.hoTen || formState.values.hoTen || '');
+    setFieldValue('ngaySinh', info.ngaySinh || formState.values.ngaySinh || '');
+    setFieldValue('gioiTinh', normalizeGenderFromCccd(info.gioiTinh) || formState.values.gioiTinh || '');
+    setFieldValue('cccd', normalizeCccdNumber(info.id || formState.values.cccd || ''));
+    touchField('hoTen');
+    touchField('ngaySinh');
+    touchField('gioiTinh');
+    touchField('cccd');
+  };
+
+  const applyCccdToFamilyMember = (info: CCCDInfo) => {
+    const citizenId = normalizeCccdNumber(info.id || '');
+    const duplicatedMember = citizenId
+      ? normalizeCccdNumber(formState.values.cccd || '') === citizenId
+        || familyMembers.some((member) => normalizeCccdNumber(member.citizenId) === citizenId)
+      : false;
+
+    if (duplicatedMember) {
+      showToast('Trùng thông tin: số CCCD này đã có trong danh sách thành viên.');
+      return false;
+    }
+
+    const cccdMember: Omit<FamilyMember, 'id'> = {
+      fullName: info.hoTen || '',
+      dateOfBirth: info.ngaySinh || '',
+      gender: normalizeGenderFromCccd(info.gioiTinh),
+      citizenId,
+      relationshipWithHouseholder: '',
+    };
+    const blankMember = familyMembers.find(isBlankFamilyMember);
+
+    if (blankMember) {
+      setFamilyMembers((prev) => prev.map((member) => (
+        member.id === blankMember.id ? { ...member, ...cccdMember } : member
+      )));
+      return true;
+    }
+
+    setFamilyMembers((prev) => [...prev, { id: familyCounter, ...cccdMember }]);
+    setFamilyCounter((prev) => prev + 1);
+    return true;
+  };
+
+  const handleSectionCccdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsReadingCccd(true);
+    try {
+      const resizedFile = await ocrService.resizeImage(file);
+      const info = await ocrService.extractCCCDInfo(resizedFile);
+      const target = cccdTargetRef.current;
+
+      if (target === 'applicant') {
+        applyCccdToApplicant(info);
+        showToast('Đã điền thông tin người đề nghị từ CCCD.');
+      } else if (applyCccdToFamilyMember(info)) {
+        showToast('Đã thêm thông tin thành viên từ CCCD.');
+      }
+    } catch (error) {
+      console.error('Không đọc được CCCD cho mục thường trú:', error);
+      showToast('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
+    } finally {
+      setIsReadingCccd(false);
+      event.target.value = '';
+    }
+  };
+
+  const openSectionCccdCamera = (target: ThuongTruCccdTarget) => {
+    cccdTargetRef.current = target;
+    cccdInputRef.current?.click();
+  };
+
+  const renderCccdHeaderAction = (target: ThuongTruCccdTarget, label: string) => (
+    <button
+      type="button"
+      className="dktt-section-camera-btn"
+      onClick={(event) => {
+        event.stopPropagation();
+        openSectionCccdCamera(target);
+      }}
+      disabled={isReadingCccd}
+      title={label}
+      aria-label={label}
+    >
+      <Camera size={16} />
+    </button>
+  );
+
   const addOverseasStayRow = () => {
     setOverseasStayRows((prev) => [...prev, createBlankOverseasStayRow(overseasStayCounter)]);
     setOverseasStayCounter((prev) => prev + 1);
@@ -873,7 +994,10 @@ const DangKyThuongTruPage: React.FC = () => {
         <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none' }}>
           Những thành viên trong hộ gia đình cùng thay đổi
         </div>
-        <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
+        <div className="dktt-table-caption-actions">
+          <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
+          {renderCccdHeaderAction('familyMember', 'Đọc CCCD và thêm thành viên')}
+        </div>
       </div>
       <div className="dktt-member-table-wrapper">
         <table className="dktt-member-table">
@@ -2015,6 +2139,14 @@ const DangKyThuongTruPage: React.FC = () => {
           <div className="dktt-required-note">
             <strong>Ghi chú:</strong> Các thông tin có dấu <span className="red">(*)</span> là thông tin bắt buộc phải nhập
           </div>
+          <input
+            ref={cccdInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="dktt-hidden-file-input"
+            onChange={handleSectionCccdUpload}
+          />
 
           {SECTIONS.map((section) => (
             <div
@@ -2042,6 +2174,11 @@ const DangKyThuongTruPage: React.FC = () => {
                     {section.id === 'ho-so-dinh-kem' && <span className="dktt-section-required">(*)</span>}
                   </h3>
                 </div>
+                {section.id === 'nguoi-de-nghi' && (
+                  <div className="dktt-section-header-action">
+                    {renderCccdHeaderAction('applicant', 'Đọc CCCD cho người đề nghị')}
+                  </div>
+                )}
                 <ChevronDown size={20} className="dktt-section-chevron" />
               </div>
               <div className="dktt-section-body">
@@ -2141,6 +2278,11 @@ const DangKyThuongTruPage: React.FC = () => {
       {savedDraft && (
         <div className="dktt-toast" style={{ background: 'var(--primary)' }} role="alert">
           💾 Đã lưu nháp hồ sơ thành công!
+        </div>
+      )}
+      {toastMessage && (
+        <div className="dktt-toast" style={{ background: 'var(--primary-dark)' }} role="alert">
+          {toastMessage}
         </div>
       )}
     </div>
