@@ -3183,6 +3183,44 @@ button.header-nav-link.active {
     color: var(--accent);
 }
 
+.document-review-card {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 10px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+}
+
+.document-review-card.valid {
+    border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+    background: color-mix(in srgb, var(--success) 8%, white);
+    color: #166534;
+}
+
+.document-review-card.invalid {
+    border-color: color-mix(in srgb, var(--danger) 36%, var(--border));
+    background: color-mix(in srgb, var(--danger) 7%, white);
+    color: #991b1b;
+}
+
+.document-review-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.document-review-warning {
+    color: #92400e;
+    line-height: 1.4;
+}
+
+.document-review-meta {
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+}
+
 /* ============================================================
    UI HIGHLIGHTER (Overlay)
    ============================================================ */
