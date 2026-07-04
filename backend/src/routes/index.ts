@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import type { ApplicationService } from '../modules/applications/application.service.js';
 import type { AssistantService } from '../modules/assistant/assistant.service.js';
+import { createDocumentReviewRouter } from '../modules/document-review/document-review.routes.js';
+import type { DocumentReviewService } from '../modules/document-review/document-review.service.js';
 import { createApplicationRouter } from '../modules/applications/application.routes.js';
 import { createAssistantRouter } from '../modules/assistant/assistant.routes.js';
 import { createHealthRouter } from '../modules/health/health.routes.js';
@@ -14,6 +16,7 @@ import type { SpeechService } from '../modules/speech/speech.service.js';
 export interface ApiDependencies {
   applicationService: ApplicationService;
   assistantService: AssistantService;
+  documentReviewService: DocumentReviewService;
   identityService: IdentityService;
   procedureService: ProcedureService;
   speechService: SpeechService;
@@ -39,6 +42,7 @@ export const createApiRouter = (dependencies: ApiDependencies): Router => {
   router.use('/procedures', createProcedureRouter(dependencies.procedureService));
   router.use('/applications', createApplicationRouter(dependencies.applicationService));
   router.use('/assistant', createAssistantRouter(dependencies.assistantService));
+  router.use('/document-review', createDocumentReviewRouter(dependencies.documentReviewService, dependencies.uploadMaxMb));
   router.use('/identity', createIdentityRouter(dependencies.identityService, dependencies.uploadMaxMb));
   router.use('/speech', createSpeechRouter(dependencies.speechService, dependencies.uploadMaxMb));
   return router;

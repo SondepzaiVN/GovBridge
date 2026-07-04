@@ -34,7 +34,11 @@ export const parseVnptKnowledgeStream = async (
     }
     validEventCount += 1;
     const extracted = extractVnptAgenticEvent(event, sseEvent.id);
-    accumulator.addFragments(extracted.fragments);
+    if (extracted.isFinalSnapshot) {
+      accumulator.replaceWithSnapshot(extracted.fragments);
+    } else {
+      accumulator.addFragments(extracted.fragments);
+    }
     accumulator.addButtons(extracted.buttons);
   });
 

@@ -13,6 +13,7 @@ export interface VnptReplyButton {
 export interface VnptExtractedEvent {
   fragments: VnptTextFragment[];
   buttons: VnptReplyButton[];
+  isFinalSnapshot: boolean;
 }
 
 const explicitId = (value: unknown): string | null =>
@@ -27,6 +28,9 @@ export const extractVnptAgenticEvent = (
   const cards = Array.isArray(smartbot.card_data) ? smartbot.card_data : [];
   const fragments: VnptTextFragment[] = [];
   const buttons: VnptReplyButton[] = [];
+  const cardDataInfo = asRecord(smartbot.card_data_info);
+  const isFinalSnapshot = cardDataInfo.status === 2
+    || cards.some((rawCard) => asRecord(rawCard).status === 2);
 
   cards.forEach((rawCard, cardIndex) => {
     const card = asRecord(rawCard);
@@ -52,5 +56,5 @@ export const extractVnptAgenticEvent = (
     }
   });
 
-  return { fragments, buttons };
+  return { fragments, buttons, isFinalSnapshot };
 };
