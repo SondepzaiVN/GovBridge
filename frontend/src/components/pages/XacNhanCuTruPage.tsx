@@ -780,7 +780,6 @@ const XacNhanCuTruPage: React.FC = () => {
             {errors.pledge && <p className="xctt-error pledge">{errors.pledge}</p>}
 
             {draftSaved && <div className="xctt-toast">Đã lưu nháp hồ sơ cư trú.</div>}
-            {ocrNotice && <div className="xctt-toast">{ocrNotice}</div>}
 
             <div className="xctt-actions">
                 <button type="button" className="xctt-btn ghost" onClick={() => navigate(-1)}>
@@ -848,6 +847,15 @@ const XacNhanCuTruPage: React.FC = () => {
                     </div>
                 </div>
             </aside>
+
+            {ocrNotice && (
+                <div
+                    className={`dktt-toast ocr-toast${/Trùng|Giới tính|Không đọc/.test(ocrNotice) ? ' error' : ''}`}
+                    role="alert"
+                >
+                    {ocrNotice}
+                </div>
+            )}
 
             {showSuccess && (
                 <div
