@@ -1,5 +1,5 @@
 import type { AgentEvent } from '../utils/eventBus';
-import type { AIResponse, CCCDInfo, DocumentReviewResult } from '../types';
+import type { AIResponse, CCCDInfo, DocumentReviewResult, DocumentReviewRuleType } from '../types';
 import { apiClient } from './client';
 import { notifyCccdOcrExternalProcessing } from '../utils/externalProcessingNotices';
 
@@ -68,10 +68,7 @@ export const smartbotService = {
         }
     },
     getBackendInfo: () => 'Express Backend API',
-    sendMessage: async (
-        message: string,
-        context: AssistantContext = {},
-    ): Promise<AssistantApiResult> => {
+    sendMessage: async (message: string, context: AssistantContext = {}): Promise<AssistantApiResult> => {
         const result = await apiClient<AssistantApiResult>('/assistant/messages', {
             method: 'POST',
             body: JSON.stringify({
@@ -362,7 +359,7 @@ export const ocrService = {
 
             const blob = await new Promise<Blob>((resolve, reject) => {
                 canvas.toBlob(
-                    (nextBlob) => nextBlob ? resolve(nextBlob) : reject(new Error('Không thể chuẩn hóa ảnh CCCD.')),
+                    (nextBlob) => (nextBlob ? resolve(nextBlob) : reject(new Error('Không thể chuẩn hóa ảnh CCCD.'))),
                     'image/jpeg',
                     0.92,
                 );
@@ -388,12 +385,12 @@ export const ocrService = {
 export const documentReviewService = {
     reviewCt01: async (
         file: File,
-        context: { currentRoute?: string; formValues?: Record<string, string> } = {},
+        context: { currentRoute?: string; documentType: DocumentReviewRuleType },
     ): Promise<DocumentReviewResult> => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('currentRoute', context.currentRoute || currentRoute);
-        formData.append('formValues', JSON.stringify(context.formValues || {}));
+        formData.append('documentType', context.documentType);
         return apiClient<DocumentReviewApiResult>('/document-review/ct01', {
             method: 'POST',
             body: formData,
