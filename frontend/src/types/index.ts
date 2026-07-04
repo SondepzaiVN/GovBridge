@@ -69,6 +69,15 @@ export interface DocumentReviewResult {
   readerProvider?: string;
 }
 
+export type DocumentReviewUiStatus = 'checking' | 'valid' | 'invalid' | 'error';
+
+export interface DocumentReviewUiState {
+  status: DocumentReviewUiStatus;
+  text: string;
+  flag?: 'green' | 'red';
+  result?: DocumentReviewResult;
+}
+
 // ============================================================
 // CCCD / eKYC
 // ============================================================

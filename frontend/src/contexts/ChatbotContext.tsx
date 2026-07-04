@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
 import type { ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
-import { documentReviewService, smartbotService } from '../api/aiServices';
+import { smartbotService } from '../api/aiServices';
 import { ttsService } from '../api/aiServices';
 import { ApiClientError } from '../api/client';
-import { getLatestPendingDocumentForReview } from '../utils/documentReviewRegistry';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
 import { collectVisibleFormFieldIds } from '../utils/visibleFormFields';
@@ -20,15 +19,6 @@ const toSpeechText = (message: string) =>
     .replace(/\*\*/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-
-const isDocumentReviewRequest = (text: string) => {
-  const normalized = text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-  return /(kiem tra|doi chieu|ra soat|hop le|hop ly)/u.test(normalized)
-    && /(van ban|to khai|ct01|dinh kem|giay to|file|anh)/u.test(normalized);
-};
 
 // ============================================================
 // Reducer
@@ -247,7 +237,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     const handleAgentEvent = (event: AgentEvent) => {
       switch (event.type) {
         case 'CHAT':
-          addBotMessage(event.message, 'text', undefined, event.suggestions);
+          addBotMessage(event.message, 'text', event.data, event.suggestions);
           break;
 
         case 'HIGHLIGHT_ELEMENT':
@@ -433,32 +423,6 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     }
 
     try {
-      if (isDocumentReviewRequest(text)) {
-        const pendingDocument = getLatestPendingDocumentForReview();
-        if (!pendingDocument) {
-          handleAIResponse({
-            intent: 'CHAT',
-            message: 'Mình chưa thấy tệp văn bản nào để kiểm tra. Bạn hãy tải tờ khai/CT01 ở phần đính kèm của form hoặc chọn biểu tượng camera rồi chọn "Kiểm tra tờ khai từ máy".',
-            suggestions: ['Tôi sẽ tải tờ khai lên', 'Hướng dẫn tải CT01'],
-          });
-          return;
-        }
-
-        const review = await documentReviewService.reviewCt01(pendingDocument.file, {
-          currentRoute: currentRouteRef.current,
-          formValues: formValuesRef.current,
-        });
-        handleAIResponse({
-          intent: 'CHAT',
-          message: review.text,
-          data: { documentReview: review },
-          suggestions: review.flag === 'green'
-            ? ['Tiếp tục nộp hồ sơ', 'Kiểm tra mục khác']
-            : ['Tôi cần sửa gì?', 'Tải ảnh khác để kiểm tra'],
-        });
-        return;
-      }
-
       const result = await smartbotService.sendMessage(text, {
         currentRoute: currentRouteRef.current,
         formValues: formValuesRef.current,

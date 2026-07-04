@@ -17,8 +17,10 @@ import { saveApplicationToDashboard } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { provinces, useWards } from '../../hooks/useAdministrativeUnits';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
-import type { FormFieldOption } from '../../types';
+import type { DocumentReviewUiState, FormFieldOption } from '../../types';
 import { SERVICE_MAP } from '../../data/services';
+import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
+import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
 
 type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
 
@@ -844,6 +846,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
     const [submitError, setSubmitError] = React.useState('');
     const [activeReviewTab, setActiveReviewTab] = React.useState(0);
     const [uploadedFiles, setUploadedFiles] = React.useState<Record<string, File>>({});
+    const [attachmentReviews, setAttachmentReviews] = React.useState<Record<string, DocumentReviewUiState>>({});
     const [administrativeProvinceOptions, setAdministrativeProvinceOptions] = React.useState<FormFieldOption[]>([]);
     const [wardOptionsByProvinceField, setWardOptionsByProvinceField] = React.useState<Record<string, string[]>>({});
     const [loadingWardFields, setLoadingWardFields] = React.useState<Record<string, boolean>>({});
@@ -1068,6 +1071,19 @@ const LienThongKhaiSinhPage: React.FC = () => {
         }
     };
 
+    const handleUploadFileChange = (title: string, file: File) => {
+        setUploadedFiles((prev) => ({ ...prev, [title]: file }));
+        void reviewUploadedDocument({
+            file,
+            label: title,
+            currentRoute: '/khai-sinh',
+            formValues: formState.values,
+            onStatusChange: (documentReview) => {
+                setAttachmentReviews((prev) => ({ ...prev, [title]: documentReview }));
+            },
+        });
+    };
+
     const validateStep = () => {
         const fields = current.sections.flatMap((section) => section.fields ?? []);
         let isValid = true;
@@ -1271,9 +1287,8 @@ const LienThongKhaiSinhPage: React.FC = () => {
                                     <UploadDocumentsTable
                                         uploads={section.uploads}
                                         files={uploadedFiles}
-                                        onFileChange={(title, file) =>
-                                            setUploadedFiles((prev) => ({ ...prev, [title]: file }))
-                                        }
+                                        reviews={attachmentReviews}
+                                        onFileChange={handleUploadFileChange}
                                     />
                                 )}
                                 {section.resultOptions && (
@@ -1739,8 +1754,9 @@ const ResultOptionsPanel: React.FC<ResultOptionsPanelProps> = ({ values, onChang
 const UploadDocumentsTable: React.FC<{
     uploads: UploadDocument[];
     files: Record<string, File>;
+    reviews: Record<string, DocumentReviewUiState>;
     onFileChange: (title: string, file: File) => void;
-}> = ({ uploads, files, onFileChange }) => (
+}> = ({ uploads, files, reviews, onFileChange }) => (
     <div className="ltks-upload-table-wrap">
         <table className="ltks-upload-table">
             <thead>
@@ -1777,7 +1793,10 @@ const UploadDocumentsTable: React.FC<{
                                 onClick={() => document.getElementById(`upload-${index}`)?.click()}
                             >
                                 <Paperclip size={20} />
-                                {files[upload.title] ? files[upload.title].name : 'Chọn tệp tin'}
+                                <span className="attachment-review-inline">
+                                    <span>{files[upload.title] ? files[upload.title].name : 'Chọn tệp tin'}</span>
+                                    <AttachmentReviewBadge review={reviews[upload.title]} />
+                                </span>
                             </button>
                         </td>
                         <td className="template">

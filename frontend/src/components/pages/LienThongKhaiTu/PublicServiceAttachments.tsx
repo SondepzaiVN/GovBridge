@@ -1,10 +1,14 @@
 import React, { useState, useRef } from "react";
+import { AttachmentReviewBadge } from "../../common/AttachmentReviewBadge";
+import type { DocumentReviewUiState } from "../../../types";
+import { reviewUploadedDocument } from "../../../utils/attachmentDocumentReview";
 
 interface AttachmentItem {
   id: number;
   name: string;
   count: number;
   fileName: string | null;
+  review?: DocumentReviewUiState;
 }
 
 interface PublicServiceAttachmentsProps {
@@ -46,11 +50,25 @@ const PublicServiceAttachments: React.FC<PublicServiceAttachmentsProps> = ({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && activeId !== null) {
+      const targetId = activeId;
       setAttachments((prev) =>
         prev.map((item) =>
-          item.id === activeId ? { ...item, fileName: file.name } : item,
+          item.id === targetId ? { ...item, fileName: file.name } : item,
         ),
       );
+      const reviewTarget = attachments.find((item) => item.id === targetId);
+      void reviewUploadedDocument({
+        file,
+        label: reviewTarget?.name || file.name,
+        currentRoute: '/khai-tu',
+        onStatusChange: (review) => {
+          setAttachments((prev) =>
+            prev.map((item) =>
+              item.id === targetId ? { ...item, review } : item,
+            ),
+          );
+        },
+      });
     }
   };
 
@@ -152,7 +170,10 @@ const PublicServiceAttachments: React.FC<PublicServiceAttachmentsProps> = ({
                       wordBreak: "break-all",
                     }}
                   >
-                    ✅ {item.fileName}
+                    <span className="attachment-review-inline">
+                      <span>✅ {item.fileName}</span>
+                      <AttachmentReviewBadge review={item.review} />
+                    </span>
                   </div>
                 )}
               </td>
