@@ -531,22 +531,6 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
                   </div>
                 )}
 
-                {ocrNotice && (
-                  <div
-                    style={{
-                      marginTop: 16,
-                      padding: "14px 18px",
-                      background: "var(--primary-subtle)",
-                      border: "1px solid var(--primary)",
-                      borderRadius: "var(--radius-md)",
-                      color: "var(--primary-dark)",
-                      fontSize: "0.875rem",
-                    }}
-                    role="alert"
-                  >
-                    {ocrNotice}
-                  </div>
-                )}
               </div>
             </form>
           </div>
@@ -647,6 +631,14 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
           </div>
         </aside>
       </div>
+      {ocrNotice && (
+        <div
+          className={`dktt-toast ocr-toast${/Trùng|Giới tính|Không đọc/.test(ocrNotice) ? " error" : ""}`}
+          role="alert"
+        >
+          {ocrNotice}
+        </div>
+      )}
     </div>
   );
 };
