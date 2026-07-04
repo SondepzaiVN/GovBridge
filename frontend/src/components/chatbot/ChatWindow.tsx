@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, Bot, CheckCircle, User } from 'lucide-react';
+import { ttsService } from '../../api/aiServices';
 import type { ChatMessage } from '../../types';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import { useForm } from '../../contexts/FormContext';
@@ -131,17 +132,19 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
         ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
       );
     } else {
+      const msg = 'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?';
       dispatch({
         type: 'ADD_MESSAGE',
         payload: {
           id: crypto.randomUUID(),
           role: 'bot',
           type: 'text',
-          content: 'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+          content: msg,
           timestamp: new Date(),
           suggestions: ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo']
         }
       });
+      void ttsService.speak(msg);
     }
   };
 
@@ -154,17 +157,19 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
         ['Gửi lại thông tin', 'Giải thích thêm', 'Tiếp tục bằng giọng nói'],
       );
     } else {
+      const msg = 'Dạ, em chưa thay đổi biểu mẫu. Anh/Chị muốn gửi lại thông tin hay giải thích thêm?';
       dispatch({
         type: 'ADD_MESSAGE',
         payload: {
           id: crypto.randomUUID(),
           role: 'bot',
           type: 'text',
-          content: 'Dạ, em chưa thay đổi biểu mẫu. Anh/Chị muốn gửi lại thông tin, giải thích thêm hay tiếp tục bằng giọng nói?',
+          content: msg,
           timestamp: new Date(),
           suggestions: ['Gửi lại thông tin', 'Giải thích thêm']
         }
       });
+      void ttsService.speak(msg);
     }
   };
 
@@ -250,17 +255,19 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
                     ['Nhập thông tin thủ công', 'Chọn thủ tục khác'],
                   );
                 } else {
+                  const msg = 'Thủ tục hiện tại chưa có trường phù hợp để tự điền từ CCCD. Anh/Chị muốn nhập thủ công hay chọn thủ tục khác?';
                   dispatch({
                     type: 'ADD_MESSAGE',
                     payload: {
                       id: crypto.randomUUID(),
                       role: 'bot',
                       type: 'text',
-                      content: 'Thủ tục hiện tại chưa có trường phù hợp để tự điền từ CCCD. Anh/Chị muốn nhập thủ công hay chọn thủ tục khác?',
+                      content: msg,
                       timestamp: new Date(),
                       suggestions: ['Nhập thông tin thủ công', 'Chọn thủ tục khác']
                     }
                   });
+                  void ttsService.speak(msg);
                 }
                 return;
               }
@@ -274,17 +281,19 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
                   ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
                 );
               } else {
+                const msg = 'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?';
                 dispatch({
                   type: 'ADD_MESSAGE',
                   payload: {
                     id: crypto.randomUUID(),
                     role: 'bot',
                     type: 'text',
-                    content: 'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+                    content: msg,
                     timestamp: new Date(),
                     suggestions: ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo']
                   }
                 });
+                void ttsService.speak(msg);
               }
             }}
           >
@@ -300,17 +309,19 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
                   ['Gửi ảnh khác', 'Nhập thông tin thủ công', 'Tiếp tục bằng giọng nói'],
                 );
               } else {
+                const msg = 'Dạ, em chưa dùng thông tin CCCD này. Anh/Chị muốn gửi ảnh khác hay nhập thủ công?';
                 dispatch({
                   type: 'ADD_MESSAGE',
                   payload: {
                     id: crypto.randomUUID(),
                     role: 'bot',
                     type: 'text',
-                    content: 'Dạ, em chưa dùng thông tin CCCD này. Anh/Chị muốn gửi ảnh khác, nhập thủ công hay tiếp tục bằng giọng nói?',
+                    content: msg,
                     timestamp: new Date(),
                     suggestions: ['Gửi ảnh khác', 'Nhập thông tin thủ công']
                   }
                 });
+                void ttsService.speak(msg);
               }
             }}
           >
