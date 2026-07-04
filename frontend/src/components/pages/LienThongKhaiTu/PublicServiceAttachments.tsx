@@ -120,6 +120,7 @@ const PublicServiceAttachments: React.FC<PublicServiceAttachmentsProps> = ({
       {/* Ẩn input file để custom button */}
       <input
         type="file"
+        accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
         ref={fileInputRef}
         style={{ display: "none" }}
         onChange={handleFileChange}

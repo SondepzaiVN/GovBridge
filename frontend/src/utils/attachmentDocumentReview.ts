@@ -20,6 +20,29 @@ const getErrorMessage = (error: unknown) => {
     return 'Không thể kiểm tra tệp đính kèm. Vui lòng thử tải lại tệp hoặc kiểm tra thủ công.';
 };
 
+const isHeicFile = (file: File) => {
+    const normalizedType = file.type.toLowerCase();
+    const normalizedName = file.name.toLowerCase();
+    return normalizedType === 'image/heic'
+        || normalizedType === 'image/heif'
+        || normalizedName.endsWith('.heic')
+        || normalizedName.endsWith('.heif');
+};
+
+const convertHeicToJpeg = async (file: File): Promise<File> => {
+    if (!isHeicFile(file)) return file;
+    const { default: heic2any } = await import('heic2any');
+    const converted = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.92,
+    });
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    if (!blob) throw new Error('Không thể chuyển đổi ảnh HEIC/HEIF.');
+    const baseName = file.name.replace(/\.[^.]+$/, '') || 'attachment';
+    return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+};
+
 const normalizeDocumentLabel = (value: string) => value
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -77,11 +100,21 @@ export const reviewUploadedDocument = async ({
     notifyAttachmentReviewExternalProcessing();
     onStatusChange({
         status: 'checking',
-        text: `Đang kiểm tra ${fileLabel} bằng VNPT SmartReader...`,
+        text: isHeicFile(file)
+            ? `Đang chuyển ${fileLabel} sang JPEG trước khi kiểm tra...`
+            : `Đang kiểm tra ${fileLabel} bằng VNPT SmartReader...`,
     });
 
     try {
-        const result = await documentReviewService.reviewCt01(file, {
+        const reviewFile = await convertHeicToJpeg(file);
+        if (reviewFile !== file) {
+            onStatusChange({
+                status: 'checking',
+                text: `Đã chuyển ${fileLabel} sang JPEG. Đang kiểm tra bằng VNPT SmartReader...`,
+            });
+        }
+
+        const result = await documentReviewService.reviewCt01(reviewFile, {
             currentRoute,
             documentType: ruleType,
         });

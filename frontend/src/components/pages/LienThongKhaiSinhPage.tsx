@@ -1780,6 +1780,7 @@ const UploadDocumentsTable: React.FC<{
                             <input
                                 type="file"
                                 id={`upload-${index}`}
+                                accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
                                 style={{ display: 'none' }}
                                 onChange={(e) => {
                                     const file = e.target.files?.[0];
