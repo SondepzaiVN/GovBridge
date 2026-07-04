@@ -4005,16 +4005,13 @@ button.header-nav-link.active {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-height: 34px;
-    padding: 7px 12px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
     border: 1px solid rgba(255, 255, 255, 0.72);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.96);
     color: var(--primary-dark);
-    font-size: 0.8125rem;
-    font-weight: 700;
-    line-height: 1;
     cursor: pointer;
     box-shadow: 0 6px 16px rgba(185, 54, 22, 0.18);
     transition:
@@ -4034,6 +4031,13 @@ button.header-nav-link.active {
 .dktt-section-camera-btn:disabled {
     cursor: wait;
     opacity: 0.74;
+}
+
+.dktt-table-caption-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .dktt-hidden-file-input {
