@@ -7,7 +7,9 @@ import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { SERVICE_MAP } from '../../data/services';
 import { useForm } from '../../contexts/FormContext';
 import { ocrService } from '../../api/aiServices';
-import type { CCCDInfo } from '../../types';
+import type { CCCDInfo, DocumentReviewUiState } from '../../types';
+import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
+import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
 
 interface FieldConfig {
@@ -319,6 +321,7 @@ const XacNhanCuTruPage: React.FC = () => {
     const [declareMode, setDeclareMode] = React.useState('proxy');
     const [members, setMembers] = React.useState<FamilyMember[]>([createMember(1)]);
     const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
+    const [attachmentReview, setAttachmentReview] = React.useState<DocumentReviewUiState | undefined>();
     const [pledged, setPledged] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
     const [draftSaved, setDraftSaved] = React.useState(false);
@@ -410,6 +413,18 @@ const XacNhanCuTruPage: React.FC = () => {
             if (fieldId === 'requestProvince') nextErrors.requestWard = '';
             if (fieldId === 'wardAgency') nextErrors.residenceAgency = '';
             return nextErrors;
+        });
+    };
+
+    const handleAttachmentFileChange = (file: File | undefined) => {
+        if (!file) return;
+        setUploadedFile(file);
+        void reviewUploadedDocument({
+            file,
+            label: 'hồ sơ xác nhận cư trú',
+            currentRoute: '/xac-nhan-cu-tru',
+            formValues: { ...formState.values, ...values },
+            onStatusChange: setAttachmentReview,
         });
     };
 
@@ -733,9 +748,14 @@ const XacNhanCuTruPage: React.FC = () => {
                     <label className="xctt-upload-btn">
                         <Paperclip size={18} />
                         Chọn tệp tin
-                        <input type="file" onChange={(event) => setUploadedFile(event.target.files?.[0] || null)} />
+                        <input type="file" onChange={(event) => handleAttachmentFileChange(event.target.files?.[0])} />
                     </label>
-                    {uploadedFile && <strong>{uploadedFile.name}</strong>}
+                    {uploadedFile && (
+                        <strong className="attachment-review-inline">
+                            <span>{uploadedFile.name}</span>
+                            <AttachmentReviewBadge review={attachmentReview} />
+                        </strong>
+                    )}
                 </div>
             </XcttSection>
 
