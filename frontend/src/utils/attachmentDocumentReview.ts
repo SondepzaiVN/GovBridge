@@ -1,6 +1,6 @@
 import { documentReviewService } from '../api/aiServices';
 import { ApiClientError } from '../api/client';
-import type { DocumentReviewUiState } from '../types';
+import type { DocumentReviewRuleType, DocumentReviewUiState } from '../types';
 import { agentEventBus } from './eventBus';
 import { notifyAttachmentReviewExternalProcessing } from './externalProcessingNotices';
 
@@ -8,7 +8,7 @@ interface ReviewUploadedDocumentOptions {
     file: File;
     label?: string;
     currentRoute: string;
-    formValues?: Record<string, unknown>;
+    documentType?: DocumentReviewRuleType;
     onStatusChange: (state: DocumentReviewUiState) => void;
 }
 
@@ -20,31 +20,103 @@ const getErrorMessage = (error: unknown) => {
     return 'Không thể kiểm tra tệp đính kèm. Vui lòng thử tải lại tệp hoặc kiểm tra thủ công.';
 };
 
-const compactFormValues = (values: Record<string, unknown>): Record<string, string> =>
-    Object.fromEntries(
-        Object.entries(values)
-            .filter(([, value]) => typeof value === 'string' && value.trim())
-            .map(([key, value]) => [key, value as string]),
-    );
+const isHeicFile = (file: File) => {
+    const normalizedType = file.type.toLowerCase();
+    const normalizedName = file.name.toLowerCase();
+    return normalizedType === 'image/heic'
+        || normalizedType === 'image/heif'
+        || normalizedName.endsWith('.heic')
+        || normalizedName.endsWith('.heif');
+};
+
+const convertHeicToJpeg = async (file: File): Promise<File> => {
+    if (!isHeicFile(file)) return file;
+    const { default: heic2any } = await import('heic2any');
+    const converted = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.92,
+    });
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    if (!blob) throw new Error('Không thể chuyển đổi ảnh HEIC/HEIF.');
+    const baseName = file.name.replace(/\.[^.]+$/, '') || 'attachment';
+    return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+};
+
+const normalizeDocumentLabel = (value: string) => value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+export const inferDocumentReviewRuleType = (label = ''): DocumentReviewRuleType | null => {
+    const normalized = normalizeDocumentLabel(label);
+    if (normalized.includes('ct01') || normalized.includes('ct02')) {
+        return 'ct01';
+    }
+    if (
+        normalized.includes('chung minh cho o')
+        || normalized.includes('cho o hop phap')
+        || normalized.includes('quyen su dung dat')
+        || normalized.includes('so huu nha')
+        || normalized.includes('hop dong thue')
+        || normalized.includes('cho o nho')
+        || normalized.includes('residence-proof')
+        || normalized.includes('housing-proof')
+        || normalized.includes('area-proof')
+        || normalized.includes('facility-legal-doc')
+        || normalized.includes('rent-contract')
+    ) {
+        return 'chung_minh_cho_o_hop_phap';
+    }
+    return null;
+};
 
 export const reviewUploadedDocument = async ({
     file,
     label,
     currentRoute,
-    formValues = {},
+    documentType,
     onStatusChange,
 }: ReviewUploadedDocumentOptions): Promise<DocumentReviewUiState> => {
     const fileLabel = label || file.name;
+    const ruleType = documentType || inferDocumentReviewRuleType(fileLabel);
+
+    if (!ruleType) {
+        const message = `Hệ thống chưa có bộ quy tắc kiểm tra tự động cho ${fileLabel}. Vui lòng kiểm tra thủ công giấy tờ này.`;
+        const nextState: DocumentReviewUiState = {
+            status: 'error',
+            flag: 'red',
+            text: message,
+        };
+        onStatusChange(nextState);
+        agentEventBus.emit({
+            type: 'CHAT',
+            message,
+            suggestions: ['Kiểm tra thủ công', 'Tải giấy tờ khác'],
+        });
+        return nextState;
+    }
+
     notifyAttachmentReviewExternalProcessing();
     onStatusChange({
         status: 'checking',
-        text: `Đang kiểm tra ${fileLabel} bằng VNPT SmartReader...`,
+        text: isHeicFile(file)
+            ? `Đang chuyển ${fileLabel} sang JPEG trước khi kiểm tra...`
+            : `Đang kiểm tra ${fileLabel} bằng VNPT SmartReader...`,
     });
 
     try {
-        const result = await documentReviewService.reviewCt01(file, {
+        const reviewFile = await convertHeicToJpeg(file);
+        if (reviewFile !== file) {
+            onStatusChange({
+                status: 'checking',
+                text: `Đã chuyển ${fileLabel} sang JPEG. Đang kiểm tra bằng VNPT SmartReader...`,
+            });
+        }
+
+        const result = await documentReviewService.reviewCt01(reviewFile, {
             currentRoute,
-            formValues: compactFormValues(formValues),
+            documentType: ruleType,
         });
         const nextState: DocumentReviewUiState = {
             status: result.flag === 'green' ? 'valid' : 'invalid',

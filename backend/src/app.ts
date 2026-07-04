@@ -151,7 +151,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
     documentReviewService: new DocumentReviewService(
       documentReaderProvider,
       documentReviewerProvider,
-      env.DOCUMENT_RULES_PATH,
+      env.DOCUMENT_RULES_DIR,
     ),
     identityService: new IdentityService(ocrProvider),
     speechService: new SpeechService(ttsProvider, sttProvider),
