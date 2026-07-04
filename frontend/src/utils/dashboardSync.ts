@@ -26,7 +26,7 @@ export type SyncApplicationPayload = {
 };
 
 export const saveApplicationToDashboard = (payload: SyncApplicationPayload) => {
-    const STORAGE_KEY = 'officerApplications';
+    const STORAGE_KEY = 'officerApplications_v2';
     
     try {
         const stored = window.localStorage.getItem(STORAGE_KEY);
