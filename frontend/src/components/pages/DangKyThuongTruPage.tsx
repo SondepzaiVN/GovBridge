@@ -817,7 +817,7 @@ const DangKyThuongTruPage: React.FC = () => {
         file,
         label: requirement.name,
         currentRoute: '/dang-ky-thuong-tru',
-        formValues: formState.values,
+        ...(requirement.id === 'ct01' || requirement.id === 'ct02' ? { documentType: 'ct01' as const } : {}),
         onStatusChange: (documentReview) => {
           setUploadDrafts((prev) => {
             const key = getUploadDraftKey(caseId, requirement.id);
@@ -1458,7 +1458,7 @@ const DangKyThuongTruPage: React.FC = () => {
             <input
               id={OVERSEAS_PHOTO_FIELD_ID}
               type="file"
-              accept="image/png,image/jpeg"
+              accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif"
               onChange={(event) => {
                 const file = event.target.files?.[0];
                 setCt02PhotoName(file?.name || '');
@@ -1661,7 +1661,7 @@ const DangKyThuongTruPage: React.FC = () => {
                                   <label className={`dktt-doc-attach${disableAttachment ? ' disabled' : ''}`}>
                                     <input
                                       type="file"
-                                      accept="image/png,image/jpeg,application/pdf"
+                                      accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
                                       multiple
                                       disabled={disableAttachment}
                                       onChange={(event) => updateUploadFiles(item.id, requirement, event.target.files)}
@@ -1716,7 +1716,7 @@ const DangKyThuongTruPage: React.FC = () => {
                                   <label className={`dktt-doc-icon-btn${disableAttachment ? ' disabled' : ''}`} title="Thêm tệp đính kèm">
                                     <input
                                       type="file"
-                                      accept="image/png,image/jpeg,application/pdf"
+                                      accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
                                       multiple
                                       disabled={disableAttachment}
                                       onChange={(event) => updateUploadFiles(item.id, requirement, event.target.files, 'append')}

@@ -6,6 +6,25 @@ export class RuleBasedDocumentReviewerProvider implements DocumentReviewerProvid
 
   async review(input: DocumentReviewInput): Promise<{ text: string; flag: 'green' | 'red' }> {
     const normalized = normalizeText(input.recognizedText);
+
+    if (input.documentType === 'chung_minh_cho_o_hop_phap') {
+      const hasHousingProof = normalized.includes('quyen su dung dat')
+        || normalized.includes('so huu nha')
+        || normalized.includes('cho o hop phap')
+        || normalized.includes('hop dong thue')
+        || normalized.includes('giay phep xay dung');
+
+      return hasHousingProof
+        ? {
+          flag: 'green',
+          text: 'Văn bản có dấu hiệu là giấy tờ chứng minh chỗ ở hợp pháp và phù hợp sơ bộ với rules hiện tại. Bạn vẫn nên rà lại nội dung trước khi nộp.',
+        }
+        : {
+          flag: 'red',
+          text: 'Văn bản chưa đủ cơ sở hợp lệ: cần tải đúng giấy tờ, tài liệu chứng minh chỗ ở hợp pháp và bảo đảm nội dung OCR đọc được rõ ràng.',
+        };
+    }
+
     const hasCt01 = normalized.includes('ct01') || normalized.includes('to khai') || normalized.includes('cu tru');
     const hasRequestContent = normalized.includes('noi dung de nghi')
       || normalized.includes('dang ky thuong tru')
@@ -22,7 +41,7 @@ export class RuleBasedDocumentReviewerProvider implements DocumentReviewerProvid
 
     return {
       flag: 'green',
-      text: 'Văn bản có các dấu hiệu cơ bản phù hợp với rules hiện tại. Bạn vẫn nên kiểm tra lại thông tin cá nhân, địa chỉ và nội dung đề nghị trước khi nộp.',
+      text: 'Văn bản có các dấu hiệu cơ bản phù hợp với rules hiện tại. Bạn vẫn nên kiểm tra lại nội dung trước khi nộp.',
     };
   }
 }

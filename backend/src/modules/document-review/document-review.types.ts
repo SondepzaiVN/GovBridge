@@ -1,4 +1,5 @@
 export type DocumentReviewFlag = 'green' | 'red';
+export type DocumentReviewRuleType = 'ct01' | 'chung_minh_cho_o_hop_phap';
 
 export interface DocumentReaderResult {
   text: string;
@@ -15,8 +16,8 @@ export interface DocumentReaderProvider {
 export interface DocumentReviewInput {
   recognizedText: string;
   rules: string;
+  documentType: DocumentReviewRuleType;
   currentRoute: string;
-  formValues: Record<string, string>;
   fileName: string;
   readerWarnings: string[];
 }

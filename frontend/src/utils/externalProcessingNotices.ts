@@ -41,7 +41,8 @@ export const notifyAttachmentReviewExternalProcessing = () => {
     showNotice({
         kind: 'openai-review',
         title: 'Kiểm tra hồ sơ bằng AI',
-        message: 'GovBridge sẽ gửi tệp đính kèm cùng các thông tin bạn đã nhập trên biểu mẫu đến OpenAI để đối chiếu với bộ quy tắc nghiệp vụ. Dữ liệu chỉ được dùng cho bước kiểm tra tính hợp lệ của hồ sơ.',
+        message:
+            'GovBridge sẽ gửi tệp hồ sơ bạn tải lên đến OpenAI để đọc và đối chiếu với bộ quy tắc nghiệp vụ tương ứng. Đây là sản phẩm MVP, khi triển khai chính thức, luồng xử lý có thể chuyển sang dịch vụ của nhà nước để không đưa thông tin người dùng cho bên thứ ba.',
         actionLabel: 'Đã hiểu',
     });
 };
@@ -50,7 +51,8 @@ export const notifyCccdOcrExternalProcessing = () => {
     showNotice({
         kind: 'vnpt-ekyc',
         title: 'Đọc thông tin CCCD',
-        message: 'Ảnh CCCD bạn cung cấp sẽ được gửi đến VNPT eKYC để trích xuất dữ liệu định danh. GovBridge chỉ dùng kết quả trả về để hỗ trợ điền biểu mẫu hiện tại.',
+        message:
+            'Ảnh CCCD bạn cung cấp sẽ được gửi đến VNPT eKYC để trích xuất dữ liệu định danh. GovBridge chỉ dùng kết quả trả về để hỗ trợ điền biểu mẫu hiện tại.',
         actionLabel: 'Tôi đã rõ',
     });
 };
