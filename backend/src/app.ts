@@ -8,9 +8,11 @@ import { errorHandler } from './common/middleware/error-handler.js';
 import { notFoundHandler } from './common/middleware/not-found.js';
 import { requestId } from './common/middleware/request-id.js';
 import { env } from './config/env.js';
+import { OpenAiDocumentReviewerProvider } from './integrations/openai/openai-document-reviewer.provider.js';
 import { OpenAiOrchestratorProvider } from './integrations/openai/openai-orchestrator.provider.js';
 import { HttpOpenAiResponsesClient } from './integrations/openai/openai-responses.client.js';
 import { VnptOcrProvider } from './integrations/vnpt/vnpt-ocr.provider.js';
+import { VnptSmartReaderProvider } from './integrations/vnpt/vnpt-smart-reader.provider.js';
 import { VnptSttProvider } from './integrations/vnpt/vnpt-stt.provider.js';
 import { VnptTtsProvider } from './integrations/vnpt/vnpt-tts.provider.js';
 import { VnptAgenticKnowledgeProvider } from './integrations/vnpt/vnpt-agentic-knowledge.provider.js';
@@ -23,6 +25,10 @@ import type { OrchestratorProvider } from './modules/assistant/orchestrator.type
 import { MockKnowledgeProvider } from './modules/assistant/providers/mock-knowledge.provider.js';
 import { MockOrchestratorProvider } from './modules/assistant/providers/mock-orchestrator.provider.js';
 import { buildAssistantTools } from './modules/assistant/tools/index.js';
+import { DocumentReviewService } from './modules/document-review/document-review.service.js';
+import type { DocumentReaderProvider, DocumentReviewerProvider } from './modules/document-review/document-review.types.js';
+import { MockDocumentReaderProvider } from './modules/document-review/providers/mock-document-reader.provider.js';
+import { RuleBasedDocumentReviewerProvider } from './modules/document-review/providers/rule-based-document-reviewer.provider.js';
 import { IdentityService } from './modules/identity/identity.service.js';
 import { MockOcrProvider } from './modules/identity/providers/mock-ocr.provider.js';
 import { ProcedureRepository } from './modules/procedures/procedure.repository.js';
@@ -42,6 +48,8 @@ export interface CreateAppOptions {
   sttProvider?: SttProvider;
   orchestratorProvider?: OrchestratorProvider;
   knowledgeProvider?: KnowledgeProvider;
+  documentReaderProvider?: DocumentReaderProvider;
+  documentReviewerProvider?: DocumentReviewerProvider;
 }
 
 export const createApp = (options: CreateAppOptions = {}): Express => {
@@ -51,11 +59,21 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
   const procedures = new ProcedureRepository(dataDirectory);
   const applications = new ApplicationRepository(dataDirectory);
   const sessions = new AssistantSessionRepository(dataDirectory);
+  const openAiClient = env.OPENAI_API_KEY.trim()
+    ? new HttpOpenAiResponsesClient({
+        baseUrl: env.OPENAI_BASE_URL,
+        apiKey: env.OPENAI_API_KEY,
+        timeoutMs: env.OPENAI_TIMEOUT_MS,
+      })
+    : null;
 
   const ocrProvider: IdentityOcrProvider = options.ocrProvider ?? (env.OCR_PROVIDER === 'vnpt'
     ? new VnptOcrProvider({
       baseUrl: env.VNPT_EKYC_URL,
+      authUrl: env.VNPT_EKYC_AUTH_URL,
       accessToken: env.VNPT_EKYC_ACCESS_TOKEN,
+      clientId: env.VNPT_EKYC_CLIENT_ID,
+      clientSecret: env.VNPT_EKYC_CLIENT_SECRET,
       tokenId: env.VNPT_EKYC_TOKEN_ID,
       tokenKey: env.VNPT_EKYC_TOKEN_KEY,
       macAddress: env.VNPT_MAC_ADDRESS,
@@ -82,13 +100,9 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
     : new MockSttProvider());
 
   const orchestratorProvider = options.orchestratorProvider ?? (
-    env.ORCHESTRATOR_PROVIDER === 'openai'
+    env.ORCHESTRATOR_PROVIDER === 'openai' && openAiClient
       ? new OpenAiOrchestratorProvider({
-          client: new HttpOpenAiResponsesClient({
-            baseUrl: env.OPENAI_BASE_URL,
-            apiKey: env.OPENAI_API_KEY,
-            timeoutMs: env.OPENAI_TIMEOUT_MS,
-          }),
+          client: openAiClient,
           model: env.OPENAI_MODEL,
           maxOutputTokens: env.OPENAI_MAX_TOKENS,
           temperature: env.OPENAI_TEMPERATURE,
@@ -105,6 +119,24 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
         timeoutMs: env.VNPT_AGENTIC_TIMEOUT_MS,
       })
     : new MockKnowledgeProvider());
+  const documentReaderProvider = options.documentReaderProvider ?? (env.VNPT_SMARTREADER_ACCESS_TOKEN.trim()
+    ? new VnptSmartReaderProvider({
+        baseUrl: env.VNPT_SMARTREADER_URL,
+        accessToken: env.VNPT_SMARTREADER_ACCESS_TOKEN,
+        tokenId: env.VNPT_SMARTREADER_TOKEN_ID,
+        tokenKey: env.VNPT_SMARTREADER_TOKEN_KEY,
+        macAddress: env.VNPT_MAC_ADDRESS,
+        timeoutMs: env.VNPT_SMARTREADER_TIMEOUT_MS,
+      })
+    : new MockDocumentReaderProvider());
+  const documentReviewerProvider = options.documentReviewerProvider ?? (openAiClient
+    ? new OpenAiDocumentReviewerProvider({
+        client: openAiClient,
+        model: env.OPENAI_MODEL,
+        maxOutputTokens: env.OPENAI_MAX_TOKENS,
+        temperature: 0,
+      })
+    : new RuleBasedDocumentReviewerProvider());
 
   const procedureService = new ProcedureService(procedures);
   const apiRouter = createApiRouter({
@@ -115,6 +147,11 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
       procedures,
       orchestratorProvider,
       knowledgeProvider,
+    ),
+    documentReviewService: new DocumentReviewService(
+      documentReaderProvider,
+      documentReviewerProvider,
+      env.DOCUMENT_RULES_PATH,
     ),
     identityService: new IdentityService(ocrProvider),
     speechService: new SpeechService(ttsProvider, sttProvider),

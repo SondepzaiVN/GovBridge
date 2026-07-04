@@ -11,6 +11,7 @@ export type MessageType =
   | 'fill-confirm'
   | 'navigation-confirm'
   | 'validation-result'
+  | 'document-review'
   | 'form-filled'
   | 'loading';
 
@@ -54,8 +55,18 @@ export interface AIResponse {
     elementLabel?: string;
     validationErrors?: ValidationError[];
     cccdInfo?: CCCDInfo;
+    documentReview?: DocumentReviewResult;
   };
   suggestions?: string[];
+}
+
+export interface DocumentReviewResult {
+  text: string;
+  flag: 'green' | 'red';
+  extractedText?: string;
+  warnings?: string[];
+  provider?: string;
+  readerProvider?: string;
 }
 
 // ============================================================
