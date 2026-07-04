@@ -2,7 +2,6 @@ import React, { createContext, useContext, useReducer, useCallback, useRef, useE
 import type { ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
 import { smartbotService } from '../api/aiServices';
 import { ttsService } from '../api/aiServices';
-import { ApiClientError } from '../api/client';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
 import { collectVisibleFormFieldIds } from '../utils/visibleFormFields';
@@ -464,16 +463,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       }
     } catch (err) {
       console.error('Send message error:', err);
-      const message = err instanceof ApiClientError
-        ? err.message + (err.code ? ' (' + err.code + ')' : '')
-        : 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!';
+      const message = 'Có vẻ tôi chưa nghe rõ, bạn nói lại giúp tôi nhé.';
       const errMsg: ChatMessage = {
         id: createMessageId(),
         role: 'bot',
         type: 'text',
         content: message,
         timestamp: new Date(),
-        suggestions: ['Thử lại', 'Tôi cần hỗ trợ'],
+        suggestions: ['Nói lại', 'Tôi cần hỗ trợ'],
       };
       dispatch({ type: 'ADD_MESSAGE', payload: errMsg });
 
