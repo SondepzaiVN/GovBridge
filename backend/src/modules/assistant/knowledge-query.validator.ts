@@ -126,6 +126,9 @@ const resolveCanonicalProcedure = (
     if (hintCandidate && hintCandidate.id !== messageProcedure.id) return messageProcedure;
     return messageProcedure;
   }
+  // Cho phép model phân loại ngữ nghĩa bằng metadata catalog khi câu đời thường
+  // không chứa alias nguyên văn; cặp id/name vẫn phải khớp chính xác repository.
+  if (hintCandidate) return hintCandidate;
   // Câu hỏi chung trên màn hình thủ tục dùng route canonical do repository đã resolve.
   if (context.currentProcedure) return context.currentProcedure;
   return null;

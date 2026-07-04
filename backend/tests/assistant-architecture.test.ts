@@ -116,6 +116,56 @@ describe('assistant orchestration boundaries', () => {
     ]);
   });
 
+  it('keeps the assistant explanation before asking for navigation confirmation', async () => {
+    const knowledge = new MockKnowledgeProvider();
+    const orchestrator: OrchestratorProvider = {
+      name: 'navigation-answer-first-test',
+      async orchestrate() {
+        return {
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: 'Vợ bạn mới sinh con nên thủ tục phù hợp trước tiên là Đăng ký Khai Sinh.',
+            },
+            actions: [],
+            understanding: {
+              facts: [],
+              caseSuggestion: null,
+              followUpQuestion: null,
+              fieldExplanation: null,
+              navigationRoute: '/khai-sinh',
+              highlightElementId: null,
+              nextStepRequested: false,
+            },
+            responseProvenance: 'orchestrator',
+          },
+        };
+      },
+    };
+
+    const response = await request(createTestApp(knowledge, orchestrator))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Vợ tôi mới đẻ, tôi cần làm gì?',
+        currentRoute: '/',
+      })
+      .expect(200);
+
+    const message = response.body.data.response.message as string;
+    expect(message).toContain('Vợ bạn mới sinh con');
+    expect(message).toContain('Bạn có muốn chuyển đến trang này không?');
+    expect(message.indexOf('Vợ bạn mới sinh con'))
+      .toBeLessThan(message.indexOf('Bạn có muốn chuyển đến trang này không?'));
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'NAVIGATE',
+        route: '/khai-sinh',
+        message,
+      }),
+    ]);
+  });
+
   it('prepares stable opaque knowledge identities per assistant session', async () => {
     const knowledge = new MockKnowledgeProvider();
     const app = createTestApp(knowledge);

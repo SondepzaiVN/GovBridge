@@ -62,7 +62,7 @@ describe('validateAndCanonicalizeKnowledgeQuery', () => {
     });
   });
 
-  it('does not change another route to permanent residence', () => {
+  it('accepts a canonical model hint when no different procedure is named', () => {
     const result = validateAndCanonicalizeKnowledgeQuery(
       createContext({ currentProcedure: procedureById('cccd') }),
       createArguments({
@@ -71,12 +71,12 @@ describe('validateAndCanonicalizeKnowledgeQuery', () => {
     );
 
     expect(result.procedureHint).toEqual({
-      id: 'cccd',
-      name: 'Cấp lại CCCD',
+      id: 'ho-khau',
+      name: 'Đăng ký thường trú',
     });
   });
 
-  it('returns null on home/unknown route when no procedure is verified', () => {
+  it('rejects invented hints but accepts a canonical catalog hint on home', () => {
     const result = validateAndCanonicalizeKnowledgeQuery(
       createContext(),
       createArguments({
@@ -92,10 +92,13 @@ describe('validateAndCanonicalizeKnowledgeQuery', () => {
         procedureHint: { id: 'ho-khau', name: 'Đăng ký thường trú' },
       }),
     );
-    expect(validButUnsupportedHint.procedureHint).toBeNull();
+    expect(validButUnsupportedHint.procedureHint).toEqual({
+      id: 'ho-khau',
+      name: 'Đăng ký thường trú',
+    });
   });
 
-  it('does not use a permanent-residence fallback for an ambiguous keyword', () => {
+  it('uses a canonical model hint to resolve an ambiguous catalog term', () => {
     const result = validateAndCanonicalizeKnowledgeQuery(
       createContext({ message: 'Thường trú cần giấy tờ gì?' }),
       createArguments({
@@ -103,7 +106,10 @@ describe('validateAndCanonicalizeKnowledgeQuery', () => {
       }),
     );
 
-    expect(result.procedureHint).toBeNull();
+    expect(result.procedureHint).toEqual({
+      id: 'ho-khau',
+      name: 'Đăng ký thường trú',
+    });
   });
 
   it('ignores a real hint when the message supports a different procedure', () => {
@@ -134,6 +140,28 @@ describe('validateAndCanonicalizeKnowledgeQuery', () => {
     expect(result.procedureHint).toEqual({
       id: 'cccd',
       name: 'Cấp lại CCCD',
+    });
+  });
+
+  it('recognizes a residence-confirmation request even while another procedure page is open', () => {
+    const result = validateAndCanonicalizeKnowledgeQuery(
+      createContext({
+        message: 'Bên công ty yêu cầu tôi nộp giấy xác nhận chỗ ở hiện tại, tôi phải làm gì?',
+        currentProcedure: procedureById('khai-sinh'),
+      }),
+      createArguments({
+        knowledgeType: 'process',
+        procedureHint: {
+          id: 'xac-nhan-cu-tru',
+          name: 'Hồ sơ xác nhận về thông tin cư trú',
+        },
+      }),
+    );
+
+    expect(result.knowledgeType).toBe('process');
+    expect(result.procedureHint).toEqual({
+      id: 'xac-nhan-cu-tru',
+      name: 'Hồ sơ xác nhận về thông tin cư trú',
     });
   });
 
