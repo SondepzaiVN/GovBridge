@@ -22,7 +22,8 @@ const RequireAuth: React.FC<React.PropsWithChildren> = ({ children }) => {
         };
 
         const handleLogin = () => {
-            navigate('/dang-nhap', { replace: true, state: { from: location.pathname } });
+            localStorage.setItem('redirect_after_login', location.pathname + location.search);
+            navigate('/dang-nhap', { replace: true });
         };
 
         return (
