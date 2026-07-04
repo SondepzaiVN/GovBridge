@@ -28,7 +28,6 @@ import { useAuth } from '../../contexts/useAuth';
 import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
 import {
     DASHBOARD_STORAGE_KEY,
-    INITIAL_DASHBOARD_APPLICATIONS,
     loadDashboardApplications,
 } from '../../utils/applicationDashboardData';
 import {
@@ -52,14 +51,14 @@ const statusClassName = (status: ApplicationStatus) => {
 const OfficerDashboardPage: React.FC = () => {
     const { user } = useAuth();
     const [applications, setApplications] = useState<Application[]>(loadDashboardApplications);
-    const [selectedId, setSelectedId] = useState(INITIAL_DASHBOARD_APPLICATIONS[0].id);
+    const [selectedId, setSelectedId] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<OfficerApplicationFilters['status']>('Tất cả');
     const [returnReason, setReturnReason] = useState('');
     const [message, setMessage] = useState('');
     const [reasonError, setReasonError] = useState('');
     const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
     const [toast, setToast] = useState('');
-    const [officerNoteDrafts, setOfficerNoteDrafts] = useState<Record<string, string>>({});
+
     const [previewFile, setPreviewFile] = useState<{
         fileName: string;
         mimeType: string;
@@ -75,7 +74,7 @@ const OfficerDashboardPage: React.FC = () => {
     const selectedApplication = filteredApplications.find((application) => application.id === selectedId)
         ?? filteredApplications[0]
         ?? applications[0];
-    const officerNote = officerNoteDrafts[selectedApplication.id] ?? selectedApplication.officerNote;
+    const officerNote = selectedApplication?.officerNote ?? '';
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -87,17 +86,7 @@ const OfficerDashboardPage: React.FC = () => {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    const handleSaveOfficerNote = () => {
-        setApplications((current) => {
-            const newApps = current.map((application) => (
-                application.id === selectedApplication.id ? { ...application, officerNote } : application
-            ));
-            window.localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(newApps));
-            return newApps;
-        });
-        setToast('Đã lưu lưu ý hồ sơ');
-        setTimeout(() => setToast(''), 2600);
-    };
+
 
     const handleDownloadAttachment = async (attachment: AttachmentMetadata) => {
         try {
@@ -196,8 +185,11 @@ const OfficerDashboardPage: React.FC = () => {
     };
 
     const requestReject = () => {
-        if (!returnReason.trim()) {
+        const isValid = returnReason && returnReason.trim().length > 0 && returnReason.trim() !== 'Điền thiếu';
+        if (!isValid) {
             setReasonError('Vui lòng nhập lý do trả về trước khi từ chối hồ sơ.');
+            setToast('Vui lòng nhập lý do trả về trước khi từ chối hồ sơ.');
+            window.setTimeout(() => setToast(''), 3000);
             return;
         }
         setReasonError('');
@@ -206,6 +198,18 @@ const OfficerDashboardPage: React.FC = () => {
 
     const completeAction = () => {
         if (!confirmAction) return;
+        if (!selectedApplication) return;
+
+        if (confirmAction === 'reject') {
+            const isValid = returnReason && returnReason.trim().length > 0 && returnReason.trim() !== 'Điền thiếu';
+            if (!isValid) {
+                setReasonError('Vui lòng nhập lý do trả về trước khi từ chối hồ sơ.');
+                setToast('Vui lòng nhập lý do trả về trước khi từ chối hồ sơ.');
+                window.setTimeout(() => setToast(''), 3000);
+                setConfirmAction(null);
+                return;
+            }
+        }
         const nextStatus: ApplicationStatus = 
             confirmAction === 'accept' ? 'Đã tiếp nhận' :
             confirmAction === 'process' ? 'Đang xử lí' :
@@ -308,6 +312,16 @@ const OfficerDashboardPage: React.FC = () => {
                         </div>
 
                         <div className="officer-detail-scroll">
+                            <section className="officer-detail-section" style={{ backgroundColor: '#f0f9ff', borderColor: '#bae6fd', borderWidth: '1px', borderStyle: 'solid', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                                    <span style={{ backgroundColor: '#0ea5e9', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>AI đánh giá</span>
+                                    <h3 style={{ margin: 0, color: '#0369a1', fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><FileText size={17} /> Lưu ý hồ sơ</h3>
+                                </div>
+                                <div style={{ fontSize: '14px', color: '#334155', lineHeight: '1.5', whiteSpace: 'pre-wrap', backgroundColor: 'white', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                                    {officerNote || <span style={{ fontStyle: 'italic', color: '#64748b' }}>Chưa có đánh giá AI cho hồ sơ này.</span>}
+                                </div>
+                            </section>
+
                             <section className="officer-detail-section">
                                 <h3><FileText size={17} /> Thông tin hồ sơ</h3>
                                 <dl className="officer-info-grid">
@@ -389,27 +403,6 @@ const OfficerDashboardPage: React.FC = () => {
                                 )}
                             </section>
 
-                            <section className="officer-detail-section officer-response-section">
-                                <h3><FileText size={17} /> Lưu ý hồ sơ</h3>
-                                <textarea 
-                                    value={officerNote}
-                                    onChange={(event) => setOfficerNoteDrafts((current) => ({
-                                        ...current,
-                                        [selectedApplication.id]: event.target.value,
-                                    }))}
-                                    placeholder="Nhập lưu ý nội bộ cho hồ sơ này..."
-                                    maxLength={1000}
-                                />
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                                    <button 
-                                        type="button" 
-                                        className="officer-attachment-btn"
-                                        onClick={handleSaveOfficerNote}
-                                    >
-                                        <Check size={14} /> Lưu lưu ý
-                                    </button>
-                                </div>
-                            </section>
 
                             <section className="officer-detail-section">
                                 <h3><CircleEllipsis size={17} /> Trạng thái xử lý</h3>

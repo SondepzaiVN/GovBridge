@@ -3183,6 +3183,44 @@ button.header-nav-link.active {
     color: var(--accent);
 }
 
+.document-review-card {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 10px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+}
+
+.document-review-card.valid {
+    border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+    background: color-mix(in srgb, var(--success) 8%, white);
+    color: #166534;
+}
+
+.document-review-card.invalid {
+    border-color: color-mix(in srgb, var(--danger) 36%, var(--border));
+    background: color-mix(in srgb, var(--danger) 7%, white);
+    color: #991b1b;
+}
+
+.document-review-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.document-review-warning {
+    color: #92400e;
+    line-height: 1.4;
+}
+
+.document-review-meta {
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+}
+
 /* ============================================================
    UI HIGHLIGHTER (Overlay)
    ============================================================ */
@@ -3954,6 +3992,82 @@ button.header-nav-link.active {
     align-items: center;
     gap: 12px;
     min-width: 0;
+}
+
+.dktt-section-header-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.dktt-section-camera-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--primary-dark);
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(185, 54, 22, 0.18);
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dktt-section-camera-btn:hover:not(:disabled) {
+    background: var(--white);
+    color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(185, 54, 22, 0.24);
+}
+
+.dktt-section-camera-btn:disabled {
+    cursor: wait;
+    opacity: 0.74;
+}
+
+.dktt-table-caption-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dktt-hidden-file-input {
+    display: none;
+}
+
+.service-ocr-actions {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.service-ocr-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    grid-column: 1 / -1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.service-ocr-action-title {
+    min-width: 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
 .dktt-section-number {
@@ -4738,6 +4852,14 @@ button.header-nav-link.active {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.dktt-toast.ocr-toast {
+    background: var(--primary-dark);
+}
+
+.dktt-toast.ocr-toast.error {
+    background: var(--danger);
 }
 
 @keyframes dktt-toast-in {
