@@ -817,7 +817,7 @@ const DangKyThuongTruPage: React.FC = () => {
         file,
         label: requirement.name,
         currentRoute: '/dang-ky-thuong-tru',
-        formValues: formState.values,
+        ...(requirement.id === 'ct01' || requirement.id === 'ct02' ? { documentType: 'ct01' as const } : {}),
         onStatusChange: (documentReview) => {
           setUploadDrafts((prev) => {
             const key = getUploadDraftKey(caseId, requirement.id);

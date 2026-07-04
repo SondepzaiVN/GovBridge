@@ -423,7 +423,7 @@ const XacNhanCuTruPage: React.FC = () => {
             file,
             label: 'hồ sơ xác nhận cư trú',
             currentRoute: '/xac-nhan-cu-tru',
-            formValues: { ...formState.values, ...values },
+            documentType: 'ct01',
             onStatusChange: setAttachmentReview,
         });
     };

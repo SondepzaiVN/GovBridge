@@ -437,6 +437,9 @@ const DangKyTamTruPage: React.FC = () => {
 
     const updateAttachmentFile = (documentId: string, file: File | undefined, quantity: string) => {
         if (!file) return;
+        const reviewDocument = dossierCases
+            .flatMap((dossierCase) => dossierCase.documents)
+            .find((document) => document.id === documentId);
         updateAttachment(documentId, {
             checked: true,
             file,
@@ -445,9 +448,9 @@ const DangKyTamTruPage: React.FC = () => {
         });
         void reviewUploadedDocument({
             file,
-            label: documentId.toUpperCase(),
+            label: reviewDocument?.name || documentId.toUpperCase(),
             currentRoute: '/dang-ky-tam-tru',
-            formValues: { ...formState.values, ...form },
+            ...(documentId === 'ct01' ? { documentType: 'ct01' as const } : {}),
             onStatusChange: (documentReview) => updateAttachment(documentId, { documentReview }),
         });
     };

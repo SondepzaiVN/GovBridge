@@ -238,6 +238,10 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       switch (event.type) {
         case 'CHAT':
           addBotMessage(event.message, 'text', event.data, event.suggestions);
+          if (event.data?.documentReview) {
+            dispatch({ type: 'SET_CALL_MODE', payload: false });
+            dispatch({ type: 'OPEN' });
+          }
           break;
 
         case 'HIGHLIGHT_ELEMENT':

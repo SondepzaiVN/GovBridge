@@ -69,6 +69,8 @@ export interface DocumentReviewResult {
   readerProvider?: string;
 }
 
+export type DocumentReviewRuleType = 'ct01' | 'chung_minh_cho_o_hop_phap';
+
 export type DocumentReviewUiStatus = 'checking' | 'valid' | 'invalid' | 'error';
 
 export interface DocumentReviewUiState {
