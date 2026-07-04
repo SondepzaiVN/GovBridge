@@ -453,7 +453,7 @@ const safeKnowledgeMessage = (knowledge: KnowledgeResult, modelMessage: string):
             case 'EMPTY_KNOWLEDGE_RESPONSE':
                 return 'Dịch vụ tra cứu kiến thức chưa trả về nội dung hữu ích. Bạn có thể diễn đạt rõ hơn câu hỏi hoặc thử lại sau.';
             case 'INVALID_KNOWLEDGE_STREAM':
-                return 'Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.';
+                return 'Tôi chưa nghe rõ, bạn có thể nói lại giúp tôi được không?';
             case 'KNOWLEDGE_PROVIDER_UNAVAILABLE':
             default:
                 return 'Dịch vụ tra cứu kiến thức hiện chưa sẵn sàng. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.';
