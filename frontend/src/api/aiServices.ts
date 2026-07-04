@@ -1,6 +1,7 @@
 import type { AgentEvent } from '../utils/eventBus';
 import type { AIResponse, CCCDInfo, DocumentReviewResult } from '../types';
 import { apiClient } from './client';
+import { notifyCccdOcrExternalProcessing } from '../utils/externalProcessingNotices';
 
 interface AssistantApiResult {
     sessionId: string;
@@ -342,6 +343,7 @@ export const ttsService = {
 export const ocrService = {
     resizeImage: async (file: File) => file,
     extractCCCDInfo: async (file: File): Promise<CCCDInfo> => {
+        notifyCccdOcrExternalProcessing();
         const formData = new FormData();
         formData.append('file', file);
         const result = await apiClient<OCRApiResult>('/identity/cccd/ocr', {
