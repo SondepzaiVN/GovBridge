@@ -162,7 +162,13 @@ export const planAssistantResult = (
   if (understanding.navigationRoute) {
     const targetProcedure = context.procedures.find((p) => p.route === understanding.navigationRoute);
     if (targetProcedure) {
-      const navigationMessage = `Mình tìm thấy trang **${targetProcedure.name}**. Bạn có muốn chuyển đến trang này không?`;
+      const navigationConfirmation = `Mình tìm thấy trang **${targetProcedure.name}**. Bạn có muốn chuyển đến trang này không?`;
+      const navigationExplanation = finalMessage.trim()
+        || `Với thông tin bạn vừa chia sẻ, thủ tục phù hợp là **${targetProcedure.name}**.`;
+      const navigationMessage = mergeConfirmationMessage(
+        navigationExplanation,
+        navigationConfirmation,
+      );
       actions.push({
         type: 'NAVIGATE',
         route: targetProcedure.route,
