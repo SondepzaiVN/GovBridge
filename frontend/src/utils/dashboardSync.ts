@@ -21,6 +21,8 @@ export type SyncApplicationPayload = {
     documents: DashboardDocument[];
     message?: string;
     caseNote?: string;
+    officerNote?: string;
+    officerNoteFlag?: string;
     details?: Record<string, string>;
     attachments?: AttachmentMetadata[];
 };
@@ -64,6 +66,8 @@ export const saveApplicationToDashboard = (payload: SyncApplicationPayload) => {
             documents: payload.documents.length > 0 ? payload.documents : [],
             message: payload.message || MISSING_VALUE,
             caseNote: payload.caseNote || MISSING_VALUE,
+            officerNote: payload.officerNote || '',
+            officerNoteFlag: payload.officerNoteFlag || '',
             details,
             attachments: payload.attachments || [],
         };
