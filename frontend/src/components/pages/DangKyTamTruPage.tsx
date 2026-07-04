@@ -216,6 +216,8 @@ const normalizeGenderFromCccd = (value: string) => {
     return '';
 };
 
+const normalizeCccdNumber = (value: string) => value.replace(/\D/g, '');
+
 const isBlankMember = (member: TamTruHouseholdMember) =>
     !member.fullName &&
     !member.dateOfBirth &&
@@ -498,19 +500,30 @@ const DangKyTamTruPage: React.FC = () => {
     };
 
     const applyCccdToMember = (info: CCCDInfo) => {
+        const citizenId = normalizeCccdNumber(info.id || '');
+        const duplicatedMember = citizenId
+            ? normalizeCccdNumber(form.citizenId) === citizenId ||
+              form.householdMembers.some((member) => normalizeCccdNumber(member.citizenId) === citizenId)
+            : false;
+
+        if (duplicatedMember) {
+            showToast('Trùng thông tin: số CCCD này đã có trong danh sách thành viên.');
+            return false;
+        }
+
         const cccdMember: Omit<TamTruHouseholdMember, 'id'> = {
             fullName: info.hoTen || '',
             dateFormat: 'day-month-year',
             dateOfBirth: info.ngaySinh || '',
             gender: normalizeGenderFromCccd(info.gioiTinh),
-            citizenId: info.id || '',
+            citizenId,
             relationshipWithHead: '',
         };
         const blankMember = form.householdMembers.find(isBlankMember);
 
         if (blankMember) {
             updateMember(blankMember.id, cccdMember);
-            return;
+            return true;
         }
 
         setForm((prev) => ({
@@ -519,6 +532,7 @@ const DangKyTamTruPage: React.FC = () => {
         }));
         setMemberCounter((prev) => prev + 1);
         setReview(null);
+        return true;
     };
 
     const handleSectionCccdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -538,8 +552,9 @@ const DangKyTamTruPage: React.FC = () => {
                 applyCccdToHouseholder(info);
                 showToast('Đã điền thông tin chủ hộ từ CCCD.');
             } else {
-                applyCccdToMember(info);
-                showToast('Đã thêm thông tin thành viên từ CCCD.');
+                if (applyCccdToMember(info)) {
+                    showToast('Đã thêm thông tin thành viên từ CCCD.');
+                }
             }
         } catch (error) {
             console.error('Không đọc được CCCD cho mục tạm trú:', error);
@@ -565,7 +580,6 @@ const DangKyTamTruPage: React.FC = () => {
             aria-label={label}
         >
             <Camera size={16} />
-            <span>{isReadingCccd && cccdTargetRef.current === target ? 'Đang đọc...' : 'CCCD'}</span>
         </button>
     );
 
