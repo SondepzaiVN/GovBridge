@@ -55,9 +55,9 @@ const successResponse = (): Response => {
 const providerOptions = (fetchImpl: typeof fetch) => ({
   url: 'https://assistant-stream.vnpt.vn/v1/conversation',
   accessToken: 'access-token',
-  tokenId: 'token-id',
-  tokenKey: 'token-key',
   botId: 'bot-id',
+  senderId: 'team.25@vnptai.io',
+  referer: 'https://livechat.vnpt.vn/',
   fetchImpl,
 });
 
@@ -201,7 +201,12 @@ describe('VNPT outbound privacy boundary', () => {
       'metadata',
       'sender_id',
       'session_id',
+      'settings',
+      'stream',
       'text',
+      'tts_model',
+      'tts_region',
+      'user_auth_level',
     ]);
     for (const forbidden of [
       'formValues',
@@ -222,8 +227,8 @@ describe('VNPT outbound privacy boundary', () => {
     const unsafeIdentity = {
       ...requestFor('Cần giấy tờ gì?'),
       identity: {
-        senderId: 'citizen@example.com',
-        sessionId: 'knowledge_opaque_12345678',
+        senderId: 'sender_opaque_12345678',
+        sessionId: 'citizen@example.com',
       },
     };
 

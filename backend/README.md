@@ -165,7 +165,9 @@ Kết quả data gồm:
 
 Frontend nên chọn một đường xử lý hiển thị duy nhất để tránh lặp tin nhắn: dùng response cho tin nhắn, và chỉ phát các action có thao tác UI; không phát lại action CHAT nếu đã hiển thị response.
 
-Backend dựng context theo schema thủ tục: bước hiện tại, field đã có, field bắt buộc còn thiếu, thay đổi gần nhất, candidate case và field OCR gần nhất. Giá trị thật của form/OCR chỉ được backend dùng để kiểm tra; VNPT chỉ nhận ID/trạng thái field cùng câu chat mà người dùng chủ động gửi.
+Backend dựng context theo schema thủ tục: bước hiện tại, field đã có, field bắt buộc còn thiếu, thay đổi gần nhất, candidate case và field OCR gần nhất. Giá trị thật của form/OCR chỉ được backend dùng để kiểm tra; VNPT chỉ nhận ID/trạng thái field cùng câu chat mà người dùng chủ động gửi. Frontend không gọi trực tiếp VNPT; mọi tra cứu chuyên sâu đi qua `/assistant/messages`, được OpenAI orchestrator quyết định rồi backend mới gọi VNPT livechat/Conversation API nội bộ.
+
+Khi `KNOWLEDGE_PROVIDER=vnpt`, cấu hình bearer token bằng `VNPT_ASSISTANT_TOKEN`. Bot, sender và referer mặc định theo `.env.example`.
 
 VNPT phải trả JSON có cấu trúc gồm facts, confidence, caseSuggestion, followUpQuestion và fieldExplanation. Backend không tin trực tiếp kết quả này: field lạ, field hệ thống, giá trị sai option/pattern và fact suy diễn đều bị loại. Fact hợp lệ được chuyển thành REQUEST_CONFIRM_FILL; frontend chỉ điền sau khi người dùng xác nhận.
 

@@ -398,6 +398,34 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
     );
   };
 
+  const renderDocumentReviewCard = () => {
+    const review = message.data?.documentReview as {
+      flag?: 'green' | 'red';
+      warnings?: string[];
+      readerProvider?: string;
+      provider?: string;
+    } | undefined;
+    if (!review?.flag) return null;
+    const isValid = review.flag === 'green';
+
+    return (
+      <div className={`document-review-card ${isValid ? 'valid' : 'invalid'}`}>
+        <div className="document-review-status">
+          {isValid ? <CheckCircle size={15} /> : <AlertTriangle size={15} />}
+          <strong>{isValid ? 'Văn bản hợp lệ sơ bộ' : 'Văn bản cần chỉnh sửa'}</strong>
+        </div>
+        {review.warnings && review.warnings.length > 0 && (
+          <div className="document-review-warning">
+            Cảnh báo OCR: {review.warnings.slice(0, 2).join('; ')}
+          </div>
+        )}
+        <div className="document-review-meta">
+          SmartReader: {review.readerProvider || 'VNPT'} · Reviewer: {review.provider || 'OpenAI'}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={`message-wrapper ${message.role}${isActiveConfirmation ? ' message-wrapper--confirmation' : ''}`}>
       <div className="message-avatar">
@@ -413,6 +441,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           {message.type === 'cccd-preview' && renderCCCDPreviewCard()}
           {message.type === 'fill-confirm' && (isActiveConfirmation || fillDecision) && renderFillConfirmCard()}
           {message.type === 'validation-result' && renderValidationCard()}
+          {Boolean(message.data?.documentReview) && renderDocumentReviewCard()}
         </div>
 
         <span className="message-time">{time}</span>
