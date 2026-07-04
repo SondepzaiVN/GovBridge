@@ -99,7 +99,21 @@ const HomePage: React.FC = () => {
                   {service.icon}
                 </div> */}
 
-                                <div>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                    {['khai-sinh', 'cccd', 'ket-hon'].includes(service.id) && (
+                                        <span style={{
+                                            fontSize: '0.65rem',
+                                            backgroundColor: '#FEF08A',
+                                            color: '#A16207',
+                                            padding: '2px 6px',
+                                            borderRadius: '12px',
+                                            fontWeight: 600,
+                                            whiteSpace: 'nowrap',
+                                            marginBottom: '6px'
+                                        }}>
+                                            Tính năng đang phát triển
+                                        </span>
+                                    )}
                                     <div className="service-card-name">{service.name}</div>
                                     <div className="service-card-desc">{service.description}</div>
                                 </div>

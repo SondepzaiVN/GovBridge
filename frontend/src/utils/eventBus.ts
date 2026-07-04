@@ -14,6 +14,7 @@ export type AgentEvent =
   | {
       type: 'CHAT';
       message: string;
+      data?: Record<string, unknown>;
       suggestions?: string[];
     }
   | {
