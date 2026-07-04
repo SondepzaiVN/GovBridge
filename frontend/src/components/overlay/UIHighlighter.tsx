@@ -42,7 +42,7 @@ const UIHighlighter: React.FC = () => {
   const activeElementRef = useRef<Element | null>(null);
 
   // ── Core logic: tìm element và bật spotlight ──
-  const activateHighlight = useCallback((id: string, lbl?: string) => {
+  const activateHighlight = useCallback((id: string, lbl?: string, completionMessage?: string) => {
     let attempts = 0;
 
     const findEl = () => {
@@ -70,6 +70,12 @@ const UIHighlighter: React.FC = () => {
           el.textContent?.trim().slice(0, 40) ||
           id
         );
+        if (completionMessage) {
+          agentEventBus.emit({
+            type: 'HIGHLIGHT_READY',
+            message: completionMessage,
+          });
+        }
       }, 400);
 
       observerRef.current?.disconnect();
@@ -100,7 +106,7 @@ const UIHighlighter: React.FC = () => {
   useEffect(() => {
     const handler = (event: AgentEvent) => {
       if (event.type === 'HIGHLIGHT_ELEMENT') {
-        activateHighlight(event.elementId, event.elementLabel);
+        activateHighlight(event.elementId, event.elementLabel, event.message);
       }
     };
 

@@ -21,6 +21,13 @@ const isExplicitNextStepRequest = (normalizedMessage: string): boolean => [
   /\bqua buoc (?:sau|tiep theo)\b/u,
 ].some((pattern) => pattern.test(normalizedMessage));
 
+const inferUiHighlightElement = (normalizedMessage: string): string | null => {
+  const asksForSubmitButton =
+    /\b(?:nut\s+)?(?:nop|gui)(?:\s+ho\s+so)?\b/u.test(normalizedMessage)
+    && /\b(?:o dau|cho nao|vi tri|tim|nam dau)\b/u.test(normalizedMessage);
+  return asksForSubmitButton ? 'submit-btn' : null;
+};
+
 // Các giá trị này do hệ thống hoặc logic nghiệp vụ của biểu mẫu quản lý.
 const SYSTEM_MANAGED_FIELDS = new Set([
   'thuTuc',
@@ -54,118 +61,12 @@ const findField = (fact: ExtractedFact, fields: ProcedureField[]): ProcedureFiel
   ) ?? null;
 };
 
-const isAdministrativeUnitField = (field: ProcedureField): boolean => {
-  if (field.type !== 'select') return false;
-  const normalizedField = normalizeText(`${field.id} ${field.label}`).replace(/\s+/g, '');
-  return [
-    'tinhthanh',
-    'xaphuong',
-    'province',
-    'ward',
-  ].some((token) => normalizedField.includes(token));
-};
-
-const isProvinceField = (field: ProcedureField): boolean => {
-  const normalizedField = normalizeText(`${field.id} ${field.label}`).replace(/\s+/g, '');
-  return normalizedField.includes('tinhthanh') || normalizedField.includes('province');
-};
-
-const isWardField = (field: ProcedureField): boolean => {
-  const normalizedField = normalizeText(`${field.id} ${field.label}`).replace(/\s+/g, '');
-  return normalizedField.includes('xaphuong') || normalizedField.includes('ward');
-};
-
-interface LocationMatch {
-  value: string;
-  evidence: string;
-}
-
-const findLocationMatch = (
-  message: string,
-  patterns: RegExp[],
-): LocationMatch | null => {
-  for (const pattern of patterns) {
-    const match = message.match(pattern);
-    const value = match?.[1]?.trim();
-    if (!match?.[0] || !value) continue;
-    return {
-      value: value.charAt(0).toLocaleUpperCase('vi-VN') + value.slice(1),
-      evidence: match[0].trim(),
-    };
-  }
-  return null;
-};
-
-const findProvinceMatch = (message: string): LocationMatch | null =>
-  findLocationMatch(message, [
-    /thuộc\s+(?:(?:thành\s+phố|tỉnh|tp\.?)\s+)?([^,;.\n]+?)(?=\s+(?:điền|cập\s+nhật|giúp|vui\s+lòng)\b|\s*(?:,|;|\.|\n|$))/iu,
-    /(?:thành\s+phố|tỉnh|tp\.?)\s+(?:(?:của\s+)?(?:tôi|mình)\s+)?(?:(?:đang\s+)?(?:sống|ở|cư\s+trú)\s+)?(?:là|ở|tại)\s+([^,;.\n]+)/iu,
-    /(?:(?:tôi|mình)\s+)?(?:(?:đang\s+)?(?:sống|ở|cư\s+trú))\s+(?:tại\s+|ở\s+)?(?:thành\s+phố|tỉnh|tp\.?)\s+([^,;.\n]+?)(?=\s*(?:,|;|\.|\n|phường|xã|thị\s+trấn|đặc\s+khu|$))/iu,
-    /(?:thành\s+phố|tỉnh|tp\.?)\s+([^,;.\n]+?)(?=\s*(?:,|;|\.|\n|phường|xã|thị\s+trấn|đặc\s+khu|$))/iu,
-  ]);
-
-const findWardMatch = (message: string): LocationMatch | null =>
-  findLocationMatch(message, [
-    /(?:phường|xã|thị\s+trấn|đặc\s+khu)\s+(?:(?:của\s+)?(?:tôi|mình)\s+)?(?:(?:đang\s+)?(?:sống|ở|cư\s+trú)\s+)?(?:là|ở|tại)\s+([^,;.\n]+)/iu,
-    /(?:phường|xã|thị\s+trấn|đặc\s+khu)\s+([^,;.\n]+?)(?=\s+(?:thuộc|điền|cập\s+nhật|giúp|vui\s+lòng)\b|\s*(?:,|;|\.|\n|$))/iu,
-  ]);
-
-const extractVisibleAdministrativeFacts = (
-  context: AssistantToolContext,
-  existingFacts: ExtractedFact[],
-): ExtractedFact[] => {
-  if (!context.currentProcedure) return [];
-
-  const visibleFieldIds = new Set(
-    context.formContext.importantVisibleFields.map((field) => field.id),
-  );
-  const visibleFields = context.currentProcedure.fields.filter(
-    (field) => visibleFieldIds.has(field.id),
-  );
-  const existingFactFieldIds = new Set(
-    existingFacts
-      .map((fact) => findField(fact, context.currentProcedure?.fields ?? [])?.id)
-      .filter((fieldId): fieldId is string => Boolean(fieldId)),
-  );
-  const extractedFacts: ExtractedFact[] = [];
-
-  const addLocationFact = (
-    fieldMatcher: (field: ProcedureField) => boolean,
-    locationMatch: LocationMatch | null,
-  ) => {
-    const candidates = visibleFields.filter(
-      (field) => fieldMatcher(field) && !existingFactFieldIds.has(field.id),
-    );
-    if (candidates.length !== 1) return;
-
-    const field = candidates[0];
-    if (!field || !locationMatch) return;
-
-    extractedFacts.push({
-      fieldHint: field.id,
-      value: locationMatch.value,
-      confidence: 1,
-      source: 'chat',
-      evidence: locationMatch.evidence,
-    });
-  };
-
-  addLocationFact(isProvinceField, findProvinceMatch(context.message));
-  addLocationFact(isWardField, findWardMatch(context.message));
-
-  return extractedFacts;
-};
 
 const normalizeSelectValue = (field: ProcedureField, value: string): string | null => {
-  // Danh mục tỉnh/phường trên UI được tải động và dùng mã hành chính thật.
-  // Giữ nhãn người dùng nói để frontend đối chiếu với option đang hiển thị.
-  if (isAdministrativeUnitField(field)) {
-    const compactValue = value
-      .replace(/\s+(?:thuộc|điền|cập\s+nhật|giúp|vui\s+lòng)\b.*$/iu, '')
-      .trim();
-    return compactValue || null;
-  }
+  // Nếu field select chưa có danh sách option (tải động), giữ nhãn người dùng
+  // để frontend đối chiếu với option đang hiển thị.
   if (!field.options?.length) return value.trim();
+
   const normalizedValue = normalizeText(value);
   const option = field.options.find((candidate) =>
     normalizeText(candidate.value) === normalizedValue
@@ -312,14 +213,17 @@ export const planAssistantResult = (
   }
 
   // 1.5 Handle Highlight
-  if (understanding.highlightElementId) {
+  const highlightElementId =
+    understanding.highlightElementId
+    ?? inferUiHighlightElement(context.normalizedMessage);
+  if (highlightElementId) {
     actions.push({
       type: 'HIGHLIGHT_ELEMENT',
-      elementId: understanding.highlightElementId,
+      elementId: highlightElementId,
       message: finalMessage,
     });
     finalIntent = 'HIGHLIGHT';
-    finalData = { ...finalData, elementId: understanding.highlightElementId };
+    finalData = { ...finalData, elementId: highlightElementId };
     return {
       response: { 
         intent: finalIntent, 
@@ -367,10 +271,7 @@ export const planAssistantResult = (
   // 3. Handle Form Fill
   const fields: Record<string, string> = {};
   const fieldLabels: Record<string, string> = {};
-  const formFacts = [
-    ...understanding.facts,
-    ...extractVisibleAdministrativeFacts(context, understanding.facts),
-  ];
+  const formFacts = understanding.facts;
 
   for (const fact of formFacts) {
     if (fact.confidence < MIN_FILL_CONFIDENCE) continue;

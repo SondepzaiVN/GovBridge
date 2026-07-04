@@ -146,6 +146,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const formValuesRef = useRef(formValues);
   const requiresUserActionRef = useRef(state.requiresUserAction);
   const confirmationSourceRef = useRef(state.confirmationSource);
+  const pendingHighlightSpeechRef = useRef<string | null>(null);
+  const highlightSpeechTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     onNavigateRef.current = onNavigate;
@@ -158,6 +160,20 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   });
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
+
+  const speakPendingHighlight = useCallback(() => {
+    const message = pendingHighlightSpeechRef.current;
+    if (!message) return;
+
+    pendingHighlightSpeechRef.current = null;
+    if (highlightSpeechTimerRef.current !== null) {
+      window.clearTimeout(highlightSpeechTimerRef.current);
+      highlightSpeechTimerRef.current = null;
+    }
+    void ttsService.speak(toSpeechText(message), (isPlaying) => {
+      dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+    });
+  }, []);
 
   // Update smartbot với route hiện tại.
   useEffect(() => {
@@ -242,15 +258,22 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
         case 'HIGHLIGHT_ELEMENT':
           addBotMessage(event.message, 'text', undefined, event.suggestions);
-          // Cập nhật state để UIHighlighter legacy path cũng hoạt động.
-          if (window.innerWidth <= 768) {
-            setTimeout(() => {
-              dispatch({ type: 'CLOSE' });
-              dispatch({ type: 'SET_HIGHLIGHT', payload: event.elementId });
-            }, 400);
-          } else {
-            dispatch({ type: 'SET_HIGHLIGHT', payload: event.elementId });
+          // Thu chat xuống trước để không che phần giao diện đang được chỉ dẫn.
+          dispatch({ type: 'CLOSE' });
+          dispatch({ type: 'SET_HIGHLIGHT', payload: event.elementId });
+          pendingHighlightSpeechRef.current = event.message;
+          if (highlightSpeechTimerRef.current !== null) {
+            window.clearTimeout(highlightSpeechTimerRef.current);
           }
+          highlightSpeechTimerRef.current = window.setTimeout(
+            speakPendingHighlight,
+            1_200,
+          );
+          break;
+
+        case 'HIGHLIGHT_READY':
+          // Chỉ đọc sau khi spotlight đã cuộn tới và hiển thị xong.
+          speakPendingHighlight();
           break;
 
         case 'FILL_FORM':
@@ -320,8 +343,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
     // Đăng ký wildcard listener để bắt tất cả events.
     agentEventBus.on('*', handleAgentEvent);
-    return () => agentEventBus.off('*', handleAgentEvent);
-  }, [addBotMessage, enterConfirmationMode, speakConfirmation]);
+    return () => {
+      agentEventBus.off('*', handleAgentEvent);
+      if (highlightSpeechTimerRef.current !== null) {
+        window.clearTimeout(highlightSpeechTimerRef.current);
+        highlightSpeechTimerRef.current = null;
+      }
+    };
+  }, [addBotMessage, enterConfirmationMode, speakConfirmation, speakPendingHighlight]);
 
   // ============================================================
   // handleAIResponse vẫn hỗ trợ backward compatibility cho mock/VNPT path.
@@ -368,14 +397,13 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         break;
       case 'HIGHLIGHT':
         if (response.data?.elementId) {
-          if (window.innerWidth <= 768) {
-            setTimeout(() => {
-              dispatch({ type: 'CLOSE' });
-              dispatch({ type: 'SET_HIGHLIGHT', payload: response.data!.elementId ?? null });
-            }, 400);
-          } else {
-            dispatch({ type: 'SET_HIGHLIGHT', payload: response.data.elementId });
-          }
+          dispatch({ type: 'CLOSE' });
+          dispatch({ type: 'SET_HIGHLIGHT', payload: response.data.elementId });
+          window.setTimeout(() => {
+            void ttsService.speak(toSpeechText(response.message), (isPlaying) => {
+              dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+            });
+          }, 700);
         }
         break;
     }
@@ -497,12 +525,17 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
             ['Hướng dẫn điền thông tin', 'Kiểm tra hồ sơ', 'Giải thích điều kiện'],
           );
         } else {
+          const followUpMessage = `Em đã chuyển Anh/Chị sang trang ${pendingNavigation.serviceName}. Anh/Chị muốn em hướng dẫn điền thông tin, kiểm tra hồ sơ hay giải thích điều kiện thủ tục?`;
           addBotMessage(
-            `Em đã chuyển Anh/Chị sang trang ${pendingNavigation.serviceName}. Anh/Chị muốn em hướng dẫn điền thông tin, kiểm tra hồ sơ hay giải thích điều kiện thủ tục?`,
+            followUpMessage,
             'text',
             undefined,
             ['Hướng dẫn điền thông tin', 'Kiểm tra hồ sơ', 'Giải thích điều kiện']
           );
+          // Đọc tin nhắn sau khi chuyển trang để người dùng biết đã hoàn tất.
+          void ttsService.speak(toSpeechText(followUpMessage), (isPlaying) => {
+            dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+          });
         }
       }, 120);
     }
@@ -521,14 +554,18 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         ['Giải thích thêm', 'Hỗ trợ việc khác', 'Tiếp tục bằng giọng nói'],
       );
     } else {
+      const cancelMessage = serviceName
+        ? `Dạ, em sẽ không chuyển sang trang ${serviceName} nữa. Anh/Chị muốn em giải thích thêm về thủ tục này hay hỗ trợ việc khác?`
+        : 'Dạ, em đã hủy thao tác. Anh/Chị muốn em hỗ trợ việc gì tiếp theo?';
       addBotMessage(
-        serviceName
-          ? `Dạ, em sẽ không chuyển sang trang ${serviceName} nữa. Anh/Chị muốn em giải thích thêm về thủ tục này hay hỗ trợ việc khác?`
-          : 'Dạ, em đã hủy thao tác. Anh/Chị muốn em hỗ trợ việc gì tiếp theo?',
+        cancelMessage,
         'text',
         undefined,
         ['Giải thích thêm', 'Hỗ trợ việc khác']
       );
+      void ttsService.speak(toSpeechText(cancelMessage), (isPlaying) => {
+        dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+      });
     }
   }, [addBotMessage, resumeRealtimeWithVoice, state.pendingNavigation, state.confirmationSource]);
 
