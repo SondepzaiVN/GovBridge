@@ -187,6 +187,8 @@ export interface CccdOcrAction {
   label: string;
   fieldMap: Record<string, keyof CCCDInfo>;
   insertBeforeFieldId?: string;
+  expectedGender?: "male" | "female";
+  duplicateWithFieldIds?: string[];
 }
 
 const normalizeOcrText = (value: string) =>
@@ -196,6 +198,16 @@ const normalizeOcrText = (value: string) =>
     .toLowerCase();
 
 const normalizeCccdNumber = (value: string) => value.replace(/\D/g, "");
+
+const getGenderCode = (value: string) => {
+  const normalized = normalizeOcrText(value);
+  if (normalized.includes("nu")) return "female";
+  if (normalized.includes("nam")) return "male";
+  return "";
+};
+
+const getExpectedGenderLabel = (expectedGender: CccdOcrAction["expectedGender"]) =>
+  expectedGender === "male" ? "Nam" : expectedGender === "female" ? "Nữ" : "";
 
 export const ServicePageLayout: React.FC<ServicePageProps> = ({
   service,
@@ -255,6 +267,25 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
     setIsReadingCccd(true);
     try {
       const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file));
+      const genderCode = getGenderCode(info.gioiTinh || "");
+      if (action.expectedGender && genderCode && genderCode !== action.expectedGender) {
+        showOcrNotice(
+          `Giới tính trên CCCD không phù hợp với ${action.label.toLowerCase()} (yêu cầu ${getExpectedGenderLabel(
+            action.expectedGender,
+          )}).`,
+        );
+        return;
+      }
+
+      const citizenId = normalizeCccdNumber(info.id || "");
+      const duplicatedFieldId = citizenId
+        ? action.duplicateWithFieldIds?.find((fieldId) => normalizeCccdNumber(formState.values[fieldId] || "") === citizenId)
+        : undefined;
+      if (duplicatedFieldId) {
+        showOcrNotice("Trùng thông tin: số CCCD này đã được dùng trong hồ sơ.");
+        return;
+      }
+
       Object.entries(action.fieldMap).forEach(([fieldId, cccdKey]) => {
         const value = getOcrFieldValue(fieldId, cccdKey, info);
         if (!value) return;
