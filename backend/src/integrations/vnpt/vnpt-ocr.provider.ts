@@ -9,13 +9,19 @@ interface VnptOcrConfig {
   tokenId: string;
   tokenKey: string;
   macAddress: string;
+  authUrl?: string;
+  clientId?: string;
+  clientSecret?: string;
 }
 
 export class VnptOcrProvider implements IdentityOcrProvider {
   readonly name = 'vnpt' as const;
+  private cachedAuthorization: { value: string; expiresAt: number } | null = null;
 
   constructor(private readonly config: VnptOcrConfig) {
-    if (!config.accessToken || !config.tokenId || !config.tokenKey) {
+    const hasStaticAccessToken = Boolean(config.accessToken.trim());
+    const hasClientCredentials = Boolean(config.clientId?.trim() && config.clientSecret?.trim());
+    if (!hasStaticAccessToken && !hasClientCredentials) {
       throw new ConfigurationError('OCR_PROVIDER=vnpt nhưng chưa cấu hình đủ thông tin VNPT eKYC.');
     }
   }
@@ -24,13 +30,13 @@ export class VnptOcrProvider implements IdentityOcrProvider {
     const hash = await this.upload(image);
     const response = await fetchVnpt(this.config.baseUrl + '/ai/v1/ocr/id', {
       method: 'POST',
-      headers: { ...this.headers(), 'Content-Type': 'application/json' },
+      headers: { ...await this.headers(), 'Content-Type': 'application/json' },
       body: JSON.stringify({
         img_front: hash,
         client_session: 'GOV_BRIDGE_' + Date.now(),
         type: -1,
         validate_postcode: false,
-        token: this.config.tokenId,
+        ...(this.config.tokenId ? { token: this.config.tokenId } : {}),
       }),
       signal: AbortSignal.timeout(25_000),
     });
@@ -48,7 +54,7 @@ export class VnptOcrProvider implements IdentityOcrProvider {
 
     const response = await fetchVnpt(this.config.baseUrl + '/file-service/v1/addFile', {
       method: 'POST',
-      headers: this.headers(),
+      headers: await this.headers(),
       body: form,
       signal: AbortSignal.timeout(25_000),
     });
@@ -60,14 +66,58 @@ export class VnptOcrProvider implements IdentityOcrProvider {
     return hash;
   }
 
-  private headers(): Record<string, string> {
+  private async headers(): Promise<Record<string, string>> {
     return {
-      Authorization: this.config.accessToken,
-      'Token-id': this.config.tokenId,
-      'Token-key': this.config.tokenKey,
+      Authorization: await this.getAuthorization(),
+      ...(this.config.tokenId ? { 'Token-id': this.config.tokenId } : {}),
+      ...(this.config.tokenKey ? { 'Token-key': this.config.tokenKey } : {}),
       'mac-address': this.config.macAddress,
       Accept: 'application/json',
     };
+  }
+
+  private async getAuthorization(): Promise<string> {
+    const clientId = this.config.clientId?.trim();
+    const clientSecret = this.config.clientSecret?.trim();
+    if (!clientId || !clientSecret) return this.config.accessToken;
+
+    const now = Date.now();
+    if (this.cachedAuthorization && this.cachedAuthorization.expiresAt > now) {
+      return this.cachedAuthorization.value;
+    }
+
+    const response = await fetchVnpt(this.config.authUrl || this.config.baseUrl + '/auth/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        client_id: clientId,
+        grant_type: 'client_credentials',
+        client_secret: clientSecret,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const payload: unknown = await response.json().catch(() => ({}));
+    if (!response.ok) throw new ExternalServiceError('Không lấy được access token VNPT eKYC.');
+
+    const object = asRecord(payload);
+    const accessToken = stringValue(object.access_token, object.accessToken, object.token);
+    if (!accessToken) throw new ExternalServiceError('VNPT eKYC không trả về access token.');
+
+    const tokenType = stringValue(object.token_type, object.tokenType) || 'Bearer';
+    const authorization = accessToken.toLowerCase().startsWith('bearer ')
+      ? accessToken
+      : `${tokenType} ${accessToken}`.trim();
+    const expiresInSeconds = Number(object.expires_in ?? object.expiresIn ?? 8 * 60 * 60);
+    const refreshSkewSeconds = 5 * 60;
+    const ttlSeconds = Number.isFinite(expiresInSeconds)
+      ? Math.max(60, expiresInSeconds - refreshSkewSeconds)
+      : 8 * 60 * 60 - refreshSkewSeconds;
+
+    this.cachedAuthorization = {
+      value: authorization,
+      expiresAt: now + ttlSeconds * 1000,
+    };
+    return authorization;
   }
 
   private parse(payload: unknown): CCCDInfo {
