@@ -2096,7 +2096,7 @@ const DangKyThuongTruPage: React.FC = () => {
             aggregatedOfficerNote += `[${fileName}]: ${review.text}\n\n`;
             if (review.flag === 'red') {
               finalFlag = 'red';
-            } else if (!finalFlag) {
+            } else if (!finalFlag && review.flag) {
               finalFlag = review.flag;
             }
           }

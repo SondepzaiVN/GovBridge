@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { administrativeUnitService } from "../../../api/administrativeUnitService";
+import { useForm } from "../../../contexts/FormContext";
 import type { FormFieldOption } from "../../../types";
 
 const DOI_TUONG_MAI_TANG_PHI: string[] = [
@@ -14,6 +15,7 @@ interface PublicServiceFormProps {
 }
 
 const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
+  const { setFieldValue } = useForm();
   const [provinceOptions, setProvinceOptions] = useState<FormFieldOption[]>([]);
   const [khaituWardOptions, setKhaituWardOptions] = useState<FormFieldOption[]>([]);
   const [thuongtruWardOptions, setThuongtruWardOptions] = useState<FormFieldOption[]>([]);
@@ -47,6 +49,31 @@ const PublicServiceForm: React.FC<PublicServiceFormProps> = ({ onNext }) => {
   const [maitangProvince, setMaitangProvince] = useState<string>("");
   const [maitangWard, setMaitangWard] = useState<string>("");
   const maitangAgency = maitangWard ? `UBND ${maitangWard}` : "";
+
+  useEffect(() => {
+    setFieldValue("ltkt_agency_khaitu_province", khaituProvince);
+    setFieldValue("ltkt_agency_khaitu_ward", khaituWard);
+    setFieldValue("ltkt_agency_khaitu_name", khaituAgency);
+    setFieldValue("ltkt_agency_thuongtru_province", thuongtruProvince);
+    setFieldValue("ltkt_agency_thuongtru_ward", thuongtruWard);
+    setFieldValue("ltkt_agency_thuongtru_name", thuongtruAgency);
+    setFieldValue("ltkt_agency_maitang_province", maitangProvince);
+    setFieldValue("ltkt_agency_maitang_ward", maitangWard);
+    setFieldValue("ltkt_agency_maitang_name", maitangAgency);
+    setFieldValue("ltkt_agency_maitang_doiTuong", maitangDoiTuong.join("; "));
+  }, [
+    khaituAgency,
+    khaituProvince,
+    khaituWard,
+    maitangAgency,
+    maitangDoiTuong,
+    maitangProvince,
+    maitangWard,
+    setFieldValue,
+    thuongtruAgency,
+    thuongtruProvince,
+    thuongtruWard,
+  ]);
 
   useEffect(() => {
     const controller = new AbortController();
