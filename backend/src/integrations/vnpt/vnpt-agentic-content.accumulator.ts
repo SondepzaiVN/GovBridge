@@ -28,6 +28,15 @@ export class VnptOrderedContentAccumulator {
     for (const fragment of fragments) this.addFragment(fragment);
   }
 
+  replaceWithSnapshot(fragments: VnptTextFragment[]): void {
+    const segments = fragments
+      .filter(({ text }) => text.trim())
+      .map(({ text, identity }) => ({ text, identity }));
+    if (segments.length === 0) return;
+    this.segments = segments;
+    this.assertAnswerLimit();
+  }
+
   addButtons(buttons: VnptReplyButton[]): void {
     for (const button of buttons) {
       if (button.type === 'phone_number' || button.type === 'web_url') continue;

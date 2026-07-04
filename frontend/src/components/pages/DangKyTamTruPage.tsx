@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
     Bot,
+    Camera,
     ChevronDown,
     ChevronRight,
     ChevronUp,
@@ -17,6 +18,7 @@ import {
     Trash2,
 } from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
+import { ocrService } from '../../api/aiServices';
 import { useForm } from '../../contexts/FormContext';
 import { ROUTE_TO_SERVICE_MAP } from '../../data/services';
 import {
@@ -32,7 +34,7 @@ import {
     religionOptions,
     resultMethods,
 } from '../../data/tamTruMockData';
-import type { FormFieldOption } from '../../types';
+import type { CCCDInfo, FormFieldOption } from '../../types';
 import {
     validateTamTruApplication,
     type TamTruApplicationData,
@@ -42,6 +44,7 @@ import {
 } from '../../utils/validateTamTruApplication';
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { registerPendingDocumentForReview } from '../../utils/documentReviewRegistry';
 
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
@@ -168,9 +171,10 @@ const fieldLabels: Record<string, string> = {
     feeDescription: 'Mô tả',
 };
 
-const Section: React.FC<{ number: number; title: string; children: React.ReactNode }> = ({
+const Section: React.FC<{ number: number; title: string; action?: React.ReactNode; children: React.ReactNode }> = ({
     number,
     title,
+    action,
     children,
 }) => (
     <section className="dktt-section open">
@@ -179,6 +183,7 @@ const Section: React.FC<{ number: number; title: string; children: React.ReactNo
                 <span className="dktt-section-number">{number}</span>
                 <h3 className="dktt-section-title">{title}</h3>
             </div>
+            {action && <div className="dktt-section-header-action">{action}</div>}
         </div>
         <div className="dktt-section-body">{children}</div>
     </section>
@@ -199,10 +204,32 @@ const findOptionByName = (options: FormFieldOption[], includes: string[]) =>
     options.find((option) => includes.every((item) => option.label.toLowerCase().includes(item.toLowerCase()))) || null;
 
 const agencyNameFromWard = (wardLabel: string) => (wardLabel ? `Công an ${wardLabel}` : '');
+type TamTruCccdTarget = 'applicant' | 'householder' | 'member';
+
+const normalizeGenderFromCccd = (value: string) => {
+    const normalized = value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    if (normalized.includes('nu')) return 'Nữ';
+    if (normalized.includes('nam')) return 'Nam';
+    return '';
+};
+
+const normalizeCccdNumber = (value: string) => value.replace(/\D/g, '');
+
+const isBlankMember = (member: TamTruHouseholdMember) =>
+    !member.fullName &&
+    !member.dateOfBirth &&
+    !member.gender &&
+    !member.citizenId &&
+    !member.relationshipWithHead;
 
 const DangKyTamTruPage: React.FC = () => {
     const navigate = useNavigate();
     const { formState } = useForm();
+    const cccdInputRef = useRef<HTMLInputElement>(null);
+    const cccdTargetRef = useRef<TamTruCccdTarget>('applicant');
     const service = ROUTE_TO_SERVICE_MAP['/dang-ky-tam-tru'] || {
         requiredDocs: [],
         steps: [],
@@ -220,6 +247,7 @@ const DangKyTamTruPage: React.FC = () => {
     const [activeDossierCaseId, setActiveDossierCaseId] = useState(dossierCases[0]?.id || '');
     const [memberCounter, setMemberCounter] = useState(2);
     const [activeHelp, setActiveHelp] = useState('');
+    const [isReadingCccd, setIsReadingCccd] = useState(false);
 
     const procedureCases = procedureCasesByType[form.procedureTypeCode] || [];
     const showRegistrationMode = form.procedureTypeCode === 'dang-ky-tam-tru';
@@ -406,6 +434,22 @@ const DangKyTamTruPage: React.FC = () => {
         setReview(null);
     };
 
+    const updateAttachmentFile = (documentId: string, file: File | undefined, quantity: string) => {
+        if (!file) return;
+        updateAttachment(documentId, {
+            checked: true,
+            file,
+            fileName: file.name,
+            quantity,
+        });
+        registerPendingDocumentForReview({
+            file,
+            documentId,
+            route: '/dang-ky-tam-tru',
+            label: documentId.toUpperCase(),
+        });
+    };
+
     const updateMember = (id: number, patch: Partial<TamTruHouseholdMember>) => {
         setForm((prev) => ({
             ...prev,
@@ -433,6 +477,111 @@ const DangKyTamTruPage: React.FC = () => {
                     : prev.householdMembers.filter((member) => member.id !== id),
         }));
     };
+
+    const applyCccdToApplicant = (info: CCCDInfo) => {
+        setForm((prev) => ({
+            ...prev,
+            fullName: info.hoTen || prev.fullName,
+            dateFormat: 'day-month-year',
+            dateOfBirth: info.ngaySinh || prev.dateOfBirth,
+            gender: normalizeGenderFromCccd(info.gioiTinh) || prev.gender,
+            citizenId: info.id || prev.citizenId,
+        }));
+        setReview(null);
+    };
+
+    const applyCccdToHouseholder = (info: CCCDInfo) => {
+        setForm((prev) => ({
+            ...prev,
+            householderName: info.hoTen || prev.householderName,
+            householderCitizenId: info.id || prev.householderCitizenId,
+        }));
+        setReview(null);
+    };
+
+    const applyCccdToMember = (info: CCCDInfo) => {
+        const citizenId = normalizeCccdNumber(info.id || '');
+        const duplicatedMember = citizenId
+            ? normalizeCccdNumber(form.citizenId) === citizenId ||
+              form.householdMembers.some((member) => normalizeCccdNumber(member.citizenId) === citizenId)
+            : false;
+
+        if (duplicatedMember) {
+            showToast('Trùng thông tin: số CCCD này đã có trong danh sách thành viên.');
+            return false;
+        }
+
+        const cccdMember: Omit<TamTruHouseholdMember, 'id'> = {
+            fullName: info.hoTen || '',
+            dateFormat: 'day-month-year',
+            dateOfBirth: info.ngaySinh || '',
+            gender: normalizeGenderFromCccd(info.gioiTinh),
+            citizenId,
+            relationshipWithHead: '',
+        };
+        const blankMember = form.householdMembers.find(isBlankMember);
+
+        if (blankMember) {
+            updateMember(blankMember.id, cccdMember);
+            return true;
+        }
+
+        setForm((prev) => ({
+            ...prev,
+            householdMembers: [...prev.householdMembers, { id: memberCounter, ...cccdMember }],
+        }));
+        setMemberCounter((prev) => prev + 1);
+        setReview(null);
+        return true;
+    };
+
+    const handleSectionCccdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsReadingCccd(true);
+        try {
+            const resizedFile = await ocrService.resizeImage(file);
+            const info = await ocrService.extractCCCDInfo(resizedFile);
+            const target = cccdTargetRef.current;
+
+            if (target === 'applicant') {
+                applyCccdToApplicant(info);
+                showToast('Đã điền thông tin người đề nghị từ CCCD.');
+            } else if (target === 'householder') {
+                applyCccdToHouseholder(info);
+                showToast('Đã điền thông tin chủ hộ từ CCCD.');
+            } else {
+                if (applyCccdToMember(info)) {
+                    showToast('Đã thêm thông tin thành viên từ CCCD.');
+                }
+            }
+        } catch (error) {
+            console.error('Không đọc được CCCD cho mục tạm trú:', error);
+            showToast('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
+        } finally {
+            setIsReadingCccd(false);
+            event.target.value = '';
+        }
+    };
+
+    const openSectionCccdCamera = (target: TamTruCccdTarget) => {
+        cccdTargetRef.current = target;
+        cccdInputRef.current?.click();
+    };
+
+    const renderCccdHeaderAction = (target: TamTruCccdTarget, label: string) => (
+        <button
+            type="button"
+            className="dktt-section-camera-btn"
+            onClick={() => openSectionCccdCamera(target)}
+            disabled={isReadingCccd}
+            title={label}
+            aria-label={label}
+        >
+            <Camera size={16} />
+        </button>
+    );
 
     const runReview = () => {
         const result = validateTamTruApplication(form);
@@ -691,6 +840,14 @@ const DangKyTamTruPage: React.FC = () => {
                     AI rà soát
                 </button>
             </div>
+            <input
+                ref={cccdInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="dktt-hidden-file-input"
+                onChange={handleSectionCccdUpload}
+            />
 
             <div className="tamtru-shell">
                 <div className="tamtru-form">
@@ -773,7 +930,11 @@ const DangKyTamTruPage: React.FC = () => {
                         )}
                     </Section>
 
-                    <Section number={3} title="THÔNG TIN NGƯỜI ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ">
+                    <Section
+                        number={3}
+                        title="THÔNG TIN NGƯỜI ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ"
+                        action={renderCccdHeaderAction('applicant', 'Đọc CCCD cho người đề nghị')}
+                    >
                         <div className="tamtru-choice-notes">
                             <label>
                                 <input
@@ -818,7 +979,11 @@ const DangKyTamTruPage: React.FC = () => {
                         </div>
                     </Section>
 
-                    <Section number={4} title="THÔNG TIN ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ">
+                    <Section
+                        number={4}
+                        title="THÔNG TIN ĐỀ NGHỊ ĐĂNG KÝ TẠM TRÚ"
+                        action={renderCccdHeaderAction('householder', 'Đọc CCCD cho chủ hộ tạm trú')}
+                    >
                         <div className="dktt-form-row cols-2">
                             {renderSelect(
                                 'temporaryCityCode',
@@ -875,7 +1040,11 @@ const DangKyTamTruPage: React.FC = () => {
                         </p>
                     </Section>
 
-                    <Section number={5} title="NHỮNG THÀNH VIÊN TRONG HỘ GIA ĐÌNH CÙNG THAY ĐỔI">
+                    <Section
+                        number={5}
+                        title="NHỮNG THÀNH VIÊN TRONG HỘ GIA ĐÌNH CÙNG THAY ĐỔI"
+                        action={renderCccdHeaderAction('member', 'Đọc CCCD và thêm thành viên')}
+                    >
                         <div className="dktt-table-caption">
                             <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none' }}>
                                 Những thành viên trong hộ gia đình cùng thay đổi
@@ -1134,15 +1303,11 @@ const DangKyTamTruPage: React.FC = () => {
                                                                                     type="file"
                                                                                     accept="image/png,image/jpeg,application/pdf"
                                                                                     onChange={(event) =>
-                                                                                        updateAttachment(document.id, {
-                                                                                            checked: true,
-                                                                                            fileName:
-                                                                                                event.target.files?.[0]
-                                                                                                    ?.name || '',
-                                                                                            quantity:
-                                                                                                draft?.quantity ||
-                                                                                                document.quantity,
-                                                                                        })
+                                                                                        updateAttachmentFile(
+                                                                                            document.id,
+                                                                                            event.target.files?.[0],
+                                                                                            draft?.quantity || document.quantity,
+                                                                                        )
                                                                                     }
                                                                                 />
                                                                                 <Paperclip size={14} />
@@ -1185,16 +1350,11 @@ const DangKyTamTruPage: React.FC = () => {
                                                                                     type="file"
                                                                                     accept="image/png,image/jpeg,application/pdf"
                                                                                     onChange={(event) =>
-                                                                                        updateAttachment(document.id, {
-                                                                                            checked: true,
-                                                                                            fileName:
-                                                                                                event.target.files?.[0]
-                                                                                                    ?.name ||
-                                                                                                `${document.id}-demo.pdf`,
-                                                                                            quantity:
-                                                                                                draft?.quantity ||
-                                                                                                document.quantity,
-                                                                                        })
+                                                                                        updateAttachmentFile(
+                                                                                            document.id,
+                                                                                            event.target.files?.[0],
+                                                                                            draft?.quantity || document.quantity,
+                                                                                        )
                                                                                     }
                                                                                 />
                                                                                 <Plus size={14} />

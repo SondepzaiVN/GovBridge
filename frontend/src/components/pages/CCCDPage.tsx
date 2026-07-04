@@ -6,6 +6,21 @@ const CCCDPage: React.FC = () => (
   <ServicePageLayout
     service={SERVICE_MAP['cccd']}
     categoryLabel="Căn cước"
+    cccdOcrActions={[
+      {
+        id: 'applicant',
+        label: 'Thông tin người đề nghị',
+        insertBeforeFieldId: 'hoTen',
+        fieldMap: {
+          hoTen: 'hoTen',
+          cccdCu: 'id',
+          ngaySinh: 'ngaySinh',
+          gioiTinh: 'gioiTinh',
+          queQuan: 'queQuan',
+          thuongTru: 'thuongTru',
+        },
+      },
+    ]}
   />
 );
 

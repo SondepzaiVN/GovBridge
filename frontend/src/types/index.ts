@@ -11,6 +11,7 @@ export type MessageType =
   | 'fill-confirm'
   | 'navigation-confirm'
   | 'validation-result'
+  | 'document-review'
   | 'form-filled'
   | 'loading';
 
@@ -54,8 +55,18 @@ export interface AIResponse {
     elementLabel?: string;
     validationErrors?: ValidationError[];
     cccdInfo?: CCCDInfo;
+    documentReview?: DocumentReviewResult;
   };
   suggestions?: string[];
+}
+
+export interface DocumentReviewResult {
+  text: string;
+  flag: 'green' | 'red';
+  extractedText?: string;
+  warnings?: string[];
+  provider?: string;
+  readerProvider?: string;
 }
 
 // ============================================================
@@ -157,6 +168,7 @@ export interface ChatbotState {
   callStatusText: string | null;
   conversationState: ConversationState;
   requiresUserAction: boolean;
+  confirmationSource: 'text' | 'voice' | null;
   highlightedElementId: string | null;
   pendingNavigation: { route: string; serviceName: string } | null;
   currentService: string | null;
@@ -175,7 +187,7 @@ export type ChatbotAction =
       type: 'SET_CALL_STATUS';
       payload: { status: ChatbotState['callStatus']; text?: string | null };
     }
-  | { type: 'SET_REQUIRES_USER_ACTION'; payload: boolean }
+  | { type: 'SET_REQUIRES_USER_ACTION'; payload: { action: boolean; source?: 'text' | 'voice' | null } }
   | { type: 'SET_HIGHLIGHT'; payload: string | null }
   | { type: 'SET_PENDING_NAV'; payload: { route: string; serviceName: string } | null }
   | { type: 'SET_CURRENT_SERVICE'; payload: string | null }

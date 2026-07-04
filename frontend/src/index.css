@@ -518,6 +518,15 @@ a:hover {
     align-items: stretch;
 }
 
+.header-nav-item.has-dropdown {
+    flex: 0 0 132px;
+}
+
+.header-nav-item.has-dropdown > .header-nav-link {
+    width: 100%;
+    justify-content: center;
+}
+
 .header-nav-link {
     color: rgba(255, 255, 255, 0.92);
     text-decoration: none;
@@ -571,30 +580,47 @@ button.header-nav-link.active {
 .header-dropdown {
     position: absolute;
     top: 100%;
-    left: 0;
+    left: 50%;
     z-index: calc(var(--z-header) + 1);
-    width: max-content;
+    width: 240px;
     min-width: 240px;
     max-width: min(320px, calc(100vw - 32px));
     padding: 8px;
     background: white;
-    border: 1px solid rgba(200, 68, 26, 0.18);
+    border: 1px solid rgba(200, 68, 26, 0.22);
+    border-top: 3px solid #c8441a;
     border-radius: 0 0 var(--radius-md) var(--radius-md);
     box-shadow: var(--shadow-lg);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(8px);
+    pointer-events: none;
+    transform: translate(-50%, 8px);
     transition:
-        opacity var(--transition-fast),
-        transform var(--transition-fast),
-        visibility var(--transition-fast);
+        opacity 120ms ease,
+        transform 120ms ease,
+        visibility 0s linear 120ms;
+}
+
+.header-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-right: 6px solid transparent;
+    border-bottom: 7px solid #c8441a;
+    border-left: 6px solid transparent;
+    transform: translateX(-50%);
 }
 
 .header-nav-item:hover .header-dropdown,
-.header-nav-item:focus-within .header-dropdown {
+.header-nav-item:has(:focus-visible) .header-dropdown {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
 }
 
 .header-dropdown-link {
@@ -625,13 +651,29 @@ button.header-nav-link.active {
 /* ── Mobile hamburger button ── */
 .header-mobile-menu-btn {
     display: none;
-    background: none;
-    border: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-sm);
     color: white;
-    font-size: 1.4rem;
     cursor: pointer;
-    padding: 8px 12px;
     margin-left: auto;
+    transition:
+        background var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.header-mobile-menu-btn:hover,
+.header-mobile-menu-btn[aria-expanded='true'] {
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.header-mobile-menu-btn:active {
+    transform: scale(0.96);
 }
 
 /* ── Mobile dropdown ── */
@@ -639,9 +681,24 @@ button.header-nav-link.active {
     background: #a33515;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 12px 24px rgba(80, 25, 8, 0.22);
+    animation: mobile-nav-enter 160ms ease-out;
+}
+
+@keyframes mobile-nav-enter {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .mobile-nav-link {
+    display: flex;
+    align-items: center;
     color: rgba(255, 255, 255, 0.92);
     text-decoration: none;
     padding: 13px 24px;
@@ -649,6 +706,51 @@ button.header-nav-link.active {
     font-weight: 500;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     transition: background var(--transition-fast);
+}
+
+.mobile-nav-group {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mobile-nav-parent {
+    justify-content: space-between;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.mobile-nav-parent.open {
+    background: rgba(0, 0, 0, 0.16);
+    color: #ffe082;
+}
+
+.mobile-nav-chevron {
+    flex: 0 0 auto;
+    transition: transform 180ms ease;
+}
+
+.mobile-nav-parent.open .mobile-nav-chevron {
+    transform: rotate(180deg);
+}
+
+.mobile-nav-submenu {
+    display: grid;
+    grid-template-rows: 0fr;
+    background: rgba(71, 20, 5, 0.18);
+    transition: grid-template-rows 180ms ease;
+}
+
+.mobile-nav-submenu.open {
+    grid-template-rows: 1fr;
+}
+
+.mobile-nav-submenu-inner {
+    min-height: 0;
+    overflow: hidden;
 }
 
 .mobile-nav-link:hover,
@@ -659,9 +761,25 @@ button.header-nav-link.active {
 }
 
 .mobile-nav-link-child {
-    padding-left: 40px;
+    position: relative;
+    padding: 11px 24px 11px 44px;
     font-size: 0.8375rem;
-    background: rgba(0, 0, 0, 0.08);
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+    background: transparent;
+}
+
+.mobile-nav-link-child::before {
+    content: '';
+    position: absolute;
+    left: 27px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 224, 130, 0.72);
+}
+
+.mobile-nav-submenu-inner .mobile-nav-link-child:last-child {
+    border-bottom: 0;
 }
 
 /* Legacy btn-header (keep for compatibility) */
@@ -3183,6 +3301,44 @@ button.header-nav-link.active {
     color: var(--accent);
 }
 
+.document-review-card {
+    display: grid;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 10px 11px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 0.78rem;
+}
+
+.document-review-card.valid {
+    border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+    background: color-mix(in srgb, var(--success) 8%, white);
+    color: #166534;
+}
+
+.document-review-card.invalid {
+    border-color: color-mix(in srgb, var(--danger) 36%, var(--border));
+    background: color-mix(in srgb, var(--danger) 7%, white);
+    color: #991b1b;
+}
+
+.document-review-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.document-review-warning {
+    color: #92400e;
+    line-height: 1.4;
+}
+
+.document-review-meta {
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+}
+
 /* ============================================================
    UI HIGHLIGHTER (Overlay)
    ============================================================ */
@@ -3954,6 +4110,82 @@ button.header-nav-link.active {
     align-items: center;
     gap: 12px;
     min-width: 0;
+}
+
+.dktt-section-header-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.dktt-section-camera-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--primary-dark);
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(185, 54, 22, 0.18);
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dktt-section-camera-btn:hover:not(:disabled) {
+    background: var(--white);
+    color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(185, 54, 22, 0.24);
+}
+
+.dktt-section-camera-btn:disabled {
+    cursor: wait;
+    opacity: 0.74;
+}
+
+.dktt-table-caption-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dktt-hidden-file-input {
+    display: none;
+}
+
+.service-ocr-actions {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.service-ocr-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    grid-column: 1 / -1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.service-ocr-action-title {
+    min-width: 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
 .dktt-section-number {
@@ -4738,6 +4970,14 @@ button.header-nav-link.active {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.dktt-toast.ocr-toast {
+    background: var(--primary-dark);
+}
+
+.dktt-toast.ocr-toast.error {
+    background: var(--danger);
 }
 
 @keyframes dktt-toast-in {
