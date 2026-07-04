@@ -41,13 +41,62 @@ interface DeceasedInfo {
   deathCountry: string;
   deathProvince: string;
   deathWard: string;
+  causeOfDeath: string;
+  requestCopy: string;
+  requestCopyCount: string;
+  recipientType: string;
 }
+
+const APPLICANT_FORM_FIELD_MAP: Record<keyof ApplicantInfo, string> = {
+  fullName: "ltkt_applicant_fullName",
+  idNumber: "ltkt_applicant_idNumber",
+  dob: "ltkt_applicant_dob",
+  gender: "ltkt_applicant_gender",
+  idIssueDate: "ltkt_applicant_idIssueDate",
+  idIssuePlace: "ltkt_applicant_idIssuePlace",
+  residenceType: "ltkt_applicant_residenceType",
+  country: "ltkt_applicant_country",
+  province: "ltkt_applicant_province",
+  ward: "ltkt_applicant_ward",
+  addressDetail: "ltkt_applicant_addressDetail",
+  relationship: "ltkt_applicant_relationship",
+  phone: "ltkt_applicant_phone",
+  email: "ltkt_applicant_email",
+};
+
+const DECEASED_FORM_FIELD_MAP: Record<keyof DeceasedInfo, string> = {
+  inputMethod: "ltkt_deceased_inputMethod",
+  lastName: "ltkt_deceased_lastName",
+  middleName: "ltkt_deceased_middleName",
+  firstName: "ltkt_deceased_firstName",
+  dob: "ltkt_deceased_dob",
+  gender: "ltkt_deceased_gender",
+  idNumber: "ltkt_deceased_idNumber",
+  idIssueDate: "ltkt_deceased_idIssueDate",
+  idIssuePlace: "ltkt_deceased_idIssuePlace",
+  nationality: "ltkt_deceased_nationality",
+  ethnicity: "ltkt_deceased_ethnicity",
+  residenceType: "ltkt_deceased_residenceType",
+  residenceCountry: "ltkt_deceased_residenceCountry",
+  residenceProvince: "ltkt_deceased_residenceProvince",
+  residenceWard: "ltkt_deceased_residenceWard",
+  residenceDetail: "ltkt_deceased_residenceDetail",
+  deathDate: "ltkt_deceased_deathDate",
+  isDeathPlaceSameAsResidence: "ltkt_deceased_isDeathPlaceSameAsResidence",
+  deathCountry: "ltkt_deceased_deathCountry",
+  deathProvince: "ltkt_deceased_deathProvince",
+  deathWard: "ltkt_deceased_deathWard",
+  causeOfDeath: "ltkt_deceased_causeOfDeath",
+  requestCopy: "ltkt_deceased_requestCopy",
+  requestCopyCount: "ltkt_deceased_requestCopyCount",
+  recipientType: "ltkt_deceased_recipientType",
+};
 
 const PublicServiceDeclaration: React.FC<{
   onNext: () => void;
   onBack: () => void;
 }> = ({ onNext, onBack }) => {
-  const { formState } = useForm();
+  const { formState, setFieldValue } = useForm();
 
   // 1. STATE THÔNG TIN NGƯỜI YÊU CẦU (Đã có sẵn từ tài khoản)
   const [applicantData, setApplicantData] = useState<ApplicantInfo>({
@@ -82,14 +131,18 @@ const PublicServiceDeclaration: React.FC<{
     ethnicity: "Kinh", // Mặc định như trong ảnh
     residenceType: "Thường trú",
     residenceCountry: "Cộng hòa XHCN Việt Nam",
-    residenceProvince: "",
-    residenceWard: "",
+    residenceProvince: "Thành phố Cần Thơ",
+    residenceWard: "Phường Tân An",
     residenceDetail: "",
     deathDate: "23/06/2026",
     isDeathPlaceSameAsResidence: false,
     deathCountry: "",
     deathProvince: "",
     deathWard: "",
+    causeOfDeath: "",
+    requestCopy: "yes",
+    requestCopyCount: "1",
+    recipientType: "individual",
   });
 
   useEffect(() => {
@@ -116,10 +169,30 @@ const PublicServiceDeclaration: React.FC<{
     }
   }, [applicantData, formState.touched, formState.values]);
 
+  useEffect(() => {
+    Object.entries(APPLICANT_FORM_FIELD_MAP).forEach(([key, fieldId]) => {
+      const value = String(applicantData[key as keyof ApplicantInfo] ?? "");
+      if ((formState.values[fieldId] ?? "") !== value) {
+        setFieldValue(fieldId, value);
+      }
+    });
+
+    Object.entries(DECEASED_FORM_FIELD_MAP).forEach(([key, fieldId]) => {
+      const rawValue = deceasedData[key as keyof DeceasedInfo];
+      const value = typeof rawValue === "boolean" ? String(rawValue) : String(rawValue ?? "");
+      if ((formState.values[fieldId] ?? "") !== value) {
+        setFieldValue(fieldId, value);
+      }
+    });
+  }, [applicantData, deceasedData, formState.values, setFieldValue]);
+
   const handleApplicantChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setApplicantData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setApplicantData((prev) => ({ ...prev, [name]: value }));
+    const fieldId = APPLICANT_FORM_FIELD_MAP[name as keyof ApplicantInfo];
+    if (fieldId) setFieldValue(fieldId, value);
   };
 
   const handleDeceasedChange = (
@@ -127,10 +200,13 @@ const PublicServiceDeclaration: React.FC<{
   ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
+    const nextValue = type === "checkbox" ? checked : value;
     setDeceasedData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: nextValue,
     }));
+    const fieldId = DECEASED_FORM_FIELD_MAP[name as keyof DeceasedInfo];
+    if (fieldId) setFieldValue(fieldId, String(nextValue));
   };
 
   // --- CÁC STYLE TÁI SỬ DỤNG ---
@@ -501,16 +577,26 @@ const PublicServiceDeclaration: React.FC<{
           <label style={labelStyle}>
             Tỉnh/Thành phố <span style={{ color: "red" }}>*</span>
           </label>
-          <select style={inputYellowStyle}>
-            <option>Thành phố Cần Thơ</option>
+          <select
+            name="residenceProvince"
+            style={inputYellowStyle}
+            value={deceasedData.residenceProvince}
+            onChange={handleDeceasedChange}
+          >
+            <option value="Thành phố Cần Thơ">Thành phố Cần Thơ</option>
           </select>
         </div>
         <div>
           <label style={labelStyle}>
             Phường/Xã <span style={{ color: "red" }}>*</span>
           </label>
-          <select style={inputYellowStyle}>
-            <option>Phường Tân An</option>
+          <select
+            name="residenceWard"
+            style={inputYellowStyle}
+            value={deceasedData.residenceWard}
+            onChange={handleDeceasedChange}
+          >
+            <option value="Phường Tân An">Phường Tân An</option>
           </select>
         </div>
       </div>
@@ -634,7 +720,8 @@ const PublicServiceDeclaration: React.FC<{
           <input
             type="text"
             name="causeOfDeath"
-            defaultValue=""
+            value={deceasedData.causeOfDeath}
+            onChange={handleDeceasedChange}
             style={{
               width: "100%",
               padding: "8px 0",
@@ -777,7 +864,8 @@ const PublicServiceDeclaration: React.FC<{
             type="radio"
             name="requestCopy"
             value="yes"
-            defaultChecked
+            checked={deceasedData.requestCopy === "yes"}
+            onChange={handleDeceasedChange}
             style={{ accentColor: "#a04000" }}
           />{" "}
           Có
@@ -796,7 +884,9 @@ const PublicServiceDeclaration: React.FC<{
           </label>
           <input
             type="number"
-            defaultValue={1}
+            name="requestCopyCount"
+            value={deceasedData.requestCopyCount}
+            onChange={handleDeceasedChange}
             style={{
               width: "50px",
               border: "none",
@@ -813,6 +903,8 @@ const PublicServiceDeclaration: React.FC<{
             type="radio"
             name="requestCopy"
             value="no"
+            checked={deceasedData.requestCopy === "no"}
+            onChange={handleDeceasedChange}
             style={{ accentColor: "#a04000" }}
           />{" "}
           Không
@@ -1059,6 +1151,8 @@ const PublicServiceDeclaration: React.FC<{
               type="radio"
               name="recipientType"
               value="org"
+              checked={deceasedData.recipientType === "org"}
+              onChange={handleDeceasedChange}
               style={{ accentColor: "#a04000", marginRight: "5px" }}
             />{" "}
             Cơ quan tổ chức
@@ -1070,7 +1164,8 @@ const PublicServiceDeclaration: React.FC<{
               type="radio"
               name="recipientType"
               value="individual"
-              defaultChecked
+              checked={deceasedData.recipientType === "individual"}
+              onChange={handleDeceasedChange}
               style={{ accentColor: "#a04000", marginRight: "5px" }}
             />{" "}
             Cá nhân

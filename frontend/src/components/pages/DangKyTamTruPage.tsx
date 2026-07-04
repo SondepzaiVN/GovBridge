@@ -271,11 +271,22 @@ const DangKyTamTruPage: React.FC = () => {
             }
         });
 
-        if (Object.keys(ocrFields).length > 0) {
+        if (Object.keys(ocrFields).length === 0) return;
+
+        const syncTimer = window.setTimeout(() => {
             setForm((prev) => ({ ...prev, ...ocrFields }));
             setReview(null);
-        }
-    }, [form, formState.touched, formState.values]);
+        }, 0);
+
+        return () => window.clearTimeout(syncTimer);
+    }, [
+        form.citizenId,
+        form.dateOfBirth,
+        form.fullName,
+        form.gender,
+        formState.touched,
+        formState.values,
+    ]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -625,7 +636,7 @@ const DangKyTamTruPage: React.FC = () => {
                 aggregatedOfficerNote += `[${draft.fileName}]: ${draft.documentReview.text}\n\n`;
                 if (draft.documentReview.flag === 'red') {
                     finalFlag = 'red';
-                } else if (!finalFlag) {
+                } else if (!finalFlag && draft.documentReview.flag) {
                     finalFlag = draft.documentReview.flag;
                 }
             }
