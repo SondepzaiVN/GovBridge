@@ -618,6 +618,19 @@ const DangKyTamTruPage: React.FC = () => {
 
         const attachments = await Promise.all(allFilesToUpload.map((file) => saveAttachmentFile(file)));
 
+        let aggregatedOfficerNote = '';
+        let finalFlag = '';
+        Object.values(form.attachmentDrafts).forEach((draft) => {
+            if (draft.checked && draft.documentReview?.text) {
+                aggregatedOfficerNote += `[${draft.fileName}]: ${draft.documentReview.text}\n\n`;
+                if (draft.documentReview.flag === 'red') {
+                    finalFlag = 'red';
+                } else if (!finalFlag) {
+                    finalFlag = draft.documentReview.flag;
+                }
+            }
+        });
+
         saveApplicationToDashboard({
             procedure: 'Đăng ký tạm trú',
             applicant: form.fullName || '',
@@ -637,6 +650,8 @@ const DangKyTamTruPage: React.FC = () => {
                 'Trường hợp': form.procedureCaseCode || '',
                 'Cơ quan thực hiện': form.receiveOrgAddress || '',
             },
+            officerNote: aggregatedOfficerNote.trim(),
+            officerNoteFlag: finalFlag,
             attachments,
         });
 

@@ -1124,6 +1124,20 @@ const LienThongKhaiSinhPage: React.FC = () => {
                 .join(' ');
             const attachments = await Promise.all(Object.values(uploadedFiles).map((file) => saveAttachmentFile(file)));
 
+            let aggregatedOfficerNote = '';
+            let finalFlag = '';
+            Object.entries(attachmentReviews).forEach(([title, review]) => {
+                if (review.text) {
+                    const fileName = uploadedFiles[title]?.name || title;
+                    aggregatedOfficerNote += `[${fileName}]: ${review.text}\n\n`;
+                    if (review.flag === 'red') {
+                        finalFlag = 'red';
+                    } else if (!finalFlag) {
+                        finalFlag = review.flag;
+                    }
+                }
+            });
+
             saveApplicationToDashboard({
                 procedure: 'Liên thông khai sinh, thường trú, BHYT',
                 applicant: formState.values.ltks_hoTenNguoiYeuCau || '',
@@ -1142,6 +1156,8 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     'Quan hệ với người yêu cầu': formState.values.ltks_quanHeVoiTre || '',
                     'Cơ quan đăng ký khai sinh': formState.values.ltks_coQuanDangKyKhaiSinh || '',
                 },
+                officerNote: aggregatedOfficerNote.trim(),
+                officerNoteFlag: finalFlag,
             });
 
             console.log('SUBMIT PAYLOAD:', payload);
