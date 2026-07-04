@@ -104,6 +104,7 @@ interface ChatMessageProps {
 const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const {
     state,
+    dispatch,
     confirmNavigation,
     cancelNavigation,
     reviewNavigation,
@@ -122,18 +123,49 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const confirmFill = (fields: Record<string, string>) => {
     fillFields(fields);
     setFillDecision('confirmed');
-    resumeRealtimeWithVoice(
-      'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
-      ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
-    );
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+    dispatch({ type: 'CLOSE' });
+    if (state.confirmationSource === 'voice') {
+      resumeRealtimeWithVoice(
+        'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+        ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
+      );
+    } else {
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          id: crypto.randomUUID(),
+          role: 'bot',
+          type: 'text',
+          content: 'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+          timestamp: new Date(),
+          suggestions: ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo']
+        }
+      });
+    }
   };
 
   const cancelFill = () => {
     setFillDecision('cancelled');
-    resumeRealtimeWithVoice(
-      'Dạ, em chưa thay đổi biểu mẫu. Anh/Chị muốn gửi lại thông tin, giải thích thêm hay tiếp tục bằng giọng nói?',
-      ['Gửi lại thông tin', 'Giải thích thêm', 'Tiếp tục bằng giọng nói'],
-    );
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+    if (state.confirmationSource === 'voice') {
+      resumeRealtimeWithVoice(
+        'Dạ, em chưa thay đổi biểu mẫu. Anh/Chị muốn gửi lại thông tin, giải thích thêm hay tiếp tục bằng giọng nói?',
+        ['Gửi lại thông tin', 'Giải thích thêm', 'Tiếp tục bằng giọng nói'],
+      );
+    } else {
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          id: crypto.randomUUID(),
+          role: 'bot',
+          type: 'text',
+          content: 'Dạ, em chưa thay đổi biểu mẫu. Anh/Chị muốn gửi lại thông tin, giải thích thêm hay tiếp tục bằng giọng nói?',
+          timestamp: new Date(),
+          suggestions: ['Gửi lại thông tin', 'Giải thích thêm']
+        }
+      });
+    }
   };
 
   const renderNavConfirmCard = () => (
@@ -211,18 +243,49 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
               }
 
               if (Object.keys(fields).length === 0) {
-                resumeRealtimeWithVoice(
-                  'Thủ tục hiện tại chưa có trường phù hợp để tự điền từ CCCD. Anh/Chị muốn nhập thủ công hay chọn thủ tục khác?',
-                  ['Nhập thông tin thủ công', 'Chọn thủ tục khác'],
-                );
+                dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+                if (state.confirmationSource === 'voice') {
+                  resumeRealtimeWithVoice(
+                    'Thủ tục hiện tại chưa có trường phù hợp để tự điền từ CCCD. Anh/Chị muốn nhập thủ công hay chọn thủ tục khác?',
+                    ['Nhập thông tin thủ công', 'Chọn thủ tục khác'],
+                  );
+                } else {
+                  dispatch({
+                    type: 'ADD_MESSAGE',
+                    payload: {
+                      id: crypto.randomUUID(),
+                      role: 'bot',
+                      type: 'text',
+                      content: 'Thủ tục hiện tại chưa có trường phù hợp để tự điền từ CCCD. Anh/Chị muốn nhập thủ công hay chọn thủ tục khác?',
+                      timestamp: new Date(),
+                      suggestions: ['Nhập thông tin thủ công', 'Chọn thủ tục khác']
+                    }
+                  });
+                }
                 return;
               }
 
               fillFields(fields);
-              resumeRealtimeWithVoice(
-                'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
-                ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
-              );
+              dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+              dispatch({ type: 'CLOSE' });
+              if (state.confirmationSource === 'voice') {
+                resumeRealtimeWithVoice(
+                  'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+                  ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
+                );
+              } else {
+                dispatch({
+                  type: 'ADD_MESSAGE',
+                  payload: {
+                    id: crypto.randomUUID(),
+                    role: 'bot',
+                    type: 'text',
+                    content: 'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
+                    timestamp: new Date(),
+                    suggestions: ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo']
+                  }
+                });
+              }
             }}
           >
             Xác nhận và điền
@@ -230,10 +293,25 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => {
-              resumeRealtimeWithVoice(
-                'Dạ, em chưa dùng thông tin CCCD này. Anh/Chị muốn gửi ảnh khác, nhập thủ công hay tiếp tục bằng giọng nói?',
-                ['Gửi ảnh khác', 'Nhập thông tin thủ công', 'Tiếp tục bằng giọng nói'],
-              );
+              dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+              if (state.confirmationSource === 'voice') {
+                resumeRealtimeWithVoice(
+                  'Dạ, em chưa dùng thông tin CCCD này. Anh/Chị muốn gửi ảnh khác, nhập thủ công hay tiếp tục bằng giọng nói?',
+                  ['Gửi ảnh khác', 'Nhập thông tin thủ công', 'Tiếp tục bằng giọng nói'],
+                );
+              } else {
+                dispatch({
+                  type: 'ADD_MESSAGE',
+                  payload: {
+                    id: crypto.randomUUID(),
+                    role: 'bot',
+                    type: 'text',
+                    content: 'Dạ, em chưa dùng thông tin CCCD này. Anh/Chị muốn gửi ảnh khác, nhập thủ công hay tiếp tục bằng giọng nói?',
+                    timestamp: new Date(),
+                    suggestions: ['Gửi ảnh khác', 'Nhập thông tin thủ công']
+                  }
+                });
+              }
             }}
           >
             Hủy

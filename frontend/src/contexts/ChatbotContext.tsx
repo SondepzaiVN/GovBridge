@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
 import type { ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
 import { documentReviewService, smartbotService } from '../api/aiServices';
 import { ttsService } from '../api/aiServices';
@@ -6,6 +6,7 @@ import { ApiClientError } from '../api/client';
 import { getLatestPendingDocumentForReview } from '../utils/documentReviewRegistry';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
+import { collectVisibleFormFieldIds } from '../utils/visibleFormFields';
 
 const CONFIRMATION_GUIDANCE = 'Vui lòng lựa chọn để tiếp tục cuộc trò chuyện.';
 
@@ -35,7 +36,13 @@ const isDocumentReviewRequest = (text: string) => {
 const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotState => {
   switch (action.type) {
     case 'OPEN': return { ...state, isOpen: true, isMinimized: false };
-    case 'CLOSE': return state.requiresUserAction ? state : { ...state, isOpen: false };
+    case 'CLOSE': return {
+      ...state,
+      isOpen: false,
+      isCallMode: false,
+      callStatus: 'idle',
+      callStatusText: null,
+    };
     case 'MINIMIZE': return { ...state, isMinimized: !state.isMinimized };
     case 'ADD_MESSAGE': return { ...state, messages: [...state.messages, action.payload] };
     case 'SET_LOADING': return { ...state, isLoading: action.payload };
@@ -62,18 +69,19 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
     };
     case 'SET_REQUIRES_USER_ACTION': return {
       ...state,
-      isOpen: action.payload ? true : state.isOpen,
-      isCallMode: action.payload ? false : state.isCallMode,
-      isListening: action.payload ? false : state.isListening,
-      isSpeaking: action.payload ? false : state.isSpeaking,
-      callStatus: action.payload ? 'idle' : state.callStatus,
-      callStatusText: action.payload ? null : state.callStatusText,
-      conversationState: action.payload
+      isOpen: action.payload.action ? true : state.isOpen,
+      isCallMode: action.payload.action ? false : state.isCallMode,
+      isListening: action.payload.action ? false : state.isListening,
+      isSpeaking: action.payload.action ? false : state.isSpeaking,
+      callStatus: action.payload.action ? 'idle' : state.callStatus,
+      callStatusText: action.payload.action ? null : state.callStatusText,
+      conversationState: action.payload.action
         ? 'WAITING_FOR_CONFIRMATION'
         : state.isCallMode
           ? 'REALTIME'
           : 'IDLE',
-      requiresUserAction: action.payload,
+      requiresUserAction: action.payload.action,
+      confirmationSource: action.payload.action ? (action.payload.source ?? null) : null,
     };
     case 'SET_HIGHLIGHT': return { ...state, highlightedElementId: action.payload };
     case 'SET_PENDING_NAV': return { ...state, pendingNavigation: action.payload };
@@ -95,6 +103,7 @@ const initialState: ChatbotState = {
   callStatusText: null,
   conversationState: 'IDLE',
   requiresUserAction: false,
+  confirmationSource: null,
   highlightedElementId: null,
   pendingNavigation: null,
   currentService: null,
@@ -145,12 +154,17 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const callModeRef = useRef(state.isCallMode);
   const currentRouteRef = useRef(currentRoute);
   const formValuesRef = useRef(formValues);
+  const requiresUserActionRef = useRef(state.requiresUserAction);
+  const confirmationSourceRef = useRef(state.confirmationSource);
+
   useEffect(() => {
     onNavigateRef.current = onNavigate;
     onFillFormRef.current = onFillForm;
     callModeRef.current = state.isCallMode;
     currentRouteRef.current = currentRoute;
     formValuesRef.current = formValues;
+    requiresUserActionRef.current = state.requiresUserAction;
+    confirmationSourceRef.current = state.confirmationSource;
   });
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
@@ -195,9 +209,10 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   }, []);
 
   const enterConfirmationMode = useCallback(() => {
+    const source = callModeRef.current ? 'voice' : 'text';
     callModeRef.current = false;
     ttsService.stop();
-    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: true });
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: true, source } });
   }, []);
 
   const speakConfirmation = useCallback((message: string) => {
@@ -215,7 +230,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
   const resumeRealtimeWithVoice = useCallback((message: string, suggestions?: string[]) => {
     callModeRef.current = true;
-    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
+
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
     dispatch({ type: 'SET_CALL_MODE', payload: true });
     dispatch({
       type: 'SET_CALL_STATUS',
@@ -446,6 +462,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       const result = await smartbotService.sendMessage(text, {
         currentRoute: currentRouteRef.current,
         formValues: formValuesRef.current,
+        visibleFieldIds: collectVisibleFormFieldIds(),
       });
 
       if (result.actions.length > 0) {
@@ -467,6 +484,12 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         suggestions: ['Thử lại', 'Tôi cần hỗ trợ'],
       };
       dispatch({ type: 'ADD_MESSAGE', payload: errMsg });
+
+      if (callModeRef.current) {
+        ttsService.speak(message, (isPlaying) => {
+          dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        });
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
@@ -500,27 +523,50 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       addBotMessage(`Em đang chuyển Anh/Chị sang trang **${pendingNavigation.serviceName}**...`);
       onNavigateRef.current(pendingNavigation.route);
       dispatch({ type: 'SET_PENDING_NAV', payload: null });
-      dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: false });
+      dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+      dispatch({ type: 'CLOSE' });
 
       window.setTimeout(() => {
-        resumeRealtimeWithVoice(
-          `Em đã chuyển Anh/Chị sang trang ${pendingNavigation.serviceName}. Anh/Chị muốn em hướng dẫn điền thông tin, kiểm tra hồ sơ hay giải thích điều kiện thủ tục?`,
-          ['Hướng dẫn điền thông tin', 'Kiểm tra hồ sơ', 'Giải thích điều kiện'],
-        );
+        if (state.confirmationSource === 'voice') {
+          resumeRealtimeWithVoice(
+            `Em đã chuyển Anh/Chị sang trang ${pendingNavigation.serviceName}. Anh/Chị muốn em hướng dẫn điền thông tin, kiểm tra hồ sơ hay giải thích điều kiện thủ tục?`,
+            ['Hướng dẫn điền thông tin', 'Kiểm tra hồ sơ', 'Giải thích điều kiện'],
+          );
+        } else {
+          addBotMessage(
+            `Em đã chuyển Anh/Chị sang trang ${pendingNavigation.serviceName}. Anh/Chị muốn em hướng dẫn điền thông tin, kiểm tra hồ sơ hay giải thích điều kiện thủ tục?`,
+            'text',
+            undefined,
+            ['Hướng dẫn điền thông tin', 'Kiểm tra hồ sơ', 'Giải thích điều kiện']
+          );
+        }
       }, 120);
     }
-  }, [addBotMessage, resumeRealtimeWithVoice, state.pendingNavigation]);
+  }, [addBotMessage, resumeRealtimeWithVoice, state.pendingNavigation, state.confirmationSource]);
 
   const cancelNavigation = useCallback(() => {
     const serviceName = state.pendingNavigation?.serviceName;
     dispatch({ type: 'SET_PENDING_NAV', payload: null });
-    resumeRealtimeWithVoice(
-      serviceName
-        ? `Dạ, em sẽ không chuyển sang trang ${serviceName} nữa. Anh/Chị muốn em giải thích thêm về thủ tục này hay hỗ trợ việc khác?`
-        : 'Dạ, em đã hủy thao tác. Anh/Chị muốn em hỗ trợ việc gì tiếp theo?',
-      ['Giải thích thêm', 'Hỗ trợ việc khác', 'Tiếp tục bằng giọng nói'],
-    );
-  }, [resumeRealtimeWithVoice, state.pendingNavigation]);
+    dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
+
+    if (state.confirmationSource === 'voice') {
+      resumeRealtimeWithVoice(
+        serviceName
+          ? `Dạ, em sẽ không chuyển sang trang ${serviceName} nữa. Anh/Chị muốn em giải thích thêm về thủ tục này hay hỗ trợ việc khác?`
+          : 'Dạ, em đã hủy thao tác. Anh/Chị muốn em hỗ trợ việc gì tiếp theo?',
+        ['Giải thích thêm', 'Hỗ trợ việc khác', 'Tiếp tục bằng giọng nói'],
+      );
+    } else {
+      addBotMessage(
+        serviceName
+          ? `Dạ, em sẽ không chuyển sang trang ${serviceName} nữa. Anh/Chị muốn em giải thích thêm về thủ tục này hay hỗ trợ việc khác?`
+          : 'Dạ, em đã hủy thao tác. Anh/Chị muốn em hỗ trợ việc gì tiếp theo?',
+        'text',
+        undefined,
+        ['Giải thích thêm', 'Hỗ trợ việc khác']
+      );
+    }
+  }, [addBotMessage, resumeRealtimeWithVoice, state.pendingNavigation, state.confirmationSource]);
 
   const reviewNavigation = useCallback(() => {
     if (!state.pendingNavigation) return;
