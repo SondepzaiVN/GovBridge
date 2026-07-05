@@ -55,7 +55,7 @@ interface FamilyMember {
 }
 
 type XcttCccdTarget = 'applicant' | 'member';
-type CccdDialogStep = 'consent' | 'member-count';
+type CccdDialogStep = 'consent' | 'member-count' | 'source';
 type CccdQueueStatus = 'waiting' | 'processing' | 'success' | 'error';
 
 interface CccdQueueItem {
@@ -491,6 +491,7 @@ const XacNhanCuTruPage: React.FC = () => {
     const [ocrNotice, setOcrNotice] = React.useState('');
     const [isReadingCccd, setIsReadingCccd] = React.useState(false);
     const cccdInputRef = React.useRef<HTMLInputElement>(null);
+    const cccdCameraInputRef = React.useRef<HTMLInputElement>(null);
     const cccdTargetRef = React.useRef<XcttCccdTarget>('applicant');
     const expectedMemberFileCountRef = React.useRef(1);
     const [cccdDialogStep, setCccdDialogStep] = React.useState<CccdDialogStep | null>(null);
@@ -776,8 +777,14 @@ const XacNhanCuTruPage: React.FC = () => {
         setIsReadingCccd(false);
     };
 
-    const openCccdFilePicker = () => {
-        window.setTimeout(() => cccdInputRef.current?.click(), 0);
+    const openCccdFilePicker = (source: 'file' | 'camera') => {
+        window.setTimeout(() => {
+            if (source === 'camera') {
+                cccdCameraInputRef.current?.click();
+                return;
+            }
+            cccdInputRef.current?.click();
+        }, 0);
     };
 
     const openSectionCccdCamera = (target: XcttCccdTarget) => {
@@ -794,7 +801,7 @@ const XacNhanCuTruPage: React.FC = () => {
         }
 
         setCccdDialogStep(null);
-        openCccdFilePicker();
+        setCccdDialogStep('source');
     };
 
     const confirmMemberUploadCount = () => {
@@ -803,8 +810,12 @@ const XacNhanCuTruPage: React.FC = () => {
         expectedMemberFileCountRef.current = normalizedCount;
         cccdTargetRef.current = 'member';
         setMemberUploadError('');
+        setCccdDialogStep('source');
+    };
+
+    const chooseCccdSource = (source: 'file' | 'camera') => {
         setCccdDialogStep(null);
-        openCccdFilePicker();
+        openCccdFilePicker(source);
     };
 
     const declineCccdConsent = () => {
@@ -813,6 +824,9 @@ const XacNhanCuTruPage: React.FC = () => {
         if (cccdInputRef.current) {
             setIsReadingCccd(false);
             cccdInputRef.current.value = '';
+        }
+        if (cccdCameraInputRef.current) {
+            cccdCameraInputRef.current.value = '';
         }
     };
 
@@ -951,7 +965,15 @@ const XacNhanCuTruPage: React.FC = () => {
                 ref={cccdInputRef}
                 type="file"
                 accept="image/*"
-                capture={pendingCccdTarget === 'applicant' ? 'environment' : undefined}
+                multiple={pendingCccdTarget === 'member'}
+                className="dktt-hidden-file-input"
+                onChange={handleSectionCccdUpload}
+            />
+            <input
+                ref={cccdCameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
                 multiple={pendingCccdTarget === 'member'}
                 className="dktt-hidden-file-input"
                 onChange={handleSectionCccdUpload}
@@ -1308,9 +1330,8 @@ const XacNhanCuTruPage: React.FC = () => {
                                 </div>
                                 <h2 id="cccd-consent-title">Đồng ý xử lý dữ liệu?</h2>
                                 <p>
-                                    Ảnh CCCD sẽ được gửi đến <strong>OpenAI</strong> và <strong>VNPT AI</strong> để xử
-                                    lý, tự động điền thông tin. Đây là bản demo; bản chính thức sẽ dùng VNPT LLM
-                                    Agentic để bảo vệ dữ liệu hoàn toàn. Bạn có đồng ý không?
+                                    Ảnh CCCD sẽ được gửi đến <strong>VNPT AI</strong> để xử lý, tự động điền thông tin.
+                                    Bạn có đồng ý không?
                                 </p>
                                 <div className="cccd-consent-actions">
                                     <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
@@ -1326,7 +1347,7 @@ const XacNhanCuTruPage: React.FC = () => {
                                     </button>
                                 </div>
                             </>
-                        ) : (
+                        ) : cccdDialogStep === 'member-count' ? (
                             <>
                                 <div className="cccd-consent-icon">
                                     <Files size={24} />
@@ -1362,6 +1383,36 @@ const XacNhanCuTruPage: React.FC = () => {
                                     </button>
                                     <button type="button" className="cccd-consent-accept" onClick={confirmMemberUploadCount}>
                                         Chọn {Math.min(10, Math.max(1, Math.trunc(memberUploadCount || 1)))} ảnh
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="cccd-consent-icon">
+                                    <Camera size={24} />
+                                </div>
+                                <h2 id="cccd-consent-title">Chọn nguồn ảnh CCCD</h2>
+                                <p>Chọn ảnh CCCD đã có trên máy hoặc chụp trực tiếp bằng camera.</p>
+                                <div className="cccd-source-options">
+                                    <button
+                                        type="button"
+                                        className="cccd-source-option"
+                                        onClick={() => chooseCccdSource('file')}
+                                        autoFocus
+                                    >
+                                        Tải ảnh từ máy
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="cccd-source-option"
+                                        onClick={() => chooseCccdSource('camera')}
+                                    >
+                                        Chụp bằng camera
+                                    </button>
+                                </div>
+                                <div className="cccd-consent-actions">
+                                    <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                                        Hủy
                                     </button>
                                 </div>
                             </>
