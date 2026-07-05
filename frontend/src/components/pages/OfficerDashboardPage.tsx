@@ -7,7 +7,6 @@ import {
     ChevronRight,
     ChevronUp,
     CircleEllipsis,
-    Clock3,
     FileCheck2,
     FileClock,
     Files,
@@ -277,14 +276,12 @@ const OfficerDashboardPage: React.FC = () => {
                         <h1>Hồ sơ trực tuyến</h1>
                         <p>Kiểm tra thông tin, thành phần hồ sơ và cập nhật kết quả tiếp nhận.</p>
                     </div>
-                    <div className="officer-heading-date"><Clock3 size={17} /> Ngày làm việc: 02/07/2026</div>
                 </header>
 
                 <section className="officer-summary" aria-label="Thống kê hồ sơ">
                     <article><Inbox size={19} /><div><strong>{counts.pending}</strong><span>Chờ tiếp nhận</span></div></article>
                     <article><FileClock size={19} /><div><strong>{counts.processing}</strong><span>Đang xử lí</span></div></article>
                     <article><CheckCircle2 size={19} /><div><strong>{counts.accepted}</strong><span>Đã tiếp nhận</span></div></article>
-                    <article><AlertTriangle size={19} /><div><strong>1</strong><span>Sắp đến hạn</span></div></article>
                 </section>
 
                 <section className="officer-workspace">
