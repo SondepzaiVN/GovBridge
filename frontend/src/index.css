@@ -3200,6 +3200,48 @@ button.header-nav-link.active {
     color: var(--text-secondary);
 }
 
+.ai-declaration-processing-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.28);
+    backdrop-filter: blur(4px);
+}
+
+.ai-declaration-processing-card {
+    width: min(420px, 100%);
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 24px 26px;
+    border: 1px solid rgba(200, 68, 26, 0.22);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--text-primary);
+    box-shadow: 0 22px 54px rgba(15, 23, 42, 0.22);
+    text-align: center;
+}
+
+.ai-declaration-processing-card strong {
+    color: #8b1a1a;
+    font-size: 1rem;
+}
+
+.ai-declaration-processing-card span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.ai-declaration-processing-spinner {
+    color: #c8441a;
+    animation: spin 0.85s linear infinite;
+}
+
 .chatbot-soft-backdrop--confirmation {
     background: rgba(15, 23, 42, 0.28) !important;
     backdrop-filter: blur(5px) !important;
@@ -11740,6 +11782,33 @@ button.header-nav-link.active {
     display: flex;
     align-items: flex-start;
     justify-content: center;
+}
+
+.login-test-credentials-popup {
+    position: absolute;
+    top: 72px;
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    width: min(520px, calc(100% - 32px));
+    padding: 12px 18px;
+    border: 1px solid rgba(255, 218, 70, 0.72);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #5f0004;
+    box-shadow: 0 12px 28px rgba(46, 0, 0, 0.25);
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.login-test-credentials-popup strong {
+    color: #d71920;
+    font-size: 0.95rem;
 }
 
 .login-ref-vneid-brand > img {
