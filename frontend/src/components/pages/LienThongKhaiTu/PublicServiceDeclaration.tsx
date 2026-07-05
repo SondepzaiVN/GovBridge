@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { Camera, LoaderCircle } from "lucide-react";
+import { ocrService } from "../../../api/aiServices";
 import { useForm } from "../../../contexts/FormContext";
+import type { CCCDInfo } from "../../../types";
 
 // --- ĐỊNH NGHĨA KIỂU DỮ LIỆU ---
 interface ApplicantInfo {
@@ -46,6 +49,46 @@ interface DeceasedInfo {
   requestCopyCount: string;
   recipientType: string;
 }
+
+type LtktCccdTarget = "applicant" | "deceased";
+type LtktCccdDialogStep = "consent" | "source";
+
+const normalizeCccdNumber = (value: string) => value.replace(/\D/g, "");
+
+const normalizeGenderFromCccd = (value: string) => {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return "";
+  if (normalized.includes("nam")) return "Nam";
+  if (normalized.includes("nữ") || normalized.includes("nu")) return "Nữ";
+  return value;
+};
+
+const toDateInputValue = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const match = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (!match) return trimmed;
+  const [, day, month, year] = match;
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+};
+
+const toDisplayDate = (value: string) => {
+  const dateValue = toDateInputValue(value);
+  const match = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+};
+
+const splitVietnameseName = (fullName: string) => {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return { lastName: "", middleName: "", firstName: "" };
+  if (parts.length === 1) return { lastName: "", middleName: "", firstName: parts[0] };
+  return {
+    lastName: parts[0],
+    middleName: parts.slice(1, -1).join(" "),
+    firstName: parts[parts.length - 1],
+  };
+};
 
 const APPLICANT_FORM_FIELD_MAP: Record<keyof ApplicantInfo, string> = {
   fullName: "ltkt_applicant_fullName",
@@ -144,6 +187,103 @@ const PublicServiceDeclaration: React.FC<{
     requestCopyCount: "1",
     recipientType: "individual",
   });
+  const [cccdDialogStep, setCccdDialogStep] = useState<LtktCccdDialogStep | null>(null);
+  const [isReadingCccd, setIsReadingCccd] = useState(false);
+  const cccdInputRef = useRef<HTMLInputElement>(null);
+  const cccdCameraInputRef = useRef<HTMLInputElement>(null);
+  const cccdTargetRef = useRef<LtktCccdTarget>("applicant");
+
+  const openCccdUpload = (target: LtktCccdTarget) => {
+    cccdTargetRef.current = target;
+    setCccdDialogStep("consent");
+  };
+
+  const declineCccdConsent = () => {
+    setCccdDialogStep(null);
+  };
+
+  const acceptCccdConsent = () => {
+    setCccdDialogStep("source");
+  };
+
+  const chooseCccdSource = (source: "file" | "camera") => {
+    setCccdDialogStep(null);
+    window.setTimeout(() => {
+      const input = source === "camera" ? cccdCameraInputRef.current : cccdInputRef.current;
+      if (input) {
+        input.value = "";
+        input.click();
+      }
+    }, 0);
+  };
+
+  const applyCccdToTarget = (info: CCCDInfo) => {
+    const target = cccdTargetRef.current;
+    const normalizedId = normalizeCccdNumber(info.id || "");
+    const gender = normalizeGenderFromCccd(info.gioiTinh || "");
+    const issueDate = toDateInputValue(info.ngayCap || "");
+
+    if (target === "applicant") {
+      setApplicantData((prev) => ({
+        ...prev,
+        fullName: info.hoTen || prev.fullName,
+        idNumber: normalizedId || prev.idNumber,
+        dob: info.ngaySinh ? toDisplayDate(info.ngaySinh) : prev.dob,
+        gender: gender || prev.gender,
+        idIssueDate: info.ngayCap ? toDisplayDate(info.ngayCap) : prev.idIssueDate,
+        idIssuePlace: info.noiCap || prev.idIssuePlace,
+      }));
+      return;
+    }
+
+    const nameParts = splitVietnameseName(info.hoTen || "");
+    setDeceasedData((prev) => ({
+      ...prev,
+      lastName: nameParts.lastName || prev.lastName,
+      middleName: nameParts.middleName || prev.middleName,
+      firstName: nameParts.firstName || prev.firstName,
+      dob: info.ngaySinh ? toDateInputValue(info.ngaySinh) : prev.dob,
+      gender: gender || prev.gender,
+      idNumber: normalizedId || prev.idNumber,
+      idIssueDate: issueDate || prev.idIssueDate,
+      idIssuePlace: info.noiCap || prev.idIssuePlace,
+    }));
+  };
+
+  const handleCccdFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setIsReadingCccd(true);
+    try {
+      const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file), {
+        showProcessingNotice: false,
+      });
+      applyCccdToTarget(info);
+    } catch (error) {
+      console.error("Không đọc được CCCD cho liên thông khai tử:", error);
+    } finally {
+      setIsReadingCccd(false);
+    }
+  };
+
+  const renderCccdActionButton = (target: LtktCccdTarget, label: string) => (
+    <button
+      type="button"
+      className="dktt-section-camera-btn"
+      aria-label={label}
+      title={label}
+      onClick={() => openCccdUpload(target)}
+      disabled={isReadingCccd}
+    >
+      {isReadingCccd && cccdTargetRef.current === target ? (
+        <LoaderCircle size={17} className="cccd-queue-spinner" />
+      ) : (
+        <Camera size={17} />
+      )}
+    </button>
+  );
 
   useEffect(() => {
     const fieldMap: Partial<Record<keyof ApplicantInfo, string>> = {
@@ -247,25 +387,44 @@ const PublicServiceDeclaration: React.FC<{
 
   return (
     <div className="ltkt-public-service-form">
+      <input
+        ref={cccdInputRef}
+        type="file"
+        accept="image/*,.heic,.HEIC"
+        className="dktt-hidden-file-input"
+        onChange={handleCccdFileChange}
+      />
+      <input
+        ref={cccdCameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="dktt-hidden-file-input"
+        onChange={handleCccdFileChange}
+      />
       <section className="ltkt-form-card">
       {/* =========================================================
           PHẦN 1: THÔNG TIN NGƯỜI YÊU CẦU 
           ========================================================= */}
       <div style={headerStyle}>
         <span>Thông tin người yêu cầu</span>
-        <button
-          style={{
-            backgroundColor: "#a04000",
-            color: "#fff",
-            border: "none",
-            padding: "6px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontSize: "14px",
-          }}
-        >
-          Xác thực với CSDLQG về dân cư
-        </button>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <button
+            type="button"
+            style={{
+              backgroundColor: "#a04000",
+              color: "#fff",
+              border: "none",
+              padding: "6px 12px",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+            }}
+          >
+            Xác thực với CSDLQG về dân cư
+          </button>
+          {renderCccdActionButton("applicant", "Đọc CCCD người yêu cầu")}
+        </div>
       </div>
 
       <div
@@ -361,8 +520,9 @@ const PublicServiceDeclaration: React.FC<{
           ========================================================= */}
       <div style={headerStyle}>
         <span>Thông tin người được khai tử</span>
-        <div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
           <button
+            type="button"
             style={{
               backgroundColor: "#a04000",
               color: "#fff",
@@ -376,7 +536,9 @@ const PublicServiceDeclaration: React.FC<{
           >
             Xác thực với CSDLQG về dân cư
           </button>
+          {renderCccdActionButton("deceased", "Đọc CCCD người được khai tử")}
           <button
+            type="button"
             style={{
               backgroundColor: "#a04000",
               color: "#fff",
@@ -1615,6 +1777,58 @@ const PublicServiceDeclaration: React.FC<{
           Chuyển bước tiếp theo
         </button>
       </div>
+      {cccdDialogStep && (
+        <div className="cccd-consent-backdrop" role="presentation">
+          <div
+            className="cccd-consent-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ltkt-cccd-consent-title"
+          >
+            {cccdDialogStep === "consent" ? (
+              <>
+                <div className="cccd-consent-icon">
+                  <Camera size={24} />
+                </div>
+                <h2 id="ltkt-cccd-consent-title">Đồng ý xử lý dữ liệu?</h2>
+                <p>
+                  Ảnh CCCD sẽ được gửi đến <strong>VNPT AI</strong> để xử lý, tự động điền thông tin.
+                  Bạn có đồng ý không?
+                </p>
+                <div className="cccd-consent-actions">
+                  <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                    Từ chối
+                  </button>
+                  <button type="button" className="cccd-consent-accept" onClick={acceptCccdConsent} autoFocus>
+                    Đồng ý
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="cccd-consent-icon">
+                  <Camera size={24} />
+                </div>
+                <h2 id="ltkt-cccd-consent-title">Chọn nguồn ảnh CCCD</h2>
+                <p>Chọn ảnh CCCD đã có trên máy hoặc chụp trực tiếp bằng camera.</p>
+                <div className="cccd-source-options">
+                  <button type="button" className="cccd-source-option" onClick={() => chooseCccdSource("file")} autoFocus>
+                    Tải ảnh từ máy
+                  </button>
+                  <button type="button" className="cccd-source-option" onClick={() => chooseCccdSource("camera")}>
+                    Chụp bằng camera
+                  </button>
+                </div>
+                <div className="cccd-consent-actions">
+                  <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                    Hủy
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { MissingRequiredFieldsModal } from "../../common/MissingRequiredFieldsModal";
 
 interface PublicServiceResultOptionsProps {
   onNext: () => void;
@@ -18,6 +19,7 @@ const PublicServiceResultOptions: React.FC<PublicServiceResultOptionsProps> = ({
   const [isPaperCopy, setIsPaperCopy] = useState(false);
   const [captcha, setCaptcha] = useState("");
   const [isCommitted, setIsCommitted] = useState(false);
+  const [showMissingRequiredModal, setShowMissingRequiredModal] = useState(false);
 
   // --- STYLES ---
   const sectionTitleStyle: React.CSSProperties = {
@@ -395,8 +397,9 @@ const PublicServiceResultOptions: React.FC<PublicServiceResultOptionsProps> = ({
         </button>
         <button
           onClick={() => {
+            setShowMissingRequiredModal(false);
             if (!captcha || !isCommitted) {
-              alert("Vui lòng nhập mã kiểm tra và tích chọn cam đoan!");
+              setShowMissingRequiredModal(true);
               return;
             }
             onNext();
@@ -429,6 +432,9 @@ const PublicServiceResultOptions: React.FC<PublicServiceResultOptionsProps> = ({
           Lưu nháp
         </button>
       </div>
+      {showMissingRequiredModal && (
+        <MissingRequiredFieldsModal onClose={() => setShowMissingRequiredModal(false)} />
+      )}
     </div>
   );
 };

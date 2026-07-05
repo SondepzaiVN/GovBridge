@@ -30,6 +30,7 @@ import { ocrService } from '../../api/aiServices';
 import type { CCCDInfo, DocumentReviewUiState } from '../../types';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
 import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
+import { MissingRequiredFieldsModal } from '../common/MissingRequiredFieldsModal';
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
 
 interface FieldConfig {
@@ -487,6 +488,7 @@ const XacNhanCuTruPage: React.FC = () => {
     const declarationPreviewUrlRef = React.useRef<string | null>(null);
     const [pledged, setPledged] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
+    const [showMissingRequiredModal, setShowMissingRequiredModal] = React.useState(false);
     const [draftSaved, setDraftSaved] = React.useState(false);
     const [ocrNotice, setOcrNotice] = React.useState('');
     const [isReadingCccd, setIsReadingCccd] = React.useState(false);
@@ -551,6 +553,7 @@ const XacNhanCuTruPage: React.FC = () => {
     );
 
     const setFieldValue = (fieldId: string, value: string) => {
+        setShowMissingRequiredModal(false);
         setValues((current) => {
             let nextValues = { ...current };
 
@@ -875,7 +878,11 @@ const XacNhanCuTruPage: React.FC = () => {
 
         if (!pledged) nextErrors.pledge = 'Vui lòng xác nhận cam kết trước khi nộp hồ sơ.';
         setErrors(nextErrors);
-        return Object.keys(nextErrors).length === 0;
+        if (Object.keys(nextErrors).length > 0) {
+            setShowMissingRequiredModal(true);
+            return false;
+        }
+        return true;
     };
 
     const handleSubmit = async () => {
@@ -1233,6 +1240,7 @@ const XacNhanCuTruPage: React.FC = () => {
                     type="checkbox"
                     checked={pledged}
                     onChange={(event) => {
+                        setShowMissingRequiredModal(false);
                         setPledged(event.target.checked);
                         setErrors((current) => ({ ...current, pledge: '' }));
                     }}
@@ -1462,6 +1470,10 @@ const XacNhanCuTruPage: React.FC = () => {
                         </footer>
                     </section>
                 </div>
+            )}
+
+            {showMissingRequiredModal && (
+                <MissingRequiredFieldsModal onClose={() => setShowMissingRequiredModal(false)} />
             )}
 
             {showSuccess && (
