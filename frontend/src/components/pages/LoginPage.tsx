@@ -18,7 +18,7 @@ type LoginMethod = 'vneid' | 'dvc' | 'officer';
 type FormErrors = Partial<Record<'agency' | 'username' | 'password' | 'credentials', string>>;
 
 const getPostLoginRoute = (role: UserRole, previousRoute?: string) =>
-    role === 'can-bo' ? previousRoute ?? '/can-bo' : '/';
+    role === 'can-bo' ? '/can-bo' : previousRoute ?? '/';
 
 const LoginPage: React.FC = () => {
     const location = useLocation();
@@ -86,7 +86,7 @@ const LoginPage: React.FC = () => {
                 return;
             }
             setSuccessMessage('Đăng nhập thành công. Đang chuyển hướng...');
-            // Công dân về trang chủ; cán bộ trở lại trang trước đó hoặc dashboard.
+            // Cán bộ luôn vào dashboard cán bộ; công dân trở lại trang trước đó hoặc trang chủ.
             window.setTimeout(() => {
                 navigate(getPostLoginRoute(role, from), { replace: true });
                 localStorage.removeItem('redirect_after_login');
