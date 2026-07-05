@@ -27,13 +27,8 @@ export type SyncApplicationPayload = {
     attachments?: AttachmentMetadata[];
 };
 
-export const saveApplicationToDashboard = (payload: SyncApplicationPayload) => {
-    const STORAGE_KEY = 'officerApplications_v2';
-    
+export const saveApplicationToDashboard = async (payload: SyncApplicationPayload) => {
     try {
-        const stored = window.localStorage.getItem(STORAGE_KEY);
-        const currentApplications = stored ? JSON.parse(stored) : [];
-
         const now = new Date();
         const dueDate = new Date();
         dueDate.setDate(now.getDate() + 3);
@@ -54,6 +49,7 @@ export const saveApplicationToDashboard = (payload: SyncApplicationPayload) => {
 
         const newApplication = {
             id: applicationCode,
+            applicationCode,
             procedure: withFallback(payload.procedure),
             applicant: withFallback(payload.applicant),
             citizenId: withFallback(payload.citizenId),
@@ -72,12 +68,24 @@ export const saveApplicationToDashboard = (payload: SyncApplicationPayload) => {
             attachments: payload.attachments || [],
         };
 
-        const updatedApplications = [newApplication, ...currentApplications];
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedApplications));
+        const response = await fetch('/api/v1/dashboard/applications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newApplication),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save to backend');
+        }
+
+        // Notify other tabs just in case (optional, since we'll use API now)
+        window.dispatchEvent(new Event('dashboard-updated'));
         
         return newApplication;
     } catch (error) {
-        console.error('Failed to sync application to dashboard', error);
+        console.error('Failed to sync application to dashboard backend', error);
         return null;
     }
 };

@@ -8,21 +8,27 @@ export const INITIAL_DASHBOARD_APPLICATIONS: OfficerApplication[] = RAW_INITIAL_
     (application, index) => normalizeOfficerApplication(application, `GOV-MOCK-${index + 1}`),
 );
 
-export const loadDashboardApplications = (): OfficerApplication[] => {
+export const fetchDashboardApplications = async (): Promise<OfficerApplication[]> => {
     try {
-        const stored = window.localStorage.getItem(DASHBOARD_STORAGE_KEY);
-        if (!stored) return INITIAL_DASHBOARD_APPLICATIONS;
-        const parsed: unknown = JSON.parse(stored);
-        if (!Array.isArray(parsed)) return INITIAL_DASHBOARD_APPLICATIONS;
-        const normalized = parsed.map((application, index) => (
-            normalizeOfficerApplication(application, `GOV-LOCAL-${index + 1}`)
+        const response = await fetch('/api/v1/dashboard/applications');
+        if (!response.ok) return INITIAL_DASHBOARD_APPLICATIONS;
+        
+        const data = await response.json();
+        if (!data.success || !Array.isArray(data.data)) {
+            return INITIAL_DASHBOARD_APPLICATIONS;
+        }
+
+        const normalized = data.data.map((application: unknown, index: number) => (
+            normalizeOfficerApplication(application, `GOV-API-${index + 1}`)
         ));
-        const storedIds = new Set(normalized.map((application) => application.id));
+        
+        const storedIds = new Set(normalized.map((application: OfficerApplication) => application.id));
         return [
             ...normalized,
             ...INITIAL_DASHBOARD_APPLICATIONS.filter((application) => !storedIds.has(application.id)),
         ];
-    } catch {
+    } catch (e) {
+        console.error('Failed to fetch dashboard applications', e);
         return INITIAL_DASHBOARD_APPLICATIONS;
     }
 };
