@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   Download,
+  LoaderCircle,
   Menu,
   Minus,
   MoreVertical,
@@ -9,6 +10,11 @@ import {
   RotateCw,
 } from "lucide-react";
 import { useForm } from "../../../contexts/FormContext";
+
+const DECLARATION_PROCESSING_MESSAGE =
+  "AI đang xử lý để tự động điền tờ khai, bạn chỉ cần in ra và ký thôi.";
+
+const getDeclarationProcessingDelay = () => 3000 + Math.floor(Math.random() * 3001);
 
 interface PublicServiceReviewProps {
   onNext: () => void;
@@ -335,6 +341,7 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
   const { formState } = useForm();
   const [activeTab, setActiveTab] = useState(0);
   const [generatedTabs, setGeneratedTabs] = useState<ReviewTab[]>([]);
+  const [isGeneratingDeclaration, setIsGeneratingDeclaration] = useState(true);
   const [isTabListVisible, setIsTabListVisible] = useState(true);
   const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
@@ -343,10 +350,18 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
   const activeReviewTab = reviewTabs[activeTab] ?? reviewTabs[0];
 
   useEffect(() => {
-    const tabs = buildGeneratedReviewTabs(formState.values);
-    setGeneratedTabs(tabs);
+    let tabsToRevoke: ReviewTab[] = [];
+    setIsGeneratingDeclaration(true);
+    const timer = window.setTimeout(() => {
+      const tabs = buildGeneratedReviewTabs(formState.values);
+      tabsToRevoke = tabs;
+      setGeneratedTabs(tabs);
+      setIsGeneratingDeclaration(false);
+    }, getDeclarationProcessingDelay());
+
     return () => {
-      tabs.forEach((tab) => URL.revokeObjectURL(tab.url));
+      window.clearTimeout(timer);
+      tabsToRevoke.forEach((tab) => URL.revokeObjectURL(tab.url));
     };
   }, [formState.values]);
 
@@ -384,6 +399,16 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
       <div className="ltks-section-title">
         <h3>Xem lại các tờ khai chi tiết</h3>
       </div>
+
+      {isGeneratingDeclaration && (
+        <div className="ai-declaration-processing-overlay" role="status" aria-live="polite">
+          <div className="ai-declaration-processing-card">
+            <LoaderCircle className="ai-declaration-processing-spinner" size={28} />
+            <strong>AI đang xử lý</strong>
+            <span>{DECLARATION_PROCESSING_MESSAGE}</span>
+          </div>
+        </div>
+      )}
 
       <div className="ltks-pdf-review">
         {isTabListVisible && (
@@ -480,8 +505,8 @@ const PublicServiceReview: React.FC<PublicServiceReviewProps> = ({
         <button type="button" className="ltks-btn secondary" onClick={onBack}>
           Quay lại bước trước
         </button>
-        <button type="button" className="ltks-btn primary" onClick={onNext}>
-          Chuyển bước tiếp theo
+        <button type="button" className="ltks-btn primary" onClick={onNext} disabled={isGeneratingDeclaration}>
+          {isGeneratingDeclaration ? "AI đang xử lý..." : "Chuyển bước tiếp theo"}
         </button>
       </div>
     </section>

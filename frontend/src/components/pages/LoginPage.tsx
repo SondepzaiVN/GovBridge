@@ -161,6 +161,11 @@ const LoginPage: React.FC = () => {
                 <ArrowLeft size={18} /> Chọn phương thức khác
             </button>
 
+            <div className="login-test-credentials-popup" role="note" aria-label="Tài khoản test">
+                <span>Tài khoản test: <strong>{role === 'can-bo' ? 'officer' : 'citizen'}</strong></span>
+                <span>Mật khẩu test: <strong>123456</strong></span>
+            </div>
+
             <div className="login-ref-vneid-brand">
                 <div className="login-ref-gov-brand">
                     <strong>{role === 'can-bo' ? 'Hệ thống cán bộ GovBridge' : 'Hệ thống công dân GovBridge'}</strong>
