@@ -30,6 +30,7 @@ import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
 import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
+import { MissingRequiredFieldsModal } from '../common/MissingRequiredFieldsModal';
 import {
   buildOptions,
   compareDates,
@@ -344,6 +345,7 @@ const DangKyThuongTruPage: React.FC = () => {
   const [familyUploadCount, setFamilyUploadCount] = useState(1);
   const [familyUploadError, setFamilyUploadError] = useState('');
   const [cccdQueue, setCccdQueue] = useState<CccdQueueItem[]>([]);
+  const [showMissingRequiredModal, setShowMissingRequiredModal] = useState(false);
 
   const selectedAgencyProvince = formState.values.tinhThanhCQ || '';
   const selectedAgencyWard = formState.values.xaPhuongCQ || '';
@@ -2018,11 +2020,12 @@ const DangKyThuongTruPage: React.FC = () => {
   const handleSubmit = async () => {
     const errorSections = new Set<string>();
     setUploadValidationMessage('');
+    setShowMissingRequiredModal(false);
 
     if (!agreedLegal) {
       errorSections.add('nhan-thong-bao');
-      alert('Vui lòng xác nhận chịu trách nhiệm trước pháp luật về lời khai trên.');
       openErrorSections([...errorSections]);
+      setShowMissingRequiredModal(true);
       return;
     }
 
@@ -2235,7 +2238,7 @@ const DangKyThuongTruPage: React.FC = () => {
 
     if (errorSections.size > 0) {
       openErrorSections([...errorSections]);
-      alert('Vui lòng kiểm tra lại các trường đang hiển thị trong biểu mẫu đăng ký thường trú.');
+      setShowMissingRequiredModal(true);
       return;
     }
 
@@ -2621,6 +2624,9 @@ const DangKyThuongTruPage: React.FC = () => {
         <div className="dktt-toast" style={{ background: 'var(--primary-dark)' }} role="alert">
           {toastMessage}
         </div>
+      )}
+      {showMissingRequiredModal && (
+        <MissingRequiredFieldsModal onClose={() => setShowMissingRequiredModal(false)} />
       )}
     </div>
   );
