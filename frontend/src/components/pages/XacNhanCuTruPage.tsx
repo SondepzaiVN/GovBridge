@@ -1,5 +1,22 @@
 import React from 'react';
-import { ArrowLeft, Calendar, Camera, ChevronRight, ChevronDown, FileText, Home, Paperclip, Save, Send, X } from 'lucide-react';
+import {
+    AlertCircle,
+    ArrowLeft,
+    Calendar,
+    Camera,
+    CheckCircle2,
+    ChevronRight,
+    ChevronDown,
+    FileText,
+    Files,
+    Home,
+    LoaderCircle,
+    Paperclip,
+    Save,
+    Send,
+    ShieldCheck,
+    X,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { provinces, getResidenceAgencyName, useWards } from '../../hooks/useAdministrativeUnits';
 import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
@@ -35,6 +52,15 @@ interface FamilyMember {
 }
 
 type XcttCccdTarget = 'applicant' | 'member';
+type CccdDialogStep = 'consent' | 'member-count';
+type CccdQueueStatus = 'waiting' | 'processing' | 'success' | 'error';
+
+interface CccdQueueItem {
+    id: string;
+    fileName: string;
+    status: CccdQueueStatus;
+    message: string;
+}
 
 const normalizeGenderFromCccd = (value: string) => {
     const normalized = value
@@ -329,6 +355,12 @@ const XacNhanCuTruPage: React.FC = () => {
     const [isReadingCccd, setIsReadingCccd] = React.useState(false);
     const cccdInputRef = React.useRef<HTMLInputElement>(null);
     const cccdTargetRef = React.useRef<XcttCccdTarget>('applicant');
+    const expectedMemberFileCountRef = React.useRef(1);
+    const [cccdDialogStep, setCccdDialogStep] = React.useState<CccdDialogStep | null>(null);
+    const [pendingCccdTarget, setPendingCccdTarget] = React.useState<XcttCccdTarget>('applicant');
+    const [memberUploadCount, setMemberUploadCount] = React.useState(1);
+    const [memberUploadError, setMemberUploadError] = React.useState('');
+    const [cccdQueue, setCccdQueue] = React.useState<CccdQueueItem[]>([]);
     const { wardOptions: agencyWardOptions, loading: loadingAgencyWards } = useWards(values.provinceAgency);
     const { wardOptions: requestWardOptions, loading: loadingRequestWards } = useWards(values.requestProvince);
 
@@ -454,70 +486,162 @@ const XacNhanCuTruPage: React.FC = () => {
         }));
     };
 
-    const applyCccdToMember = (info: CCCDInfo) => {
-        const citizenId = normalizeCccdNumber(info.id || '');
-        const duplicatedMember = citizenId
-            ? normalizeCccdNumber(values.citizenId || '') === citizenId ||
-              members.some((member) => normalizeCccdNumber(member.cccd) === citizenId)
-            : false;
-
-        if (duplicatedMember) {
-            showOcrNotice('Trùng thông tin: số CCCD này đã có trong danh sách thành viên.');
-            return false;
-        }
-
-        const cccdMember: Omit<FamilyMember, 'id'> = {
-            hoTen: info.hoTen || '',
-            ngaySinh: info.ngaySinh || '',
-            gioiTinh: normalizeGenderFromCccd(info.gioiTinh),
-            cccd: citizenId,
-            quanHe: '',
-        };
-        const blankMember = members.find(isBlankMember);
-
-        if (blankMember) {
-            setMembers((current) =>
-                current.map((member) => (member.id === blankMember.id ? { ...member, ...cccdMember } : member)),
-            );
-            setErrors((current) => ({
-                ...current,
-                [`member-${blankMember.id}-hoTen`]: '',
-                [`member-${blankMember.id}-ngaySinh`]: '',
-                [`member-${blankMember.id}-gioiTinh`]: '',
-                [`member-${blankMember.id}-cccd`]: '',
-            }));
-            return true;
-        }
-
-        setMembers((current) => [...current, { id: current.length + 1, ...cccdMember }]);
-        return true;
-    };
-
     const handleSectionCccdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        if (files.length === 0) return;
+
+        const target = cccdTargetRef.current;
+        if (target === 'member' && files.length !== expectedMemberFileCountRef.current) {
+            setMemberUploadError(
+                `Vui lòng chọn đúng ${expectedMemberFileCountRef.current} ảnh CCCD, mỗi người một ảnh.`,
+            );
+            setCccdDialogStep('member-count');
+            return;
+        }
+
+        const queueItems: CccdQueueItem[] = files.map((file, index) => ({
+            id: `${file.name}-${file.lastModified}-${index}`,
+            fileName: file.name,
+            status: 'waiting',
+            message: 'Đang chờ xử lý',
+        }));
+        if (target === 'member') setCccdQueue(queueItems);
+
+        const updateQueueItem = (id: string, status: CccdQueueStatus, message: string) => {
+            setCccdQueue((current) =>
+                current.map((item) => (item.id === id ? { ...item, status, message } : item)),
+            );
+        };
 
         setIsReadingCccd(true);
-        try {
-            const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file));
-            if (cccdTargetRef.current === 'applicant') {
+        if (target === 'applicant') {
+            const file = files[0];
+            try {
+                const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file), {
+                    showProcessingNotice: false,
+                });
                 applyCccdToApplicant(info);
                 showOcrNotice('Đã điền thông tin người đề nghị từ CCCD.');
-            } else if (applyCccdToMember(info)) {
-                showOcrNotice('Đã thêm thông tin thành viên từ CCCD.');
+            } catch (error) {
+                console.error('Không đọc được CCCD cho xác nhận cư trú:', error);
+                showOcrNotice('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
+            } finally {
+                setIsReadingCccd(false);
             }
-        } catch (error) {
-            console.error('Không đọc được CCCD cho xác nhận cư trú:', error);
-            showOcrNotice('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
-        } finally {
-            setIsReadingCccd(false);
-            event.target.value = '';
+            return;
         }
+
+        let nextMembers = members.map((member) => ({ ...member }));
+        let nextMemberId = Math.max(0, ...nextMembers.map((member) => member.id)) + 1;
+        let addedCount = 0;
+        const clearedMemberErrors: Record<string, string> = {};
+
+        for (const [index, file] of files.entries()) {
+            const queueItem = queueItems[index];
+            updateQueueItem(queueItem.id, 'processing', 'VNPT AI đang đọc CCCD...');
+
+            try {
+                const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file), {
+                    showProcessingNotice: false,
+                });
+                const citizenId = normalizeCccdNumber(info.id || '');
+                const duplicatedMember = Boolean(
+                    citizenId &&
+                        (normalizeCccdNumber(values.citizenId || '') === citizenId ||
+                            nextMembers.some((member) => normalizeCccdNumber(member.cccd) === citizenId)),
+                );
+
+                if (duplicatedMember) {
+                    updateQueueItem(queueItem.id, 'error', 'CCCD đã có trong danh sách');
+                    continue;
+                }
+
+                const cccdMember: Omit<FamilyMember, 'id'> = {
+                    hoTen: info.hoTen || '',
+                    ngaySinh: info.ngaySinh || '',
+                    gioiTinh: normalizeGenderFromCccd(info.gioiTinh),
+                    cccd: citizenId,
+                    quanHe: '',
+                };
+                const blankMemberIndex = nextMembers.findIndex(isBlankMember);
+
+                if (blankMemberIndex >= 0) {
+                    nextMembers[blankMemberIndex] = {
+                        ...nextMembers[blankMemberIndex],
+                        ...cccdMember,
+                    };
+                    const memberId = nextMembers[blankMemberIndex].id;
+                    clearedMemberErrors[`member-${memberId}-hoTen`] = '';
+                    clearedMemberErrors[`member-${memberId}-ngaySinh`] = '';
+                    clearedMemberErrors[`member-${memberId}-gioiTinh`] = '';
+                    clearedMemberErrors[`member-${memberId}-cccd`] = '';
+                } else {
+                    nextMembers.push({ id: nextMemberId, ...cccdMember });
+                    nextMemberId += 1;
+                }
+
+                addedCount += 1;
+                updateQueueItem(
+                    queueItem.id,
+                    'success',
+                    info.hoTen ? `Đã điền: ${info.hoTen}` : 'Đã tự động điền',
+                );
+            } catch (error) {
+                console.error(`Không đọc được CCCD "${file.name}":`, error);
+                updateQueueItem(queueItem.id, 'error', 'Không đọc được ảnh CCCD');
+            }
+        }
+
+        if (addedCount > 0) {
+            setMembers(nextMembers);
+            setErrors((current) => ({ ...current, ...clearedMemberErrors }));
+            showOcrNotice(`Đã tự động điền ${addedCount}/${files.length} thành viên từ CCCD.`);
+        } else {
+            showOcrNotice('Chưa có ảnh CCCD nào được xử lý thành công.');
+        }
+
+        setIsReadingCccd(false);
+    };
+
+    const openCccdFilePicker = () => {
+        window.setTimeout(() => cccdInputRef.current?.click(), 0);
     };
 
     const openSectionCccdCamera = (target: XcttCccdTarget) => {
         cccdTargetRef.current = target;
-        cccdInputRef.current?.click();
+        setPendingCccdTarget(target);
+        setMemberUploadError('');
+        setCccdDialogStep('consent');
+    };
+
+    const acceptCccdConsent = () => {
+        if (pendingCccdTarget === 'member') {
+            setCccdDialogStep('member-count');
+            return;
+        }
+
+        setCccdDialogStep(null);
+        openCccdFilePicker();
+    };
+
+    const confirmMemberUploadCount = () => {
+        const normalizedCount = Math.min(10, Math.max(1, Math.trunc(memberUploadCount || 1)));
+        setMemberUploadCount(normalizedCount);
+        expectedMemberFileCountRef.current = normalizedCount;
+        cccdTargetRef.current = 'member';
+        setMemberUploadError('');
+        setCccdDialogStep(null);
+        openCccdFilePicker();
+    };
+
+    const declineCccdConsent = () => {
+        setCccdDialogStep(null);
+        setMemberUploadError('');
+        if (cccdInputRef.current) {
+            setIsReadingCccd(false);
+            cccdInputRef.current.value = '';
+        }
     };
 
     const renderCccdHeaderAction = (target: XcttCccdTarget, label: string) => (
@@ -525,6 +649,7 @@ const XacNhanCuTruPage: React.FC = () => {
             type="button"
             className="dktt-section-camera-btn"
             onClick={(event) => {
+                event.preventDefault();
                 event.stopPropagation();
                 openSectionCccdCamera(target);
             }}
@@ -654,11 +779,11 @@ const XacNhanCuTruPage: React.FC = () => {
                 ref={cccdInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
+                capture={pendingCccdTarget === 'applicant' ? 'environment' : undefined}
+                multiple={pendingCccdTarget === 'member'}
                 className="dktt-hidden-file-input"
                 onChange={handleSectionCccdUpload}
             />
-
             <XcttSection
                 id="agency"
                 number={1}
@@ -724,6 +849,9 @@ const XacNhanCuTruPage: React.FC = () => {
                     onRemove={(id) => setMembers((current) => current.filter((m) => m.id !== id))}
                     onChange={updateMember}
                     action={renderCccdHeaderAction('member', 'Đọc CCCD và thêm thành viên')}
+                    cccdQueue={cccdQueue}
+                    isReadingCccd={isReadingCccd}
+                    onClearCccdQueue={() => setCccdQueue([])}
                 />
             </XcttSection>
 
@@ -880,6 +1008,88 @@ const XacNhanCuTruPage: React.FC = () => {
                     </div>
                 </div>
             </aside>
+
+            {cccdDialogStep && (
+                <div
+                    className="cccd-consent-backdrop"
+                    onKeyDown={(event) => {
+                        if (event.key === 'Escape') declineCccdConsent();
+                    }}
+                >
+                    <section
+                        className="cccd-consent-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="cccd-consent-title"
+                    >
+                        {cccdDialogStep === 'consent' ? (
+                            <>
+                                <div className="cccd-consent-icon">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <h2 id="cccd-consent-title">Đồng ý xử lý dữ liệu?</h2>
+                                <p>
+                                    Ảnh CCCD sẽ được gửi đến <strong>OpenAI</strong> và <strong>VNPT AI</strong> để xử
+                                    lý, tự động điền thông tin. Đây là bản demo; bản chính thức sẽ dùng VNPT LLM
+                                    Agentic để bảo vệ dữ liệu hoàn toàn. Bạn có đồng ý không?
+                                </p>
+                                <div className="cccd-consent-actions">
+                                    <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                                        Từ chối
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="cccd-consent-accept"
+                                        onClick={acceptCccdConsent}
+                                        autoFocus
+                                    >
+                                        Đồng ý
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="cccd-consent-icon">
+                                    <Files size={24} />
+                                </div>
+                                <h2 id="cccd-consent-title">Thêm thành viên bằng CCCD</h2>
+                                <p>Chọn số người muốn thêm. Hệ thống sẽ yêu cầu đúng một ảnh CCCD cho mỗi người.</p>
+                                <label className="cccd-member-count-field">
+                                    <span>Số người muốn thêm</span>
+                                    <select
+                                        value={memberUploadCount}
+                                        onChange={(event) => {
+                                            setMemberUploadCount(Number(event.target.value));
+                                            setMemberUploadError('');
+                                        }}
+                                        autoFocus
+                                    >
+                                        {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
+                                            <option key={count} value={count}>
+                                                {count} người
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                {memberUploadError && (
+                                    <div className="cccd-member-count-error" role="alert">
+                                        <AlertCircle size={15} />
+                                        {memberUploadError}
+                                    </div>
+                                )}
+                                <div className="cccd-consent-actions">
+                                    <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                                        Hủy
+                                    </button>
+                                    <button type="button" className="cccd-consent-accept" onClick={confirmMemberUploadCount}>
+                                        Chọn {Math.min(10, Math.max(1, Math.trunc(memberUploadCount || 1)))} ảnh
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </section>
+                </div>
+            )}
 
             {ocrNotice && (
                 <div
@@ -1132,7 +1342,10 @@ const FamilyMemberTable: React.FC<{
     onRemove: (id: number) => void;
     onChange: (id: number, key: keyof Omit<FamilyMember, 'id'>, value: string) => void;
     action?: React.ReactNode;
-}> = ({ members, errors, onAdd, onRemove, onChange, action }) => (
+    cccdQueue: CccdQueueItem[];
+    isReadingCccd: boolean;
+    onClearCccdQueue: () => void;
+}> = ({ members, errors, onAdd, onRemove, onChange, action, cccdQueue, isReadingCccd, onClearCccdQueue }) => (
     <div style={{ marginTop: 28 }}>
         <div className="dktt-table-caption">
             <div className="dktt-sub-title" style={{ margin: 0, borderBottom: 'none' }}>
@@ -1143,6 +1356,41 @@ const FamilyMemberTable: React.FC<{
                 {action}
             </div>
         </div>
+        {cccdQueue.length > 0 && (
+            <div className="cccd-upload-queue" aria-live="polite">
+                <div className="cccd-upload-queue-header">
+                    <div>
+                        <strong>Hàng đợi CCCD</strong>
+                        <span>
+                            {cccdQueue.filter((item) => item.status === 'success').length}/{cccdQueue.length} tệp hoàn tất
+                        </span>
+                    </div>
+                    {!isReadingCccd && (
+                        <button type="button" onClick={onClearCccdQueue} aria-label="Đóng hàng đợi">
+                            ×
+                        </button>
+                    )}
+                </div>
+                <div className="cccd-upload-queue-list">
+                    {cccdQueue.map((item, index) => (
+                        <div key={item.id} className={`cccd-upload-queue-item ${item.status}`}>
+                            <span className="cccd-upload-queue-icon">
+                                {item.status === 'processing' && <LoaderCircle size={16} className="cccd-queue-spinner" />}
+                                {item.status === 'success' && <CheckCircle2 size={16} />}
+                                {item.status === 'error' && <AlertCircle size={16} />}
+                                {item.status === 'waiting' && <Files size={16} />}
+                            </span>
+                            <span className="cccd-upload-queue-copy">
+                                <strong>
+                                    {index + 1}. {item.fileName}
+                                </strong>
+                                <small>{item.message}</small>
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
         <div className="dktt-member-table-wrapper">
             <table className="dktt-member-table">
                 <thead>
