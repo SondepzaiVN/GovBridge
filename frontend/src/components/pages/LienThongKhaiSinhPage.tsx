@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
     ChevronRight,
+    Camera,
     Download,
     Menu,
     Minus,
@@ -13,15 +14,17 @@ import {
     RotateCw,
     Home,
 } from 'lucide-react';
+import { ocrService } from '../../api/aiServices';
 import { useForm } from '../../contexts/FormContext';
 import { saveApplicationToDashboard } from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { provinces, useWards } from '../../hooks/useAdministrativeUnits';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
-import type { DocumentReviewUiState, FormFieldOption } from '../../types';
+import type { CCCDInfo, DocumentReviewUiState, FormFieldOption } from '../../types';
 import { SERVICE_MAP } from '../../data/services';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
 import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
+import { MissingRequiredFieldsModal } from '../common/MissingRequiredFieldsModal';
 
 const DECLARATION_PROCESSING_MESSAGE =
     'AI đang xử lý để tự động điền tờ khai, bạn chỉ cần in ra và ký thôi.';
@@ -53,6 +56,7 @@ interface LinkedSection {
     title: string;
     note?: string;
     actions?: string[];
+    cccdActions?: CccdSectionAction[];
     sameArea?: boolean;
     fields?: LinkedField[];
     reviewTabs?: ReviewTab[];
@@ -61,6 +65,14 @@ interface LinkedSection {
     complete?: boolean;
     review?: boolean;
     hideTitle?: boolean;
+}
+
+type LtksCccdTarget = 'applicant' | 'mother' | 'father' | 'householder' | 'confirmer';
+type LtksCccdDialogStep = 'consent' | 'source';
+
+interface CccdSectionAction {
+    target: LtksCccdTarget;
+    label: string;
 }
 
 interface LinkedStep {
@@ -195,6 +207,37 @@ const formatDateForDeclaration = (value: string) => {
     const [year, month, day] = value.split('-');
     if (!year || !month || !day) return value;
     return `${day}/${month}/${year}`;
+};
+
+const normalizeCccdNumber = (value: string) => value.replace(/\D/g, '');
+
+const normalizeGenderFromCccd = (value: string) => {
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) return '';
+    if (normalized.includes('nam')) return 'Nam';
+    if (normalized.includes('nữ') || normalized.includes('nu')) return 'Nữ';
+    return value;
+};
+
+const toDateInputValue = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+    const match = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    if (!match) return trimmed;
+    const [, day, month, year] = match;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+const splitVietnameseName = (fullName: string) => {
+    const parts = fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return { lastName: '', middleName: '', firstName: '' };
+    if (parts.length === 1) return { lastName: '', middleName: '', firstName: parts[0] };
+    return {
+        lastName: parts[0],
+        middleName: parts.slice(1, -1).join(' '),
+        firstName: parts[parts.length - 1],
+    };
 };
 
 const buildNameFromFields = (values: Record<string, string>, hoId: string, chuDemId: string, tenId: string) =>
@@ -590,6 +633,7 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
             {
                 title: 'Thông tin người yêu cầu',
                 actions: ['Xác thực với CSDLQG về dân cư'],
+                cccdActions: [{ target: 'applicant', label: 'Đọc CCCD người yêu cầu' }],
                 fields: [
                     {
                         id: 'ltks_hoTenNguoiYeuCau',
@@ -779,6 +823,7 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
                 title: 'Thông tin người mẹ đẻ/nhờ mang thai hộ',
                 note: 'Ghi chú về kê khai họ tên: Ghi đầy đủ và chính xác họ, chữ đệm, tên người mẹ của người được khai sinh theo giấy tờ tùy thân (nếu có).',
                 actions: ['Xác thực với CSDLQG về dân cư', 'Nhập lại'],
+                cccdActions: [{ target: 'mother', label: 'Đọc CCCD người mẹ' }],
                 fields: [
                     {
                         id: 'ltks_quocTichMe',
@@ -846,6 +891,7 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
                 title: 'Thông tin người cha đẻ/nhờ mang thai hộ',
                 note: 'Ghi chú về kê khai họ tên: Ghi đầy đủ và chính xác họ, chữ đệm, tên người cha của người được khai sinh theo giấy tờ tùy thân (nếu có).',
                 actions: ['Xác thực với CSDLQG về dân cư', 'Nhập lại'],
+                cccdActions: [{ target: 'father', label: 'Đọc CCCD người cha' }],
                 fields: [
                     {
                         id: 'ltks_cungNoiCuTruVoiMe',
@@ -946,6 +992,10 @@ const getSteps = (opts: Record<string, string[] | undefined>): LinkedStep[] => [
             },
             {
                 title: 'Thông tin chủ hộ',
+                cccdActions: [
+                    { target: 'householder', label: 'Đọc CCCD chủ hộ' },
+                    { target: 'confirmer', label: 'Đọc CCCD người xác nhận' },
+                ],
                 fields: [
                     {
                         id: 'ltks_chuHoLaChaMe',
@@ -1153,6 +1203,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
     };
 
     const [submitError, setSubmitError] = React.useState('');
+    const [showMissingRequiredModal, setShowMissingRequiredModal] = React.useState(false);
     const [activeReviewTab, setActiveReviewTab] = React.useState(0);
     const [generatedReviewTabs, setGeneratedReviewTabs] = React.useState<ReviewTab[]>([]);
     const [isGeneratingDeclaration, setIsGeneratingDeclaration] = React.useState(false);
@@ -1163,6 +1214,11 @@ const LienThongKhaiSinhPage: React.FC = () => {
     const [loadingWardFields, setLoadingWardFields] = React.useState<Record<string, boolean>>({});
     const [isLoadingProvinces, setIsLoadingProvinces] = React.useState(true);
     const [isSameRegistrationArea, setIsSameRegistrationArea] = React.useState(true);
+    const [cccdDialogStep, setCccdDialogStep] = React.useState<LtksCccdDialogStep | null>(null);
+    const [isReadingCccd, setIsReadingCccd] = React.useState(false);
+    const cccdInputRef = React.useRef<HTMLInputElement>(null);
+    const cccdCameraInputRef = React.useRef<HTMLInputElement>(null);
+    const cccdTargetRef = React.useRef<LtksCccdTarget>('applicant');
     const wardRequestKeysRef = React.useRef(new Set<string>());
 
     const currentStep = parseStep(stepSlug);
@@ -1396,6 +1452,133 @@ const LienThongKhaiSinhPage: React.FC = () => {
         }
     };
 
+    const setFieldsFromCccd = (fields: Record<string, string>) => {
+        Object.entries(fields).forEach(([fieldId, value]) => {
+            if (value) {
+                setFieldValue(fieldId, value);
+                setFieldError(fieldId, '');
+            }
+        });
+    };
+
+    const applyCccdToTarget = (info: CCCDInfo) => {
+        const target = cccdTargetRef.current;
+        const normalizedId = normalizeCccdNumber(info.id || '');
+        const dateOfBirth = toDateInputValue(info.ngaySinh || '');
+        const issueDate = toDateInputValue(info.ngayCap || '');
+        const gender = normalizeGenderFromCccd(info.gioiTinh || '');
+        const nameParts = splitVietnameseName(info.hoTen || '');
+
+        if (target === 'applicant') {
+            setFieldsFromCccd({
+                ltks_hoTenNguoiYeuCau: info.hoTen,
+                ltks_soDinhDanhNguoiYeuCau: normalizedId,
+                ltks_ngaySinhNguoiYeuCau: dateOfBirth,
+                ltks_gioiTinhNguoiYeuCau: gender,
+                ltks_ngayCapNguoiYeuCau: issueDate,
+                ltks_noiCapNguoiYeuCau: info.noiCap,
+            });
+            return;
+        }
+
+        if (target === 'mother') {
+            setFieldsFromCccd({
+                ltks_hoMe: nameParts.lastName,
+                ltks_chuDemMe: nameParts.middleName,
+                ltks_tenMe: nameParts.firstName,
+                ltks_ngaySinhMe: dateOfBirth,
+                ltks_soDinhDanhMe: normalizedId,
+                ltks_cccdMeGiayChungSinh: normalizedId,
+            });
+            return;
+        }
+
+        if (target === 'father') {
+            setFieldsFromCccd({
+                ltks_hoCha: nameParts.lastName,
+                ltks_chuDemCha: nameParts.middleName,
+                ltks_tenCha: nameParts.firstName,
+                ltks_ngaySinhCha: dateOfBirth,
+                ltks_soDinhDanhCha: normalizedId,
+            });
+            return;
+        }
+
+        if (target === 'householder') {
+            setFieldsFromCccd({
+                ltks_hoTenChuHo: info.hoTen,
+                ltks_soDinhDanhChuHo: normalizedId,
+            });
+            return;
+        }
+
+        setFieldsFromCccd({
+            ltks_hoTenNguoiXacNhan: info.hoTen,
+            ltks_soDinhDanhNguoiXacNhan: normalizedId,
+        });
+    };
+
+    const openCccdUpload = (target: LtksCccdTarget) => {
+        cccdTargetRef.current = target;
+        setCccdDialogStep('consent');
+    };
+
+    const declineCccdConsent = () => {
+        setCccdDialogStep(null);
+    };
+
+    const acceptCccdConsent = () => {
+        setCccdDialogStep('source');
+    };
+
+    const chooseCccdSource = (source: 'file' | 'camera') => {
+        setCccdDialogStep(null);
+        window.setTimeout(() => {
+            const input = source === 'camera' ? cccdCameraInputRef.current : cccdInputRef.current;
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        }, 0);
+    };
+
+    const handleCccdFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+
+        setIsReadingCccd(true);
+        try {
+            const info = await ocrService.extractCCCDInfo(await ocrService.resizeImage(file), {
+                showProcessingNotice: false,
+            });
+            applyCccdToTarget(info);
+        } catch (error) {
+            console.error('Không đọc được CCCD cho liên thông khai sinh:', error);
+            setSubmitError('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
+        } finally {
+            setIsReadingCccd(false);
+        }
+    };
+
+    const renderCccdActionButton = (action: CccdSectionAction) => (
+        <button
+            type="button"
+            className="dktt-section-camera-btn"
+            aria-label={action.label}
+            title={action.label}
+            onClick={() => openCccdUpload(action.target)}
+            disabled={isReadingCccd}
+            key={action.target}
+        >
+            {isReadingCccd && cccdTargetRef.current === action.target ? (
+                <LoaderCircle size={17} className="cccd-queue-spinner" />
+            ) : (
+                <Camera size={17} />
+            )}
+        </button>
+    );
+
     const handleUploadFileChange = (title: string, file: File) => {
         setUploadedFiles((prev) => ({ ...prev, [title]: file }));
         void reviewUploadedDocument({
@@ -1426,7 +1609,11 @@ const LienThongKhaiSinhPage: React.FC = () => {
     const handleNext = async () => {
         if (isGeneratingDeclaration) return;
         setSubmitError('');
-        if (!validateStep()) return;
+        setShowMissingRequiredModal(false);
+        if (!validateStep()) {
+            setShowMissingRequiredModal(true);
+            return;
+        }
 
         if (currentStep === 5) {
             // Build payload for submission
@@ -1563,6 +1750,22 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     buộc phải nhập
                 </div>
 
+                <input
+                    ref={cccdInputRef}
+                    type="file"
+                    accept="image/*,.heic,.HEIC"
+                    className="dktt-hidden-file-input"
+                    onChange={handleCccdFileChange}
+                />
+                <input
+                    ref={cccdCameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="dktt-hidden-file-input"
+                    onChange={handleCccdFileChange}
+                />
+
                 <form
                     className={`ltks-form ltks-form-step-${currentStep}`}
                     onSubmit={(event) => event.preventDefault()}
@@ -1584,6 +1787,12 @@ const LienThongKhaiSinhPage: React.FC = () => {
                                                         {action}
                                                     </button>
                                                 ))}
+                                                {section.cccdActions?.map(renderCccdActionButton)}
+                                            </div>
+                                        )}
+                                        {!section.actions && section.cccdActions && (
+                                            <div className="ltks-section-actions">
+                                                {section.cccdActions.map(renderCccdActionButton)}
                                             </div>
                                         )}
                                         {section.sameArea && (
@@ -1752,6 +1961,61 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     </div>
                 </aside>
             </main>
+            {showMissingRequiredModal && (
+                <MissingRequiredFieldsModal onClose={() => setShowMissingRequiredModal(false)} />
+            )}
+            {cccdDialogStep && (
+                <div className="cccd-consent-backdrop" role="presentation">
+                    <div
+                        className="cccd-consent-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="cccd-consent-title"
+                    >
+                        {cccdDialogStep === 'consent' ? (
+                            <>
+                                <div className="cccd-consent-icon">
+                                    <Camera size={24} />
+                                </div>
+                                <h2 id="cccd-consent-title">Đồng ý xử lý dữ liệu?</h2>
+                                <p>
+                                    Ảnh CCCD sẽ được gửi đến <strong>VNPT AI</strong> để xử lý, tự động điền thông tin.
+                                    Bạn có đồng ý không?
+                                </p>
+                                <div className="cccd-consent-actions">
+                                    <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                                        Từ chối
+                                    </button>
+                                    <button type="button" className="cccd-consent-accept" onClick={acceptCccdConsent} autoFocus>
+                                        Đồng ý
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="cccd-consent-icon">
+                                    <Camera size={24} />
+                                </div>
+                                <h2 id="cccd-consent-title">Chọn nguồn ảnh CCCD</h2>
+                                <p>Chọn ảnh CCCD đã có trên máy hoặc chụp trực tiếp bằng camera.</p>
+                                <div className="cccd-source-options">
+                                    <button type="button" className="cccd-source-option" onClick={() => chooseCccdSource('file')} autoFocus>
+                                        Tải ảnh từ máy
+                                    </button>
+                                    <button type="button" className="cccd-source-option" onClick={() => chooseCccdSource('camera')}>
+                                        Chụp bằng camera
+                                    </button>
+                                </div>
+                                <div className="cccd-consent-actions">
+                                    <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                                        Hủy
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
         </LienThongShell>
     );
 };

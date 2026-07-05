@@ -51,6 +51,7 @@ import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
 import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
+import { MissingRequiredFieldsModal } from '../common/MissingRequiredFieldsModal';
 
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
@@ -261,6 +262,7 @@ const DangKyTamTruPage: React.FC = () => {
     const [administrativeError, setAdministrativeError] = useState('');
     const [review, setReview] = useState<TamTruReviewResult | null>(null);
     const [toast, setToast] = useState('');
+    const [showMissingRequiredModal, setShowMissingRequiredModal] = useState(false);
     const [activeDossierCaseId, setActiveDossierCaseId] = useState(dossierCases[0]?.id || '');
     const [memberCounter, setMemberCounter] = useState(2);
     const [activeHelp, setActiveHelp] = useState('');
@@ -276,6 +278,7 @@ const DangKyTamTruPage: React.FC = () => {
     const updateField = <K extends keyof TamTruApplicationData>(field: K, value: TamTruApplicationData[K]) => {
         setForm((prev) => ({ ...prev, [field]: value }));
         setReview(null);
+        setShowMissingRequiredModal(false);
     };
 
     const showToast = (message: string) => {
@@ -732,9 +735,10 @@ const DangKyTamTruPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
+        setShowMissingRequiredModal(false);
         const result = runReview();
         if (result.status === 'INVALID') {
-            showToast('Hồ sơ còn lỗi bắt buộc. Vui lòng xem phần AI rà soát.');
+            setShowMissingRequiredModal(true);
             return;
         }
 
@@ -991,10 +995,6 @@ const DangKyTamTruPage: React.FC = () => {
                 <button type="button" className="btn btn-secondary" onClick={handleAutofill}>
                     <Bot size={16} />
                     AI điền thử hồ sơ
-                </button>
-                <button type="button" className="btn btn-outline" onClick={runReview}>
-                    <FileText size={16} />
-                    AI rà soát
                 </button>
             </div>
             <input
@@ -1895,6 +1895,9 @@ const DangKyTamTruPage: React.FC = () => {
                 <div className="dktt-toast" role="alert">
                     {toast}
                 </div>
+            )}
+            {showMissingRequiredModal && (
+                <MissingRequiredFieldsModal onClose={() => setShowMissingRequiredModal(false)} />
             )}
         </div>
     );

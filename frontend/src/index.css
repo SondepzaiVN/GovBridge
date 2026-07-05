@@ -6085,6 +6085,18 @@ button.header-nav-link.active {
     font-weight: 700;
 }
 
+.ltks-section-actions .dktt-section-camera-btn {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    color: var(--primary-dark);
+}
+
 .ltks-note {
     margin: 0 0 14px;
     padding: 11px 13px;
@@ -9135,6 +9147,10 @@ button.header-nav-link.active {
     color: #fff;
     font-size: 2rem;
     font-weight: 900;
+}
+
+.xctt-modal-icon-warning {
+    background: #dc2626;
 }
 
 .xctt-modal h2 {
@@ -12369,22 +12385,9 @@ button.header-nav-link.active {
     font-size: 0.72rem;
 }
 
-.officer-heading-date {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 10px;
-    border: 1px solid #d7dce1;
-    border-radius: 4px;
-    background: #fff;
-    color: #5f6872;
-    font-size: 0.68rem;
-    white-space: nowrap;
-}
-
 .officer-summary {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin-bottom: 14px;
 }
@@ -13134,10 +13137,6 @@ button.header-nav-link.active {
 
     .officer-page-heading h1 {
         font-size: 1.15rem;
-    }
-
-    .officer-heading-date {
-        display: none;
     }
 
     .officer-summary {
