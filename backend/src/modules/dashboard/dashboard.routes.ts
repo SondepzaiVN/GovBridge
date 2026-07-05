@@ -32,7 +32,7 @@ export const createDashboardRouter = (repository: DashboardRepository): Router =
   router.patch('/:id', asyncHandler(async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
-    const updated = await repository.update(id, updates);
+    const updated = await repository.update(id as string, updates);
     if (!updated) {
       res.status(404).json({ success: false, error: 'Không tìm thấy hồ sơ' });
       return;
