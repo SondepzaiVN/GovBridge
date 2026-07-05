@@ -370,8 +370,13 @@ export const ocrService = {
             URL.revokeObjectURL(imageUrl);
         }
     },
-    extractCCCDInfo: async (file: File): Promise<CCCDInfo> => {
-        notifyCccdOcrExternalProcessing();
+    extractCCCDInfo: async (
+        file: File,
+        options: { showProcessingNotice?: boolean } = {},
+    ): Promise<CCCDInfo> => {
+        if (options.showProcessingNotice !== false) {
+            notifyCccdOcrExternalProcessing();
+        }
         const formData = new FormData();
         formData.append('file', file);
         const result = await apiClient<OCRApiResult>('/identity/cccd/ocr', {

@@ -136,8 +136,33 @@ const THINKING_ANNOUNCEMENTS = [
     'Sắp xong rồi, tôi đang hoàn thiện câu trả lời cho bạn.',
 ];
 
-const INTRO_GREETING = 'Xin chào! Tôi là trợ lý VNPT AI, sẵn sàng hỗ trợ dịch vụ công cho bạn. Hãy nói điều bạn cần!';
-const SUBSEQUENT_GREETING = 'Lại là tôi đây, bạn cần tui giúp gì nữa không?';
+const INTRO_GREETINGS = [
+    'Xin chào! Tôi là trợ lý VNPT AI. Bạn đang cần hỗ trợ thủ tục nào hôm nay?',
+    'Chào bạn! Tôi là trợ lý VNPT AI, luôn sẵn sàng đồng hành cùng bạn. Hãy cho tôi biết bạn cần hỗ trợ gì nhé!',
+    'Rất vui được gặp bạn! Tôi là trợ lý VNPT AI, có thể giúp việc thực hiện thủ tục hành chính trở nên đơn giản hơn. Bạn muốn bắt đầu từ đâu?',
+    'Chào mừng bạn! VNPT AI rất vui được hỗ trợ. Bạn cứ chia sẻ điều đang cần giải đáp nhé!',
+    'Bạn cần tra cứu thủ tục, chuẩn bị giấy tờ hay điền hồ sơ? Tôi là trợ lý VNPT AI và sẵn sàng giúp bạn.',
+    'Tôi là trợ lý VNPT AI. Thủ tục hành chính đôi khi có nhiều bước, nhưng bạn đừng lo, tôi sẽ hướng dẫn từng bước.',
+    'VNPT AI xin chào bạn! Bạn cứ nói tự nhiên điều mình cần, tôi đang lắng nghe.',
+    'Tôi là trợ lý VNPT AI, sẵn sàng giải đáp thắc mắc về dịch vụ công thật rõ ràng và dễ hiểu. Bạn cần hỗ trợ gì?',
+    'Chào bạn! Trợ lý VNPT AI có thể giúp bạn tìm đúng thủ tục và chuẩn bị đúng giấy tờ. Bạn muốn hỏi nội dung nào?',
+    'Trợ lý VNPT AI rất hân hạnh được hỗ trợ bạn hôm nay. Bạn đang quan tâm đến thủ tục hành chính nào?',
+    'VNPT AI xin chào bạn! Hãy cho tôi biết nhu cầu của bạn, chúng ta sẽ cùng xử lý từng bước nhé.',
+    'Tôi là trợ lý VNPT AI và đã sẵn sàng đồng hành cùng bạn. Bạn cần hướng dẫn, tra cứu hay kiểm tra hồ sơ?',
+];
+
+const SUBSEQUENT_GREETINGS = [
+    'Trợ lý VNPT AI lại ở đây rồi! Bạn cần hỗ trợ thêm việc gì?',
+    'VNPT AI xin chào bạn lần nữa! Hãy cho tôi biết bạn muốn tiếp tục với nội dung nào nhé.',
+    'Tôi là trợ lý VNPT AI, rất vui được tiếp tục hỗ trợ bạn. Lần này bạn đang cần giải đáp điều gì?',
+    'Trợ lý VNPT AI đang lắng nghe đây. Bạn cần tôi giúp thêm việc gì?',
+    'Tôi là trợ lý VNPT AI. Chúng ta tiếp tục nhé, bạn cứ nói điều mình đang cần hỗ trợ.',
+];
+
+const pickRandomGreeting = (greetings: string[], previousGreeting: string | null) => {
+    const choices = greetings.filter((greeting) => greeting !== previousGreeting);
+    return choices[Math.floor(Math.random() * choices.length)] ?? greetings[0];
+};
 
 const VoiceCallController: React.FC = () => {
     const { state, dispatch, sendMessage, handleAIResponse } = useChatbot();
@@ -145,6 +170,7 @@ const VoiceCallController: React.FC = () => {
     const sendMessageRef = useRef(sendMessage);
     const isFinishingRef = useRef(false);
     const introPlayedRef = useRef(false);
+    const previousGreetingRef = useRef<string | null>(null);
 
     useEffect(() => {
         stateRef.current = state;
@@ -161,7 +187,9 @@ const VoiceCallController: React.FC = () => {
         if (introPlayedRef.current) return;
         introPlayedRef.current = true;
 
-        const greeting = state.messages.length === 0 ? INTRO_GREETING : SUBSEQUENT_GREETING;
+        const greetings = state.messages.length === 0 ? INTRO_GREETINGS : SUBSEQUENT_GREETINGS;
+        const greeting = pickRandomGreeting(greetings, previousGreetingRef.current);
+        previousGreetingRef.current = greeting;
 
         // Lời chào khi bắt đầu cuộc gọi
 
@@ -213,9 +241,9 @@ const VoiceCallController: React.FC = () => {
                         text: isPlaying ? phrase : 'Trợ lý đang suy nghĩ...',
                     },
                 });
-                // Khi TTS vừa kết thúc (isPlaying chuyển false), lên lịch câu tiếp sau 3 giây
+                // Khi TTS vừa kết thúc (isPlaying chuyển false), lên lịch câu tiếp sau 4 giây
                 if (!isPlaying && !cancelled) {
-                    pendingTimer = window.setTimeout(announceNext, 3000);
+                    pendingTimer = window.setTimeout(announceNext, 4000);
                 }
             });
         };

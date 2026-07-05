@@ -1,7 +1,8 @@
 ﻿import React, { useRef, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import { ocrService, smartbotService } from '../../api/aiServices';
-import { Send, Camera } from 'lucide-react';
+import { Send, Camera, ShieldCheck } from 'lucide-react';
 
 interface ChatInputProps {
     onSend: (text: string) => void | Promise<void>;
@@ -26,6 +27,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
     const [showCameraMenu, setShowCameraMenu] = useState(false);
+    const [showCccdConsent, setShowCccdConsent] = useState(false);
 
     // Auto-resize textarea
     useEffect(() => {
@@ -85,7 +87,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
         try {
             const resizedFile = await ocrService.resizeImage(file);
-            const cccdInfo = await ocrService.extractCCCDInfo(resizedFile);
+            const cccdInfo = await ocrService.extractCCCDInfo(resizedFile, { showProcessingNotice: false });
             smartbotService.setRecentOcrFacts(
                 Object.fromEntries(
                     Object.entries(cccdInfo).filter(
@@ -141,7 +143,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     <div style={{ position: 'relative' }}>
                         <button
                             className="input-action-btn"
-                            onClick={() => setShowCameraMenu(!showCameraMenu)}
+                            onClick={() => {
+                                setShowCameraMenu(false);
+                                setShowCccdConsent(true);
+                            }}
                             title="Upload hoặc chụp ảnh CCCD"
                             disabled={disabled || state.isLoading}
                             aria-label="Upload ảnh CCCD"
@@ -241,6 +246,53 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     </button>
                 </div>
             </div>
+
+            {showCccdConsent && createPortal(
+                <div
+                    className="cccd-consent-backdrop"
+                    onKeyDown={(event) => {
+                        if (event.key === 'Escape') setShowCccdConsent(false);
+                    }}
+                >
+                    <section
+                        className="cccd-consent-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Đồng ý xử lý dữ liệu"
+                    >
+                        <div className="cccd-consent-icon">
+                            <ShieldCheck size={24} />
+                        </div>
+                        <h2>Đồng ý xử lý dữ liệu?</h2>
+                        <p>
+                            Ảnh CCCD sẽ được gửi đến <strong>OpenAI</strong> và <strong>VNPT AI</strong> để xử lý,
+                            tự động điền thông tin. Đây là bản demo; bản chính thức sẽ dùng VNPT LLM Agentic để
+                            bảo vệ dữ liệu hoàn toàn. Bạn có đồng ý không?
+                        </p>
+                        <div className="cccd-consent-actions">
+                            <button
+                                type="button"
+                                className="cccd-consent-decline"
+                                onClick={() => setShowCccdConsent(false)}
+                            >
+                                Từ chối
+                            </button>
+                            <button
+                                type="button"
+                                className="cccd-consent-accept"
+                                onClick={() => {
+                                    setShowCccdConsent(false);
+                                    setShowCameraMenu(true);
+                                }}
+                                autoFocus
+                            >
+                                Đồng ý
+                            </button>
+                        </div>
+                    </section>
+                </div>,
+                document.body,
+            )}
         </div>
     );
 };
