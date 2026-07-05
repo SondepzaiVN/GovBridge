@@ -18,6 +18,7 @@ Yêu cầu: Docker Desktop hoặc Docker Engine có Docker Compose.
 ```bash
 docker compose up -d --build
 ```
+Lưu ý: File .env của dự án được dính kèm trong Tài liệu Hướng dẫn Cài đặt
 
 Sau khi chạy:
 
