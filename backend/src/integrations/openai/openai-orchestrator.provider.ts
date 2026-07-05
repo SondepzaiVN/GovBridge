@@ -248,6 +248,39 @@ const continuationSchema = z
     })
     .strict();
 
+const shouldOmitAdministrativeOptions = (field: {
+    id: string;
+    label: string;
+    options?: Array<{ value: string; label: string }>;
+}): boolean => {
+    if (!field.options?.length) return false;
+
+    const normalizedFieldId = normalizeText(field.id);
+    const normalizedFieldLabel = normalizeText(field.label);
+
+    return (
+        normalizedFieldId.includes('tinhthanh')
+        || normalizedFieldId.includes('xaphuong')
+        || normalizedFieldId.includes('province')
+        || normalizedFieldId.includes('ward')
+        || normalizedFieldLabel.includes('thanh pho')
+        || normalizedFieldLabel.includes('xaphuong')
+        || normalizedFieldLabel.includes('dac khu')
+    );
+};
+
+const serializeFieldOptionsForOpenAi = (field: {
+    id: string;
+    label: string;
+    options?: Array<{ value: string; label: string }>;
+}) => {
+    if (shouldOmitAdministrativeOptions(field)) return [];
+    return field.options?.map((option) => ({
+        value: option.value,
+        label: option.label,
+    })) ?? [];
+};
+
 const buildOrchestratorInstructions = (request: OrchestratorRequest): string => {
     const { context } = request;
     const knownFields = Object.fromEntries(
@@ -267,11 +300,7 @@ const buildOrchestratorInstructions = (request: OrchestratorRequest): string => 
                   type: field.type,
                   required: field.required,
                   step: field.step ?? null,
-                  options:
-                      field.options?.map((option) => ({
-                          value: option.value,
-                          label: option.label,
-                      })) ?? [],
+                  options: serializeFieldOptionsForOpenAi(field),
               })),
           }
         : null;
