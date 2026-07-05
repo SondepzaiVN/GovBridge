@@ -6,6 +6,7 @@ import {
     Menu,
     Minus,
     MoreVertical,
+    LoaderCircle,
     Paperclip,
     Plus,
     Printer,
@@ -21,6 +22,14 @@ import type { DocumentReviewUiState, FormFieldOption } from '../../types';
 import { SERVICE_MAP } from '../../data/services';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
 import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
+
+const DECLARATION_PROCESSING_MESSAGE =
+    'AI đang xử lý để tự động điền tờ khai, bạn chỉ cần in ra và ký thôi.';
+
+const waitForDeclarationProcessing = () =>
+    new Promise((resolve) => {
+        window.setTimeout(resolve, 3000 + Math.floor(Math.random() * 3001));
+    });
 
 type FieldType = 'text' | 'date' | 'select' | 'textarea' | 'radio' | 'checkbox';
 
@@ -1146,6 +1155,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
     const [submitError, setSubmitError] = React.useState('');
     const [activeReviewTab, setActiveReviewTab] = React.useState(0);
     const [generatedReviewTabs, setGeneratedReviewTabs] = React.useState<ReviewTab[]>([]);
+    const [isGeneratingDeclaration, setIsGeneratingDeclaration] = React.useState(false);
     const [uploadedFiles, setUploadedFiles] = React.useState<Record<string, File>>({});
     const [attachmentReviews, setAttachmentReviews] = React.useState<Record<string, DocumentReviewUiState>>({});
     const [administrativeProvinceOptions, setAdministrativeProvinceOptions] = React.useState<FormFieldOption[]>([]);
@@ -1414,6 +1424,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
     };
 
     const handleNext = async () => {
+        if (isGeneratingDeclaration) return;
         setSubmitError('');
         if (!validateStep()) return;
 
@@ -1481,6 +1492,12 @@ const LienThongKhaiSinhPage: React.FC = () => {
             return;
         }
 
+        if (currentStep === 2) {
+            setIsGeneratingDeclaration(true);
+            await waitForDeclarationProcessing();
+            setIsGeneratingDeclaration(false);
+        }
+
         if (currentStep < steps.length) {
             goToStep(currentStep + 1);
         }
@@ -1501,6 +1518,16 @@ const LienThongKhaiSinhPage: React.FC = () => {
                     <ChevronRight size={13} className="breadcrumb-sep" />
                     <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Liên thông khai sinh</span>
                 </nav>
+
+                {isGeneratingDeclaration && (
+                    <div className="ai-declaration-processing-overlay" role="status" aria-live="polite">
+                        <div className="ai-declaration-processing-card">
+                            <LoaderCircle className="ai-declaration-processing-spinner" size={28} />
+                            <strong>AI đang xử lý</strong>
+                            <span>{DECLARATION_PROCESSING_MESSAGE}</span>
+                        </div>
+                    </div>
+                )}
 
                 <div className="ltks-stepper" role="tablist" aria-label="Các bước kê khai">
                     {steps.map((step, index) => {
@@ -1656,8 +1683,8 @@ const LienThongKhaiSinhPage: React.FC = () => {
                                     Quay lại bước trước
                                 </button>
                             )}
-                            <button type="button" className="ltks-btn primary" onClick={handleNext}>
-                                {currentStep === 5 ? 'Hoàn thành' : 'Chuyển bước tiếp theo'}
+                            <button type="button" className="ltks-btn primary" onClick={handleNext} disabled={isGeneratingDeclaration}>
+                                {isGeneratingDeclaration ? 'AI đang xử lý...' : currentStep === 5 ? 'Hoàn thành' : 'Chuyển bước tiếp theo'}
                             </button>
                             {currentStep === 5 && (
                                 <button type="button" className="ltks-btn secondary">

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
-import { AlertCircle, AlertTriangle, Bot, CheckCircle, User } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Bot, CheckCircle, LoaderCircle, User } from 'lucide-react';
 import { ttsService } from '../../api/aiServices';
 import type { ChatMessage } from '../../types';
 import { useChatbot } from '../../contexts/ChatbotContext';
@@ -43,6 +44,14 @@ const normalizeGenderValue = (value: string) => {
 };
 
 const normalizeServiceRoute = (pathname: string) => pathname.replace(/\/buoc-\d+\/?$/, '');
+
+const AI_DECLARATION_PROCESSING_MESSAGE =
+  'AI đang xử lý để tự động điền tờ khai, bạn chỉ cần in ra và ký thôi.';
+
+const waitForAiDeclarationProcessing = () =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, 3000 + Math.floor(Math.random() * 3001));
+  });
 
 const buildFieldsFromCccdMap = (info: Record<string, string>, fieldMap: Record<string, string>) => {
   const fields: Record<string, string> = {};
@@ -115,37 +124,53 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const { fillFields } = useForm();
   const location = useLocation();
   const [fillDecision, setFillDecision] = useState<'confirmed' | 'cancelled' | null>(null);
+  const [isAiProcessingDeclaration, setIsAiProcessingDeclaration] = useState(false);
 
   const isBot = message.role === 'bot';
   const isActiveConfirmation = state.requiresUserAction
     && state.messages[state.messages.length - 1]?.id === message.id;
   const time = message.timestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
-  const confirmFill = (fields: Record<string, string>) => {
+  const showFillSuccessMessage = (
+    voiceMessage: string,
+    textMessage: string,
+    voiceSuggestions: string[],
+    textSuggestions: string[],
+  ) => {
+    if (state.confirmationSource === 'voice') {
+      resumeRealtimeWithVoice(voiceMessage, voiceSuggestions);
+      return;
+    }
+
+    dispatch({
+      type: 'ADD_MESSAGE',
+      payload: {
+        id: crypto.randomUUID(),
+        role: 'bot',
+        type: 'text',
+        content: textMessage,
+        timestamp: new Date(),
+        suggestions: textSuggestions,
+      }
+    });
+    void ttsService.speak(textMessage);
+  };
+
+  const confirmFill = async (fields: Record<string, string>) => {
+    if (isAiProcessingDeclaration) return;
+    setIsAiProcessingDeclaration(true);
+    await waitForAiDeclarationProcessing();
     fillFields(fields);
+    setIsAiProcessingDeclaration(false);
     setFillDecision('confirmed');
     dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
     dispatch({ type: 'CLOSE' });
-    if (state.confirmationSource === 'voice') {
-      resumeRealtimeWithVoice(
+    showFillSuccessMessage(
+        'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
         'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
         ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
-      );
-    } else {
-      const msg = 'Em đã điền các thông tin Anh/Chị vừa xác nhận. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?';
-      dispatch({
-        type: 'ADD_MESSAGE',
-        payload: {
-          id: crypto.randomUUID(),
-          role: 'bot',
-          type: 'text',
-          content: msg,
-          timestamp: new Date(),
-          suggestions: ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo']
-        }
-      });
-      void ttsService.speak(msg);
-    }
+        ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo'],
+    );
   };
 
   const cancelFill = () => {
@@ -223,7 +248,9 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           <button
             className="btn btn-primary btn-sm"
             id="cccd-confirm-btn"
-            onClick={() => {
+            disabled={isAiProcessingDeclaration}
+            onClick={async () => {
+              if (isAiProcessingDeclaration) return;
               const serviceRoute = normalizeServiceRoute(location.pathname);
               const service = ROUTE_TO_SERVICE_MAP[serviceRoute];
               const routeSpecificFieldMap = getRouteSpecificCccdFieldMap(serviceRoute, info);
@@ -272,32 +299,21 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
                 return;
               }
 
+              setIsAiProcessingDeclaration(true);
+              await waitForAiDeclarationProcessing();
               fillFields(fields);
+              setIsAiProcessingDeclaration(false);
               dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: false } });
               dispatch({ type: 'CLOSE' });
-              if (state.confirmationSource === 'voice') {
-                resumeRealtimeWithVoice(
+              showFillSuccessMessage(
+                  'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
                   'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?',
                   ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo', 'Tiếp tục bằng giọng nói'],
-                );
-              } else {
-                const msg = 'Em đã điền thông tin từ CCCD vào biểu mẫu. Anh/Chị muốn em kiểm tra các mục còn thiếu hay hướng dẫn bước tiếp theo?';
-                dispatch({
-                  type: 'ADD_MESSAGE',
-                  payload: {
-                    id: crypto.randomUUID(),
-                    role: 'bot',
-                    type: 'text',
-                    content: msg,
-                    timestamp: new Date(),
-                    suggestions: ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo']
-                  }
-                });
-                void ttsService.speak(msg);
-              }
+                  ['Kiểm tra mục còn thiếu', 'Hướng dẫn bước tiếp theo'],
+              );
             }}
           >
-            Xác nhận và điền
+            {isAiProcessingDeclaration ? 'AI đang xử lý...' : 'Xác nhận và điền'}
           </button>
           <button
             className="btn btn-ghost btn-sm"
@@ -361,7 +377,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
         {fillDecision === null ? (
           <div className="fill-confirm-actions">
             <button className="btn btn-primary btn-sm" onClick={() => confirmFill(fields)}>
-              Xác nhận và điền
+              {isAiProcessingDeclaration ? 'AI đang xử lý...' : 'Xác nhận và điền'}
             </button>
             <button className="btn btn-ghost btn-sm" onClick={cancelFill}>
               Không điền
@@ -438,6 +454,17 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   };
 
   return (
+    <>
+    {isAiProcessingDeclaration && createPortal(
+      <div className="ai-declaration-processing-overlay" role="status" aria-live="polite">
+        <div className="ai-declaration-processing-card">
+          <LoaderCircle className="ai-declaration-processing-spinner" size={28} />
+          <strong>AI đang xử lý</strong>
+          <span>{AI_DECLARATION_PROCESSING_MESSAGE}</span>
+        </div>
+      </div>,
+      document.body,
+    )}
     <div className={`message-wrapper ${message.role}${isActiveConfirmation ? ' message-wrapper--confirmation' : ''}`}>
       <div className="message-avatar">
         {isBot
@@ -473,6 +500,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
