@@ -25,6 +25,7 @@ import type { OrchestratorProvider } from './modules/assistant/orchestrator.type
 import { MockKnowledgeProvider } from './modules/assistant/providers/mock-knowledge.provider.js';
 import { MockOrchestratorProvider } from './modules/assistant/providers/mock-orchestrator.provider.js';
 import { buildAssistantTools } from './modules/assistant/tools/index.js';
+import { DashboardRepository } from './modules/dashboard/dashboard.repository.js';
 import { DocumentReviewService } from './modules/document-review/document-review.service.js';
 import type { DocumentReaderProvider, DocumentReviewerProvider } from './modules/document-review/document-review.types.js';
 import { MockDocumentReaderProvider } from './modules/document-review/providers/mock-document-reader.provider.js';
@@ -59,6 +60,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
   const procedures = new ProcedureRepository(dataDirectory);
   const applications = new ApplicationRepository(dataDirectory);
   const sessions = new AssistantSessionRepository(dataDirectory);
+  const dashboardRepository = new DashboardRepository(dataDirectory);
   const openAiClient = env.OPENAI_API_KEY.trim()
     ? new HttpOpenAiResponsesClient({
         baseUrl: env.OPENAI_BASE_URL,
@@ -155,6 +157,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
     ),
     identityService: new IdentityService(ocrProvider),
     speechService: new SpeechService(ttsProvider, sttProvider),
+    dashboardRepository,
     uploadMaxMb: env.UPLOAD_MAX_MB,
     providerNames: {
       assistant: orchestratorProvider.name,

@@ -13,6 +13,9 @@ import type { ProcedureService } from '../modules/procedures/procedure.service.j
 import { createSpeechRouter } from '../modules/speech/speech.routes.js';
 import type { SpeechService } from '../modules/speech/speech.service.js';
 
+import type { DashboardRepository } from '../modules/dashboard/dashboard.repository.js';
+import { createDashboardRouter } from '../modules/dashboard/dashboard.routes.js';
+
 export interface ApiDependencies {
   applicationService: ApplicationService;
   assistantService: AssistantService;
@@ -20,6 +23,7 @@ export interface ApiDependencies {
   identityService: IdentityService;
   procedureService: ProcedureService;
   speechService: SpeechService;
+  dashboardRepository: DashboardRepository;
   uploadMaxMb: number;
   providerNames: {
     assistant: string;
@@ -45,5 +49,6 @@ export const createApiRouter = (dependencies: ApiDependencies): Router => {
   router.use('/document-review', createDocumentReviewRouter(dependencies.documentReviewService, dependencies.uploadMaxMb));
   router.use('/identity', createIdentityRouter(dependencies.identityService, dependencies.uploadMaxMb));
   router.use('/speech', createSpeechRouter(dependencies.speechService, dependencies.uploadMaxMb));
+  router.use('/dashboard/applications', createDashboardRouter(dependencies.dashboardRepository));
   return router;
 };
