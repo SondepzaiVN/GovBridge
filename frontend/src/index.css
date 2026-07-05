@@ -12369,22 +12369,9 @@ button.header-nav-link.active {
     font-size: 0.72rem;
 }
 
-.officer-heading-date {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 10px;
-    border: 1px solid #d7dce1;
-    border-radius: 4px;
-    background: #fff;
-    color: #5f6872;
-    font-size: 0.68rem;
-    white-space: nowrap;
-}
-
 .officer-summary {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin-bottom: 14px;
 }
@@ -13134,10 +13121,6 @@ button.header-nav-link.active {
 
     .officer-page-heading h1 {
         font-size: 1.15rem;
-    }
-
-    .officer-heading-date {
-        display: none;
     }
 
     .officer-summary {

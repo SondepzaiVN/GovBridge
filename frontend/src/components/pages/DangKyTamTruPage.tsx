@@ -992,10 +992,6 @@ const DangKyTamTruPage: React.FC = () => {
                     <Bot size={16} />
                     AI điền thử hồ sơ
                 </button>
-                <button type="button" className="btn btn-outline" onClick={runReview}>
-                    <FileText size={16} />
-                    AI rà soát
-                </button>
             </div>
             <input
                 ref={cccdInputRef}
