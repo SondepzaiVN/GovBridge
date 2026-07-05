@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     host: true, // Enable network exposure
     proxy: {
-      '/api': 'http://127.0.0.1:3000',
+      '/api': process.env.VITE_PROXY_TARGET ?? 'http://127.0.0.1:3000',
     },
   },
   resolve: {
