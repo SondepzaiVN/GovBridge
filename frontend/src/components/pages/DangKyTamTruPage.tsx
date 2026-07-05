@@ -1,20 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+    AlertCircle,
     ArrowLeft,
     Bot,
     Camera,
+    CheckCircle2,
     ChevronDown,
     ChevronRight,
     ChevronUp,
     FileDown,
     FileText,
+    Files,
     HelpCircle,
     Home,
+    LoaderCircle,
     Paperclip,
     Plus,
     Save,
     Send,
+    ShieldCheck,
     Trash2,
 } from 'lucide-react';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
@@ -206,6 +211,15 @@ const findOptionByName = (options: FormFieldOption[], includes: string[]) =>
 
 const agencyNameFromWard = (wardLabel: string) => (wardLabel ? `Công an ${wardLabel}` : '');
 type TamTruCccdTarget = 'applicant' | 'householder' | 'member';
+type CccdDialogStep = 'consent' | 'member-count';
+type CccdQueueStatus = 'waiting' | 'processing' | 'success' | 'error';
+
+interface CccdQueueItem {
+    id: string;
+    fileName: string;
+    status: CccdQueueStatus;
+    message: string;
+}
 
 const normalizeGenderFromCccd = (value: string) => {
     const normalized = value
@@ -231,6 +245,7 @@ const DangKyTamTruPage: React.FC = () => {
     const { formState } = useForm();
     const cccdInputRef = useRef<HTMLInputElement>(null);
     const cccdTargetRef = useRef<TamTruCccdTarget>('applicant');
+    const expectedMemberFileCountRef = useRef(1);
     const service = ROUTE_TO_SERVICE_MAP['/dang-ky-tam-tru'] || {
         requiredDocs: [],
         steps: [],
@@ -249,6 +264,11 @@ const DangKyTamTruPage: React.FC = () => {
     const [memberCounter, setMemberCounter] = useState(2);
     const [activeHelp, setActiveHelp] = useState('');
     const [isReadingCccd, setIsReadingCccd] = useState(false);
+    const [cccdDialogStep, setCccdDialogStep] = useState<CccdDialogStep | null>(null);
+    const [pendingCccdTarget, setPendingCccdTarget] = useState<TamTruCccdTarget>('applicant');
+    const [memberUploadCount, setMemberUploadCount] = useState(1);
+    const [memberUploadError, setMemberUploadError] = useState('');
+    const [cccdQueue, setCccdQueue] = useState<CccdQueueItem[]>([]);
 
     const procedureCases = procedureCasesByType[form.procedureTypeCode] || [];
     const showRegistrationMode = form.procedureTypeCode === 'dang-ky-tam-tru';
@@ -515,82 +535,174 @@ const DangKyTamTruPage: React.FC = () => {
         setReview(null);
     };
 
-    const applyCccdToMember = (info: CCCDInfo) => {
-        const citizenId = normalizeCccdNumber(info.id || '');
-        const duplicatedMember = citizenId
-            ? normalizeCccdNumber(form.citizenId) === citizenId ||
-              form.householdMembers.some((member) => normalizeCccdNumber(member.citizenId) === citizenId)
-            : false;
-
-        if (duplicatedMember) {
-            showToast('Trùng thông tin: số CCCD này đã có trong danh sách thành viên.');
-            return false;
-        }
-
-        const cccdMember: Omit<TamTruHouseholdMember, 'id'> = {
-            fullName: info.hoTen || '',
-            dateFormat: 'day-month-year',
-            dateOfBirth: info.ngaySinh || '',
-            gender: normalizeGenderFromCccd(info.gioiTinh),
-            citizenId,
-            relationshipWithHead: '',
-        };
-        const blankMember = form.householdMembers.find(isBlankMember);
-
-        if (blankMember) {
-            updateMember(blankMember.id, cccdMember);
-            return true;
-        }
-
-        setForm((prev) => ({
-            ...prev,
-            householdMembers: [...prev.householdMembers, { id: memberCounter, ...cccdMember }],
-        }));
-        setMemberCounter((prev) => prev + 1);
-        setReview(null);
-        return true;
-    };
-
     const handleSectionCccdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        if (files.length === 0) return;
+
+        const target = cccdTargetRef.current;
+        if (target === 'member' && files.length !== expectedMemberFileCountRef.current) {
+            setMemberUploadError(
+                `Vui lòng chọn đúng ${expectedMemberFileCountRef.current} ảnh CCCD, mỗi người một ảnh.`,
+            );
+            setCccdDialogStep('member-count');
+            return;
+        }
+
+        const queueItems: CccdQueueItem[] = files.map((file, index) => ({
+            id: `${file.name}-${file.lastModified}-${index}`,
+            fileName: file.name,
+            status: 'waiting',
+            message: 'Đang chờ xử lý',
+        }));
+        if (target === 'member') setCccdQueue(queueItems);
+
+        const updateQueueItem = (id: string, status: CccdQueueStatus, message: string) => {
+            setCccdQueue((current) =>
+                current.map((item) => (item.id === id ? { ...item, status, message } : item)),
+            );
+        };
 
         setIsReadingCccd(true);
-        try {
-            const resizedFile = await ocrService.resizeImage(file);
-            const info = await ocrService.extractCCCDInfo(resizedFile);
-            const target = cccdTargetRef.current;
-
-            if (target === 'applicant') {
-                applyCccdToApplicant(info);
-                showToast('Đã điền thông tin người đề nghị từ CCCD.');
-            } else if (target === 'householder') {
-                applyCccdToHouseholder(info);
-                showToast('Đã điền thông tin chủ hộ từ CCCD.');
-            } else {
-                if (applyCccdToMember(info)) {
-                    showToast('Đã thêm thông tin thành viên từ CCCD.');
+        if (target === 'applicant' || target === 'householder') {
+            const file = files[0];
+            try {
+                const resizedFile = await ocrService.resizeImage(file);
+                const info = await ocrService.extractCCCDInfo(resizedFile, { showProcessingNotice: false });
+                if (target === 'applicant') {
+                    applyCccdToApplicant(info);
+                    showToast('Đã điền thông tin người đề nghị từ CCCD.');
+                } else {
+                    applyCccdToHouseholder(info);
+                    showToast('Đã điền thông tin chủ hộ từ CCCD.');
                 }
+            } catch (error) {
+                console.error('Không đọc được CCCD cho mục tạm trú:', error);
+                showToast('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
+            } finally {
+                setIsReadingCccd(false);
             }
-        } catch (error) {
-            console.error('Không đọc được CCCD cho mục tạm trú:', error);
-            showToast('Không đọc được CCCD. Vui lòng thử lại ảnh rõ hơn.');
-        } finally {
-            setIsReadingCccd(false);
-            event.target.value = '';
+            return;
         }
+
+        let nextMembers = form.householdMembers.map((member) => ({ ...member }));
+        let nextMemberCounter = memberCounter;
+        let addedCount = 0;
+
+        for (const [index, file] of files.entries()) {
+            const queueItem = queueItems[index];
+            updateQueueItem(queueItem.id, 'processing', 'VNPT AI đang đọc CCCD...');
+
+            try {
+                const resizedFile = await ocrService.resizeImage(file);
+                const info = await ocrService.extractCCCDInfo(resizedFile, { showProcessingNotice: false });
+                const citizenId = normalizeCccdNumber(info.id || '');
+                const duplicatedMember = Boolean(
+                    citizenId &&
+                        (normalizeCccdNumber(form.citizenId) === citizenId ||
+                            nextMembers.some((member) => normalizeCccdNumber(member.citizenId) === citizenId)),
+                );
+
+                if (duplicatedMember) {
+                    updateQueueItem(queueItem.id, 'error', 'CCCD đã có trong danh sách');
+                    continue;
+                }
+
+                const cccdMember: Omit<TamTruHouseholdMember, 'id'> = {
+                    fullName: info.hoTen || '',
+                    dateFormat: 'day-month-year',
+                    dateOfBirth: info.ngaySinh || '',
+                    gender: normalizeGenderFromCccd(info.gioiTinh),
+                    citizenId,
+                    relationshipWithHead: '',
+                };
+                const blankMemberIndex = nextMembers.findIndex(isBlankMember);
+
+                if (blankMemberIndex >= 0) {
+                    nextMembers[blankMemberIndex] = {
+                        ...nextMembers[blankMemberIndex],
+                        ...cccdMember,
+                    };
+                } else {
+                    nextMembers.push({ id: nextMemberCounter, ...cccdMember });
+                    nextMemberCounter += 1;
+                }
+
+                addedCount += 1;
+                updateQueueItem(
+                    queueItem.id,
+                    'success',
+                    info.hoTen ? `Đã điền: ${info.hoTen}` : 'Đã tự động điền',
+                );
+            } catch (error) {
+                console.error(`Không đọc được CCCD "${file.name}":`, error);
+                updateQueueItem(queueItem.id, 'error', 'Không đọc được ảnh CCCD');
+            }
+        }
+
+        if (addedCount > 0) {
+            setForm((prev) => ({
+                ...prev,
+                householdMembers: nextMembers,
+            }));
+            setMemberCounter(nextMemberCounter);
+            setReview(null);
+            showToast(`Đã tự động điền ${addedCount}/${files.length} thành viên từ CCCD.`);
+        } else {
+            showToast('Chưa có ảnh CCCD nào được xử lý thành công.');
+        }
+
+        setIsReadingCccd(false);
+    };
+
+    const openCccdFilePicker = () => {
+        window.setTimeout(() => cccdInputRef.current?.click(), 0);
     };
 
     const openSectionCccdCamera = (target: TamTruCccdTarget) => {
         cccdTargetRef.current = target;
-        cccdInputRef.current?.click();
+        setPendingCccdTarget(target);
+        setMemberUploadError('');
+        setCccdDialogStep('consent');
+    };
+
+    const acceptCccdConsent = () => {
+        if (pendingCccdTarget === 'member') {
+            setCccdDialogStep('member-count');
+            return;
+        }
+
+        setCccdDialogStep(null);
+        openCccdFilePicker();
+    };
+
+    const confirmMemberUploadCount = () => {
+        const normalizedCount = Math.min(10, Math.max(1, Math.trunc(memberUploadCount || 1)));
+        setMemberUploadCount(normalizedCount);
+        expectedMemberFileCountRef.current = normalizedCount;
+        cccdTargetRef.current = 'member';
+        setMemberUploadError('');
+        setCccdDialogStep(null);
+        openCccdFilePicker();
+    };
+
+    const declineCccdConsent = () => {
+        setCccdDialogStep(null);
+        setMemberUploadError('');
+        if (cccdInputRef.current) {
+            setIsReadingCccd(false);
+            cccdInputRef.current.value = '';
+        }
     };
 
     const renderCccdHeaderAction = (target: TamTruCccdTarget, label: string) => (
         <button
             type="button"
             className="dktt-section-camera-btn"
-            onClick={() => openSectionCccdCamera(target)}
+            onClick={(event) => {
+                event.stopPropagation();
+                openSectionCccdCamera(target);
+            }}
             disabled={isReadingCccd}
             title={label}
             aria-label={label}
@@ -875,7 +987,8 @@ const DangKyTamTruPage: React.FC = () => {
                 ref={cccdInputRef}
                 type="file"
                 accept="image/*"
-                capture="environment"
+                capture={pendingCccdTarget === 'member' ? undefined : 'environment'}
+                multiple={pendingCccdTarget === 'member'}
                 className="dktt-hidden-file-input"
                 onChange={handleSectionCccdUpload}
             />
@@ -1082,6 +1195,43 @@ const DangKyTamTruPage: React.FC = () => {
                             </div>
                             <span className="dktt-badge dktt-badge-soft">Tùy chọn</span>
                         </div>
+                        {cccdQueue.length > 0 && (
+                            <div className="cccd-upload-queue" aria-live="polite">
+                                <div className="cccd-upload-queue-header">
+                                    <div>
+                                        <strong>Hàng đợi CCCD</strong>
+                                        <span>
+                                            {cccdQueue.filter((item) => item.status === 'success').length}/{cccdQueue.length} tệp hoàn tất
+                                        </span>
+                                    </div>
+                                    {!isReadingCccd && (
+                                        <button type="button" onClick={() => setCccdQueue([])} aria-label="Đóng hàng đợi">
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="cccd-upload-queue-list">
+                                    {cccdQueue.map((item, index) => (
+                                        <div key={item.id} className={`cccd-upload-queue-item ${item.status}`}>
+                                            <span className="cccd-upload-queue-icon">
+                                                {item.status === 'processing' && (
+                                                    <LoaderCircle size={16} className="cccd-queue-spinner" />
+                                                )}
+                                                {item.status === 'success' && <CheckCircle2 size={16} />}
+                                                {item.status === 'error' && <AlertCircle size={16} />}
+                                                {item.status === 'waiting' && <Files size={16} />}
+                                            </span>
+                                            <span className="cccd-upload-queue-copy">
+                                                <strong>
+                                                    {index + 1}. {item.fileName}
+                                                </strong>
+                                                <small>{item.message}</small>
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div className="dktt-member-table-wrapper">
                             <table className="dktt-member-table tamtru-member-table">
                                 <thead>
@@ -1607,6 +1757,88 @@ const DangKyTamTruPage: React.FC = () => {
                     </div>
                 </aside>
             </div>
+
+            {cccdDialogStep && (
+                <div
+                    className="cccd-consent-backdrop"
+                    onKeyDown={(event) => {
+                        if (event.key === 'Escape') declineCccdConsent();
+                    }}
+                >
+                    <section
+                        className="cccd-consent-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="cccd-consent-title"
+                    >
+                        {cccdDialogStep === 'consent' ? (
+                            <>
+                                <div className="cccd-consent-icon">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <h2 id="cccd-consent-title">Đồng ý xử lý dữ liệu?</h2>
+                                <p>
+                                    Ảnh CCCD sẽ được gửi đến <strong>OpenAI</strong> và <strong>VNPT AI</strong> để xử
+                                    lý, tự động điền thông tin. Đây là bản demo; bản chính thức sẽ dùng VNPT LLM
+                                    Agentic để bảo vệ dữ liệu hoàn toàn. Bạn có đồng ý không?
+                                </p>
+                                <div className="cccd-consent-actions">
+                                    <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                                        Từ chối
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="cccd-consent-accept"
+                                        onClick={acceptCccdConsent}
+                                        autoFocus
+                                    >
+                                        Đồng ý
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="cccd-consent-icon">
+                                    <Files size={24} />
+                                </div>
+                                <h2 id="cccd-consent-title">Thêm thành viên bằng CCCD</h2>
+                                <p>Chọn số người muốn thêm. Hệ thống sẽ yêu cầu đúng một ảnh CCCD cho mỗi người.</p>
+                                <label className="cccd-member-count-field">
+                                    <span>Số người muốn thêm</span>
+                                    <select
+                                        value={memberUploadCount}
+                                        onChange={(event) => {
+                                            setMemberUploadCount(Number(event.target.value));
+                                            setMemberUploadError('');
+                                        }}
+                                        autoFocus
+                                    >
+                                        {Array.from({ length: 10 }, (_, index) => index + 1).map((count) => (
+                                            <option key={count} value={count}>
+                                                {count} người
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                {memberUploadError && (
+                                    <div className="cccd-member-count-error" role="alert">
+                                        <AlertCircle size={15} />
+                                        {memberUploadError}
+                                    </div>
+                                )}
+                                <div className="cccd-consent-actions">
+                                    <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                                        Hủy
+                                    </button>
+                                    <button type="button" className="cccd-consent-accept" onClick={confirmMemberUploadCount}>
+                                        Chọn {Math.min(10, Math.max(1, Math.trunc(memberUploadCount || 1)))} ảnh
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </section>
+                </div>
+            )}
 
             {toast && (
                 <div className="dktt-toast" role="alert">
