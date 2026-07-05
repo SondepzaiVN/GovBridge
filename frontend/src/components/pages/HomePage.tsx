@@ -3,14 +3,18 @@ import { NavLink } from 'react-router-dom';
 import { Search, ChevronRight, ArrowRight } from 'lucide-react';
 import { PUBLIC_SERVICES } from '../../data/services';
 
-const FEATURED_SERVICE_ORDER = ['ho-khau', 'dang-ky-tam-tru', 'xac-nhan-cu-tru', 'khai-sinh', 'cccd', 'ket-hon'];
+const FEATURED_SERVICE_ORDER = ['ho-khau', 'dang-ky-tam-tru', 'xac-nhan-cu-tru', 'lien-thong-khai-sinh'];
 
 const getFeaturedRank = (service: (typeof PUBLIC_SERVICES)[number]) => {
+    if (['khai-sinh', 'cccd', 'ket-hon'].includes(service.id)) {
+        return 999;
+    }
+
     const rankById = FEATURED_SERVICE_ORDER.indexOf(service.id);
     if (rankById !== -1) return rankById;
 
     const rankByRoute = FEATURED_SERVICE_ORDER.findIndex((key) => service.route.includes(key));
-    return rankByRoute === -1 ? FEATURED_SERVICE_ORDER.length : rankByRoute;
+    return rankByRoute === -1 ? 99 : rankByRoute;
 };
 
 const HomePage: React.FC = () => {

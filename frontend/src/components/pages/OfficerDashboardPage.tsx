@@ -3,7 +3,9 @@ import {
     AlertTriangle,
     Check,
     CheckCircle2,
+    ChevronDown,
     ChevronRight,
+    ChevronUp,
     CircleEllipsis,
     Clock3,
     FileCheck2,
@@ -75,6 +77,8 @@ const OfficerDashboardPage: React.FC = () => {
         ?? filteredApplications[0]
         ?? applications[0];
     const officerNote = selectedApplication?.officerNote ?? '';
+    const officerNoteFlag = selectedApplication?.officerNoteFlag ?? '';
+    const [isNoteExpanded, setIsNoteExpanded] = useState(true);
 
     useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
@@ -313,13 +317,24 @@ const OfficerDashboardPage: React.FC = () => {
 
                         <div className="officer-detail-scroll">
                             <section className="officer-detail-section" style={{ backgroundColor: '#f0f9ff', borderColor: '#bae6fd', borderWidth: '1px', borderStyle: 'solid', borderRadius: '8px', padding: '16px', marginBottom: '16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                                    <span style={{ backgroundColor: '#0ea5e9', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>AI đánh giá</span>
-                                    <h3 style={{ margin: 0, color: '#0369a1', fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><FileText size={17} /> Lưu ý hồ sơ</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ backgroundColor: officerNoteFlag === 'red' ? '#ef4444' : officerNoteFlag === 'green' ? '#22c55e' : '#0ea5e9', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>AI đánh giá</span>
+                                        <h3 style={{ margin: 0, color: '#0369a1', fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}><FileText size={17} /> Lưu ý hồ sơ</h3>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsNoteExpanded(!isNoteExpanded)}
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0284c7', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                        title={isNoteExpanded ? 'Thu gọn' : 'Mở rộng'}
+                                    >
+                                        {isNoteExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                    </button>
                                 </div>
-                                <div style={{ fontSize: '14px', color: '#334155', lineHeight: '1.5', whiteSpace: 'pre-wrap', backgroundColor: 'white', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
-                                    {officerNote || <span style={{ fontStyle: 'italic', color: '#64748b' }}>Chưa có đánh giá AI cho hồ sơ này.</span>}
-                                </div>
+                                {isNoteExpanded && (
+                                    <div style={{ fontSize: '14px', color: '#334155', lineHeight: '1.5', whiteSpace: 'pre-wrap', backgroundColor: 'white', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                                        {officerNote || <span style={{ fontStyle: 'italic', color: '#64748b' }}>Chưa có đánh giá AI cho hồ sơ này.</span>}
+                                    </div>
+                                )}
                             </section>
 
                             <section className="officer-detail-section">

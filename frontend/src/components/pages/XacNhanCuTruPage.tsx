@@ -581,6 +581,13 @@ const XacNhanCuTruPage: React.FC = () => {
             ? [{ name: uploadedFile.name, state: 'Đã có' }]
             : [{ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' }];
 
+        let aggregatedOfficerNote = '';
+        let finalFlag = '';
+        if (attachmentReview?.text) {
+            aggregatedOfficerNote = `[${uploadedFile?.name || 'Tệp đính kèm'}]: ${attachmentReview.text}`;
+            finalFlag = attachmentReview.flag || '';
+        }
+
         saveApplicationToDashboard({
             procedure: 'Xác nhận thông tin về cư trú',
             applicant: values.fullName || values.xctt_hoTen || '',
@@ -597,6 +604,8 @@ const XacNhanCuTruPage: React.FC = () => {
                 'Cơ quan tiếp nhận': values.residenceAgency || '',
                 'Trường hợp': values.caseType || '',
             },
+            officerNote: aggregatedOfficerNote.trim(),
+            officerNoteFlag: finalFlag,
             attachments,
         });
 
