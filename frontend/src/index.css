@@ -13520,6 +13520,7 @@ ul.officer-attachment-list li.officer-attachment-item {
 }
 
 .xctt-doc-table {
+    width: 100%;
     min-width: 1220px;
 }
 
