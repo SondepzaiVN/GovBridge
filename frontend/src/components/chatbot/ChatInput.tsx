@@ -247,52 +247,52 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 </div>
             </div>
 
-            {showCccdConsent && createPortal(
-                <div
-                    className="cccd-consent-backdrop"
-                    onKeyDown={(event) => {
-                        if (event.key === 'Escape') setShowCccdConsent(false);
-                    }}
-                >
-                    <section
-                        className="cccd-consent-dialog"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label="Đồng ý xử lý dữ liệu"
+            {showCccdConsent &&
+                createPortal(
+                    <div
+                        className="cccd-consent-backdrop"
+                        onKeyDown={(event) => {
+                            if (event.key === 'Escape') setShowCccdConsent(false);
+                        }}
                     >
-                        <div className="cccd-consent-icon">
-                            <ShieldCheck size={24} />
-                        </div>
-                        <h2>Đồng ý xử lý dữ liệu?</h2>
-                        <p>
-                            Ảnh CCCD sẽ được gửi đến <strong>OpenAI</strong> và <strong>VNPT AI</strong> để xử lý,
-                            tự động điền thông tin. Đây là bản demo; bản chính thức sẽ dùng VNPT LLM Agentic để
-                            bảo vệ dữ liệu hoàn toàn. Bạn có đồng ý không?
-                        </p>
-                        <div className="cccd-consent-actions">
-                            <button
-                                type="button"
-                                className="cccd-consent-decline"
-                                onClick={() => setShowCccdConsent(false)}
-                            >
-                                Từ chối
-                            </button>
-                            <button
-                                type="button"
-                                className="cccd-consent-accept"
-                                onClick={() => {
-                                    setShowCccdConsent(false);
-                                    setShowCameraMenu(true);
-                                }}
-                                autoFocus
-                            >
-                                Đồng ý
-                            </button>
-                        </div>
-                    </section>
-                </div>,
-                document.body,
-            )}
+                        <section
+                            className="cccd-consent-dialog"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Đồng ý xử lý dữ liệu"
+                        >
+                            <div className="cccd-consent-icon">
+                                <ShieldCheck size={24} />
+                            </div>
+                            <h2>Đồng ý xử lý dữ liệu?</h2>
+                            <p>
+                                Ảnh CCCD sẽ được gửi đến<strong>VNPT AI</strong> để xử lý, tự động điền thông tin. Bạn
+                                có đồng ý không?
+                            </p>
+                            <div className="cccd-consent-actions">
+                                <button
+                                    type="button"
+                                    className="cccd-consent-decline"
+                                    onClick={() => setShowCccdConsent(false)}
+                                >
+                                    Từ chối
+                                </button>
+                                <button
+                                    type="button"
+                                    className="cccd-consent-accept"
+                                    onClick={() => {
+                                        setShowCccdConsent(false);
+                                        setShowCameraMenu(true);
+                                    }}
+                                    autoFocus
+                                >
+                                    Đồng ý
+                                </button>
+                            </div>
+                        </section>
+                    </div>,
+                    document.body,
+                )}
         </div>
     );
 };
