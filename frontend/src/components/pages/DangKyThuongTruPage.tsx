@@ -70,7 +70,7 @@ const COLLAPSED_UPLOAD_CASE = '__collapsed__';
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 const SPECIALIZED_DATA_TEMP_DISABLED = true;
 type ThuongTruCccdTarget = 'applicant' | 'familyMember';
-type CccdDialogStep = 'consent' | 'family-count';
+type CccdDialogStep = 'consent' | 'family-count' | 'source';
 type CccdQueueStatus = 'waiting' | 'processing' | 'success' | 'error';
 
 interface CccdQueueItem {
@@ -335,6 +335,7 @@ const DangKyThuongTruPage: React.FC = () => {
   const autoHouseholderDocumentRef = useRef('');
   const previousAutoRequestContentRef = useRef('');
   const cccdInputRef = useRef<HTMLInputElement>(null);
+  const cccdCameraInputRef = useRef<HTMLInputElement>(null);
   const cccdTargetRef = useRef<ThuongTruCccdTarget>('applicant');
   const expectedFamilyFileCountRef = useRef(1);
   const [isReadingCccd, setIsReadingCccd] = useState(false);
@@ -1032,8 +1033,14 @@ const DangKyThuongTruPage: React.FC = () => {
     setIsReadingCccd(false);
   };
 
-  const openCccdFilePicker = () => {
-    window.setTimeout(() => cccdInputRef.current?.click(), 0);
+  const openCccdFilePicker = (source: 'file' | 'camera') => {
+    window.setTimeout(() => {
+      if (source === 'camera') {
+        cccdCameraInputRef.current?.click();
+        return;
+      }
+      cccdInputRef.current?.click();
+    }, 0);
   };
 
   const openSectionCccdCamera = (target: ThuongTruCccdTarget) => {
@@ -1050,7 +1057,7 @@ const DangKyThuongTruPage: React.FC = () => {
     }
 
     setCccdDialogStep(null);
-    openCccdFilePicker();
+    setCccdDialogStep('source');
   };
 
   const confirmFamilyUploadCount = () => {
@@ -1059,8 +1066,12 @@ const DangKyThuongTruPage: React.FC = () => {
     expectedFamilyFileCountRef.current = normalizedCount;
     cccdTargetRef.current = 'familyMember';
     setFamilyUploadError('');
+    setCccdDialogStep('source');
+  };
+
+  const chooseCccdSource = (source: 'file' | 'camera') => {
     setCccdDialogStep(null);
-    openCccdFilePicker();
+    openCccdFilePicker(source);
   };
 
   const declineCccdConsent = () => {
@@ -1069,6 +1080,9 @@ const DangKyThuongTruPage: React.FC = () => {
     if (cccdInputRef.current) {
       setIsReadingCccd(false);
       cccdInputRef.current.value = '';
+    }
+    if (cccdCameraInputRef.current) {
+      cccdCameraInputRef.current.value = '';
     }
   };
 
@@ -2360,7 +2374,15 @@ const DangKyThuongTruPage: React.FC = () => {
             ref={cccdInputRef}
             type="file"
             accept="image/*"
-            capture={pendingCccdTarget === 'applicant' ? 'environment' : undefined}
+            multiple={pendingCccdTarget === 'familyMember'}
+            className="dktt-hidden-file-input"
+            onChange={handleSectionCccdUpload}
+          />
+          <input
+            ref={cccdCameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
             multiple={pendingCccdTarget === 'familyMember'}
             className="dktt-hidden-file-input"
             onChange={handleSectionCccdUpload}
@@ -2508,9 +2530,8 @@ const DangKyThuongTruPage: React.FC = () => {
                 </div>
                 <h2 id="cccd-consent-title">Đồng ý xử lý dữ liệu?</h2>
                 <p>
-                  Ảnh CCCD sẽ được gửi đến <strong>OpenAI</strong> và <strong>VNPT AI</strong> để xử lý,
-                  tự động điền thông tin. Đây là bản demo; bản chính thức sẽ dùng VNPT LLM Agentic để
-                  bảo vệ dữ liệu hoàn toàn. Bạn có đồng ý không?
+                  Ảnh CCCD sẽ được gửi đến <strong>VNPT AI</strong> để xử lý, tự động điền thông tin. Bạn
+                  có đồng ý không?
                 </p>
                 <div className="cccd-consent-actions">
                   <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
@@ -2521,7 +2542,7 @@ const DangKyThuongTruPage: React.FC = () => {
                   </button>
                 </div>
               </>
-            ) : (
+            ) : cccdDialogStep === 'family-count' ? (
               <>
                 <div className="cccd-consent-icon">
                   <Files size={24} />
@@ -2557,6 +2578,27 @@ const DangKyThuongTruPage: React.FC = () => {
                   </button>
                   <button type="button" className="cccd-consent-accept" onClick={confirmFamilyUploadCount}>
                     Chọn {Math.min(10, Math.max(1, Math.trunc(familyUploadCount || 1)))} ảnh
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="cccd-consent-icon">
+                  <Camera size={24} />
+                </div>
+                <h2 id="cccd-consent-title">Chọn nguồn ảnh CCCD</h2>
+                <p>Chọn ảnh CCCD đã có trên máy hoặc chụp trực tiếp bằng camera.</p>
+                <div className="cccd-source-options">
+                  <button type="button" className="cccd-source-option" onClick={() => chooseCccdSource('file')} autoFocus>
+                    Tải ảnh từ máy
+                  </button>
+                  <button type="button" className="cccd-source-option" onClick={() => chooseCccdSource('camera')}>
+                    Chụp bằng camera
+                  </button>
+                </div>
+                <div className="cccd-consent-actions">
+                  <button type="button" className="cccd-consent-decline" onClick={declineCccdConsent}>
+                    Hủy
                   </button>
                 </div>
               </>

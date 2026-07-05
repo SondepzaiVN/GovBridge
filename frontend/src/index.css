@@ -4545,6 +4545,37 @@ button.header-nav-link.active {
     color: var(--text-primary);
 }
 
+.cccd-source-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cccd-source-option {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #c9d6ea;
+    border-radius: 10px;
+    background: #f8fbff;
+    color: var(--primary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: left;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.cccd-source-option:hover {
+    background: #eef5ff;
+    border-color: rgba(26, 86, 160, 0.42);
+    transform: translateY(-1px);
+}
+
 .cccd-consent-actions {
     display: flex;
     justify-content: flex-end;
