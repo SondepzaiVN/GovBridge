@@ -170,13 +170,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
   app.use(requestId);
   app.use(helmet());
   app.use(cors({
-    origin(origin, callback) {
-      if (!origin || corsOrigins.includes('*') || corsOrigins.includes(origin)) {
-        callback(null, true);
-        return;
-      }
-      callback(new AppError(403, 'CORS_ORIGIN_DENIED', 'Origin không được phép truy cập API.'));
-    },
+    origin: true,
     credentials: true,
   }));
   app.use(express.json({ limit: env.JSON_BODY_LIMIT }));
