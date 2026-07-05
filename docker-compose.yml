@@ -20,5 +20,6 @@ services:
         restart: unless-stopped
         environment:
             - NODE_ENV=development
+            - VITE_PROXY_TARGET=http://backend:3000
         volumes:
             - /app/node_modules
