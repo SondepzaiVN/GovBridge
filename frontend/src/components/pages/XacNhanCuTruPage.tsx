@@ -7,11 +7,14 @@ import {
     CheckCircle2,
     ChevronRight,
     ChevronDown,
+    Download,
+    FileDown,
     FileText,
     Files,
     Home,
     LoaderCircle,
     Paperclip,
+    Plus,
     Save,
     Send,
     ShieldCheck,
@@ -324,6 +327,130 @@ const initialValues: Record<string, string> = {
     resultMethod: 'Nhận qua cổng thông tin',
 };
 
+const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
+
+const escapeDeclarationHtml = (value: string) =>
+    value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+const getDeclarationText = (values: Record<string, string>, fieldId: string, fallback = '') =>
+    (values[fieldId] || fallback).trim();
+
+const joinDeclarationParts = (parts: string[], separator = ', ') =>
+    parts.map((part) => part.trim()).filter(Boolean).join(separator);
+
+const formatDeclarationDate = (value: string) => {
+    if (!value) return '';
+    const [year, month, day] = value.split('-');
+    if (!year || !month || !day) return value;
+    return `${day}/${month}/${year}`;
+};
+
+const buildXcttDeclarationHtml = (values: Record<string, string>, members: FamilyMember[]) => {
+    const today = new Date();
+    const residenceAddress = joinDeclarationParts([
+        getDeclarationText(values, 'address'),
+        getDeclarationText(values, 'requestWard'),
+        getDeclarationText(values, 'requestProvince'),
+    ]);
+    const filteredMembers = members.filter((member) => !isBlankMember(member));
+    const memberRows: Array<FamilyMember | null> = [
+        ...filteredMembers,
+        ...Array.from({ length: Math.max(5, 8 - filteredMembers.length) }, () => null),
+    ];
+    const memberRowsHtml = memberRows
+        .map((member, index) => {
+            return `<tr>
+                <td>${member ? index + 1 : ''}</td>
+                <td>${escapeDeclarationHtml(member?.hoTen || '')}</td>
+                <td>${escapeDeclarationHtml(member ? formatDeclarationDate(member.ngaySinh) : '')}</td>
+                <td>${escapeDeclarationHtml(member?.gioiTinh || '')}</td>
+                <td>${escapeDeclarationHtml(member?.cccd || '')}</td>
+                <td>${escapeDeclarationHtml(member?.quanHe || '')}</td>
+            </tr>`;
+        })
+        .join('');
+
+    return `<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Tờ khai thay đổi thông tin cư trú (CT01)</title>
+  <style>
+    @page { size: A4; margin: 16mm; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #eef1f5; color: #000; font-family: "Times New Roman", Times, serif; font-size: 13px; line-height: 1.28; }
+    .sheet { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 17mm 19mm 14mm; background: #fff; }
+    .meta { text-align: right; font-size: 12px; margin-bottom: 12px; }
+    .national { text-align: center; font-weight: 700; line-height: 1.35; margin-bottom: 18px; }
+    .national .underline { display: inline-block; border-bottom: 1px solid #000; padding: 0 20px 2px; }
+    h1 { margin: 0 0 12px; text-align: center; font-size: 18px; line-height: 1.3; text-transform: uppercase; }
+    p { margin: 4px 0; }
+    .recipient { margin: 0 0 10px; }
+    .line { margin: 5px 0; }
+    .box { display: inline-block; min-width: 132px; padding: 2px 8px; border: 1px solid #333; text-align: center; vertical-align: middle; }
+    .content { margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+    th, td { border: 1px solid #222; padding: 4px 5px; text-align: center; vertical-align: middle; }
+    th { font-weight: 700; }
+    td:nth-child(2) { text-align: left; }
+    tr { height: 24px; }
+    .signatures { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 28px; text-align: center; font-size: 11px; }
+    .signature-date { margin-bottom: 3px; }
+    .signature-title { font-weight: 700; text-transform: uppercase; }
+    .signature-note { font-size: 10px; }
+    .signature-name { margin-top: 42px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <div class="meta">Mẫu CT01 ban hành kèm theo Thông tư số 116/2026/TT-BCA<br />ngày 29 tháng 6 năm 2026 của Bộ trưởng Bộ Công an</div>
+    <div class="national">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br /><span class="underline">Độc lập - Tự do - Hạnh phúc</span></div>
+    <h1>TỜ KHAI THAY ĐỔI THÔNG TIN CƯ TRÚ</h1>
+    <p class="recipient">Kính gửi(1): ${escapeDeclarationHtml(getDeclarationText(values, 'residenceAgency', 'Cơ quan đăng ký cư trú nơi tiếp nhận hồ sơ'))}</p>
+    <p class="line">1. Họ, chữ đệm và tên khai sinh: ${escapeDeclarationHtml(getDeclarationText(values, 'fullName'))}</p>
+    <p class="line">2. Ngày, tháng, năm sinh: ${escapeDeclarationHtml(formatDeclarationDate(getDeclarationText(values, 'birthDate')))} &nbsp;&nbsp;&nbsp; 3. Giới tính: ${escapeDeclarationHtml(getDeclarationText(values, 'gender'))}</p>
+    <p class="line">4. Số định danh cá nhân: <span class="box">${escapeDeclarationHtml(getDeclarationText(values, 'citizenId'))}</span></p>
+    <p class="line">5. Số điện thoại liên hệ: ${escapeDeclarationHtml(getDeclarationText(values, 'phone'))} &nbsp;&nbsp;&nbsp; 6. Email: ${escapeDeclarationHtml(getDeclarationText(values, 'email'))}</p>
+    <p class="line">7. Họ, chữ đệm và tên chủ hộ: ${escapeDeclarationHtml(getDeclarationText(values, 'householderName'))} &nbsp;&nbsp;&nbsp; 8. Mối quan hệ với chủ hộ: ${escapeDeclarationHtml(getDeclarationText(values, 'relationWithHouseholder'))}</p>
+    <p class="line">9. Số định danh cá nhân của chủ hộ: <span class="box">${escapeDeclarationHtml(getDeclarationText(values, 'householderId'))}</span></p>
+    <p class="line content">10. Nội dung đề nghị(3): ${escapeDeclarationHtml(getDeclarationText(values, 'requestContent') || `Đề nghị xác nhận thông tin cư trú tại ${residenceAddress}.`)}</p>
+    <p class="line">....................................................................................................................................................</p>
+    <p class="line">11. Những thành viên trong hộ gia đình cùng thay đổi:</p>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 34px;">TT</th>
+          <th>Họ, chữ đệm<br />và tên</th>
+          <th style="width: 92px;">Ngày, tháng,<br />năm sinh</th>
+          <th style="width: 54px;">Giới<br />tính</th>
+          <th style="width: 116px;">Số định danh<br />cá nhân</th>
+          <th style="width: 96px;">Mối quan hệ<br />với chủ hộ</th>
+        </tr>
+      </thead>
+      <tbody>${memberRowsHtml}</tbody>
+    </table>
+    <section class="signatures">
+      ${['Ý KIẾN CỦA CHỦ HỘ(4)', 'Ý KIẾN CỦA CHỦ SỞ HỮU CHỖ Ở HỢP PHÁP(5)', 'Ý KIẾN CỦA CHA HOẶC MẸ HOẶC NGƯỜI GIÁM HỘ(6)', 'NGƯỜI KÊ KHAI(7)']
+        .map(
+            (title) => `<div>
+              <div class="signature-date">Cần Thơ, ngày ${String(today.getDate()).padStart(2, '0')} tháng ${String(today.getMonth() + 1).padStart(2, '0')} năm ${today.getFullYear()}</div>
+              <div class="signature-title">${title}</div>
+              <div class="signature-note">Tôi đồng ý cho cá nhân trên nộp hồ sơ đăng ký thay đổi thông tin cư trú</div>
+              <div class="signature-name">${title === 'NGƯỜI KÊ KHAI(7)' ? escapeDeclarationHtml(getDeclarationText(values, 'fullName')) : ''}</div>
+            </div>`,
+        )
+        .join('')}
+    </section>
+  </main>
+</body>
+</html>`;
+};
+
 const XacNhanCuTruPage: React.FC = () => {
     const navigate = useNavigate();
     const { formState } = useForm();
@@ -348,6 +475,16 @@ const XacNhanCuTruPage: React.FC = () => {
     const [members, setMembers] = React.useState<FamilyMember[]>([createMember(1)]);
     const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
     const [attachmentReview, setAttachmentReview] = React.useState<DocumentReviewUiState | undefined>();
+    const [attachmentKind, setAttachmentKind] = React.useState('Bản gốc');
+    const [attachmentQuantity, setAttachmentQuantity] = React.useState('1');
+    const [attachmentNote, setAttachmentNote] = React.useState('');
+    const [isGeneratingDeclaration, setIsGeneratingDeclaration] = React.useState(false);
+    const [declarationPreview, setDeclarationPreview] = React.useState<{
+        title: string;
+        url: string;
+        downloadName: string;
+    } | null>(null);
+    const declarationPreviewUrlRef = React.useRef<string | null>(null);
     const [pledged, setPledged] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
     const [draftSaved, setDraftSaved] = React.useState(false);
@@ -386,6 +523,15 @@ const XacNhanCuTruPage: React.FC = () => {
             }));
         }
     }, [formState.touched, formState.values, values]);
+
+    React.useEffect(
+        () => () => {
+            if (declarationPreviewUrlRef.current) {
+                URL.revokeObjectURL(declarationPreviewUrlRef.current);
+            }
+        },
+        [],
+    );
 
     const agencyFields = React.useMemo(
         () =>
@@ -458,6 +604,32 @@ const XacNhanCuTruPage: React.FC = () => {
             documentType: 'ct01',
             onStatusChange: setAttachmentReview,
         });
+    };
+
+    const closeDeclarationPreview = () => {
+        if (declarationPreviewUrlRef.current) {
+            URL.revokeObjectURL(declarationPreviewUrlRef.current);
+            declarationPreviewUrlRef.current = null;
+        }
+        setDeclarationPreview(null);
+    };
+
+    const handleGenerateDeclaration = () => {
+        setIsGeneratingDeclaration(true);
+        window.setTimeout(() => {
+            if (declarationPreviewUrlRef.current) {
+                URL.revokeObjectURL(declarationPreviewUrlRef.current);
+            }
+            const html = buildXcttDeclarationHtml(values, members);
+            const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+            declarationPreviewUrlRef.current = url;
+            setDeclarationPreview({
+                title: 'Tờ khai thay đổi thông tin cư trú (CT01)',
+                url,
+                downloadName: 'to-khai-thay-doi-thong-tin-cu-tru-ct01.doc',
+            });
+            setIsGeneratingDeclaration(false);
+        }, 1300);
     };
 
     const toggleSection = (sectionId: string) => {
@@ -879,24 +1051,131 @@ const XacNhanCuTruPage: React.FC = () => {
                     Vui lòng chọn trường hợp và đính kèm các tập tin hình ảnh về các loại giấy tờ sau để giúp cơ quan
                     chức năng xác minh và giải quyết hồ sơ của ông/bà
                 </p>
-                <div className="xctt-attachment-row">
-                    <FileText size={20} />
-                    <span>Giấy tờ, tài liệu chứng minh thông tin cư trú cần xác nhận</span>
-                    <label className="xctt-upload-btn">
-                        <Paperclip size={18} />
-                        Chọn tệp tin
-                        <input
-                            type="file"
-                            accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
-                            onChange={(event) => handleAttachmentFileChange(event.target.files?.[0])}
-                        />
-                    </label>
-                    {uploadedFile && (
-                        <strong className="attachment-review-inline">
-                            <span>{uploadedFile.name}</span>
-                            <AttachmentReviewBadge review={attachmentReview} />
-                        </strong>
-                    )}
+                <div className="dktt-doc-table-wrapper xctt-doc-table-wrapper">
+                    <table className="dktt-doc-table xctt-doc-table">
+                        <thead>
+                            <tr>
+                                <th className="dktt-doc-col-stt">STT</th>
+                                <th className="dktt-doc-col-pick" aria-label="Chọn hồ sơ"></th>
+                                <th>Tên giấy tờ</th>
+                                <th className="dktt-doc-col-kind">Loại giấy tờ</th>
+                                <th className="dktt-doc-col-template">Tải file mẫu</th>
+                                <th className="dktt-doc-col-template">Tạo tờ khai tự động</th>
+                                <th className="dktt-doc-col-specialized">Khai thác CSDL chuyên ngành / Biểu mẫu điện tử</th>
+                                <th className="dktt-doc-col-attach">Đính kèm</th>
+                                <th className="dktt-doc-col-quantity">Số lượng</th>
+                                <th className="dktt-doc-col-note">Ghi chú</th>
+                                <th className="dktt-doc-col-action">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="dktt-doc-cell-stt dktt-doc-cell-center">1</td>
+                                <td className="dktt-doc-cell-pick dktt-doc-cell-center">
+                                    <input className="dktt-doc-checkbox" type="checkbox" checked readOnly />
+                                </td>
+                                <td>
+                                    <div className="dktt-doc-name">
+                                        <strong>Tờ khai thay đổi thông tin cư trú (CT01)</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <select
+                                        className="dktt-table-select dktt-doc-select"
+                                        value={attachmentKind}
+                                        onChange={(event) => setAttachmentKind(event.target.value)}
+                                    >
+                                        <option value="Bản gốc">Bản gốc</option>
+                                        <option value="Bản sao">Bản sao</option>
+                                        <option value="Bản chụp">Bản chụp</option>
+                                    </select>
+                                </td>
+                                <td className="dktt-doc-cell-center">
+                                    <a
+                                        className="dktt-doc-icon-btn"
+                                        href={CT01_TEMPLATE_URL}
+                                        download
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="Tải file mẫu"
+                                        aria-label="Tải file mẫu"
+                                    >
+                                        <FileDown size={14} />
+                                    </a>
+                                </td>
+                                <td className="dktt-doc-cell-center">
+                                    <button
+                                        type="button"
+                                        className="dktt-doc-icon-btn xctt-generate-doc-btn"
+                                        onClick={handleGenerateDeclaration}
+                                        disabled={isGeneratingDeclaration}
+                                        title="Tạo tờ khai tự động"
+                                        aria-label="Tạo tờ khai tự động"
+                                    >
+                                        {isGeneratingDeclaration ? (
+                                            <LoaderCircle size={14} className="xctt-spin" />
+                                        ) : (
+                                            <FileText size={14} />
+                                        )}
+                                    </button>
+                                </td>
+                                <td>
+                                    <span className="dktt-table-placeholder">Không áp dụng</span>
+                                </td>
+                                <td>
+                                    <label className="dktt-doc-attach">
+                                        <input
+                                            type="file"
+                                            accept="image/png,image/jpeg,image/heic,image/heif,.heic,.heif,application/pdf"
+                                            onChange={(event) => handleAttachmentFileChange(event.target.files?.[0])}
+                                        />
+                                        <Paperclip size={14} />
+                                        <span>{uploadedFile ? '1 file' : 'Chọn file'}</span>
+                                    </label>
+                                    {uploadedFile && (
+                                        <div className="dktt-doc-file-list">
+                                            <span className="attachment-review-inline">
+                                                <span>{uploadedFile.name}</span>
+                                                <AttachmentReviewBadge review={attachmentReview} />
+                                            </span>
+                                        </div>
+                                    )}
+                                </td>
+                                <td>
+                                    <input
+                                        className="dktt-table-input dktt-doc-qty-input"
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={attachmentQuantity}
+                                        onChange={(event) =>
+                                            setAttachmentQuantity(event.target.value.replace(/\D/g, '').slice(0, 2))
+                                        }
+                                        placeholder="1"
+                                    />
+                                </td>
+                                <td>
+                                    <input
+                                        className="dktt-table-input dktt-doc-note-input"
+                                        type="text"
+                                        value={attachmentNote}
+                                        onChange={(event) => setAttachmentNote(event.target.value)}
+                                        placeholder="Ghi chú"
+                                    />
+                                </td>
+                                <td className="dktt-doc-cell-center">
+                                    <button
+                                        type="button"
+                                        className="dktt-doc-icon-btn"
+                                        title="Thêm hồ sơ"
+                                        aria-label="Thêm hồ sơ"
+                                        onClick={() => showOcrNotice('Mục hồ sơ này hiện chỉ cần một tờ khai CT01.')}
+                                    >
+                                        <Plus size={15} />
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </XcttSection>
 
@@ -1097,6 +1376,40 @@ const XacNhanCuTruPage: React.FC = () => {
                     role="alert"
                 >
                     {ocrNotice}
+                </div>
+            )}
+
+            {declarationPreview && (
+                <div className="xctt-declaration-backdrop" role="dialog" aria-modal="true" aria-labelledby="xctt-declaration-title">
+                    <section className="xctt-declaration-modal">
+                        <header className="xctt-declaration-header">
+                            <h2 id="xctt-declaration-title">{declarationPreview.title}</h2>
+                            <button
+                                type="button"
+                                className="xctt-declaration-close"
+                                aria-label="Đóng"
+                                onClick={closeDeclarationPreview}
+                            >
+                                <X size={20} />
+                            </button>
+                        </header>
+                        <div className="xctt-declaration-preview">
+                            <iframe title={declarationPreview.title} src={declarationPreview.url} />
+                        </div>
+                        <footer className="xctt-declaration-actions">
+                            <button type="button" className="xctt-btn ghost" onClick={closeDeclarationPreview}>
+                                Đóng
+                            </button>
+                            <a
+                                className="xctt-btn primary"
+                                href={declarationPreview.url}
+                                download={declarationPreview.downloadName}
+                            >
+                                <Download size={18} />
+                                Tải xuống
+                            </a>
+                        </footer>
+                    </section>
                 </div>
             )}
 

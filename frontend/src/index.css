@@ -13514,6 +13514,147 @@ ul.officer-attachment-list li.officer-attachment-item {
     color: #525b64;
 }
 
+.xctt-doc-table-wrapper {
+    margin-top: 12px;
+    overflow-x: auto;
+}
+
+.xctt-doc-table {
+    width: 100%;
+    min-width: 1220px;
+}
+
+.xctt-doc-table .dktt-doc-name strong {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+}
+
+.xctt-generate-doc-btn:disabled {
+    opacity: 0.68;
+    cursor: wait;
+}
+
+.xctt-spin {
+    animation: xctt-spin 0.85s linear infinite;
+}
+
+@keyframes xctt-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.xctt-declaration-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.46);
+}
+
+.xctt-declaration-modal {
+    width: min(960px, 100%);
+    max-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.36);
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.26);
+}
+
+.xctt-declaration-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.xctt-declaration-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.xctt-declaration-close {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.xctt-declaration-close:hover {
+    background: #f1f5f9;
+    color: var(--text-primary);
+}
+
+.xctt-declaration-preview {
+    flex: 1;
+    min-height: 0;
+    padding: 0 24px;
+    background: #f1f3f6;
+}
+
+.xctt-declaration-preview iframe {
+    width: 100%;
+    height: min(72vh, 720px);
+    border: 1px solid #d5dbe4;
+    background: #fff;
+}
+
+.xctt-declaration-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 18px 22px;
+    border-top: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.xctt-declaration-actions .xctt-btn {
+    width: auto;
+    min-width: 92px;
+    text-decoration: none;
+}
+
+@media (max-width: 720px) {
+    .xctt-declaration-backdrop {
+        padding: 12px;
+    }
+
+    .xctt-declaration-preview {
+        padding: 0 12px;
+    }
+
+    .xctt-declaration-preview iframe {
+        height: 68vh;
+    }
+
+    .xctt-declaration-actions {
+        flex-direction: column-reverse;
+    }
+
+    .xctt-declaration-actions .xctt-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
 /* Citizen application dashboard reuses the officer read-only workspace. */
 .citizen-workspace.list-only {
     grid-template-columns: minmax(0, 1fr);
