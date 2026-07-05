@@ -7,6 +7,7 @@ import { Camera, ChevronRight, Home } from "lucide-react";
 import { applicationService } from "../../api/applicationService";
 import { ApiClientError } from "../../api/client";
 import { ocrService } from "../../api/aiServices";
+import { MissingRequiredFieldsModal } from "../common/MissingRequiredFieldsModal";
 
 // ============================================================
 // Reusable form field renderer
@@ -223,6 +224,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
   } = useForm();
   const [submittedId, setSubmittedId] = React.useState("");
   const [submitError, setSubmitError] = React.useState("");
+  const [showMissingRequiredModal, setShowMissingRequiredModal] = React.useState(false);
   const [ocrNotice, setOcrNotice] = React.useState("");
   const [isReadingCccd, setIsReadingCccd] = React.useState(false);
   const cccdInputRef = React.useRef<HTMLInputElement>(null);
@@ -328,6 +330,7 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
     e.preventDefault();
     setSubmitError("");
     setSubmittedId("");
+    setShowMissingRequiredModal(false);
 
     const errors = validateForm(formState.values, service.fields);
     service.fields.forEach((field) => {
@@ -337,7 +340,10 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
         errors.find((error) => error.field === field.id)?.message || "",
       );
     });
-    if (errors.length > 0) return;
+    if (errors.length > 0) {
+      setShowMissingRequiredModal(true);
+      return;
+    }
 
     try {
       setIsSubmitting(true);
@@ -638,6 +644,9 @@ export const ServicePageLayout: React.FC<ServicePageProps> = ({
         >
           {ocrNotice}
         </div>
+      )}
+      {showMissingRequiredModal && (
+        <MissingRequiredFieldsModal onClose={() => setShowMissingRequiredModal(false)} />
       )}
     </div>
   );
