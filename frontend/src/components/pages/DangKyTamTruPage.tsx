@@ -271,11 +271,22 @@ const DangKyTamTruPage: React.FC = () => {
             }
         });
 
-        if (Object.keys(ocrFields).length > 0) {
+        if (Object.keys(ocrFields).length === 0) return;
+
+        const syncTimer = window.setTimeout(() => {
             setForm((prev) => ({ ...prev, ...ocrFields }));
             setReview(null);
-        }
-    }, [form, formState.touched, formState.values]);
+        }, 0);
+
+        return () => window.clearTimeout(syncTimer);
+    }, [
+        form.citizenId,
+        form.dateOfBirth,
+        form.fullName,
+        form.gender,
+        formState.touched,
+        formState.values,
+    ]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -618,6 +629,19 @@ const DangKyTamTruPage: React.FC = () => {
 
         const attachments = await Promise.all(allFilesToUpload.map((file) => saveAttachmentFile(file)));
 
+        let aggregatedOfficerNote = '';
+        let finalFlag = '';
+        Object.values(form.attachmentDrafts).forEach((draft) => {
+            if (draft.checked && draft.documentReview?.text) {
+                aggregatedOfficerNote += `[${draft.fileName}]: ${draft.documentReview.text}\n\n`;
+                if (draft.documentReview.flag === 'red') {
+                    finalFlag = 'red';
+                } else if (!finalFlag && draft.documentReview.flag) {
+                    finalFlag = draft.documentReview.flag;
+                }
+            }
+        });
+
         saveApplicationToDashboard({
             procedure: 'Đăng ký tạm trú',
             applicant: form.fullName || '',
@@ -637,6 +661,8 @@ const DangKyTamTruPage: React.FC = () => {
                 'Trường hợp': form.procedureCaseCode || '',
                 'Cơ quan thực hiện': form.receiveOrgAddress || '',
             },
+            officerNote: aggregatedOfficerNote.trim(),
+            officerNoteFlag: finalFlag,
             attachments,
         });
 
