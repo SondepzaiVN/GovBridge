@@ -4451,6 +4451,252 @@ button.header-nav-link.active {
     display: none;
 }
 
+.cccd-consent-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-modal) + 40);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.46);
+    backdrop-filter: blur(3px);
+    animation: modal-backdrop-fadeIn 0.2s ease-out;
+}
+
+.cccd-consent-dialog {
+    width: min(430px, 100%);
+    padding: 24px;
+    border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border));
+    border-radius: 14px;
+    background: var(--white);
+    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24);
+    animation: modal-popup-smooth 0.24s ease-out;
+}
+
+.cccd-consent-icon {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 10%, white);
+}
+
+.cccd-consent-dialog h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.08rem;
+}
+
+.cccd-consent-dialog > p {
+    margin: 9px 0 0;
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    line-height: 1.62;
+}
+
+.cccd-consent-dialog > p strong {
+    color: var(--text-primary);
+}
+
+.cccd-consent-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cccd-consent-actions button {
+    min-width: 94px;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cccd-consent-decline {
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    background: var(--white);
+}
+
+.cccd-consent-decline:hover {
+    color: var(--text-primary);
+    background: var(--surface-muted);
+}
+
+.cccd-consent-accept {
+    border: 1px solid var(--primary);
+    color: var(--white);
+    background: var(--primary);
+}
+
+.cccd-consent-accept:hover {
+    background: var(--primary-dark);
+}
+
+.cccd-member-count-field {
+    display: grid;
+    gap: 7px;
+    margin-top: 18px;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.cccd-member-count-field select {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 11px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    background: var(--white);
+    font: inherit;
+}
+
+.cccd-member-count-field select:focus {
+    outline: 2px solid color-mix(in srgb, var(--primary) 24%, transparent);
+    border-color: var(--primary);
+}
+
+.cccd-member-count-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 9px 10px;
+    border-radius: 7px;
+    color: var(--danger);
+    background: var(--danger-subtle);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.cccd-member-count-error svg {
+    flex: 0 0 auto;
+    margin-top: 1px;
+}
+
+.cccd-upload-queue {
+    margin: 12px 0;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+    border-radius: 9px;
+    background: var(--white);
+}
+
+.cccd-upload-queue-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: color-mix(in srgb, var(--primary) 5%, white);
+}
+
+.cccd-upload-queue-header > div {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.cccd-upload-queue-header strong {
+    color: var(--text-primary);
+    font-size: 0.8rem;
+}
+
+.cccd-upload-queue-header span {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
+.cccd-upload-queue-header button {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 50%;
+    color: var(--text-secondary);
+    background: transparent;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.cccd-upload-queue-header button:hover {
+    background: var(--surface-muted);
+}
+
+.cccd-upload-queue-list {
+    display: grid;
+}
+
+.cccd-upload-queue-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    padding: 9px 12px;
+    border-top: 1px solid var(--border);
+}
+
+.cccd-upload-queue-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--text-muted);
+}
+
+.cccd-upload-queue-item.processing .cccd-upload-queue-icon {
+    color: var(--primary);
+}
+
+.cccd-upload-queue-item.success .cccd-upload-queue-icon {
+    color: var(--success);
+}
+
+.cccd-upload-queue-item.error .cccd-upload-queue-icon {
+    color: var(--danger);
+}
+
+.cccd-queue-spinner {
+    animation: spin 0.8s linear infinite;
+}
+
+.cccd-upload-queue-copy {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.cccd-upload-queue-copy strong,
+.cccd-upload-queue-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cccd-upload-queue-copy strong {
+    color: var(--text-primary);
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.cccd-upload-queue-copy small {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+}
+
+.cccd-upload-queue-item.error .cccd-upload-queue-copy small {
+    color: var(--danger);
+}
+
 .service-ocr-actions {
     display: grid;
     gap: 10px;
