@@ -30,7 +30,7 @@ import { useAuth } from '../../contexts/useAuth';
 import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
 import {
     DASHBOARD_STORAGE_KEY,
-    loadDashboardApplications,
+    fetchDashboardApplications,
 } from '../../utils/applicationDashboardData';
 import {
     filterOfficerApplications,
@@ -52,7 +52,7 @@ const statusClassName = (status: ApplicationStatus) => {
 
 const OfficerDashboardPage: React.FC = () => {
     const { user } = useAuth();
-    const [applications, setApplications] = useState<Application[]>(loadDashboardApplications);
+    const [applications, setApplications] = useState<Application[]>([]);
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [statusFilter, setStatusFilter] = useState<OfficerApplicationFilters['status']>('Tất cả');
     const [returnReason, setReturnReason] = useState('');
@@ -80,14 +80,31 @@ const OfficerDashboardPage: React.FC = () => {
     const officerNoteFlag = selectedApplication?.officerNoteFlag ?? '';
     const [isNoteExpanded, setIsNoteExpanded] = useState(true);
 
+    const loadApplications = async () => {
+        const data = await fetchDashboardApplications();
+        setApplications(data);
+    };
+
     useEffect(() => {
+        loadApplications();
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === DASHBOARD_STORAGE_KEY) {
-                setApplications(loadDashboardApplications());
+                loadApplications();
             }
         };
+        const handleDashboardUpdate = () => {
+            loadApplications();
+        };
         window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        window.addEventListener('dashboard-updated', handleDashboardUpdate);
+        
+        // Also poll every 30 seconds for new apps
+        const interval = setInterval(loadApplications, 30000);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('dashboard-updated', handleDashboardUpdate);
+            clearInterval(interval);
+        };
     }, []);
 
 
@@ -200,7 +217,7 @@ const OfficerDashboardPage: React.FC = () => {
         setConfirmAction('reject');
     };
 
-    const completeAction = () => {
+    const completeAction = async () => {
         if (!confirmAction) return;
         if (!selectedApplication) return;
 
@@ -219,29 +236,40 @@ const OfficerDashboardPage: React.FC = () => {
             confirmAction === 'process' ? 'Đang xử lí' :
             confirmAction === 'approve' ? 'Đã phê duyệt' : 'Đã từ chối';
             
-        setApplications((current) => {
-            const newApps = current.map((application) => {
-                if (application.id === selectedApplication.id) {
-                    const updates: Partial<Application> = { 
-                        status: nextStatus,
-                        statusLabel: nextStatus
-                    };
-                    if (confirmAction === 'reject') {
-                        updates.returnReason = returnReason || 'Điền thiếu';
-                        updates.responseMessage = message || 'Điền thiếu';
-                    }
-                    return { ...application, ...updates };
-                }
-                return application;
-            });
-            localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify(newApps));
-            return newApps;
-        });
+        const updates: Partial<Application> = { 
+            status: nextStatus,
+            statusLabel: nextStatus
+        };
+        if (confirmAction === 'reject') {
+            updates.returnReason = returnReason || 'Điền thiếu';
+            updates.responseMessage = message || 'Điền thiếu';
+        }
 
-        if (confirmAction === 'accept') setToast(`Đã tiếp nhận hồ sơ ${selectedApplication.id}.`);
-        else if (confirmAction === 'process') setToast(`Đã bắt đầu xử lý hồ sơ ${selectedApplication.id}.`);
-        else if (confirmAction === 'approve') setToast(`Đã phê duyệt hồ sơ ${selectedApplication.id}.`);
-        else setToast(`Đã từ chối hồ sơ ${selectedApplication.id}.`);
+        try {
+            const response = await fetch(`/api/v1/dashboard/applications/${selectedApplication.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates),
+            });
+            if (!response.ok) throw new Error('Failed to update status on backend');
+
+            setApplications((current) => {
+                return current.map((application) => {
+                    if (application.id === selectedApplication.id) {
+                        return { ...application, ...updates };
+                    }
+                    return application;
+                });
+            });
+
+            if (confirmAction === 'accept') setToast(`Đã tiếp nhận hồ sơ ${selectedApplication.id}.`);
+            else if (confirmAction === 'process') setToast(`Đã bắt đầu xử lý hồ sơ ${selectedApplication.id}.`);
+            else if (confirmAction === 'approve') setToast(`Đã phê duyệt hồ sơ ${selectedApplication.id}.`);
+            else setToast(`Đã từ chối hồ sơ ${selectedApplication.id}.`);
+        } catch (e) {
+            console.error(e);
+            setToast(`Lỗi: Không thể cập nhật trạng thái hồ sơ ${selectedApplication.id}.`);
+        }
 
         setConfirmAction(null);
         setReturnReason('');

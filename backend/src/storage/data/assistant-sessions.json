@@ -2,7 +2,609 @@
   "schemaVersion": 1,
   "sessions": [
     {
-      "id": "fc9e65c9-8387-41df-bb30-8775c6f1cfb2",
+      "id": "a192673e-6029-4839-9bb4-1fba90776faf",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_5b12dbca-7d53-44da-9ad7-b498a473653e",
+          "sessionId": "knowledge_709aa9f9-86f7-4d12-957a-d2a9fb5e9ee7"
+        }
+      },
+      "createdAt": "2026-07-05T07:53:19.758Z",
+      "updatedAt": "2026-07-05T07:54:10.318Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hả",
+          "createdAt": "2026-07-05T07:53:19.758Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Tôi có thể giúp gì cho bạn hôm nay?",
+          "createdAt": "2026-07-05T07:53:19.758Z"
+        },
+        {
+          "role": "user",
+          "content": "giúp tôi với",
+          "createdAt": "2026-07-05T07:54:10.318Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Tôi có thể giúp bạn hiểu về các thuật ngữ liên quan đến thủ tục hành chính như cư trú, khai sinh, hoặc các mẫu hồ sơ. Bạn cần tìm hiểu về thuật ngữ nào cụ thể? Hoặc bạn đang cần hỗ trợ cho thủ tục nào?",
+          "createdAt": "2026-07-05T07:54:10.318Z"
+        }
+      ]
+    },
+    {
+      "id": "ffbcb42a-6f4f-488f-a498-fb4bff406338",
+      "currentRoute": "/xac-nhan-cu-tru",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_32a12f6e-541e-45eb-bf45-8110194c8e29",
+          "sessionId": "knowledge_fd5b785d-2d3c-4527-8243-e6e6b162fb0c"
+        }
+      },
+      "createdAt": "2026-07-05T05:56:25.865Z",
+      "updatedAt": "2026-07-05T06:00:33.624Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi và em tôi đang chuẩn bị hồ sơ đi du học nước ngoài bên đó yêu cầu bổ sung giấy tờ liên quan đến thông tin nơi ở nơi cư trú gì đó với chúng tôi vậy chúng tôi cần phải làm thủ tục gì ạ",
+          "createdAt": "2026-07-05T05:56:25.865Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để bổ sung giấy tờ liên quan đến thông tin cư trú, bạn có thể cần thực hiện thủ tục \"Xác nhận cư trú\". Thủ tục này giúp bạn nộp hồ sơ xác nhận thông tin về cư trú theo giao diện dịch vụ công quản lý cư trú.\n\nNếu bạn muốn, tôi có thể hướng dẫn bạn sang trang thủ tục này để thực hiện tiếp. Bạn có muốn chuyển đến trang này không?\n\nMình tìm thấy trang **Hồ sơ xác nhận về thông tin cư trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-05T05:56:25.865Z"
+        },
+        {
+          "role": "user",
+          "content": "Các trường hợp cấp cho nhân khẩu trên địa bàn quản lý và cấp cho nhập khẩu khác địa bàn quản lý khác nhau như thế nào",
+          "createdAt": "2026-07-05T05:57:32.066Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, về việc cấp giấy tờ cho nhân khẩu trên địa bàn quản lý và cho nhập khẩu ở địa bàn khác, có một số điểm khác nhau như sau:\n\n1. **Cấp cho nhân khẩu trên địa bàn quản lý:** \n   - Thủ tục này thường được thực hiện tại cơ quan Công an cấp xã nơi người đó thường trú. Hệ thống có thể tự động nhận diện và không cần chọn thủ công.\n\n2. **Cấp cho nhập khẩu khác địa bàn quản lý:** \n   - Trong trường hợp này, bạn cần chủ động chọn cơ quan Công an cấp xã phù hợp với địa chỉ nơi đang sinh sống hoặc nơi muốn đăng ký thường trú. Hồ sơ sẽ được chuyển đến cơ quan tại địa bàn mới để giải quyết.\n\nNếu bạn cần thêm thông tin chi tiết hoặc cần hỗ trợ về thủ tục cụ thể, vui lòng cho biết thêm về tình huống của bạn!",
+          "createdAt": "2026-07-05T05:57:32.066Z"
+        },
+        {
+          "role": "user",
+          "content": "Giấy tờ tài liệu chứng minh thông tin ghi trú cần xác nhận là gì",
+          "createdAt": "2026-07-05T06:00:33.624Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để xác nhận thông tin ghi trú, bạn cần chuẩn bị:\n\n- **Tờ khai thay đổi thông tin cư trú** theo **Mẫu CT01**. \n  - Số lượng: 01 bản chính.\n  - Lưu ý: Mẫu CT01 cần phải là bản mới nhất, theo quy định tại Thông tư số 56/2021/TT-BCA (đã sửa đổi, bổ sung bởi Thông tư số 53/2025/TT-BCA có hiệu lực từ ngày 01/7/2025). \n\nNgoài Tờ khai này, thủ tục không yêu cầu nộp thêm giấy tờ chứng minh khác. Bạn có thể nộp hồ sơ trực tiếp tại Công an cấp xã hoặc nộp trực tuyến qua Cổng Dịch vụ công quốc gia, Cổng Dịch vụ công Bộ Công an hoặc ứng dụng VNeID.",
+          "createdAt": "2026-07-05T06:00:33.624Z"
+        }
+      ]
+    },
+    {
+      "id": "d145ab4c-99c7-45d5-ac15-d871e9a2ed38",
+      "currentRoute": "/xac-nhan-cu-tru",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_554ed159-d470-44ca-8d8a-1bfa8e81ebbc",
+          "sessionId": "knowledge_a047c4bf-505f-461a-b446-153a09d1d73e"
+        }
+      },
+      "createdAt": "2026-07-05T05:37:05.343Z",
+      "updatedAt": "2026-07-05T05:51:16.811Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi với em tôi đang chuẩn bị hồ sơ đi du học nước ngoài bên đó yêu cầu bổ sung giấy tờ liên quan đến nơi ở nơi cư trú gì đó của chúng tôi vậy chúng tôi cần làm thủ tục gì ạ",
+          "createdAt": "2026-07-05T05:37:05.343Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để bổ sung giấy tờ liên quan đến nơi ở, nơi cư trú, bạn có thể cần thực hiện thủ tục \"Xác nhận cư trú\". Thủ tục này sẽ giúp bạn nộp hồ sơ xác nhận thông tin về cư trú theo yêu cầu của cơ quan quản lý.\n\nNếu bạn muốn thực hiện thủ tục này, tôi sẽ hướng dẫn bạn đến trang phù hợp để thực hiện các bước tiếp theo.\n\nMình tìm thấy trang **Hồ sơ xác nhận về thông tin cư trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-05T05:37:05.343Z"
+        },
+        {
+          "role": "user",
+          "content": "Các trường hợp cấp cho nhân khẩu trên địa bàn quản lý và cấp cho nhập khẩu khác địa bàn quản lý khác nhau như thế nào",
+          "createdAt": "2026-07-05T05:38:11.344Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, về việc cấp giấy tờ liên quan đến cư trú cho nhân khẩu trên địa bàn quản lý và nhập khẩu từ địa bàn khác, có một số điểm khác biệt như sau:\n\n1. **Cơ quan thực hiện:** \n   - **Nhân khẩu trên địa bàn quản lý:** Thường sẽ nộp hồ sơ tại Ủy ban nhân dân (UBND) cấp xã nơi cư trú.\n   - **Nhập khẩu khác địa bàn:** Cần nộp hồ sơ tại UBND cấp xã mà bạn đang cư trú, nhưng chú ý chọn đúng cơ quan để tránh bị từ chối.\n\n2. **Thẩm quyền giải quyết:** \n   - Các hồ sơ sẽ được chuyển đến đúng cơ quan có thẩm quyền dựa trên thông tin cư trú của bạn.\n\n3. **Trường hợp đặc biệt:** Nếu có yếu tố nước ngoài, thẩm quyền có thể thuộc UBND cấp huyện.\n\nTóm lại, bạn cần xác định đúng nơi cư trú để nộp hồ sơ cho phù hợp.",
+          "createdAt": "2026-07-05T05:38:11.344Z"
+        },
+        {
+          "role": "user",
+          "content": "Giấy tờ tài liệu chứng minh thông tin cư trú cần xác nhận là gì",
+          "createdAt": "2026-07-05T05:40:58.055Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để thực hiện thủ tục xác nhận thông tin cư trú, bạn cần chuẩn bị:\n\n- **Tờ khai thay đổi thông tin cư trú (Mẫu CT01):**\n  - Số lượng: 01 bản chính.\n  - Lưu ý: Mẫu tờ khai này được ban hành kèm theo Thông tư số 56/2021/TT-BCA và đã được sửa đổi, bổ sung bởi Thông tư số 53/2025/TT-BCA.\n\n**Lưu ý quan trọng:** Không yêu cầu nộp các giấy tờ chứng minh khác (như sổ hộ khẩu, CCCD, giấy tờ nhà ở...) trong thành phần hồ sơ bắt buộc. Chỉ cần điền đầy đủ thông tin vào Tờ khai Mẫu CT01 là đủ.",
+          "createdAt": "2026-07-05T05:40:58.055Z"
+        },
+        {
+          "role": "user",
+          "content": "Hồ sơ của tôi còn thiếu gì không",
+          "createdAt": "2026-07-05T05:42:31.557Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hiện tại, hồ sơ xác nhận thông tin cư trú của bạn cần có Tờ khai thay đổi thông tin cư trú (Mẫu CT01). Nếu bạn đã chuẩn bị mẫu này đầy đủ và chính xác, thì hồ sơ của bạn có thể đã đủ. Tuy nhiên, nếu bạn có thêm thông tin nào khác mà bạn muốn cung cấp hoặc cần xác nhận, hãy cho tôi biết!",
+          "createdAt": "2026-07-05T05:42:31.557Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi vừa nộp hồ sơ không được kiểm tra xem hồ sơ của tôi còn thiếu thông tin gì không",
+          "createdAt": "2026-07-05T05:43:13.535Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hiện tại, tôi không thể kiểm tra hồ sơ của bạn để xác nhận xem có thiếu thông tin gì hay không. Bạn nên liên hệ trực tiếp với cơ quan tiếp nhận hồ sơ hoặc kiểm tra trên hệ thống dịch vụ công để biết thêm thông tin chi tiết về tình trạng hồ sơ của mình.",
+          "createdAt": "2026-07-05T05:43:13.535Z"
+        },
+        {
+          "role": "user",
+          "content": "Hồ sơ của tôi còn thiếu gì không",
+          "createdAt": "2026-07-05T05:49:00.514Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hồ sơ của bạn cần có Tờ khai thay đổi thông tin cư trú (Mẫu CT01). Nếu bạn đã nộp hồ sơ và nhận được Phiếu hướng dẫn bổ sung (Mẫu CT05), bạn sẽ thấy các thông tin còn thiếu hoặc sai sót cần bổ sung trên đó. Nếu bạn nộp trực tuyến, hãy kiểm tra xem tất cả các trường bắt buộc đã được điền đầy đủ chưa. Nếu có thông tin cụ thể nào bạn muốn hỏi, hãy cho tôi biết!",
+          "createdAt": "2026-07-05T05:49:00.514Z"
+        },
+        {
+          "role": "user",
+          "content": "Các phần thông tin chưa điền trong hồ sơ",
+          "createdAt": "2026-07-05T05:49:51.881Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hiện tại, tôi không thể xác định các phần thông tin chưa điền trong hồ sơ của bạn. Bạn nên kiểm tra lại hồ sơ của mình hoặc liên hệ với cơ quan tiếp nhận để biết rõ các thông tin còn thiếu. Nếu bạn có câu hỏi cụ thể về thủ tục, tôi có thể giúp bạn!",
+          "createdAt": "2026-07-05T05:49:51.881Z"
+        },
+        {
+          "role": "user",
+          "content": "Hồ sơ của tôi còn thiếu gì không",
+          "createdAt": "2026-07-05T05:51:16.811Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi không thể xác định được hồ sơ của bạn hiện còn thiếu thông tin gì. Bạn hãy kiểm tra lại tài liệu đã nộp hoặc liên hệ với cơ quan tiếp nhận để được hướng dẫn cụ thể về các phần còn thiếu.",
+          "createdAt": "2026-07-05T05:51:16.811Z"
+        }
+      ]
+    },
+    {
+      "id": "e4fb564a-9eab-4109-afcf-53be95ada74c",
+      "currentRoute": "/xac-nhan-cu-tru",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_cb85fc1d-8e47-43dc-9fbc-9cc2f3256db1",
+          "sessionId": "knowledge_271619b5-f158-4ffb-b4b8-400369c34863"
+        }
+      },
+      "createdAt": "2026-07-05T05:15:06.573Z",
+      "updatedAt": "2026-07-05T05:28:22.842Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi hỏi cấp cho nhân khẩu trên địa bàn quản lý và cấp cho nhập khẩu khác địa bàn quản lý khác nhau như nào",
+          "createdAt": "2026-07-05T05:15:06.573Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Cấp cho nhân khẩu trên địa bàn quản lý và cấp cho nhập khẩu khác địa bàn quản lý có sự khác biệt về quy trình và các yêu cầu hồ sơ. Cụ thể:\n\n1. **Cấp cho nhân khẩu trên địa bàn quản lý**: Đây là thủ tục cấp giấy tờ cho những người đã đăng ký thường trú tại địa phương đó. Quy trình này thường đơn giản hơn và chỉ cần các giấy tờ xác nhận tình trạng cư trú.\n\n2. **Cấp cho nhập khẩu khác địa bàn quản lý**: Đối với thủ tục này, người dân cần phải thực hiện thêm một số bước, chẳng hạn như xin phép chuyển khẩu hoặc làm các thủ tục liên quan đến việc thay đổi địa chỉ cư trú, có thể bao gồm cả việc thông báo cho cơ quan nơi cư trú mới.\n\nNếu bạn cần thêm thông tin chi tiết về quy trình hoặc hồ sơ cần thiết cho từng loại thủ tục, hãy cho tôi biết!",
+          "createdAt": "2026-07-05T05:15:06.573Z"
+        },
+        {
+          "role": "user",
+          "content": "Giấy tờ tài liệu chứng minh thông tin di trú cần xác nhận là gì",
+          "createdAt": "2026-07-05T05:22:41.245Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để xác nhận thông tin về cư trú, bạn cần chuẩn bị giấy tờ sau:\n\n1. **Tờ khai thay đổi thông tin cư trú (Mẫu CT01)**: \n   - Bạn điền đầy đủ thông tin theo mẫu quy định.\n   - Số lượng: 01 bản chính.\n   - Lưu ý: Sử dụng mẫu CT01 mới nhất theo quy định.\n\n**Lưu ý quan trọng:** Thủ tục này **không yêu cầu** nộp thêm giấy tờ chứng minh khác như sao chép CCCD hay hộ khẩu. Nếu bạn nộp hồ sơ trực tuyến, hãy kê khai thông tin trên biểu mẫu điện tử tại Cổng Dịch vụ công quốc gia hoặc Cổng Dịch vụ công Bộ Công an.",
+          "createdAt": "2026-07-05T05:22:41.245Z"
+        },
+        {
+          "role": "user",
+          "content": "Đến trang ABC",
+          "createdAt": "2026-07-05T05:28:22.842Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hiện tại bạn đang ở trang xác nhận cư trú. Nếu bạn muốn chuyển sang trang khác, hãy cho tôi biết cụ thể tên trang hoặc thủ tục bạn muốn thực hiện để tôi có thể hỗ trợ tốt hơn!",
+          "createdAt": "2026-07-05T05:28:22.842Z"
+        }
+      ]
+    },
+    {
+      "id": "2e88cf38-fe1e-4e89-a79b-d8ece1716e04",
+      "currentRoute": "/xac-nhan-cu-tru",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_5c34b047-d154-4167-8b3c-91bfac501888",
+          "sessionId": "knowledge_23b2e6c6-8d66-4e9e-bdd1-2158a92c0957"
+        }
+      },
+      "createdAt": "2026-07-05T05:13:16.094Z",
+      "updatedAt": "2026-07-05T05:13:16.094Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi hỏi cấp cho nhân khẩu trên địa bàn quản lý và cấp cho nhân khẩu các địa bàn quản lý khác nhau như nào",
+          "createdAt": "2026-07-05T05:13:16.094Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đang hỏi về quy trình cấp nhân khẩu cho các địa bàn khác nhau. Có hai thủ tục chính liên quan đến việc cấp nhân khẩu, đó là Đăng ký thường trú và Đăng ký tạm trú. \n\n1. **Đăng ký thường trú**: Đây là thủ tục dành cho công dân Việt Nam đăng ký thường trú tại nơi cư trú. Thực hiện tại Công an xã/phường/thị trấn nơi đăng ký.\n\n2. **Đăng ký tạm trú**: Đây là thủ tục dành cho công dân Việt Nam đăng ký tạm trú tại nơi ở tạm thời. Thủ tục này cũng hỗ trợ tự động điền form và rà soát hồ sơ.\n\nNếu bạn muốn biết chi tiết về quy trình, giấy tờ cần thiết hoặc cách nộp hồ sơ cho từng thủ tục, tôi có thể giúp bạn với thông tin đó. Bạn muốn tìm hiểu về thủ tục nào cụ thể hơn không?",
+          "createdAt": "2026-07-05T05:13:16.094Z"
+        }
+      ]
+    },
+    {
+      "id": "7939d6a8-7bcb-4fbb-9cf3-676204b1c86d",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi"
+        },
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_ce8d21ae-db36-4caf-844b-09ff1e193c1f",
+          "sessionId": "knowledge_c18912e3-992c-40b1-a0a7-3f5d7cf2af00"
+        }
+      },
+      "createdAt": "2026-07-05T04:41:38.802Z",
+      "updatedAt": "2026-07-05T04:42:10.814Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Đưa tôi đến trên đăng ký thường trú",
+          "createdAt": "2026-07-05T04:41:38.802Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn muốn thực hiện thủ tục Đăng ký thường trú. Đây là thủ tục đăng ký thường trú cho công dân Việt Nam tại Công an xã/phường/thị trấn nơi đăng ký. Tôi sẽ dẫn bạn đến trang này để tiếp tục.\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-05T04:41:38.802Z"
+        },
+        {
+          "role": "user",
+          "content": "Đăng ký thường trú nhân khẩu là gì",
+          "createdAt": "2026-07-05T04:42:10.814Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Đăng ký thường trú nhân khẩu là thủ tục mà công dân thực hiện để đăng ký nơi sinh sống ổn định và lâu dài với cơ quan đăng ký cư trú (Công an cấp xã). Khi hoàn tất, thông tin cư trú của bạn sẽ được cập nhật vào Cơ sở dữ liệu cư trú và Cơ sở dữ liệu quốc gia về dân cư.\n\nĐiều này có nghĩa là bạn có thể thay đổi hoặc xác lập nơi thường trú cho một hoặc nhiều cá nhân (nhân khẩu) cụ thể, không giống như việc đăng ký cả hộ cùng lúc. Thông tin thường trú sẽ được quản lý bằng dữ liệu điện tử thay vì sổ hộ khẩu giấy truyền thống.",
+          "createdAt": "2026-07-05T04:42:10.814Z"
+        }
+      ]
+    },
+    {
+      "id": "c3430e88-95a2-46ba-b1da-5ff678cce94d",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_a61c4e58-17e1-4ef1-a847-9696a4510515",
+          "sessionId": "knowledge_ffdf9b15-9d9e-4f83-a475-e1b8a55ceeff"
+        }
+      },
+      "createdAt": "2026-07-05T04:40:42.300Z",
+      "updatedAt": "2026-07-05T04:41:07.562Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Alo",
+          "createdAt": "2026-07-05T04:40:42.300Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Có gì mình có thể giúp bạn hôm nay?",
+          "createdAt": "2026-07-05T04:40:42.300Z"
+        },
+        {
+          "role": "user",
+          "content": "Bạn là ai",
+          "createdAt": "2026-07-05T04:41:07.562Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, tôi là một trợ lý trí tuệ nhân tạo, có thể hỗ trợ bạn với các thông tin và hướng dẫn liên quan đến thủ tục hành chính. Bạn cần tôi giúp gì cụ thể không?",
+          "createdAt": "2026-07-05T04:41:07.562Z"
+        }
+      ]
+    },
+    {
+      "id": "51d0a5e6-9833-44f5-a64b-d3ab77b8c6ff",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_8aa3b0a2-f647-4752-837e-78f695d9249e",
+          "sessionId": "knowledge_24f786cb-472e-4b1c-a992-e3c01b3996c4"
+        }
+      },
+      "createdAt": "2026-07-05T04:41:02.324Z",
+      "updatedAt": "2026-07-05T04:41:02.324Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi muốn tìm hiểu thông tin về thủ tục đăng ký khai sinh",
+          "createdAt": "2026-07-05T04:41:02.324Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Thủ tục bạn muốn tìm hiểu là \"Đăng ký Khai Sinh\", được thực hiện để đăng ký khai sinh cho trẻ em mới sinh tại UBND xã/phường nơi cư trú. Bạn cần biết thông tin cụ thể nào về thủ tục này?\n\nBạn cần biết điều kiện, hồ sơ, quy trình, hay thông tin gì khác?",
+          "createdAt": "2026-07-05T04:41:02.324Z"
+        }
+      ]
+    },
+    {
+      "id": "3820d00d-ebf2-4a2a-9e4a-cd7c82610a64",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_a83e936a-60db-4eab-8239-2efcae8d68fa",
+          "sessionId": "knowledge_445332e4-fb54-4796-b73b-9812c28dfda6"
+        }
+      },
+      "createdAt": "2026-07-05T04:37:52.726Z",
+      "updatedAt": "2026-07-05T04:38:26.290Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi",
+          "createdAt": "2026-07-05T04:37:52.726Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Xin chào! Bạn cần hỗ trợ gì hôm nay?",
+          "createdAt": "2026-07-05T04:37:52.726Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi đến trang đăng ký thường trú",
+          "createdAt": "2026-07-05T04:38:26.290Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Dưới đây là thông tin về thủ tục **Đăng ký thường trú**:\n\n1. **Cơ quan giải quyết:** Công an cấp xã.\n2. **Hồ sơ cần chuẩn bị:**\n   - Tờ khai thay đổi thông tin cư trú Mẫu CT01.\n   - Giấy tờ chứng minh chỗ ở hợp pháp (như giấy chứng nhận quyền sử dụng đất, hợp đồng mua bán, hay văn bản đồng ý của chủ sở hữu).\n3. **Cách thức thực hiện:** Bạn có thể nộp hồ sơ:\n   - Trực tuyến qua Cổng Dịch vụ công quốc gia hoặc ứng dụng VNeID.\n   - Trực tiếp tại Công an cấp xã nơi cư trú.\n4. **Thời hạn giải quyết:** 07 ngày làm việc từ khi nhận hồ sơ hợp lệ.\n5. **Lệ phí:**\n   - Trực tuyến: 10.000 đồng/lần.\n   - Trực tiếp: 20.000 đồng/lần.\n\nNếu bạn cần thêm thông tin chi tiết về hồ sơ hoặc cách thức thực hiện, hãy cho tôi biết!",
+          "createdAt": "2026-07-05T04:38:26.290Z"
+        }
+      ]
+    },
+    {
+      "id": "324ce8bb-3eb7-4a8a-aa5b-20932cd8ee7f",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "tinhThanhCQ": "92",
+          "xaPhuongCQ": "31135",
+          "coQuanDKCT": "ca_phuong",
+          "sdtCoQuan": "0292 3894 939",
+          "thuTuc": "dktt",
+          "truongHop": "lan_dau",
+          "loaiDKTT": "vao_ho_co",
+          "hoTen": "Trần Minh Hùng",
+          "gioiTinh": "Nam",
+          "danToc": "kinh",
+          "cccd": "093206008464",
+          "tinhThanhDN": "92",
+          "xaPhuongDN": "31135",
+          "noiDungDN": "Đăng ký thường trú tại Phường Ninh Kiều, Thành phố Cần Thơ"
+        },
+        "candidateCases": [],
+        "recentFacts": [
+          {
+            "fieldHint": "hoTen",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Họ và tên Trần Minh Hùng"
+          },
+          {
+            "fieldHint": "gioiTinh",
+            "value": "Nam",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Giới tính nam"
+          },
+          {
+            "fieldHint": "danToc",
+            "value": "kinh",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Dân tộc kinh"
+          },
+          {
+            "fieldHint": "cccd",
+            "value": "0793920853",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Số căn cước công dân 0793920853"
+          },
+          {
+            "fieldHint": "cccd",
+            "value": "093206008464",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Điền số căn cước công dân giùm tôi 093206008464"
+          },
+          {
+            "fieldHint": "diaChiDN",
+            "value": "số 1, đường 3/2",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "Địa chỉ của tôi là số 1 đường 3/2."
+          }
+        ],
+        "knowledgeSession": {
+          "senderId": "sender_d64b36b5-d3f3-4ac8-9f58-ac26c22e6ae0",
+          "sessionId": "knowledge_6379b812-4edf-484f-b888-432758586dee"
+        }
+      },
+      "createdAt": "2026-07-04T16:53:56.818Z",
+      "updatedAt": "2026-07-04T16:56:52.790Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Điền giúp tôi tỉnh thành phố là cần thơ phường ninh kiều",
+          "createdAt": "2026-07-04T16:53:56.818Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đã chọn \"Thành phố Cần Thơ\" và \"Phường Ninh Kiều\" cho thủ tục Đăng ký thường trú. Bạn có muốn cập nhật thông tin này không?",
+          "createdAt": "2026-07-04T16:53:56.818Z"
+        },
+        {
+          "role": "user",
+          "content": "Điện không giúp tôi",
+          "createdAt": "2026-07-04T16:54:17.600Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Hiện tại, tôi không thể tự động điền thông tin cho bạn. Bạn có thể chọn \"Thành phố Cần Thơ\" và \"Phường Ninh Kiều\" trong biểu mẫu. Bạn có muốn tôi xác nhận các lựa chọn này không?",
+          "createdAt": "2026-07-04T16:54:17.600Z"
+        },
+        {
+          "role": "user",
+          "content": "Đi giúp tôi thông tin họ và tên trần minh hùng ngày sinh 23/2/2006 giới tính nam dân tộc kinh số căn cước công dân 0793920853",
+          "createdAt": "2026-07-04T16:55:12.183Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đã cung cấp các thông tin sau:\n- Họ và tên: Trần Minh Hùng\n- Ngày sinh: 23/02/2006\n- Giới tính: Nam\n- Dân tộc: Kinh\n- Số căn cước công dân: 0793920853\n\nBạn có muốn tôi xác nhận và cập nhật những thông tin này vào biểu mẫu không?",
+          "createdAt": "2026-07-04T16:55:12.183Z"
+        },
+        {
+          "role": "user",
+          "content": "Điền số căn cước công dân giùm tôi 093206008464",
+          "createdAt": "2026-07-04T16:55:36.860Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đã cung cấp số căn cước công dân mới: 093206008464. Tôi sẽ cập nhật thông tin này vào biểu mẫu của bạn.",
+          "createdAt": "2026-07-04T16:55:36.860Z"
+        },
+        {
+          "role": "user",
+          "content": "Dùm tôi nơi đề nghị đăng ký thường trú là thành phố cần thơ phường ninh kiều",
+          "createdAt": "2026-07-04T16:55:56.217Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đã cung cấp thông tin về nơi đề nghị đăng ký thường trú là Thành phố Cần Thơ, Phường Ninh Kiều. Tôi sẽ cập nhật thông tin này vào biểu mẫu của bạn.",
+          "createdAt": "2026-07-04T16:55:56.217Z"
+        },
+        {
+          "role": "user",
+          "content": "Tìm địa chỉ giúp tôi là đường lê anh xuân",
+          "createdAt": "2026-07-04T16:56:17.517Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Địa chỉ bạn cần cung cấp là số nhà, đường phố, thôn, xóm, làng, ấp, bản, buôn, phum, sóc. Bạn có thể cho tôi biết số nhà cụ thể trên đường Lê Anh Xuân không?\n\nBạn có thể cho tôi biết số nhà cụ thể trên đường Lê Anh Xuân không?",
+          "createdAt": "2026-07-04T16:56:17.517Z"
+        },
+        {
+          "role": "user",
+          "content": "Địa chỉ của tôi là số 1 đường 3/2",
+          "createdAt": "2026-07-04T16:56:52.790Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đã cung cấp địa chỉ là số 1, đường 3/2. Tôi sẽ cập nhật thông tin này vào biểu mẫu của bạn.",
+          "createdAt": "2026-07-04T16:56:52.790Z"
+        }
+      ]
+    },
+    {
+      "id": "c9fd6dfa-0eee-43ff-80d2-ff528c0bd9b6",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "tinhThanhCQ": "92",
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi"
+        },
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_a4539f0c-e483-47f5-8aaa-d4e9b45b8b5d",
+          "sessionId": "knowledge_33b4b971-4954-41ca-8bfb-72202b6b790d"
+        }
+      },
+      "createdAt": "2026-07-04T10:50:24.567Z",
+      "updatedAt": "2026-07-04T12:28:16.173Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "điền giúp tui ở tỉnh cần thơ",
+          "createdAt": "2026-07-04T10:50:24.567Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn cần điền thông tin cho trường \"Tỉnh/Thành phố\" là \"Thành phố Cần Thơ\". Bạn cũng cần chọn \"Xã/Phường/Đặc khu\" và \"Cơ quan đăng ký cư trú\". Bạn có muốn tôi giúp bạn điền thêm thông tin nào không?",
+          "createdAt": "2026-07-04T10:50:24.567Z"
+        },
+        {
+          "role": "user",
+          "content": "tôi đang sống ở hà nội",
+          "createdAt": "2026-07-04T10:50:47.384Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn đang sống ở Hà Nội, bạn có muốn cập nhật thông tin \"Tỉnh/Thành phố\" thành \"Thành phố Hà Nội\" không?\n\nBạn có muốn cập nhật thông tin này không?",
+          "createdAt": "2026-07-04T10:50:47.384Z"
+        },
+        {
+          "role": "user",
+          "content": "hello",
+          "createdAt": "2026-07-04T10:54:00.692Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Tôi có thể giúp gì cho bạn hôm nay?",
+          "createdAt": "2026-07-04T10:54:00.692Z"
+        },
+        {
+          "role": "user",
+          "content": "Phần chọn cơ quan thực hiện điền như thế nào?",
+          "createdAt": "2026-07-04T12:28:16.173Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, để chọn cơ quan thực hiện trong thủ tục **Đăng ký thường trú**, bạn làm theo các bước sau:\n\n1. **Vị trí thực hiện:** Thực hiện ở **Bước 3** khi nộp hồ sơ trực tuyến.\n2. **Cách chọn:** Chọn cơ quan dựa trên **địa chỉ nơi đăng ký thường trú**. Hệ thống sẽ hiển thị các cấp độ: Cấp tỉnh và Cấp xã.\n3. **Cơ quan tiếp nhận:** Chọn **Công an cấp xã** nơi bạn đăng ký thường trú. Đảm bảo chọn đúng tỉnh/thành phố và xã/phường tương ứng để hồ sơ được chuyển đến đúng đơn vị có thẩm quyền giải quyết.\n\nLưu ý rằng việc chọn đúng cơ quan rất quan trọng để hồ sơ của bạn được xử lý nhanh chóng.",
+          "createdAt": "2026-07-04T12:28:16.173Z"
+        }
+      ]
+    },
+    {
+      "id": "2ed0724c-38ed-47a0-9765-ea9fc07ef751",
       "currentRoute": "/ho-khau",
       "state": {
         "formSnapshot": {
@@ -10,6 +612,111 @@
           "loaiDKTT": "lap_ho_moi",
           "hoTen": "Trần Minh Hùng"
         },
+        "candidateCases": [],
+        "recentFacts": [
+          {
+            "fieldHint": "hoTen",
+            "value": "Trần Minh Hùng",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "tôi tên trần minh hùng"
+          }
+        ],
+        "knowledgeSession": {
+          "senderId": "sender_a62cf75e-ea3f-4796-9c8d-2a0da793ca35",
+          "sessionId": "knowledge_8d3b6ae7-34d7-432f-9648-0af139fcce55"
+        }
+      },
+      "createdAt": "2026-07-04T10:45:21.969Z",
+      "updatedAt": "2026-07-04T10:49:08.400Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Nhanh hơn chút",
+          "createdAt": "2026-07-04T10:45:21.969Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình ở đây để hỗ trợ bạn. Bạn cần thông tin gì cụ thể hơn không?",
+          "createdAt": "2026-07-04T10:45:21.969Z"
+        },
+        {
+          "role": "user",
+          "content": "Nói trên 0 chú",
+          "createdAt": "2026-07-04T10:45:33.402Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Mình rất xin lỗi vì sự chậm trễ. Bạn có câu hỏi cụ thể nào không? Mình sẽ giúp bạn ngay lập tức!",
+          "createdAt": "2026-07-04T10:45:33.402Z"
+        },
+        {
+          "role": "user",
+          "content": "Chuyển đến trang thần chú",
+          "createdAt": "2026-07-04T10:45:48.899Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Có vẻ như bạn muốn thực hiện thủ tục \"Đăng ký Khai Sinh\". Đây là thủ tục để đăng ký khai sinh cho trẻ em mới sinh tại UBND xã/phường nơi cư trú. Bây giờ mình sẽ chuyển bạn đến trang này để tiếp tục.\n\nMình tìm thấy trang **Đăng ký Khai Sinh**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-04T10:45:48.899Z"
+        },
+        {
+          "role": "user",
+          "content": "đi đến trang thường trú",
+          "createdAt": "2026-07-04T10:47:05.493Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Bạn muốn thực hiện thủ tục \"Đăng ký thường trú\" để đăng ký thường trú cho công dân Việt Nam tại Công an xã/phường/thị trấn nơi đăng ký. Mình sẽ chuyển bạn đến trang này để tiếp tục.\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-04T10:47:05.493Z"
+        },
+        {
+          "role": "user",
+          "content": "tui đang sống ở thành phố cần thơ",
+          "createdAt": "2026-07-04T10:47:29.667Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn, dựa trên thông tin bạn cung cấp là đang sống tại Thành phố Cần Thơ và quan tâm đến thủ tục **Đăng ký thường trú**, dưới đây là các thông tin cần biết:\n\n1. **Cơ quan có thẩm quyền giải quyết:**\n   - Công an cấp xã (phường, thị trấn) nơi bạn muốn đăng ký thường trú.\n\n2. **Cách thức thực hiện:**\n   - **Thực hiện trực tuyến (Khuyên dùng):**\n     - Bạn có thể nộp hồ sơ trực tuyến qua các nền tảng như Cổng Dịch vụ công quốc gia, Cổng Dịch vụ công Bộ Công an, hoặc ứng dụng VNeID.\n   - **Nộp hồ sơ trực tiếp:**\n     - Bạn chuẩn bị hồ sơ và nộp trực tiếp tại Công an cấp xã.\n\n3. **Hồ sơ cần chuẩn bị:**\n   - Tờ khai thay đổi thông tin cư trú (Mẫu CT01).\n   - Giấy tờ chứng minh chỗ ở hợp pháp (như Giấy chứng nhận quyền sử dụng đất, Hợp đồng mua bán nhà, hoặc xác nhận của UBND cấp xã).\n\n4. **Điều kiện cần lưu ý:**\n   - Cần có giấy tờ chứng minh quyền sở hữu hoặc sự đồng ý của chủ hộ nếu bạn thuê, mượn, ở nhờ.",
+          "createdAt": "2026-07-04T10:47:29.667Z"
+        },
+        {
+          "role": "user",
+          "content": "ok",
+          "createdAt": "2026-07-04T10:48:16.280Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Nếu bạn cần thêm thông tin hoặc hỗ trợ gì khác về thủ tục Đăng ký thường trú, hãy cho mình biết nhé!",
+          "createdAt": "2026-07-04T10:48:16.280Z"
+        },
+        {
+          "role": "user",
+          "content": "tôi tên trần minh hùng",
+          "createdAt": "2026-07-04T10:48:29.023Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Cảm ơn bạn đã cung cấp thông tin. Bạn có muốn cập nhật tên \"Trần Minh Hùng\" vào biểu mẫu Đăng ký thường trú không?",
+          "createdAt": "2026-07-04T10:48:29.023Z"
+        },
+        {
+          "role": "user",
+          "content": "tui sống ở cần thơ",
+          "createdAt": "2026-07-04T10:49:08.400Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
+          "createdAt": "2026-07-04T10:49:08.400Z"
+        }
+      ]
+    },
+    {
+      "id": "fc9e65c9-8387-41df-bb30-8775c6f1cfb2",
+      "currentRoute": "/",
+      "state": {
+        "formSnapshot": {},
         "candidateCases": [],
         "recentFacts": [
           {
@@ -26,48 +733,8 @@
         }
       },
       "createdAt": "2026-07-04T09:44:20.730Z",
-      "updatedAt": "2026-07-04T10:06:00.072Z",
+      "updatedAt": "2026-07-04T10:28:49.198Z",
       "messages": [
-        {
-          "role": "user",
-          "content": "Ký thường trú",
-          "createdAt": "2026-07-04T09:45:21.848Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-04T09:45:21.848Z"
-        },
-        {
-          "role": "user",
-          "content": "Tạm trú",
-          "createdAt": "2026-07-04T09:45:37.947Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-04T09:45:37.947Z"
-        },
-        {
-          "role": "user",
-          "content": "Là ai",
-          "createdAt": "2026-07-04T09:46:27.816Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình là trợ lý ảo giúp bạn tìm hiểu về các thủ tục hành chính. Nếu bạn có câu hỏi cụ thể nào về thủ tục, hãy cho mình biết!",
-          "createdAt": "2026-07-04T09:46:27.816Z"
-        },
-        {
-          "role": "user",
-          "content": "hi",
-          "createdAt": "2026-07-04T10:02:55.575Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Xin chào! Mình có thể hỗ trợ bạn tra cứu thủ tục hành chính, giấy tờ cần chuẩn bị, cách điền hồ sơ hoặc chuyển đến dịch vụ phù hợp.",
-          "createdAt": "2026-07-04T10:02:55.575Z"
-        },
         {
           "role": "user",
           "content": "Chuyển đến trang cư trú",
@@ -127,548 +794,46 @@
           "role": "assistant",
           "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
           "createdAt": "2026-07-04T10:06:00.072Z"
-        }
-      ]
-    },
-    {
-      "id": "6ee0b4e9-3279-43d5-a124-897b48615bf2",
-      "currentRoute": "/dang-ky-tam-tru",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [],
-        "recentFacts": [
-          {
-            "fieldHint": "hoTen",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "ngaySinh",
-            "value": "23/2/2006",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "name",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "name",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "họ tên",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "null",
-            "value": "Chú",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "hoTen",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "danToc",
-            "value": "kinh",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "cccd",
-            "value": "093206008464",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "sdt",
-            "value": "0793920853",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "email",
-            "value": "123",
-            "confidence": 0.8,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "email",
-            "value": "BCA còng gờ meo chấm com",
-            "confidence": 0.5,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "email",
-            "value": "abc@gmail.com",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "gioiTinh",
-            "value": "Nam",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "hoTen",
-            "value": "Trần Văn A",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "hoTen",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "ngaySinh",
-            "value": "2/3/2006",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "hoTen",
-            "value": "Trần Văn A",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "ngaySinh",
-            "value": "2015",
-            "confidence": 0.9,
-            "source": "chat"
-          }
-        ],
-        "knowledgeSession": {
-          "senderId": "sender_466b4227-2d05-4e19-a5a4-03eec960895c",
-          "sessionId": "knowledge_cecffd69-cf1d-4660-8b1e-e316d88d3f90"
-        }
-      },
-      "createdAt": "2026-07-03T19:56:59.068Z",
-      "updatedAt": "2026-07-03T22:56:42.547Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Thường trú",
-          "createdAt": "2026-07-03T22:46:17.073Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, đây là thông tin về thủ tục đăng ký thường trú:\n\n**Thủ tục: Đăng ký thường trú**\n- **Mã thủ tục:** 1.004222\n- **Cơ quan thực hiện:** Công an cấp xã (nơi có chỗ ở hợp pháp mà bạn muốn đăng ký).\n- **Đối tượng áp dụng:** Công dân Việt Nam và người Việt Nam định cư ở nước ngoài có nhu cầu đăng ký nơi sinh sống ổn định, lâu dài tại một địa chỉ cụ thể.\n- **Cách thức thực hiện:** Bạn có thể nộp hồ sơ trực tiếp tại Công an cấp xã hoặc thực hiện trực tuyến qua Cổng Dịch vụ công quốc gia, Cổng Dịch vụ công Bộ Công an hoặc ứng dụng VNeID.\n\n**Lưu ý quan trọng:** Nếu bạn chỉ cần xin giấy xác nhận thông tin về nơi bạn đang sinh sống (bao gồm cả nơi thường trú) để phục vụ giao dịch, thủ tục phù hợp sẽ là **\"Xác nhận thông tin về cư trú\"** (Mã thủ tục: 1.010041). Thủ tục này không thay đổi trạng thái cư trú mà chỉ cung cấp văn bản chứng minh thông tin cư trú hiện tại của bạn.\n\nBạn vui lòng xác định rõ mục đích của mình để chọn đúng thủ tục nhé!",
-          "createdAt": "2026-07-03T22:46:17.073Z"
         },
         {
           "role": "user",
-          "content": "Phú",
-          "createdAt": "2026-07-03T22:46:42.784Z"
+          "content": "Đưa tôi vào trang chủ",
+          "createdAt": "2026-07-04T10:17:56.500Z"
         },
         {
           "role": "assistant",
-          "content": "Bạn có thể cung cấp thêm thông tin cụ thể hơn về yêu cầu của mình không? Bạn đang tìm hiểu về thủ tục gì liên quan đến \"Phú\"?\n\nBạn đang muốn biết thông tin gì về \"Phú\"?",
-          "createdAt": "2026-07-03T22:46:42.784Z"
+          "content": "Hiện tại, bạn đang ở trang Đăng ký thường trú. Để trở về trang chủ, bạn có thể làm theo các bước trong giao diện hoặc quay lại từ menu chính. Nếu bạn cần trợ giúp thêm, hãy cho mình biết!",
+          "createdAt": "2026-07-04T10:17:56.500Z"
         },
         {
           "role": "user",
-          "content": "Nguyễn bến tre đang ý kiến hùng thú",
-          "createdAt": "2026-07-03T22:47:13.157Z"
+          "content": "Tôi muốn nộp hồ sơ bấm ở đâu",
+          "createdAt": "2026-07-04T10:19:13.910Z"
         },
         {
           "role": "assistant",
-          "content": "Chào anh/chị,\n\nDựa trên thông tin về thủ tục **Đăng ký Khai Sinh** (Mã thủ tục: khai-sinh), tôi xin hỗ trợ anh/chị như sau:\n\n1. **Về nội dung câu hỏi:** Câu hỏi của anh/chị \"Nguyễn Bến Tre đang ý kiến hùng thú\" có vẻ chưa rõ nghĩa hoặc bị lỗi chính tả/định dạng. Để hỗ trợ tốt nhất, anh/chị vui lòng mô tả lại nhu cầu cụ thể, ví dụ:\n   - Anh/chị muốn đăng ký khai sinh cho trẻ dưới 6 tuổi?\n   - Anh/chị cần biết hồ sơ gồm những giấy tờ gì?\n   - Anh/chị muốn biết cách nộp hồ sơ trực tuyến hay trực tiếp?\n\n2. **Thông tin chung về thủ tục Đăng ký Khai Sinh:**\n   - **Đối tượng áp dụng:** Thủ tục này áp dụng cho việc đăng ký khai sinh và các thủ tục liên quan cho **trẻ em dưới 6 tuổi**. Người thực hiện thường là cha, mẹ, người giám hộ hoặc người được ủy quyền hợp lệ.\n   - **Cơ quan giải quyết:** Phần đăng ký khai sinh do **Ủy ban nhân dân cấp xã** giải quyết. Trường hợp đăng ký khai sinh có yếu tố nước ngoài có thể thuộc Ủy ban nhân dân cấp huyện.\n   - **Hình thức thực hiện:** Anh/chị có thể thực hiện trực tuyến qua **Cổng Dịch vụ công quốc gia** (dichvucong.gov.vn) hoặc ứng dụng **VNeID**, hoặc nộp trực tiếp tại Ủy ban nhân dân cấp xã nơi cư trú của cha hoặc mẹ.\n\n3. **Quy trình liên thông (Khuyến nghị):**\n   Hiện nay, anh/chị nên chọn dịch vụ **\"Liên thông khai sinh\"** để thực hiện đồng thời trong một lần kê khai:\n   - Đăng ký khai sinh.\n   - Đăng ký thường trú cho trẻ.\n   - Cấp thẻ Bảo hiểm y tế (BHYT) cho trẻ em dưới 6 tuổi. Hệ thống sẽ tự động chuyển dữ liệu đến cơ quan Hộ tịch, Công an và Bảo hiểm xã hội, giúp anh/chị tiết kiệm thời gian và không cần nộp nhiều bộ hồ sơ.\n\n4. **Các bước chuẩn bị:**\n   Trước khi kê khai, anh/chị cần chuẩn bị:\n   - Tài khoản đăng nhập Cổng Dịch vụ công hoặc VNeID.\n   - Giấy chứng sinh điện tử hoặc giấy tờ thay thế.\n   - Thông tin của trẻ và thông tin của cha/mẹ (họ tên, số định danh/CCCD...).\n   - Thông tin nơi cư trú dự kiến đăng ký thường trú cho trẻ.\n\nAnh/chị vui lòng cung cấp thêm thông tin chi tiết về trường hợp cụ thể của mình để tôi có thể hướng dẫn từng bước chính xác hơn nhé!",
-          "createdAt": "2026-07-03T22:47:13.157Z"
+          "content": "Để nộp hồ sơ, bạn cần tìm nút \"Nộp hồ sơ\" trên giao diện. Thông thường, nút này sẽ nằm ở phần dưới của mẫu đơn mà bạn đang điền. Bạn có thể tìm kiếm nút với ID là \"submit-btn\". Nếu bạn cần thêm hướng dẫn, hãy cho mình biết!",
+          "createdAt": "2026-07-04T10:19:13.910Z"
         },
         {
           "role": "user",
-          "content": "Thường trú",
-          "createdAt": "2026-07-03T22:51:02.297Z"
+          "content": "Ông chủ không",
+          "createdAt": "2026-07-04T10:28:31.235Z"
         },
         {
           "role": "assistant",
-          "content": "Chào bạn,\n\nDựa trên thông tin về thuật ngữ \"Thường trú\" và các thủ tục hành chính liên quan đến lĩnh vực đăng ký, quản lý cư trú, dưới đây là hướng dẫn để xác định thủ tục phù hợp với nhu cầu của bạn:\n\n**1. Hiểu rõ khái niệm \"Thường trú\"**  \nTheo quy định pháp luật hiện hành, **Thường trú** là tình trạng công dân đã đăng ký sinh sống ổn định, lâu dài tại một địa chỉ theo quy định pháp luật. Đây không phải là \"quê quán\" mà là nơi bạn đang sinh sống ổn định và đã được cơ quan nhà nước ghi nhận trong Cơ sở dữ liệu quốc gia về dân cư.\n\n**2. Xác định thủ tục phù hợp**  \nTùy vào mục đích cụ thể, bạn cần thực hiện một trong hai thủ tục sau:\n\n- **Trường hợp 1: Đăng ký chuyển nơi sinh sống ổn định, lâu dài (đăng ký hộ khẩu mới)**  \n  - **Tên thủ tục:** Đăng ký thường trú.  \n  - **Mã thủ tục:** 1.004222.  \n  - **Mục đích:** Dùng khi công dân có nhu cầu đăng ký nơi thường trú tại chỗ ở hợp pháp (ví dụ: mua nhà, thuê nhà đủ điều kiện, về quê sinh sống...). Thủ tục này giúp cập nhật thông tin nơi ở ổn định của bạn vào hệ thống cơ quan công an.  \n  - **Cơ quan giải quyết:** Công an cấp xã.\n\n- **Trường hợp 2: Chỉ cần giấy tờ chứng minh nơi mình đang thường trú**  \n  - **Tên thủ tục:** Xác nhận thông tin về cư trú.  \n  - **Mã thủ tục:** 1.010041.  \n  - **Mục đích:** Dùng khi cá nhân, tổ chức cần văn bản hoặc kết quả điện tử xác nhận thông tin cư trú của mình để phục vụ giao dịch, hồ sơ hoặc yêu cầu hành chính khác. Thủ tục này **không thay đổi** thông tin cư trú trong hệ thống mà chỉ cấp giấy xác nhận những gì đang có sẵn.  \n  - **Cơ quan giải quyết:** Công an cấp xã.\n\n**3. Cách thức thực hiện**  \nCả hai thủ tục trên đều có thể thực hiện theo hình thức:\n- **Trực tiếp:** Nộp hồ sơ tại Công an cấp xã nơi có chỗ ở hợp pháp.\n- **Trực tuyến toàn trình:** Thực hiện qua Cổng Dịch vụ công quốc gia, Cổng Dịch vụ công Bộ Công an hoặc ứng dụng VNeID.\n\n**Lời khuyên:**  \nNếu bạn đang sống ở một nơi mới và muốn chính thức chuyển nơi thường trú về đó, hãy chọn **\"Đăng ký thường trú\"**. Nếu bạn đã thường trú ở đó rồi nhưng cần giấy tờ để làm thủ tục khác, hãy chọn **\"Xác nhận thông tin về cư trú\"**.\n\nNếu bạn cần hỗ trợ chi tiết hơn về thành phần hồ sơ hoặc cách nộp hồ sơ trực tuyến cho từng thủ tục, vui lòng cung cấp thêm thông tin về hoàn cảnh cụ thể của bạn.",
-          "createdAt": "2026-07-03T22:51:02.297Z"
+          "content": "Xin lỗi, mình không hiểu ý của bạn. Bạn có thể giải thích rõ hơn về điều bạn muốn hỏi hoặc cần giúp đỡ không?",
+          "createdAt": "2026-07-04T10:28:31.235Z"
         },
         {
           "role": "user",
-          "content": "Thường trú",
-          "createdAt": "2026-07-03T22:51:52.173Z"
+          "content": "Tôi muốn hỏi về đăng ký khai sinh",
+          "createdAt": "2026-07-04T10:28:49.198Z"
         },
         {
           "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T22:51:52.173Z"
-        },
-        {
-          "role": "user",
-          "content": "Họ và tên là trần văn a",
-          "createdAt": "2026-07-03T22:52:15.315Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T22:52:15.315Z"
-        },
-        {
-          "role": "user",
-          "content": "Thay đổi ngày sinh thành ngày 2015",
-          "createdAt": "2026-07-03T22:52:42.151Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã ghi nhận thay đổi ngày sinh thành năm 2015. Bạn có muốn cập nhật thông tin này vào biểu mẫu không?",
-          "createdAt": "2026-07-03T22:52:42.151Z"
-        },
-        {
-          "role": "user",
-          "content": "Hãy cập nhật giúp mình",
-          "createdAt": "2026-07-03T22:52:57.258Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Ngày sinh của bạn đã được cập nhật thành năm 2015. Hãy kiểm tra lại các thông tin khác trước khi tiếp tục!",
-          "createdAt": "2026-07-03T22:52:57.258Z"
-        },
-        {
-          "role": "user",
-          "content": "Tạm trú",
-          "createdAt": "2026-07-03T22:53:14.661Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký tạm trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T22:53:14.661Z"
-        },
-        {
-          "role": "user",
-          "content": "chuyển đến trang đăng ký thường trú",
-          "createdAt": "2026-07-03T22:56:42.547Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T22:56:42.547Z"
-        }
-      ]
-    },
-    {
-      "id": "30b138ef-1a45-442c-978a-ae2a8af243e9",
-      "currentRoute": "/ho-khau",
-      "state": {
-        "formSnapshot": {
-          "thuTuc": "dktt",
-          "loaiDKTT": "lap_ho_moi",
-          "hoTen": "Trần Minh Hùng",
-          "ngaySinh": "2006-02-23",
-          "gioiTinh": "Nam",
-          "danToc": "kinh",
-          "tonGiao": "khong",
-          "cccd": "093206008464"
-        },
-        "candidateCases": [
-          {
-            "id": "khai-sinh",
-            "confidence": 0.9,
-            "reason": "Liên quan đến việc đăng ký khai sinh cho trẻ sơ sinh."
-          }
-        ],
-        "recentFacts": [
-          {
-            "fieldHint": "null",
-            "value": "mới đẻ con",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "ngaySinh",
-            "value": "23/2/2006",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "hoTen",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "gioiTinh",
-            "value": "Nam",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "danToc",
-            "value": "kinh",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "cccd",
-            "value": "093206008464",
-            "confidence": 0.9,
-            "source": "chat"
-          },
-          {
-            "fieldHint": "tonGiao",
-            "value": "khong",
-            "confidence": 0.9,
-            "source": "chat"
-          }
-        ],
-        "knowledgeSession": {
-          "senderId": "sender_1bdd0e96-2801-4296-8496-6d5fd4bfc82e",
-          "sessionId": "knowledge_2a47c6c9-cfa4-4735-be8f-ffd3f316bfcc"
-        }
-      },
-      "createdAt": "2026-07-03T12:56:49.399Z",
-      "updatedAt": "2026-07-03T14:31:10.151Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "điều kiện để cha tôi đăng ký thường trú",
-          "createdAt": "2026-07-03T12:59:18.048Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Để cha bạn có thể đăng ký thường trú, cần đáp ứng các điều kiện sau:\n\n1. **Chỗ ở hợp pháp**: Cha bạn phải có chỗ ở hợp pháp, có giấy tờ chứng minh quyền sở hữu hoặc quyền sử dụng (như Giấy chứng nhận quyền sử dụng đất, hợp đồng mua bán, hoặc các giấy tờ tương tự).\n\n2. **Quan hệ nhân thân**: Nếu cha bạn đăng ký vào chỗ ở không thuộc quyền sở hữu của mình, cần chứng minh quan hệ nhân thân với chủ hộ (ví dụ: cha mẹ, con cái, vợ chồng, ông bà, cháu, anh chị em ruột).\n\n3. **Có sự đồng ý**: Cần có sự đồng ý của chủ hộ hoặc chủ sở hữu chỗ ở hợp pháp.\n\n4. **Hồ sơ**: Cần chuẩn bị Tờ khai thay đổi thông tin cư trú (Mẫu CT01) và các giấy tờ chứng minh quan hệ, nếu có.\n\nLưu ý rằng cha bạn phải là công dân Việt Nam hoặc người Việt Nam định cư ở nước ngoài có nhu cầu đăng ký thường trú tại Việt Nam.",
-          "createdAt": "2026-07-03T12:59:18.048Z"
-        },
-        {
-          "role": "user",
-          "content": "cha tôi muốn đăng ký thường trú",
-          "createdAt": "2026-07-03T13:01:34.876Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
-          "createdAt": "2026-07-03T13:01:34.876Z"
-        },
-        {
-          "role": "user",
-          "content": "nút nộp hồ sơ ở đâu",
-          "createdAt": "2026-07-03T13:08:54.970Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn có thể tìm thấy nút nộp hồ sơ tại phần cuối của biểu mẫu hoặc trong giao diện hiện tại của trang đăng ký thường trú. Nếu bạn cần hướng dẫn cụ thể hơn, hãy tìm nút có ghi \"Nộp hồ sơ\" hoặc biểu tượng tương tự.",
-          "createdAt": "2026-07-03T13:08:54.970Z"
-        },
-        {
-          "role": "user",
-          "content": "nút nộp hồ sơ ở đâu",
-          "createdAt": "2026-07-03T13:09:37.242Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn có thể tìm thấy nút nộp hồ sơ tại phần cuối của biểu mẫu hoặc trong giao diện hiện tại của trang đăng ký thường trú. Nếu bạn cần hướng dẫn cụ thể hơn, hãy tìm nút có ghi \"Nộp hồ sơ\" hoặc biểu tượng tương tự.",
-          "createdAt": "2026-07-03T13:09:37.242Z"
-        },
-        {
-          "role": "user",
-          "content": "23/2/2006 để giúp tôi thông tin",
-          "createdAt": "2026-07-03T14:28:15.354Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T14:28:15.354Z"
-        },
-        {
-          "role": "user",
-          "content": "Tên là trần minh hùng giới tính nam để giúp tôi thông tin",
-          "createdAt": "2026-07-03T14:28:55.317Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 2 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T14:28:55.317Z"
-        },
-        {
-          "role": "user",
-          "content": "Dân tộc kinh không có tôn giáo số căn cước công dân là 093206008464 điện sức tôi",
-          "createdAt": "2026-07-03T14:29:30.738Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 2 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T14:29:30.738Z"
-        },
-        {
-          "role": "user",
-          "content": "Giúp tôi phần tôn giáo là không có tôn giáo",
-          "createdAt": "2026-07-03T14:29:59.830Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T14:29:59.830Z"
-        },
-        {
-          "role": "user",
-          "content": "ghi nhớ thông tin của tôi nãy giờ nha",
-          "createdAt": "2026-07-03T14:30:29.209Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình không thể ghi nhớ thông tin cá nhân của bạn. Tuy nhiên, mình có thể giúp bạn hoàn thành biểu mẫu với các thông tin đã cung cấp. Bạn có muốn tiếp tục không?",
-          "createdAt": "2026-07-03T14:30:29.209Z"
-        },
-        {
-          "role": "user",
-          "content": "Bắt nộp hồ sơ giúp tôi",
-          "createdAt": "2026-07-03T14:31:10.151Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Hiện tại, mình không thể nộp hồ sơ giúp bạn. Tuy nhiên, bạn có thể hoàn tất các thông tin còn thiếu và nộp hồ sơ trực tiếp tại cơ quan đăng ký cư trú.",
-          "createdAt": "2026-07-03T14:31:10.151Z"
-        }
-      ]
-    },
-    {
-      "id": "683fb39d-6d15-469d-933b-b9e9e2ebe9a2",
-      "currentRoute": "/ho-khau",
-      "state": {
-        "formSnapshot": {
-          "thuTuc": "dktt",
-          "loaiDKTT": "lap_ho_moi",
-          "hoTen": "Trần Minh Hùng"
-        },
-        "candidateCases": [],
-        "recentFacts": [
-          {
-            "fieldHint": "hoTen",
-            "value": "Trần Minh Hùng",
-            "confidence": 0.9,
-            "source": "chat"
-          }
-        ],
-        "knowledgeSession": {
-          "senderId": "sender_de13aa8c-9cf2-4817-8e1e-3678ad76f730",
-          "sessionId": "knowledge_67dbae82-1b67-4099-873f-a84a84a98dd3"
-        }
-      },
-      "createdAt": "2026-07-03T14:14:45.289Z",
-      "updatedAt": "2026-07-03T14:17:56.254Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Đến trường đăng ký thường trú",
-          "createdAt": "2026-07-03T14:14:45.289Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T14:14:45.289Z"
-        },
-        {
-          "role": "user",
-          "content": "Tên là trần minh hùng đến thông tin giúp tôi",
-          "createdAt": "2026-07-03T14:15:10.595Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình đã nhận diện 1 thông tin. Bạn kiểm tra bản xem trước rồi xác nhận để điền vào biểu mẫu nhé.",
-          "createdAt": "2026-07-03T14:15:10.595Z"
-        },
-        {
-          "role": "user",
-          "content": "Muốn nộp hồ sơ ở đâu nhỉ",
-          "createdAt": "2026-07-03T14:15:35.497Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào bạn, đối với thủ tục **Đăng ký thường trú**, bạn có thể nộp hồ sơ theo hai hình thức sau:\n\n**1. Nộp hồ sơ trực tuyến (Khuyên dùng):**\n   - Cổng Dịch vụ công quốc gia.\n   - Cổng Dịch vụ công Bộ Công an.\n   - Ứng dụng VNeID.\n   *Lưu ý:* Để làm trực tuyến, bạn cần có tài khoản định danh điện tử (VNeID) và chuẩn bị sẵn các giấy tờ liên quan để tải lên hệ thống.\n\n**2. Nộp hồ sơ trực tiếp:**\n   - Tại **Công an cấp xã** nơi bạn đăng ký thường trú.\n   - Thời gian tiếp nhận hồ sơ là trong giờ hành chính từ thứ Hai đến thứ Sáu và sáng thứ Bảy (trừ ngày nghỉ lễ, Tết).",
-          "createdAt": "2026-07-03T14:15:35.497Z"
-        },
-        {
-          "role": "user",
-          "content": "Tôi muốn nộp hồ sơ thì nhấn ở đâu",
-          "createdAt": "2026-07-03T14:16:17.100Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn có thể nhấn vào nút **Nộp hồ sơ** trên trang này để tiếp tục. Nếu bạn không thấy nút đó, hãy chắc chắn rằng bạn đã điền đầy đủ thông tin cần thiết trước khi nộp hồ sơ.",
-          "createdAt": "2026-07-03T14:16:17.100Z"
-        },
-        {
-          "role": "user",
-          "content": "Đến đất bo cán bộ",
-          "createdAt": "2026-07-03T14:17:31.797Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn cần đến **Công an cấp xã** nơi bạn đăng ký thường trú để nộp hồ sơ. Nếu bạn cần chỉ dẫn cụ thể hơn, hãy cho tôi biết địa điểm mà bạn muốn nộp hồ sơ để tôi có thể hỗ trợ thêm!",
-          "createdAt": "2026-07-03T14:17:31.797Z"
-        },
-        {
-          "role": "user",
-          "content": "chuyển đến trang dashboard cán bộ",
-          "createdAt": "2026-07-03T14:17:56.254Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn sẽ được chuyển đến trang dashboard cán bộ ngay bây giờ.",
-          "createdAt": "2026-07-03T14:17:56.254Z"
-        }
-      ]
-    },
-    {
-      "id": "a0984ef2-c0c0-4701-a73b-750cab81dda7",
-      "currentRoute": "/",
-      "state": {
-        "formSnapshot": {},
-        "candidateCases": [],
-        "recentFacts": [],
-        "knowledgeSession": {
-          "senderId": "sender_15f7983e-753f-4da8-af82-b3586f31759c",
-          "sessionId": "knowledge_efa28b5c-cb1f-42fc-9370-019ec060d04b"
-        }
-      },
-      "createdAt": "2026-07-03T10:23:52.165Z",
-      "updatedAt": "2026-07-03T10:25:55.871Z",
-      "messages": [
-        {
-          "role": "user",
-          "content": "đăng ký thường trú",
-          "createdAt": "2026-07-03T10:23:52.165Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-03T10:23:52.165Z"
-        },
-        {
-          "role": "user",
-          "content": "thủ tục đăng ký thường trú",
-          "createdAt": "2026-07-03T10:24:21.337Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
-          "createdAt": "2026-07-03T10:24:21.337Z"
-        },
-        {
-          "role": "user",
-          "content": "thủ tục đăng ký thường trú",
-          "createdAt": "2026-07-03T10:25:55.871Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Phản hồi từ dịch vụ tra cứu kiến thức chưa hợp lệ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.",
-          "createdAt": "2026-07-03T10:25:55.871Z"
+          "content": "Để đăng ký khai sinh, bạn có thể thực hiện thủ tục liên thông cho trẻ dưới 6 tuổi, bao gồm:\n1. Đăng ký khai sinh.\n2. Đăng ký thường trú cho trẻ.\n3. Cấp thẻ Bảo hiểm y tế (BHYT).\n\n**Cách thực hiện:**\n- Truy cập **Cổng Dịch vụ công quốc gia** (dichvucong.gov.vn) hoặc sử dụng **ứng dụng VNeID**.\n- Bạn cần chuẩn bị:\n  - Tài khoản VNeID hoặc tài khoản Cổng DVCQG.\n  - Giấy chứng sinh hoặc giấy tờ thay thế.\n  - Thông tin của cha/mẹ/trẻ.\n\nNếu bạn cần thêm thông tin chi tiết hoặc hướng dẫn cụ thể, hãy cho mình biết nhé!",
+          "createdAt": "2026-07-04T10:28:49.198Z"
         }
       ]
     }

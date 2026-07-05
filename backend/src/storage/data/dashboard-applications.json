@@ -1,0 +1,130 @@
+{
+  "applications": [
+    {
+      "id": "GOV-2026-633214",
+      "applicationCode": "GOV-2026-633214",
+      "procedure": "Xác nhận thông tin về cư trú",
+      "applicant": "TRẦN MINH HÙNG",
+      "citizenId": "093206008464",
+      "phone": "Điền thiếu",
+      "email": "Điền thiếu",
+      "submittedAt": "05/07/2026 15:52",
+      "dueDate": "08/07/2026",
+      "channel": "Cổng dịch vụ công",
+      "status": "Chờ tiếp nhận",
+      "documents": [
+        {
+          "name": "Mau_CT01.jpg",
+          "state": "Đã có"
+        }
+      ],
+      "message": "Xác nhận cư trú tại số 01 Lê Anh Xuân, Phường Ninh Kiều, Thành phố Cần Thơ.",
+      "caseNote": "Xác nhận cư trú",
+      "officerNote": "[Mau_CT01.jpg]: Văn bản hợp lệ. Mục \"Nội dung đề nghị\" ghi rõ là \"Đề nghị đăng ký thường trú tại: Số 12, đường 3/2, phường Hưng Lợi, thành phố Cần Thơ\", phù hợp với quy định. Không phát hiện lỗi quan trọng nào.",
+      "officerNoteFlag": "green",
+      "details": {
+        "Tỉnh/Thành phố đề nghị": "Thành phố Cần Thơ",
+        "Phường/Xã đề nghị": "Phường Ninh Kiều",
+        "Địa chỉ hiện tại": "số 01 Lê Anh Xuân",
+        "Cơ quan tiếp nhận": "Công an Phường Ninh Kiều",
+        "Trường hợp": "Cấp cho NK trên địa bàn quản lí"
+      },
+      "attachments": [
+        {
+          "id": "id-1783241540239-9fy127a",
+          "fileName": "Mau_CT01.jpg",
+          "mimeType": "image/jpeg",
+          "size": 326055,
+          "storageKey": "1783241540099-qet46j-Mau_CT01.jpg",
+          "submittedAt": "2026-07-05T08:52:20.239Z"
+        }
+      ]
+    },
+    {
+      "id": "GOV-2026-344614",
+      "applicationCode": "GOV-2026-344614",
+      "procedure": "Xác nhận thông tin về cư trú",
+      "applicant": "TRẦN MINH HÙNG",
+      "citizenId": "093206008464",
+      "phone": "Điền thiếu",
+      "email": "Điền thiếu",
+      "submittedAt": "05/07/2026 15:41",
+      "dueDate": "08/07/2026",
+      "channel": "Cổng dịch vụ công",
+      "status": "Đã từ chối",
+      "documents": [
+        {
+          "name": "Mau_CT01.jpg",
+          "state": "Đã có"
+        }
+      ],
+      "message": "Xác nhận cư trú tại số 01 Lê Anh Xuân, Phường Ninh Kiều, Thành phố Cần Thơ.",
+      "caseNote": "Xác nhận cư trú",
+      "officerNote": "[Mau_CT01.jpg]: Văn bản hợp lệ. Mục \"Nội dung đề nghị\" ghi rõ là \"Đề nghị đăng ký thường trú tại: Số 12, đường 3/2, phường Hưng Lợi, thành phố Cần Thơ\", phù hợp với quy định. Không phát hiện lỗi quan trọng nào.",
+      "officerNoteFlag": "green",
+      "details": {
+        "Tỉnh/Thành phố đề nghị": "Thành phố Cần Thơ",
+        "Phường/Xã đề nghị": "Phường Ninh Kiều",
+        "Địa chỉ hiện tại": "số 01 Lê Anh Xuân",
+        "Cơ quan tiếp nhận": "Công an Phường Ninh Kiều",
+        "Trường hợp": "Cấp cho NK trên địa bàn quản lí"
+      },
+      "attachments": [
+        {
+          "id": "id-1783240881165-2biz8ji",
+          "fileName": "Mau_CT01.jpg",
+          "mimeType": "image/jpeg",
+          "size": 326055,
+          "storageKey": "att-1783240881165-dgpfkr4",
+          "submittedAt": "2026-07-05T08:41:21.172Z"
+        }
+      ],
+      "statusLabel": "Đã từ chối",
+      "returnReason": "fg",
+      "responseMessage": "Điền thiếu"
+    },
+    {
+      "id": "GOV-2026-263642",
+      "applicationCode": "GOV-2026-263642",
+      "procedure": "Xác nhận thông tin về cư trú",
+      "applicant": "TRẦN MINH HÙNG",
+      "citizenId": "093206008464",
+      "phone": "Điền thiếu",
+      "email": "Điền thiếu",
+      "submittedAt": "05/07/2026 15:35",
+      "dueDate": "08/07/2026",
+      "channel": "Cổng dịch vụ công",
+      "status": "Đã từ chối",
+      "documents": [
+        {
+          "name": "Mau_CT01.jpg",
+          "state": "Đã có"
+        }
+      ],
+      "message": "Xác nhận cư trú tại số 01 Lê Anh Xuân, Phường Ninh Kiều, Thành phố Cần Thơ.",
+      "caseNote": "Xác nhận cư trú",
+      "officerNote": "[Mau_CT01.jpg]: Văn bản hợp lệ. Mục \"Nội dung đề nghị\" ghi rõ là \"Đề nghị đăng ký thường trú tại: Số 12, đường 3/2, phường Hưng Lợi, thành phố Cần Thơ\", phù hợp với quy định. Không phát hiện lỗi quan trọng nào.",
+      "officerNoteFlag": "green",
+      "details": {
+        "Tỉnh/Thành phố đề nghị": "Thành phố Cần Thơ",
+        "Phường/Xã đề nghị": "Phường Ninh Kiều",
+        "Địa chỉ hiện tại": "số 01 Lê Anh Xuân",
+        "Cơ quan tiếp nhận": "Công an Phường Ninh Kiều",
+        "Trường hợp": "Cấp cho NK trên địa bàn quản lí"
+      },
+      "attachments": [
+        {
+          "id": "id-1783240525242-t19f5e5",
+          "fileName": "Mau_CT01.jpg",
+          "mimeType": "image/jpeg",
+          "size": 326055,
+          "storageKey": "att-1783240525242-mm9h8pz",
+          "submittedAt": "2026-07-05T08:35:25.245Z"
+        }
+      ],
+      "statusLabel": "Đã từ chối",
+      "returnReason": "uig",
+      "responseMessage": "Điền thiếu"
+    }
+  ]
+}
