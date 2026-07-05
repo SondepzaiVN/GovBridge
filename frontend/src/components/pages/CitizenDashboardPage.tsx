@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
-import { loadDashboardApplications, DASHBOARD_STORAGE_KEY } from '../../utils/applicationDashboardData';
+import { fetchDashboardApplications, DASHBOARD_STORAGE_KEY } from '../../utils/applicationDashboardData';
 import {
     MISSING_OFFICER_VALUE,
     filterOfficerApplications,
@@ -33,6 +33,7 @@ import {
 
 type PreviewFile = {
     fileName: string;
+    mimeType: string;
     url: string;
     type: 'pdf' | 'image' | 'docx' | 'unknown';
     attachment: AttachmentMetadata;
@@ -60,20 +61,37 @@ const fileTypeLabel = (attachment: AttachmentMetadata) => {
 
 const CitizenDashboardPage: React.FC = () => {
     const { user } = useAuth();
-    const [applications, setApplications] = useState<OfficerApplication[]>(loadDashboardApplications);
+    const [applications, setApplications] = useState<OfficerApplication[]>([]);
     const [statusFilter, setStatusFilter] = useState<OfficerApplicationFilters['status']>('Tất cả');
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
     const [attachmentNotice, setAttachmentNotice] = useState('');
 
+    const loadApplications = async () => {
+        const data = await fetchDashboardApplications();
+        setApplications(data);
+    };
+
     useEffect(() => {
+        loadApplications();
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === DASHBOARD_STORAGE_KEY) {
-                setApplications(loadDashboardApplications());
+                loadApplications();
             }
         };
+        const handleDashboardUpdate = () => {
+            loadApplications();
+        };
         window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        window.addEventListener('dashboard-updated', handleDashboardUpdate);
+        
+        // Polling
+        const interval = setInterval(loadApplications, 30000);
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('dashboard-updated', handleDashboardUpdate);
+            clearInterval(interval);
+        };
     }, []);
 
     const filteredApplications = useMemo(() => filterOfficerApplications(
@@ -136,7 +154,7 @@ const CitizenDashboardPage: React.FC = () => {
                 : attachment.mimeType === 'application/pdf'
                     ? 'pdf'
                     : 'unknown';
-        setPreviewFile({ fileName: attachment.fileName, url, type, attachment });
+        setPreviewFile({ fileName: attachment.fileName, mimeType: attachment.mimeType, url, type, attachment });
     };
 
     const handleClosePreview = () => {
