@@ -58,10 +58,9 @@ export interface AuthRepositoryPort {
   findUserByUsername(username: string): Promise<AuthUser | null>;
   findUserById(id: string): Promise<AuthUser | null>;
   createCitizen(input: {
-    username: string;
     password: string;
     name: string;
-    citizenId?: string;
+    citizenId: string;
   }): Promise<PublicAuthUser>;
   createSession(userId: string, ttlMs: number): Promise<{ token: string; expiresAt: string }>;
   findSessionByToken(token: string): Promise<{ session: AuthSession; user: AuthUser } | null>;
@@ -84,7 +83,13 @@ export class AuthRepository implements AuthRepositoryPort {
     await this.ensureDemoUsers();
     const data = await this.store.read();
     const normalizedUsername = normalizeUsername(username);
-    return data.users.find((user) => user.username === normalizedUsername) ?? null;
+    const normalizedCitizenIdHash = /^(?:\d{9}|\d{12})$/.test(normalizedUsername)
+      ? hashCitizenId(normalizedUsername)
+      : '';
+    return data.users.find((user) =>
+      user.username === normalizedUsername
+      || (normalizedCitizenIdHash && user.citizenIdHash === normalizedCitizenIdHash),
+    ) ?? null;
   }
 
   async findUserById(id: string): Promise<AuthUser | null> {
@@ -94,26 +99,25 @@ export class AuthRepository implements AuthRepositoryPort {
   }
 
   async createCitizen(input: {
-    username: string;
     password: string;
     name: string;
-    citizenId?: string;
+    citizenId: string;
   }): Promise<PublicAuthUser> {
     await this.ensureDemoUsers();
     const now = new Date().toISOString();
-    const normalizedUsername = normalizeUsername(input.username);
+    const citizenIdHash = hashCitizenId(input.citizenId.trim());
     return this.store.update((data) => {
-      if (data.users.some((user) => user.username === normalizedUsername)) {
-        throw new Error('USERNAME_EXISTS');
+      if (data.users.some((user) => user.citizenIdHash === citizenIdHash)) {
+        throw new Error('CITIZEN_ID_EXISTS');
       }
       const user: AuthUser = {
         id: `citizen-${cryptoRandomId()}`,
-        username: normalizedUsername,
+        username: `citizen-${cryptoRandomId()}`,
         passwordHash: hashPassword(input.password),
         name: input.name.trim(),
         role: 'nguoi-dan',
         createdAt: now,
-        ...(input.citizenId?.trim() ? { citizenIdHash: hashCitizenId(input.citizenId) } : {}),
+        citizenIdHash,
       };
       data.users.push(user);
       return toPublicUser(user);

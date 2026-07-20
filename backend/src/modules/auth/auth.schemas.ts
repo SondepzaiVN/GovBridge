@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+const citizenNameSchema = z.string()
+  .trim()
+  .min(2)
+  .max(200)
+  .regex(/^[\p{L} ]+$/u, 'Họ tên chỉ được gồm chữ cái và khoảng trắng.');
+
 export const loginSchema = z.object({
   role: z.enum(['nguoi-dan', 'can-bo', 'admin']),
   username: z.string().trim().min(1).max(100),
@@ -7,8 +13,7 @@ export const loginSchema = z.object({
 }).strict();
 
 export const registerCitizenSchema = z.object({
-  username: z.string().trim().min(3).max(100).regex(/^[a-zA-Z0-9._-]+$/),
   password: z.string().min(8).max(200),
-  name: z.string().trim().min(2).max(200),
-  citizenId: z.string().trim().regex(/^(?:\d{9}|\d{12})$/).optional(),
+  name: citizenNameSchema,
+  citizenId: z.string().trim().regex(/^(?:\d{9}|\d{12})$/),
 }).strict();

@@ -43,7 +43,11 @@ const isAuthUser = (value: unknown): value is AuthUser => {
 
 const getFriendlyAuthError = (response: Response, error?: AuthApiError): string => {
     if (error?.code === 'USERNAME_EXISTS' || error?.message === 'Ten dang nhap da duoc su dung.') {
-        return 'Tên đăng nhập đã được sử dụng.';
+        return 'Số CCCD/mã định danh đã được sử dụng.';
+    }
+
+    if (error?.code === 'CITIZEN_ID_EXISTS') {
+        return 'Số CCCD/mã định danh đã được sử dụng.';
     }
 
     if (response.status === 401 || error?.code === 'UNAUTHORIZED') {
@@ -134,10 +138,9 @@ export const loginWithPassword = async (
 };
 
 export const registerCitizen = async (input: {
-    username: string;
     password: string;
     name: string;
-    citizenId?: string;
+    citizenId: string;
 }): Promise<AuthUser> => {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
@@ -148,7 +151,7 @@ export const registerCitizen = async (input: {
 };
 
 export const loginCitizenWithProvider = async (): Promise<AuthUser> =>
-    loginWithPassword('nguoi-dan', { username: 'citizen', password: '123456' }) as Promise<AuthUser>;
+    loginWithPassword('nguoi-dan', { username: '000000000001', password: '123456' }) as Promise<AuthUser>;
 
 export const clearCurrentUser = () => {
     localStorage.removeItem(AUTH_STORAGE_KEY);

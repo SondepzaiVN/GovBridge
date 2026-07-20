@@ -18,6 +18,8 @@ import type { UserRole } from '../../services/authService';
 type LoginMethod = 'vneid' | 'dvc' | 'officer' | 'register';
 type FormErrors = Partial<Record<'agency' | 'username' | 'password' | 'fullName' | 'citizenId' | 'credentials', string>>;
 
+const citizenNamePattern = /^[\p{L} ]+$/u;
+
 const getPostLoginRoute = (role: UserRole, previousRoute?: string) =>
     role === 'can-bo' ? '/can-bo' : previousRoute ?? '/';
 
@@ -80,11 +82,20 @@ const LoginPage: React.FC = () => {
         const isRegister = method === 'register';
 
         if (role === 'can-bo' && !agency.trim()) nextErrors.agency = 'Vui lòng chọn đơn vị/cơ quan.';
-        if (isRegister && !fullName.trim()) nextErrors.fullName = 'Vui lòng nhập họ tên.';
-        if (isRegister && citizenId.trim() && !/^(?:\d{9}|\d{12})$/.test(citizenId.trim())) {
+        if (isRegister && !fullName.trim()) {
+            nextErrors.fullName = 'Vui lòng nhập họ tên.';
+        } else if (isRegister && !citizenNamePattern.test(fullName.trim())) {
+            nextErrors.fullName = 'Họ tên chỉ được gồm chữ cái và khoảng trắng.';
+        }
+        if (isRegister && !citizenId.trim()) {
+            nextErrors.citizenId = 'Vui lòng nhập số CCCD/mã định danh.';
+        } else if (isRegister && citizenId.trim() && !/^(?:\d{9}|\d{12})$/.test(citizenId.trim())) {
             nextErrors.citizenId = 'CCCD phải có 9 hoặc 12 chữ số.';
         }
-        if (!username.trim()) nextErrors.username = 'Vui lòng nhập tài khoản.';
+        const normalizedUsername = username.trim();
+        if (!isRegister && !normalizedUsername) {
+            nextErrors.username = role === 'can-bo' ? 'Vui lòng nhập mã cán bộ.' : 'Vui lòng nhập số CCCD/mã định danh.';
+        }
         if (!password) nextErrors.password = 'Vui lòng nhập mật khẩu.';
         if (!isRegister && password && password.length < 6) {
             nextErrors.password = 'Mật khẩu cần tối thiểu 6 ký tự.';
@@ -104,10 +115,9 @@ const LoginPage: React.FC = () => {
             void (async () => {
                 const authenticated = method === 'register'
                     ? await registerCitizenAccount({
-                        username,
                         password,
                         name: fullName,
-                        ...(citizenId.trim() ? { citizenId } : {}),
+                        citizenId: citizenId.trim(),
                     })
                     : await login(role, username, password, agency);
                 setIsSubmitting(false);
@@ -191,10 +201,9 @@ const LoginPage: React.FC = () => {
         );
     }
 
-    const isVneid = method === 'vneid';
     const isRegister = method === 'register';
     const formTitle = getMethodLabel(method, role);
-    const testUsername = role === 'can-bo' ? 'officer' : 'citizen';
+    const testUsername = role === 'can-bo' ? 'officer' : '000000000001';
 
     return (
         <div className="login-ref-auth-page">
@@ -246,27 +255,29 @@ const LoginPage: React.FC = () => {
                                     <label htmlFor="login-ref-citizen-id" className="sr-only">Số CCCD / mã định danh</label>
                                     <div className={`login-ref-input${errors.citizenId ? ' invalid' : ''}`}>
                                         <ShieldCheck size={23} />
-                                        <input id="login-ref-citizen-id" value={citizenId} onChange={(event) => setCitizenId(event.target.value)} placeholder="Số CCCD/mã định danh (tùy chọn)" autoComplete="off" />
+                                        <input id="login-ref-citizen-id" value={citizenId} onChange={(event) => setCitizenId(event.target.value)} placeholder="Số CCCD/mã định danh" autoComplete="off" />
                                     </div>
                                     {errors.citizenId && <p className="login-ref-error">{errors.citizenId}</p>}
                                 </div>
                             </>
                         )}
 
-                        <div className="login-ref-field-block">
-                            <label htmlFor="login-ref-username" className="sr-only">{isVneid ? 'Số định danh cá nhân' : 'Tài khoản đăng nhập'}</label>
-                            <div className={`login-ref-input${errors.username ? ' invalid' : ''}`}>
-                                <UserRound size={23} />
-                                <input
-                                    id="login-ref-username"
-                                    value={username}
-                                    onChange={(event) => setUsername(event.target.value)}
-                                    placeholder={isVneid ? 'Số định danh cá nhân' : role === 'can-bo' ? 'Mã cán bộ hoặc email công vụ' : 'Tên đăng nhập / CCCD / Email'}
-                                    autoComplete="username"
-                                />
+                        {!isRegister && (
+                            <div className="login-ref-field-block">
+                                <label htmlFor="login-ref-username" className="sr-only">{role === 'can-bo' ? 'Mã cán bộ' : 'Số CCCD / mã định danh'}</label>
+                                <div className={`login-ref-input${errors.username ? ' invalid' : ''}`}>
+                                    <UserRound size={23} />
+                                    <input
+                                        id="login-ref-username"
+                                        value={username}
+                                        onChange={(event) => setUsername(event.target.value)}
+                                        placeholder={role === 'can-bo' ? 'Mã cán bộ' : 'Số CCCD/mã định danh'}
+                                        autoComplete="username"
+                                    />
+                                </div>
+                                {errors.username && <p className="login-ref-error">{errors.username}</p>}
                             </div>
-                            {errors.username && <p className="login-ref-error">{errors.username}</p>}
-                        </div>
+                        )}
 
                         <div className="login-ref-field-block">
                             <label htmlFor="login-ref-password" className="sr-only">Mật khẩu</label>
@@ -300,7 +311,9 @@ const LoginPage: React.FC = () => {
                                     Đã có tài khoản? Quay lại đăng nhập
                                 </button>
                             )}
-                            <p className="login-ref-demo">Tài khoản thử nghiệm: <strong>{testUsername}</strong> / <strong>123456</strong></p>
+                            {!isRegister && (
+                                <p className="login-ref-demo">{role === 'can-bo' ? 'Tài khoản thử nghiệm' : 'CCCD thử nghiệm'}: <strong>{testUsername}</strong> / <strong>123456</strong></p>
+                            )}
                         </div>
                     </form>
                 </div>
@@ -319,7 +332,7 @@ const LoginPage: React.FC = () => {
 
             {!isRegister && (
                 <div className="login-test-credentials-popup" role="note" aria-label="Tài khoản test">
-                    <span>Tài khoản test: <strong>{testUsername}</strong></span>
+                    <span>{role === 'can-bo' ? 'Tài khoản test' : 'CCCD test'}: <strong>{testUsername}</strong></span>
                     <span>Mật khẩu test: <strong>123456</strong></span>
                 </div>
             )}

@@ -8,18 +8,17 @@ export class AuthService {
   constructor(private readonly repository: AuthRepositoryPort) {}
 
   async registerCitizen(input: {
-    username: string;
     password: string;
     name: string;
-    citizenId?: string;
+    citizenId: string;
   }): Promise<{ user: PublicAuthUser; token: string; expiresAt: string }> {
     try {
       const user = await this.repository.createCitizen(input);
       const session = await this.repository.createSession(user.id, SESSION_TTL_MS);
       return { user, ...session };
     } catch (error) {
-      if (error instanceof Error && error.message === 'USERNAME_EXISTS') {
-        throw new AppError(409, 'USERNAME_EXISTS', 'Tên đăng nhập đã được sử dụng.');
+      if (error instanceof Error && (error.message === 'USERNAME_EXISTS' || error.message === 'CITIZEN_ID_EXISTS')) {
+        throw new AppError(409, 'CITIZEN_ID_EXISTS', 'Số CCCD/mã định danh đã được sử dụng.');
       }
       throw error;
     }

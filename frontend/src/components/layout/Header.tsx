@@ -76,7 +76,7 @@ const Header: React.FC = () => {
                             <>
                                 <Link
                                     className="btn-header-register"
-                                    to="/dang-nhap?role=nguoi-dan"
+                                    to="/dang-nhap?role=nguoi-dan&method=register"
                                     onClick={() => localStorage.setItem('redirect_after_login', location.pathname + location.search)}
                                     aria-label="Đăng ký tài khoản"
                                 >
