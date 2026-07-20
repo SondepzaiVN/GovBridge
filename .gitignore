@@ -8,3 +8,9 @@ ref/
 .codex-work/
 outputs/
 prompt.md
+
+# Runtime data and user uploads
+backend/src/storage/data/applications.json
+backend/src/storage/data/dashboard-applications.json
+backend/src/storage/data/assistant-sessions.json
+backend/data/uploads/
