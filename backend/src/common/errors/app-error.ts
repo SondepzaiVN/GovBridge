@@ -28,6 +28,18 @@ export class ValidationError extends AppError {
   }
 }
 
+export class UnauthorizedError extends AppError {
+  constructor(message = 'Yeu cau dang nhap de tiep tuc.') {
+    super(401, 'UNAUTHORIZED', message);
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message = 'Tai khoan khong co quyen thuc hien thao tac nay.') {
+    super(403, 'FORBIDDEN', message);
+  }
+}
+
 export class ConfigurationError extends AppError {
   constructor(message: string) {
     super(503, 'PROVIDER_NOT_CONFIGURED', message);

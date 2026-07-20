@@ -14,8 +14,8 @@ import {
 import { useAuth } from '../../contexts/useAuth';
 import type { UserRole } from '../../services/authService';
 
-type LoginMethod = 'vneid' | 'dvc' | 'officer';
-type FormErrors = Partial<Record<'agency' | 'username' | 'password' | 'credentials', string>>;
+type LoginMethod = 'vneid' | 'dvc' | 'officer' | 'register';
+type FormErrors = Partial<Record<'agency' | 'username' | 'password' | 'fullName' | 'citizenId' | 'credentials', string>>;
 
 const getPostLoginRoute = (role: UserRole, previousRoute?: string) =>
     role === 'can-bo' ? '/can-bo' : previousRoute ?? '/';
@@ -23,14 +23,16 @@ const getPostLoginRoute = (role: UserRole, previousRoute?: string) =>
 const LoginPage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { user, login } = useAuth();
+    const { user, login, registerCitizenAccount } = useAuth();
     const searchParams = new URLSearchParams(location.search);
     const methodParam = searchParams.get('method');
-    const method: LoginMethod | null = methodParam === 'vneid' || methodParam === 'dvc' || methodParam === 'officer'
+    const method: LoginMethod | null = methodParam === 'vneid' || methodParam === 'dvc' || methodParam === 'officer' || methodParam === 'register'
         ? methodParam
         : null;
     const role: UserRole = method === 'officer' || searchParams.get('role') === 'can-bo' ? 'can-bo' : 'nguoi-dan';
     const [agency] = useState('Cần Thơ');
+    const [fullName, setFullName] = useState('');
+    const [citizenId, setCitizenId] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -67,6 +69,10 @@ const LoginPage: React.FC = () => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const nextErrors: FormErrors = {};
+        const isRegister = method === 'register';
+        if (isRegister && !fullName.trim()) nextErrors.fullName = 'Vui long nhap ho ten.';
+        if (isRegister && citizenId.trim() && !/^(?:\d{9}|\d{12})$/.test(citizenId.trim())) nextErrors.citizenId = 'CCCD phai co 9 hoac 12 chu so.';
+        if (isRegister && password && password.length < 8) nextErrors.password = 'Mat khau dang ky can toi thieu 8 ky tu.';
         if (role === 'can-bo' && !agency.trim()) nextErrors.agency = 'Vui lòng chọn đơn vị/cơ quan.';
         if (!username.trim()) nextErrors.username = 'Vui lòng nhập tài khoản.';
         if (!password) nextErrors.password = 'Vui lòng nhập mật khẩu.';
@@ -79,7 +85,15 @@ const LoginPage: React.FC = () => {
         setErrors({});
         setIsSubmitting(true);
         window.setTimeout(() => {
-            const authenticated = login(role, username, password, agency);
+            void (async () => {
+            const authenticated = method === 'register'
+                ? await registerCitizenAccount({
+                    username,
+                    password,
+                    name: fullName,
+                    ...(citizenId.trim() ? { citizenId } : {}),
+                })
+                : await login(role, username, password, agency);
             setIsSubmitting(false);
             if (!authenticated) {
                 setErrors({ credentials: 'Tài khoản hoặc mật khẩu không đúng.' });
@@ -91,6 +105,10 @@ const LoginPage: React.FC = () => {
                 navigate(getPostLoginRoute(role, from), { replace: true });
                 localStorage.removeItem('redirect_after_login');
             }, 700);
+            })().catch(() => {
+                setIsSubmitting(false);
+                setErrors({ credentials: 'Khong the dang nhap. Vui long thu lai.' });
+            });
         }, 650);
     };
 
@@ -174,7 +192,7 @@ const LoginPage: React.FC = () => {
 
             <main className={`login-ref-auth-card${role === 'can-bo' ? ' officer' : ''}`}>
                 <div className="login-ref-form-pane">
-                    <h1>{formTitle}</h1>
+                    <h1>{method === 'register' ? 'Dang ky tai khoan cong dan' : formTitle}</h1>
                     <form onSubmit={handleSubmit} noValidate>
                         {role === 'can-bo' && (
                             <div className="login-ref-field-block">
@@ -185,6 +203,27 @@ const LoginPage: React.FC = () => {
                                 </div>
                                 {errors.agency && <p className="login-ref-error">{errors.agency}</p>}
                             </div>
+                        )}
+
+                        {method === 'register' && (
+                            <>
+                                <div className="login-ref-field-block">
+                                    <label htmlFor="login-ref-full-name" className="sr-only">Ho ten</label>
+                                    <div className={`login-ref-input${errors.fullName ? ' invalid' : ''}`}>
+                                        <UserRound size={23} />
+                                        <input id="login-ref-full-name" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Ho ten cong dan" autoComplete="name" />
+                                    </div>
+                                    {errors.fullName && <p className="login-ref-error">{errors.fullName}</p>}
+                                </div>
+                                <div className="login-ref-field-block">
+                                    <label htmlFor="login-ref-citizen-id" className="sr-only">CCCD</label>
+                                    <div className={`login-ref-input${errors.citizenId ? ' invalid' : ''}`}>
+                                        <UserRound size={23} />
+                                        <input id="login-ref-citizen-id" value={citizenId} onChange={(event) => setCitizenId(event.target.value)} placeholder="So CCCD/ma dinh danh (tuy chon)" autoComplete="off" />
+                                    </div>
+                                    {errors.citizenId && <p className="login-ref-error">{errors.citizenId}</p>}
+                                </div>
+                            </>
                         )}
 
                         <div className="login-ref-field-block">
@@ -217,6 +256,16 @@ const LoginPage: React.FC = () => {
 
                         <p className="login-ref-help">Trường hợp không đăng nhập được, vui lòng <button type="button">xem hướng dẫn</button></p>
                         <p className="login-ref-demo">Tài khoản thử nghiệm: <strong>{role === 'can-bo' ? 'officer' : 'citizen'}</strong> / <strong>123456</strong></p>
+                        {role === 'nguoi-dan' && method !== 'register' && (
+                            <button type="button" className="login-ref-help" onClick={() => openMethod('register')}>
+                                Chua co tai khoan? Dang ky tai khoan cong dan rieng
+                            </button>
+                        )}
+                        {method === 'register' && (
+                            <button type="button" className="login-ref-help" onClick={() => openMethod('dvc')}>
+                                Da co tai khoan? Quay lai dang nhap
+                            </button>
+                        )}
                     </form>
                 </div>
 

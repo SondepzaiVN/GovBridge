@@ -8,6 +8,7 @@ export const withFallback = (value: unknown): string => {
 };
 
 import type { AttachmentMetadata } from './attachmentStorage';
+import { withAuthHeaders } from '../services/authService';
 
 export type DashboardDocument = { name: string; state: 'Đã có' | 'Cần kiểm tra' };
 
@@ -104,9 +105,9 @@ export const saveApplicationToDashboard = async (payload: SyncApplicationPayload
 
     const response = await fetch('/api/v1/dashboard/applications', {
         method: 'POST',
-        headers: {
+        headers: withAuthHeaders({
             'Content-Type': 'application/json',
-        },
+        }),
         body: JSON.stringify(newApplication),
     });
 

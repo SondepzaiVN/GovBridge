@@ -1,4 +1,4 @@
-export type UserRole = 'nguoi-dan' | 'can-bo';
+export type UserRole = 'nguoi-dan' | 'can-bo' | 'admin';
 
 export type AuthUser = {
     id: string;
@@ -6,6 +6,7 @@ export type AuthUser = {
     role: UserRole;
     username: string;
     agency?: string;
+    agencyId?: string;
 };
 
 type LoginCredentials = {
@@ -14,25 +15,15 @@ type LoginCredentials = {
     agency?: string;
 };
 
-const AUTH_STORAGE_KEY = 'govbridge-auth-user';
+type AuthApiResult = {
+    user: AuthUser;
+    token: string;
+    expiresAt: string;
+};
 
-const MOCK_USERS = {
-    'nguoi-dan': {
-        id: 'citizen-001',
-        username: 'citizen',
-        password: '123456',
-        name: 'Nguyễn Văn A',
-        role: 'nguoi-dan',
-    },
-    'can-bo': {
-        id: 'officer-001',
-        username: 'officer',
-        password: '123456',
-        name: 'Trần Văn B',
-        role: 'can-bo',
-        agency: 'Công an phường demo',
-    },
-} as const;
+const AUTH_STORAGE_KEY = 'govbridge-auth-user';
+const AUTH_TOKEN_STORAGE_KEY = 'govbridge-auth-token';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? '/api' : 'http://127.0.0.1:3000/api');
 
 const isAuthUser = (value: unknown): value is AuthUser => {
     if (!value || typeof value !== 'object') return false;
@@ -41,52 +32,101 @@ const isAuthUser = (value: unknown): value is AuthUser => {
         user.id
         && user.name
         && user.username
-        && (user.role === 'nguoi-dan' || user.role === 'can-bo'),
+        && (user.role === 'nguoi-dan' || user.role === 'can-bo' || user.role === 'admin'),
     );
+};
+
+const persistAuth = (result: AuthApiResult): AuthUser => {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(result.user));
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, result.token);
+    localStorage.setItem(`${AUTH_TOKEN_STORAGE_KEY}:expiresAt`, result.expiresAt);
+    return result.user;
+};
+
+export const getAuthToken = (): string | null => {
+    try {
+        const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+        const expiresAt = localStorage.getItem(`${AUTH_TOKEN_STORAGE_KEY}:expiresAt`);
+        if (!token) return null;
+        if (expiresAt && Date.parse(expiresAt) <= Date.now()) {
+            clearCurrentUser();
+            return null;
+        }
+        return token;
+    } catch {
+        return null;
+    }
+};
+
+export const withAuthHeaders = (headers?: HeadersInit): Headers => {
+    const nextHeaders = new Headers(headers);
+    const token = getAuthToken();
+    if (token && !nextHeaders.has('Authorization')) {
+        nextHeaders.set('Authorization', `Bearer ${token}`);
+    }
+    return nextHeaders;
 };
 
 export const getCurrentUser = (): AuthUser | null => {
     try {
         const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (!storedUser) return null;
+        if (!storedUser || !getAuthToken()) return null;
         const user: unknown = JSON.parse(storedUser);
         return isAuthUser(user) ? user : null;
     } catch {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
+        clearCurrentUser();
         return null;
     }
 };
 
-export const loginWithPassword = (
+const readAuthResult = async (response: Response): Promise<AuthApiResult> => {
+    const payload = await response.json().catch(() => null) as {
+        success?: boolean;
+        data?: AuthApiResult;
+        error?: { message?: string };
+    } | null;
+
+    if (!response.ok || !payload?.success || !payload.data) {
+        throw new Error(payload?.error?.message || 'Dang nhap khong thanh cong.');
+    }
+    return payload.data;
+};
+
+export const loginWithPassword = async (
     role: UserRole,
     credentials: LoginCredentials,
-): AuthUser | null => {
-    const mockUser = MOCK_USERS[role];
-    if (credentials.username.trim() !== mockUser.username || credentials.password !== mockUser.password) {
-        return null;
-    }
-
-    const user: AuthUser = {
-        id: mockUser.id,
-        name: mockUser.name,
-        role: mockUser.role,
-        username: mockUser.username,
-        ...(role === 'can-bo' ? { agency: credentials.agency?.trim() || MOCK_USERS['can-bo'].agency } : {}),
-    };
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    return user;
+): Promise<AuthUser | null> => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            role,
+            username: credentials.username.trim(),
+            password: credentials.password,
+        }),
+    });
+    return persistAuth(await readAuthResult(response));
 };
 
-export const loginCitizenWithProvider = (): AuthUser => {
-    const mockUser = MOCK_USERS['nguoi-dan'];
-    const user: AuthUser = {
-        id: mockUser.id,
-        name: mockUser.name,
-        role: mockUser.role,
-        username: mockUser.username,
-    };
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-    return user;
+export const registerCitizen = async (input: {
+    username: string;
+    password: string;
+    name: string;
+    citizenId?: string;
+}): Promise<AuthUser> => {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+    });
+    return persistAuth(await readAuthResult(response));
 };
 
-export const clearCurrentUser = () => localStorage.removeItem(AUTH_STORAGE_KEY);
+export const loginCitizenWithProvider = async (): Promise<AuthUser> =>
+    loginWithPassword('nguoi-dan', { username: 'citizen', password: '123456' }) as Promise<AuthUser>;
+
+export const clearCurrentUser = () => {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(`${AUTH_TOKEN_STORAGE_KEY}:expiresAt`);
+};

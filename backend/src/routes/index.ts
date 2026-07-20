@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import type { ApplicationService } from '../modules/applications/application.service.js';
 import type { AssistantService } from '../modules/assistant/assistant.service.js';
+import { createAuthRouter } from '../modules/auth/auth.routes.js';
+import type { AuthService } from '../modules/auth/auth.service.js';
 import { createDocumentReviewRouter } from '../modules/document-review/document-review.routes.js';
 import type { DocumentReviewService } from '../modules/document-review/document-review.service.js';
 import { createApplicationRouter } from '../modules/applications/application.routes.js';
@@ -19,6 +21,7 @@ import { createDashboardRouter } from '../modules/dashboard/dashboard.routes.js'
 export interface ApiDependencies {
   applicationService: ApplicationService;
   assistantService: AssistantService;
+  authService: AuthService;
   documentReviewService: DocumentReviewService;
   identityService: IdentityService;
   procedureService: ProcedureService;
@@ -36,6 +39,7 @@ export interface ApiDependencies {
 
 export const createApiRouter = (dependencies: ApiDependencies): Router => {
   const router = Router();
+  router.use('/auth', createAuthRouter(dependencies.authService));
   router.use('/health', createHealthRouter({
     assistantProvider: dependencies.providerNames.assistant,
     knowledgeProvider: dependencies.providerNames.knowledge,
@@ -49,6 +53,9 @@ export const createApiRouter = (dependencies: ApiDependencies): Router => {
   router.use('/document-review', createDocumentReviewRouter(dependencies.documentReviewService, dependencies.uploadMaxMb));
   router.use('/identity', createIdentityRouter(dependencies.identityService, dependencies.uploadMaxMb));
   router.use('/speech', createSpeechRouter(dependencies.speechService, dependencies.uploadMaxMb));
-  router.use('/dashboard/applications', createDashboardRouter(dependencies.dashboardRepository));
+  router.use('/dashboard/applications', createDashboardRouter(
+    dependencies.dashboardRepository,
+    dependencies.authService,
+  ));
   return router;
 };

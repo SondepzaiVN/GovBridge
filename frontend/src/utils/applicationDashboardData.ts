@@ -1,4 +1,5 @@
 import { normalizeOfficerApplication, type OfficerApplication } from './officerApplicationFilters';
+import { withAuthHeaders } from '../services/authService';
 
 export const DASHBOARD_STORAGE_KEY = 'officerApplications_v2';
 
@@ -10,7 +11,9 @@ export const INITIAL_DASHBOARD_APPLICATIONS: OfficerApplication[] = RAW_INITIAL_
 
 export const fetchDashboardApplications = async (): Promise<OfficerApplication[]> => {
     try {
-        const response = await fetch('/api/v1/dashboard/applications');
+        const response = await fetch('/api/v1/dashboard/applications', {
+            headers: withAuthHeaders(),
+        });
         if (!response.ok) return INITIAL_DASHBOARD_APPLICATIONS;
         
         const data = await response.json();

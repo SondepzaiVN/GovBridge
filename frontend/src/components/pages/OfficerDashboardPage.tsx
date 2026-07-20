@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/useAuth';
 import { getAttachmentFile, type AttachmentMetadata } from '../../utils/attachmentStorage';
+import { withAuthHeaders } from '../../services/authService';
 import {
     DASHBOARD_STORAGE_KEY,
     fetchDashboardApplications,
@@ -247,7 +248,7 @@ const OfficerDashboardPage: React.FC = () => {
         try {
             const response = await fetch(`/api/v1/dashboard/applications/${selectedApplication.id}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: withAuthHeaders({ 'Content-Type': 'application/json' }),
                 body: JSON.stringify(updates),
             });
             if (!response.ok) throw new Error('Failed to update status on backend');

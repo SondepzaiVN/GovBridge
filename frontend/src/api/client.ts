@@ -1,4 +1,5 @@
 import { isLikelyConnectivityError, notifyConnectivityFallback } from '../utils/connectivityFallback';
+import { withAuthHeaders } from '../services/authService';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? '/api' : 'http://127.0.0.1:3000/api');
 
@@ -50,7 +51,7 @@ export class ApiClientError extends Error {
  */
 export const apiClient = async <T>(endpoint: string, options: RequestInit = {}): Promise<T> => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const headers = new Headers(options.headers);
+  const headers = withAuthHeaders(options.headers);
   const isFormData = options.body instanceof FormData;
 
   if (options.body && !isFormData && !headers.has('Content-Type')) {

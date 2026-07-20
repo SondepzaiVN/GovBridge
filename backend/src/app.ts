@@ -21,6 +21,8 @@ import { ApplicationRepository } from './modules/applications/application.reposi
 import { ApplicationService } from './modules/applications/application.service.js';
 import { AssistantSessionRepository } from './modules/assistant/assistant.repository.js';
 import { AssistantService } from './modules/assistant/assistant.service.js';
+import { AuthRepository } from './modules/auth/auth.repository.js';
+import { AuthService } from './modules/auth/auth.service.js';
 import type { IntentNormalizerProvider } from './modules/assistant/intent-normalizer.types.js';
 import type { KnowledgeProvider } from './modules/assistant/knowledge.types.js';
 import type { OrchestratorProvider } from './modules/assistant/orchestrator.types.js';
@@ -65,6 +67,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
   const applications = new ApplicationRepository(dataDirectory);
   const sessions = new AssistantSessionRepository(dataDirectory);
   const dashboardRepository = new DashboardRepository(dataDirectory);
+  const authService = new AuthService(new AuthRepository(dataDirectory));
   const openAiClient = env.OPENAI_API_KEY.trim()
     ? new HttpOpenAiResponsesClient({
         baseUrl: env.OPENAI_BASE_URL,
@@ -165,6 +168,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
       knowledgeProvider,
       intentNormalizerProvider,
     ),
+    authService,
     documentReviewService: new DocumentReviewService(
       documentReaderProvider,
       documentReviewerProvider,
