@@ -8,7 +8,14 @@ export const findRelevantProcedure = (context: AssistantToolContext): Procedure 
       procedure,
       score: Math.max(
         0,
-        ...[procedure.name, procedure.shortName, ...procedure.keywords]
+        ...[
+          procedure.name,
+          procedure.shortName,
+          ...procedure.keywords,
+          ...(procedure.citizenSituations ?? []),
+          ...(procedure.citizenOutcomes ?? []),
+          ...(procedure.negativeHints ?? []),
+        ]
           .map(normalizeText)
           .filter((keyword) => keyword && context.normalizedMessage.includes(keyword))
           .map((keyword) => keyword.length),

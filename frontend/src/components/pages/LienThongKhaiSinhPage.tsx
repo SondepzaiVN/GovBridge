@@ -16,8 +16,14 @@ import {
 } from 'lucide-react';
 import { ocrService } from '../../api/aiServices';
 import { useForm } from '../../contexts/FormContext';
-import { saveApplicationToDashboard } from '../../utils/dashboardSync';
+import {
+    clearSubmissionId,
+    getDashboardApplicationCode,
+    getOrCreateSubmissionId,
+    saveApplicationToDashboard,
+} from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { isLikelyConnectivityError, notifyConnectivityFallback } from '../../utils/connectivityFallback';
 import { provinces, useWards } from '../../hooks/useAdministrativeUnits';
 import { administrativeUnitService } from '../../api/administrativeUnitService';
 import type { CCCDInfo, DocumentReviewUiState, FormFieldOption } from '../../types';
@@ -1207,6 +1213,8 @@ const LienThongKhaiSinhPage: React.FC = () => {
     const [activeReviewTab, setActiveReviewTab] = React.useState(0);
     const [generatedReviewTabs, setGeneratedReviewTabs] = React.useState<ReviewTab[]>([]);
     const [isGeneratingDeclaration, setIsGeneratingDeclaration] = React.useState(false);
+    const [isSubmittingApplication, setIsSubmittingApplication] = React.useState(false);
+    const [submittedApplicationCode, setSubmittedApplicationCode] = React.useState('');
     const [uploadedFiles, setUploadedFiles] = React.useState<Record<string, File>>({});
     const [attachmentReviews, setAttachmentReviews] = React.useState<Record<string, DocumentReviewUiState>>({});
     const [administrativeProvinceOptions, setAdministrativeProvinceOptions] = React.useState<FormFieldOption[]>([]);
@@ -1607,7 +1615,7 @@ const LienThongKhaiSinhPage: React.FC = () => {
     };
 
     const handleNext = async () => {
-        if (isGeneratingDeclaration) return;
+        if (isGeneratingDeclaration || isSubmittingApplication) return;
         setSubmitError('');
         setShowMissingRequiredModal(false);
         if (!validateStep()) {
@@ -1616,66 +1624,74 @@ const LienThongKhaiSinhPage: React.FC = () => {
         }
 
         if (currentStep === 5) {
-            // Build payload for submission
-            const payload = {
-                ...formState.values,
-                message: 'Điền thiếu',
-                caseNote: 'Điền thiếu',
-                attachments: {
-                    step4Files: Object.entries(uploadedFiles).map(([id, file]) => ({
-                        fieldName: id,
-                        fileName: file.name,
-                        file: file,
-                        size: file.size,
-                        type: file.type,
-                    })),
-                },
-            };
+            setIsSubmittingApplication(true);
+            try {
+                const submissionId = getOrCreateSubmissionId('lien-thong-khai-sinh');
+                const uploadedEntries = Object.entries(uploadedFiles).map(([id, file]) => ({
+                    fieldName: id,
+                    fileName: file.name,
+                    file,
+                    size: file.size,
+                    type: file.type,
+                }));
+                const babyName = [formState.values.ltks_hoTre, formState.values.ltks_chuDemTre, formState.values.ltks_tenTre]
+                    .filter(Boolean)
+                    .join(' ');
+                const attachments = await Promise.all(Object.values(uploadedFiles).map((file) => saveAttachmentFile(file)));
 
-            const babyName = [formState.values.ltks_hoTre, formState.values.ltks_chuDemTre, formState.values.ltks_tenTre]
-                .filter(Boolean)
-                .join(' ');
-            const attachments = await Promise.all(Object.values(uploadedFiles).map((file) => saveAttachmentFile(file)));
-
-            let aggregatedOfficerNote = '';
-            let finalFlag = '';
-            Object.entries(attachmentReviews).forEach(([title, review]) => {
-                if (review.text) {
-                    const fileName = uploadedFiles[title]?.name || title;
-                    aggregatedOfficerNote += `[${fileName}]: ${review.text}\n\n`;
-                    if (review.flag === 'red') {
-                        finalFlag = 'red';
-                    } else if (!finalFlag && review.flag) {
-                        finalFlag = review.flag;
+                let aggregatedOfficerNote = '';
+                let finalFlag = '';
+                Object.entries(attachmentReviews).forEach(([title, review]) => {
+                    if (review.text) {
+                        const fileName = uploadedFiles[title]?.name || title;
+                        aggregatedOfficerNote += `[${fileName}]: ${review.text}\n\n`;
+                        if (review.flag === 'red') {
+                            finalFlag = 'red';
+                        } else if (!finalFlag && review.flag) {
+                            finalFlag = review.flag;
+                        }
                     }
+                });
+
+                const savedApplication = await saveApplicationToDashboard({
+                    clientSubmissionId: submissionId,
+                    procedure: 'Liên thông khai sinh, thường trú, BHYT',
+                    applicant: formState.values.ltks_hoTenNguoiYeuCau || '',
+                    citizenId: formState.values.ltks_soDinhDanhNguoiYeuCau || '',
+                    phone: formState.values.ltks_sdtNguoiYeuCau || '',
+                    email: formState.values.ltks_emailNguoiYeuCau || '',
+                    documents: uploadedEntries.length
+                        ? uploadedEntries.map((f) => ({ name: f.fileName, state: 'Đã có' as const }))
+                        : [],
+                    attachments,
+                    message: 'Điền thiếu',
+                    caseNote: 'Điền thiếu',
+                    details: {
+                        'Tên trẻ khai sinh': babyName || '',
+                        'Ngày sinh': formState.values.ltks_ngaySinhTre || '',
+                        'Quan hệ với người yêu cầu': formState.values.ltks_quanHeVoiTre || '',
+                        'Cơ quan đăng ký khai sinh': formState.values.ltks_coQuanDangKyKhaiSinh || '',
+                    },
+                    officerNote: aggregatedOfficerNote.trim(),
+                    officerNoteFlag: finalFlag,
+                });
+
+                setSubmittedApplicationCode(getDashboardApplicationCode(savedApplication));
+                clearSubmissionId('lien-thong-khai-sinh');
+                goToStep(6);
+            } catch (error) {
+                console.error('Không thể xác nhận nộp hồ sơ khai sinh.', error);
+                if (isLikelyConnectivityError(error)) {
+                    notifyConnectivityFallback({ playAudio: true });
+                    setSubmitError(
+                        'Chưa xác nhận nộp hồ sơ thành công do kết nối bị gián đoạn. Dữ liệu vẫn được giữ trên màn hình, vui lòng kiểm tra mạng rồi bấm Hoàn thành để gửi lại.',
+                    );
+                } else {
+                    setSubmitError('Chưa thể nộp hồ sơ. Hệ thống chưa xác nhận đã nhận hồ sơ, vui lòng thử lại sau.');
                 }
-            });
-
-            saveApplicationToDashboard({
-                procedure: 'Liên thông khai sinh, thường trú, BHYT',
-                applicant: formState.values.ltks_hoTenNguoiYeuCau || '',
-                citizenId: formState.values.ltks_soDinhDanhNguoiYeuCau || '',
-                phone: formState.values.ltks_sdtNguoiYeuCau || '',
-                email: formState.values.ltks_emailNguoiYeuCau || '',
-                documents: payload.attachments.step4Files.length
-                    ? payload.attachments.step4Files.map((f) => ({ name: f.fileName, state: 'Đã có' as const }))
-                    : [],
-                attachments,
-                message: payload.message,
-                caseNote: payload.caseNote,
-                details: {
-                    'Tên trẻ khai sinh': babyName || '',
-                    'Ngày sinh': formState.values.ltks_ngaySinhTre || '',
-                    'Quan hệ với người yêu cầu': formState.values.ltks_quanHeVoiTre || '',
-                    'Cơ quan đăng ký khai sinh': formState.values.ltks_coQuanDangKyKhaiSinh || '',
-                },
-                officerNote: aggregatedOfficerNote.trim(),
-                officerNoteFlag: finalFlag,
-            });
-
-            console.log('SUBMIT PAYLOAD:', payload);
-            // Simulate successful submission and go to completion step
-            goToStep(6);
+            } finally {
+                setIsSubmittingApplication(false);
+            }
             return;
         }
 
@@ -1863,7 +1879,9 @@ const LienThongKhaiSinhPage: React.FC = () => {
                                         onChange={(fieldId, value) => setFieldValue(fieldId, value)}
                                     />
                                 )}
-                                {section.complete && <CompletePanel onReset={() => goToStep(1)} />}
+                                {section.complete && (
+                                    <CompletePanel applicationCode={submittedApplicationCode} onReset={() => goToStep(1)} />
+                                )}
                                 {section.review && <ReviewPanel values={formState.values} />}
                             </section>
                         ))}
@@ -1892,8 +1910,19 @@ const LienThongKhaiSinhPage: React.FC = () => {
                                     Quay lại bước trước
                                 </button>
                             )}
-                            <button type="button" className="ltks-btn primary" onClick={handleNext} disabled={isGeneratingDeclaration}>
-                                {isGeneratingDeclaration ? 'AI đang xử lý...' : currentStep === 5 ? 'Hoàn thành' : 'Chuyển bước tiếp theo'}
+                            <button
+                                type="button"
+                                className="ltks-btn primary"
+                                onClick={handleNext}
+                                disabled={isGeneratingDeclaration || isSubmittingApplication}
+                            >
+                                {isGeneratingDeclaration
+                                    ? 'AI đang xử lý...'
+                                    : isSubmittingApplication
+                                        ? 'Đang gửi hồ sơ...'
+                                        : currentStep === 5
+                                            ? 'Hoàn thành'
+                                            : 'Chuyển bước tiếp theo'}
                             </button>
                             {currentStep === 5 && (
                                 <button type="button" className="ltks-btn secondary">
@@ -2215,6 +2244,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 aria-controls={listboxId}
                 disabled={disabled}
                 data-highlight-id={id}
+                data-select-options={JSON.stringify(options)}
                 onClick={() => {
                     if (disabled) return;
                     setActiveOption(value || options[0] || '');
@@ -2550,7 +2580,7 @@ const PdfReviewTabs: React.FC<PdfReviewTabsProps> = ({ tabs, activeIndex, onTabC
     );
 };
 
-const CompletePanel: React.FC<{ onReset: () => void }> = ({ onReset }) => {
+const CompletePanel: React.FC<{ applicationCode: string; onReset: () => void }> = ({ applicationCode, onReset }) => {
     const [showToast, setShowToast] = React.useState(true);
 
     React.useEffect(() => {
@@ -2578,7 +2608,7 @@ const CompletePanel: React.FC<{ onReset: () => void }> = ({ onReset }) => {
                         Vui lòng ghi nhớ các thông tin bên dưới để theo dõi tình hình xử lý hoặc cập nhật thông tin hồ
                         sơ của bạn.
                     </p>
-                    <p className="ltks-complete-code">Số hồ sơ: G22.99.09-240114-0001</p>
+                    <p className="ltks-complete-code">Số hồ sơ: {applicationCode}</p>
 
                     <div className="ltks-complete-copy">
                         <p>

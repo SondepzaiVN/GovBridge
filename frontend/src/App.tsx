@@ -10,6 +10,7 @@ import RequireRole from './components/auth/RequireRole';
 import RequireAuth from './components/auth/RequireAuth';
 import SplashScreen from './components/layout/SplashScreen';
 import { ExternalProcessingNoticeHost } from './components/common/ExternalProcessingNoticeHost';
+import { ConnectivityFallbackHost } from './components/common/ConnectivityFallbackHost';
 import './index.css';
 
 // Lazy-load pages
@@ -59,7 +60,7 @@ const PageLoader = () => (
 const AppInner: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { fillFields, formState } = useForm();
+    const { fillFields, formState, pageContext } = useForm();
     const isAuthenticationPage = location.pathname === '/dang-nhap';
     const isOfficerPage = location.pathname === '/can-bo';
 
@@ -77,6 +78,7 @@ const AppInner: React.FC = () => {
             onFillForm={handleFillForm}
             currentRoute={location.pathname}
             formValues={formState.values}
+            pageContext={pageContext}
         >
             {!isAuthenticationPage && (
                 <>
@@ -89,6 +91,7 @@ const AppInner: React.FC = () => {
                     )}
                     <Header />
                     <ExternalProcessingNoticeHost />
+                    <ConnectivityFallbackHost />
                 </>
             )}
 

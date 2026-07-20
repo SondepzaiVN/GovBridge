@@ -1,7 +1,12 @@
 import { z } from 'zod';
 import { AppError } from '../../common/errors/app-error.js';
 import { normalizeText } from '../../common/utils/normalize-text.js';
-import type { OrchestratorFinalResult, AssistantUnderstanding } from '../../modules/assistant/assistant.types.js';
+import type {
+    AssistantToolContext,
+    AssistantUnderstanding,
+    OrchestratorFinalResult,
+} from '../../modules/assistant/assistant.types.js';
+import type { NormalizedIntent } from '../../modules/assistant/intent-normalizer.types.js';
 import type { KnowledgeResult } from '../../modules/assistant/knowledge.types.js';
 import type {
     OrchestratorProvider,
@@ -16,6 +21,11 @@ import type { OpenAiResponsesClient } from './openai-responses.client.js';
 
 const MAX_HISTORY_MESSAGES = 4;
 const MAX_OPENAI_FIELD_VALUE_LENGTH = 500;
+const MAX_CATALOG_DESCRIPTION_LENGTH = 220;
+const MAX_CATALOG_KEYWORDS = 6;
+const MAX_ROUTED_FIELDS = 35;
+const MAX_SEMANTIC_HINTS = 3;
+const MAX_SEMANTIC_HINT_LENGTH = 180;
 const OPENAI_CONTINUATION_PROVIDER = 'openai-responses';
 const SMALL_TALK_MESSAGES = new Set([
     'xin chao',
@@ -281,57 +291,185 @@ const serializeFieldOptionsForOpenAi = (field: {
     })) ?? [];
 };
 
-const buildOrchestratorInstructions = (request: OrchestratorRequest): string => {
-    const { context } = request;
-    const knownFields = Object.fromEntries(
-        Object.entries(context.formContext.knownFields).map(([fieldId, value]) => [
-            fieldId,
-            value.slice(0, MAX_OPENAI_FIELD_VALUE_LENGTH),
-        ]),
+const hasIntent = (context: AssistantToolContext, intent: NormalizedIntent): boolean =>
+    context.intentNormalization?.intent === intent
+    || context.intentNormalization?.secondaryIntents.includes(intent) === true;
+
+const shouldUseBroadFallbackContext = (context: AssistantToolContext): boolean =>
+    !context.intentNormalization
+    || context.intentNormalization.intent === 'UNCLEAR'
+    || context.intentNormalization.confidence < 0.6;
+
+const pushUnique = (target: string[], value: string): void => {
+    if (!target.includes(value)) target.push(value);
+};
+
+const selectRoutedFieldIds = (context: AssistantToolContext): string[] => {
+    const selected: string[] = [];
+    const includeFormState =
+        shouldUseBroadFallbackContext(context)
+        || hasIntent(context, 'FORM_FILL')
+        || hasIntent(context, 'UI_HIGHLIGHT');
+    for (const fieldId of context.intentNormalization?.fieldHints ?? []) pushUnique(selected, fieldId);
+    for (const field of context.formContext.importantVisibleFields) pushUnique(selected, field.id);
+    for (const field of context.formContext.missingRequiredFields) pushUnique(selected, field.id);
+    if (includeFormState) {
+        for (const fieldId of Object.keys(context.formContext.recentChanges)) pushUnique(selected, fieldId);
+        for (const fieldId of Object.keys(context.formContext.recentOcrFacts)) pushUnique(selected, fieldId);
+    }
+
+    const currentStep = context.formContext.currentStep;
+    if (currentStep !== null) {
+        for (const field of context.currentProcedure?.fields ?? []) {
+            if (field.step === currentStep) pushUnique(selected, field.id);
+        }
+    }
+
+    if (shouldUseBroadFallbackContext(context) || hasIntent(context, 'FORM_FILL')) {
+        for (const fieldId of Object.keys(context.formContext.knownFields)) {
+            pushUnique(selected, fieldId);
+        }
+    }
+
+    return selected.slice(0, MAX_ROUTED_FIELDS);
+};
+
+const summarizeProcedureCatalog = (context: AssistantToolContext, includeDescription: boolean) =>
+    context.procedures.map((procedure) => ({
+        id: procedure.id,
+        name: procedure.name,
+        shortName: procedure.shortName,
+        route: procedure.route,
+        keywords: procedure.keywords.slice(0, MAX_CATALOG_KEYWORDS),
+        citizenSituations: (procedure.citizenSituations ?? [])
+            .map((value) => value.slice(0, MAX_SEMANTIC_HINT_LENGTH))
+            .slice(0, MAX_SEMANTIC_HINTS),
+        citizenOutcomes: (procedure.citizenOutcomes ?? [])
+            .map((value) => value.slice(0, MAX_SEMANTIC_HINT_LENGTH))
+            .slice(0, 2),
+        negativeHints: (procedure.negativeHints ?? [])
+            .map((value) => value.slice(0, MAX_SEMANTIC_HINT_LENGTH))
+            .slice(0, 2),
+        ...(includeDescription
+            ? { description: procedure.description.slice(0, MAX_CATALOG_DESCRIPTION_LENGTH) }
+            : {}),
+    }));
+
+const buildRoutedCurrentProcedure = (
+    context: AssistantToolContext,
+    routedFieldIds: string[],
+) => {
+    if (!context.currentProcedure) return null;
+
+    const includeFieldSchema =
+        shouldUseBroadFallbackContext(context)
+        || hasIntent(context, 'FORM_FILL')
+        || hasIntent(context, 'UI_HIGHLIGHT');
+    const includeFieldOptions =
+        shouldUseBroadFallbackContext(context)
+        || hasIntent(context, 'FORM_FILL');
+    const routedFieldIdSet = new Set(routedFieldIds);
+
+    return {
+        id: context.currentProcedure.id,
+        name: context.currentProcedure.name,
+        shortName: context.currentProcedure.shortName,
+        route: context.currentProcedure.route,
+        description: context.currentProcedure.description.slice(0, MAX_CATALOG_DESCRIPTION_LENGTH),
+        citizenSituations: (context.currentProcedure.citizenSituations ?? [])
+            .map((value) => value.slice(0, MAX_SEMANTIC_HINT_LENGTH))
+            .slice(0, MAX_SEMANTIC_HINTS),
+        citizenOutcomes: (context.currentProcedure.citizenOutcomes ?? [])
+            .map((value) => value.slice(0, MAX_SEMANTIC_HINT_LENGTH))
+            .slice(0, 2),
+        negativeHints: (context.currentProcedure.negativeHints ?? [])
+            .map((value) => value.slice(0, MAX_SEMANTIC_HINT_LENGTH))
+            .slice(0, 2),
+        fields: includeFieldSchema
+            ? context.currentProcedure.fields
+                  .filter((field) => routedFieldIdSet.has(field.id))
+                  .map((field) => ({
+                      id: field.id,
+                      label: field.label,
+                      type: field.type,
+                      required: field.required,
+                      step: field.step ?? null,
+                      ...(includeFieldOptions ? { options: serializeFieldOptionsForOpenAi(field) } : {}),
+                  }))
+            : [],
+    };
+};
+
+const buildRoutedKnownFields = (
+    context: AssistantToolContext,
+    routedFieldIds: string[],
+): Record<string, string> => {
+    const allowedFieldIds = shouldUseBroadFallbackContext(context)
+        ? Object.keys(context.formContext.knownFields)
+        : routedFieldIds;
+
+    return Object.fromEntries(
+        allowedFieldIds.flatMap((fieldId) => {
+            const value = context.formContext.knownFields[fieldId];
+            return value ? [[fieldId, value.slice(0, MAX_OPENAI_FIELD_VALUE_LENGTH)]] : [];
+        }),
     );
-    const currentProcedure = context.currentProcedure
-        ? {
-              id: context.currentProcedure.id,
-              name: context.currentProcedure.name,
-              route: context.currentProcedure.route,
-              fields: context.currentProcedure.fields.map((field) => ({
-                  id: field.id,
-                  label: field.label,
-                  type: field.type,
-                  required: field.required,
-                  step: field.step ?? null,
-                  options: serializeFieldOptionsForOpenAi(field),
-              })),
-          }
-        : null;
-    const runtimeContext = {
-        currentRoute: context.currentProcedure?.route ?? null,
+};
+
+const buildRoutedRuntimeContext = (context: AssistantToolContext) => {
+    const routedFieldIds = selectRoutedFieldIds(context);
+    const includeCatalogDescription =
+        shouldUseBroadFallbackContext(context)
+        || hasIntent(context, 'NAVIGATION')
+        || hasIntent(context, 'PROCEDURE_KNOWLEDGE');
+
+    return {
+        contextRouting: {
+            intent: context.intentNormalization?.intent ?? null,
+            secondaryIntents: context.intentNormalization?.secondaryIntents ?? [],
+            confidence: context.intentNormalization?.confidence ?? 0,
+            policy: 'runtimeContext is minimized by normalized intent; omitted fields may still exist in backend context.',
+        },
+        currentRoute: context.currentRoute,
         currentStep: context.formContext.currentStep,
-        // Procedure schema chưa có catalog section để xác minh giá trị từ frontend.
-        currentSection: null,
-        currentProcedure,
-        procedureCatalog: context.procedures.map((procedure) => ({
-            id: procedure.id,
-            name: procedure.name,
-            shortName: procedure.shortName,
-            description: procedure.description,
-            keywords: procedure.keywords,
-            route: procedure.route,
-        })),
-        knownFields,
+        // Procedure schema chÆ°a cÃ³ catalog section Ä‘á»ƒ xÃ¡c minh giÃ¡ trá»‹ tá»« frontend.
+        currentSection: context.formContext.currentSection,
+        currentProcedure: buildRoutedCurrentProcedure(context, routedFieldIds),
+        procedureCatalog: summarizeProcedureCatalog(context, includeCatalogDescription),
+        knownFields: buildRoutedKnownFields(context, routedFieldIds),
+        knownFieldCount: Object.keys(context.formContext.knownFields).length,
         missingRequiredFields: context.formContext.missingRequiredFields,
         importantVisibleFields: context.formContext.importantVisibleFields,
+        pageContext: context.formContext.pageContext,
+        recentDocumentReviews: context.formContext.recentDocumentReviews,
+        allowedHighlightIds: [
+            'submit-btn',
+            'search-btn',
+            'search-bar',
+            'login-btn',
+            ...routedFieldIds,
+        ],
+        intentNormalization: context.intentNormalization ?? null,
     };
+};
+
+const buildOrchestratorInstructions = (request: OrchestratorRequest): string => {
+    const { context } = request;
+    const runtimeContext = buildRoutedRuntimeContext(context);
 
     return `Bạn là OpenAI Orchestrator của GovBridge. Nhiệm vụ của bạn là hiểu ý định thật của người dân, trích xuất dữ liệu biểu mẫu họ thực sự nói, điều phối đúng luồng xử lý và trả JSON đúng response schema. Luôn dựa vào runtimeContext, currentRoute, currentProcedure, procedureCatalog, knownFields, missingRequiredFields, importantVisibleFields và lịch sử gần nhất. Không tự thực hiện thay backend, không tuyên bố đã điền, đã chuyển trang, đã nộp, đã duyệt hoặc đã hoàn tất nếu backend/người dân chưa xác nhận.
 
 BƯỚC 1 — HIỂU Ý ĐỊNH
-Hiểu toàn câu và ngữ cảnh, không quyết định chỉ bằng một từ khóa. Người dân có thể nói ngắn, sai chính tả, dùng từ đời thường hoặc mô tả hoàn cảnh thay vì nói đúng tên thủ tục. Ưu tiên tin nhắn mới nhất, đặc biệt là phủ định, sửa đổi, xác nhận hoặc hủy bỏ. Đối chiếu ngữ nghĩa với name, shortName, description và keywords của toàn bộ procedureCatalog. Chỉ hỏi lại khi sự mơ hồ có thể làm chọn sai thủ tục, sai field hoặc sai hành động.
+Hiểu toàn câu và ngữ cảnh, không quyết định chỉ bằng một từ khóa. Người dân có thể nói ngắn, sai chính tả, dùng từ đời thường hoặc mô tả hoàn cảnh thay vì nói đúng tên thủ tục. Ưu tiên tin nhắn mới nhất, đặc biệt là phủ định, sửa đổi, xác nhận hoặc hủy bỏ. Đối chiếu ngữ nghĩa với name, shortName, description, keywords, citizenSituations, citizenOutcomes và negativeHints của toàn bộ procedureCatalog. Chỉ hỏi lại khi sự mơ hồ có thể làm chọn sai thủ tục, sai field hoặc sai hành động.
 
-Phải xếp hạng tất cả thủ tục trong procedureCatalog trước khi dùng currentProcedure. Ưu tiên lần lượt: tên thủ tục được nói rõ; mức khớp ngữ nghĩa với shortName/description/keywords; mục tiêu mà người dân muốn đạt được; cuối cùng mới tới ngữ cảnh trang hiện tại. currentProcedure chỉ là fallback khi người dân đang tham chiếu đến trang, thủ tục hoặc field hiện tại, không phải thủ tục mặc định cho mọi câu hỏi. Nếu chỉ có một ứng viên nổi trội thì chọn ứng viên đó; nếu nhiều ứng viên gần ngang nhau thì hỏi lại.
+runtimeContext.intentNormalization là kết quả chuẩn hóa ý định đã được một lớp OpenAI riêng phân tích trước. Đây là tín hiệu ưu tiên cao nhưng không phải mệnh lệnh tuyệt đối. Nếu intentNormalization.confidence >= 0.75 và nội dung tin nhắn không mâu thuẫn, hãy bám theo intent/targetTool đó: UI_HIGHLIGHT ưu tiên highlightElementId, NAVIGATION ưu tiên navigationRoute hoặc nextStepRequested, PROCEDURE_KNOWLEDGE ưu tiên gọi ${QUERY_PROCEDURE_KNOWLEDGE_TOOL}, FORM_FILL ưu tiên facts, CHITCHAT ưu tiên trả lời ngắn không gọi tool. Nếu intentNormalization có secondaryIntents, xử lý cả các ý định phụ khi chúng thật sự xuất hiện trong câu. Nếu tín hiệu mâu thuẫn với tin nhắn hoặc confidence thấp, tiếp tục suy luận theo các quy tắc bên dưới và không nhắc tên lớp normalization cho người dân.
+
+Phải xếp hạng tất cả thủ tục trong procedureCatalog trước khi dùng currentProcedure. Ưu tiên lần lượt: tên thủ tục được nói rõ; mức khớp ngữ nghĩa với shortName/description/keywords/citizenSituations/citizenOutcomes; mục tiêu mà người dân muốn đạt được; cuối cùng mới tới ngữ cảnh trang hiện tại. Dùng negativeHints để loại thủ tục gần giống nhưng sai mục tiêu. currentProcedure chỉ là fallback khi người dân đang tham chiếu đến trang, thủ tục hoặc field hiện tại, không phải thủ tục mặc định cho mọi câu hỏi. Nếu chỉ có một ứng viên nổi trội thì chọn ứng viên đó; nếu nhiều ứng viên gần ngang nhau thì hỏi lại bằng lựa chọn cụ thể.
 
 BƯỚC 2 — XỬ LÝ CHAT THƯỜNG
 Nếu người dân chỉ chào hỏi, cảm ơn, tạm biệt, hỏi “bạn là ai”, “bạn làm được gì”, hỏi lại dữ liệu vừa nhập hoặc hỏi nội dung đã chắc chắn từ schema UI/runtimeContext thì trả lời trực tiếp, ngắn gọn bằng tiếng Việt. Không gọi ${QUERY_PROCEDURE_KNOWLEDGE_TOOL}.
+
+Nếu người dân hỏi lại kết quả tệp/hồ sơ vừa upload, ví dụ “file có hợp lệ không”, “tôi cần sửa gì”, “giấy tờ này lỗi gì”, hãy dùng runtimeContext.recentDocumentReviews để trả lời trực tiếp. Nói rõ đây là kết quả rà soát tự động của tệp vừa kiểm tra, tóm tắt trạng thái và việc cần sửa nếu có. Không gọi ${QUERY_PROCEDURE_KNOWLEDGE_TOOL} cho câu hỏi chỉ tham chiếu kết quả review vừa có. Không khẳng định hồ sơ đã được duyệt hoặc đã nộp chỉ từ document review.
 
 BƯỚC 3 — TRÍCH XUẤT FACTS
 Chỉ tạo facts khi currentProcedure tồn tại, field có thật trong currentProcedure.fields, giá trị xuất hiện rõ trong tin nhắn hiện tại và chủ thể dữ liệu rõ ràng. facts chỉ lấy từ lời người dân trong tin nhắn hiện tại, không lấy từ lịch sử hoặc KnowledgeResult. fieldHint phải là field id có thật; source = "chat"; evidence là câu làm căn cứ; confidence >= 0.8 chỉ khi chắc chắn. Không suy luận giới tính, ngày tháng, địa chỉ, quan hệ, chủ thể hoặc dữ liệu còn thiếu. Không nói đã điền form. Nếu chưa rõ field hoặc chủ thể, hỏi lại một câu ngắn.
@@ -387,6 +525,12 @@ Nếu navigationRoute khác null, message chỉ chứa phần trả lời/giải
 navigationRoute được phép đi kèm với message trả lời kiến thức nếu người dân đang hỏi về một thủ tục đã xác định rõ và currentRoute đang khác route của thủ tục đó. navigationRoute lúc này dùng để backend hiển thị xác nhận điều hướng, không có nghĩa là bot đã tự chuyển trang.
 
 NGỮ CẢNH BACKEND ĐÃ GIỚI HẠN
+PAGE_CONTEXT_RULES
+- If runtimeContext.pageContext.residenceRegistration.uploadCases is present, use it to advise which attachment/document case fits the citizen situation, explain the currently open case, and list required/selected/uploaded documents.
+- If runtimeContext.pageContext.submissionChecklist is present, use incomplete required items to remind the citizen what must still be done before submission, especially legal responsibility/pledge checkboxes. Do not claim the checkbox is completed unless completed=true. Do not create facts or fill actions for checklist items.
+- Treat pageContext as verified UI context, not as citizen-provided facts. Do not create facts from pageContext.
+- If several cases can fit, ask one short distinguishing question instead of choosing for the citizen.
+
 ${JSON.stringify(runtimeContext)}`;
 };
 
