@@ -13,7 +13,7 @@ create table if not exists agencies (
 
 create table if not exists users (
   id text primary key,
-  username text not null unique,
+  login_identifier text not null unique,
   email text unique,
   phone text unique,
   citizen_id_hash text unique,
@@ -24,6 +24,21 @@ create table if not exists users (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_name = 'users' and column_name = 'username'
+  ) and not exists (
+    select 1
+    from information_schema.columns
+    where table_name = 'users' and column_name = 'login_identifier'
+  ) then
+    alter table users rename column username to login_identifier;
+  end if;
+end $$;
 
 create table if not exists citizen_profiles (
   user_id text primary key references users(id) on delete cascade,

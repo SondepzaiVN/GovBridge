@@ -11,7 +11,7 @@ export class AuthController {
     sendSuccess(response, await this.service.registerCitizen(request.body), 201);
 
   login = async (request: Request, response: Response): Promise<Response> => {
-    const body = request.body as { role: UserRole; username: string; password: string };
+    const body = request.body as { role: UserRole; loginIdentifier: string; password: string };
     return sendSuccess(response, await this.service.login(body));
   };
 

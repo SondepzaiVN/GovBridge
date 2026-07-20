@@ -16,7 +16,7 @@ import { useAuth } from '../../contexts/useAuth';
 import type { UserRole } from '../../services/authService';
 
 type LoginMethod = 'vneid' | 'dvc' | 'officer' | 'register';
-type FormErrors = Partial<Record<'agency' | 'username' | 'password' | 'fullName' | 'citizenId' | 'credentials', string>>;
+type FormErrors = Partial<Record<'agency' | 'loginIdentifier' | 'password' | 'fullName' | 'citizenId' | 'credentials', string>>;
 
 const citizenNamePattern = /^[\p{L} ]+$/u;
 
@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
     const [agency] = useState('Cần Thơ');
     const [fullName, setFullName] = useState('');
     const [citizenId, setCitizenId] = useState('');
-    const [username, setUsername] = useState('');
+    const [loginIdentifier, setLoginIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
@@ -97,9 +97,9 @@ const LoginPage: React.FC = () => {
         } else if (isRegister && citizenId.trim() && !/^(?:\d{9}|\d{12})$/.test(citizenId.trim())) {
             nextErrors.citizenId = 'CCCD phải có 9 hoặc 12 chữ số.';
         }
-        const normalizedUsername = username.trim();
-        if (!isRegister && !normalizedUsername) {
-            nextErrors.username = role === 'can-bo' ? 'Vui lòng nhập mã cán bộ.' : 'Vui lòng nhập số CCCD/mã định danh.';
+        const normalizedLoginIdentifier = loginIdentifier.trim();
+        if (!isRegister && !normalizedLoginIdentifier) {
+            nextErrors.loginIdentifier = role === 'can-bo' ? 'Vui lòng nhập mã cán bộ.' : 'Vui lòng nhập số CCCD/mã định danh.';
         }
         if (!password) nextErrors.password = 'Vui lòng nhập mật khẩu.';
         if (!isRegister && password && password.length < 6) {
@@ -124,7 +124,7 @@ const LoginPage: React.FC = () => {
                         name: fullName,
                         citizenId: citizenId.trim(),
                     })
-                    : await login(role, username, password, agency);
+                    : await login(role, loginIdentifier, password, agency);
                 setIsSubmitting(false);
                 if (!authenticated) {
                     setErrors({ credentials: 'Tài khoản hoặc mật khẩu không đúng.' });
@@ -269,18 +269,18 @@ const LoginPage: React.FC = () => {
 
                         {!isRegister && (
                             <div className="login-ref-field-block">
-                                <label htmlFor="login-ref-username" className="sr-only">{role === 'can-bo' ? 'Mã cán bộ' : 'Số CCCD / mã định danh'}</label>
-                                <div className={`login-ref-input${errors.username ? ' invalid' : ''}`} onClick={focusInputFromContainer}>
+                                <label htmlFor="login-ref-identifier" className="sr-only">{role === 'can-bo' ? 'Mã cán bộ' : 'Số CCCD / mã định danh'}</label>
+                                <div className={`login-ref-input${errors.loginIdentifier ? ' invalid' : ''}`} onClick={focusInputFromContainer}>
                                     <UserRound size={23} />
                                     <input
-                                        id="login-ref-username"
-                                        value={username}
-                                        onChange={(event) => setUsername(event.target.value)}
+                                        id="login-ref-identifier"
+                                        value={loginIdentifier}
+                                        onChange={(event) => setLoginIdentifier(event.target.value)}
                                         placeholder={role === 'can-bo' ? 'Mã cán bộ' : 'Số CCCD/mã định danh'}
                                         autoComplete="username"
                                     />
                                 </div>
-                                {errors.username && <p className="login-ref-error">{errors.username}</p>}
+                                {errors.loginIdentifier && <p className="login-ref-error">{errors.loginIdentifier}</p>}
                             </div>
                         )}
 

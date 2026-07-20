@@ -4,13 +4,13 @@ export type AuthUser = {
     id: string;
     name: string;
     role: UserRole;
-    username: string;
+    loginIdentifier: string;
     agency?: string;
     agencyId?: string;
 };
 
 type LoginCredentials = {
-    username: string;
+    loginIdentifier: string;
     password: string;
     agency?: string;
 };
@@ -36,7 +36,7 @@ const isAuthUser = (value: unknown): value is AuthUser => {
     return Boolean(
         user.id
         && user.name
-        && user.username
+        && user.loginIdentifier
         && (user.role === 'nguoi-dan' || user.role === 'can-bo' || user.role === 'admin'),
     );
 };
@@ -130,7 +130,7 @@ export const loginWithPassword = async (
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             role,
-            username: credentials.username.trim(),
+            loginIdentifier: credentials.loginIdentifier.trim(),
             password: credentials.password,
         }),
     });
@@ -151,7 +151,7 @@ export const registerCitizen = async (input: {
 };
 
 export const loginCitizenWithProvider = async (): Promise<AuthUser> =>
-    loginWithPassword('nguoi-dan', { username: '000000000001', password: '123456' }) as Promise<AuthUser>;
+    loginWithPassword('nguoi-dan', { loginIdentifier: '000000000001', password: '123456' }) as Promise<AuthUser>;
 
 export const clearCurrentUser = () => {
     localStorage.removeItem(AUTH_STORAGE_KEY);

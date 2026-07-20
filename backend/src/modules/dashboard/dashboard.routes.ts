@@ -62,7 +62,7 @@ export const createDashboardRouter = (
     const inserted = await repository.insert({
       ...request.body,
       ownerUserId: user.id,
-      ownerUsername: user.username,
+      ownerLoginIdentifier: user.loginIdentifier,
       ownerName: user.name,
       submittedByRole: user.role,
       ...(user.agencyId ? { submittingAgencyId: user.agencyId } : {}),
