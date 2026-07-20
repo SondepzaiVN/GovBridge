@@ -1,5 +1,5 @@
 import type { AgentEvent } from '../utils/eventBus';
-import type { AIResponse, CCCDInfo, DocumentReviewResult, DocumentReviewRuleType } from '../types';
+import type { AIResponse, AssistantPageContext, CCCDInfo, DocumentReviewResult, DocumentReviewRuleType, DocumentReviewUiStatus } from '../types';
 import { apiClient } from './client';
 import { notifyCccdOcrExternalProcessing } from '../utils/externalProcessingNotices';
 
@@ -13,6 +13,24 @@ interface AssistantContext {
     currentRoute?: string;
     formValues?: Record<string, string>;
     visibleFieldIds?: string[];
+    pageContext?: AssistantPageContext | null;
+}
+
+export interface RecentDocumentReviewContext {
+    label: string;
+    fileName?: string;
+    documentType?: DocumentReviewRuleType;
+    status: Exclude<DocumentReviewUiStatus, 'checking'>;
+    flag?: DocumentReviewResult['flag'];
+    text: string;
+    warnings?: string[];
+    readerProvider?: string;
+    reviewerProvider?: string;
+    checkedAt: string;
+}
+
+interface AssistantRequestOptions {
+    signal?: AbortSignal;
 }
 
 interface OCRApiResult {
@@ -36,8 +54,45 @@ interface STTApiResult {
 type DocumentReviewApiResult = DocumentReviewResult;
 
 const CHAT_SESSION_KEY = 'gov-bridge-chat-session-id';
+const MAX_RECENT_DOCUMENT_REVIEWS = 3;
 let currentRoute = '/';
 let recentOcrFacts: Record<string, string> = {};
+let recentDocumentReviews: RecentDocumentReviewContext[] = [];
+
+const compactDocumentReviewContext = (
+    review: RecentDocumentReviewContext,
+): RecentDocumentReviewContext | null => {
+    const label = review.label.trim().slice(0, 200);
+    const text = review.text.trim().slice(0, 1_200);
+    if (!label || !text) return null;
+
+    return {
+        label,
+        ...(review.fileName ? { fileName: review.fileName.trim().slice(0, 200) } : {}),
+        ...(review.documentType ? { documentType: review.documentType } : {}),
+        status: review.status,
+        ...(review.flag ? { flag: review.flag } : {}),
+        text,
+        warnings: (review.warnings ?? [])
+            .filter((warning) => typeof warning === 'string' && warning.trim())
+            .map((warning) => warning.trim().slice(0, 500))
+            .slice(0, 5),
+        ...(review.readerProvider ? { readerProvider: review.readerProvider.trim().slice(0, 80) } : {}),
+        ...(review.reviewerProvider ? { reviewerProvider: review.reviewerProvider.trim().slice(0, 80) } : {}),
+        checkedAt: review.checkedAt,
+    };
+};
+
+export const VOICE_AUDIO_CONSTRAINTS: MediaStreamConstraints = {
+    audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+    },
+};
+
+const isAbortError = (error: unknown) =>
+    error instanceof DOMException && error.name === 'AbortError';
 
 const getStoredSessionId = () =>
     typeof window === 'undefined' ? null : window.sessionStorage.getItem(CHAT_SESSION_KEY);
@@ -53,9 +108,21 @@ export const smartbotService = {
                 .map(([key, value]) => [key, value.trim().slice(0, 2_000)]),
         );
     },
+    rememberDocumentReview: (review: RecentDocumentReviewContext) => {
+        const compacted = compactDocumentReviewContext(review);
+        if (!compacted) return;
+
+        recentDocumentReviews = [
+            compacted,
+            ...recentDocumentReviews.filter((item) =>
+                item.fileName !== compacted.fileName || item.label !== compacted.label
+            ),
+        ].slice(0, MAX_RECENT_DOCUMENT_REVIEWS);
+    },
     clearHistory: async () => {
         const sessionId = getStoredSessionId();
         recentOcrFacts = {};
+        recentDocumentReviews = [];
         window.sessionStorage.removeItem(CHAT_SESSION_KEY);
         if (!sessionId) return;
 
@@ -68,16 +135,23 @@ export const smartbotService = {
         }
     },
     getBackendInfo: () => 'Express Backend API',
-    sendMessage: async (message: string, context: AssistantContext = {}): Promise<AssistantApiResult> => {
+    sendMessage: async (
+        message: string,
+        context: AssistantContext = {},
+        options: AssistantRequestOptions = {},
+    ): Promise<AssistantApiResult> => {
         const result = await apiClient<AssistantApiResult>('/assistant/messages', {
             method: 'POST',
+            signal: options.signal,
             body: JSON.stringify({
                 ...(getStoredSessionId() ? { sessionId: getStoredSessionId() } : {}),
                 message,
                 currentRoute: context.currentRoute ?? currentRoute,
                 formValues: context.formValues ?? {},
                 visibleFieldIds: context.visibleFieldIds ?? [],
+                ...(context.pageContext ? { pageContext: context.pageContext } : {}),
                 recentOcrFacts,
+                recentDocumentReviews,
             }),
         });
 
@@ -103,6 +177,13 @@ interface ActiveVoiceCapture {
     autoStopping: boolean;
     speechSampleCount: number;
     maxRms: number;
+}
+
+export interface VoiceInitialAudio {
+    chunks: Float32Array[];
+    speechSampleCount: number;
+    maxRms: number;
+    sampleRate: number;
 }
 
 let activeCapture: ActiveVoiceCapture | null = null;
@@ -167,18 +248,30 @@ const disposeVoiceCapture = async (capture: ActiveVoiceCapture) => {
 export const sttService = {
     startListening: async (
         callback: (transcript: string, isFinal: boolean) => void,
-        options: { onSilence?: () => void } = {},
+        options: { onSilence?: () => void; initialAudio?: VoiceInitialAudio } = {},
     ) => {
         if (!navigator.mediaDevices?.getUserMedia) {
             throw new Error('Trình duyệt không hỗ trợ thu âm microphone.');
         }
 
-        await sttService.stopListening();
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        await sttService.cancelListening();
+        const stream = await navigator.mediaDevices.getUserMedia(VOICE_AUDIO_CONSTRAINTS);
         const audioContext = new AudioContext();
         const source = audioContext.createMediaStreamSource(stream);
         const processor = audioContext.createScriptProcessor(4096, 1, 1);
-        const chunks: Float32Array[] = [];
+        const initialAudio = options.initialAudio;
+        const canUseInitialAudio = initialAudio && Math.abs(initialAudio.sampleRate - audioContext.sampleRate) <= 1;
+        if (initialAudio && !canUseInitialAudio) {
+            console.info('[STT] Skip barge-in prebuffer because sample rate changed.', {
+                initialSampleRate: initialAudio.sampleRate,
+                captureSampleRate: audioContext.sampleRate,
+            });
+        }
+        const chunks: Float32Array[] = canUseInitialAudio
+            ? initialAudio.chunks.map((chunk) => new Float32Array(chunk))
+            : [];
+        const initialSpeechSampleCount = canUseInitialAudio ? initialAudio.speechSampleCount : 0;
+        const initialMaxRms = canUseInitialAudio ? initialAudio.maxRms : 0;
         const startedAt = performance.now();
 
         processor.onaudioprocess = (event) => {
@@ -228,11 +321,11 @@ export const sttService = {
             sampleRate: audioContext.sampleRate,
             callback,
             onSilence: options.onSilence,
-            hasSpeech: false,
+            hasSpeech: initialSpeechSampleCount > 0,
             silenceStartedAt: null,
             autoStopping: false,
-            speechSampleCount: 0,
-            maxRms: 0,
+            speechSampleCount: initialSpeechSampleCount,
+            maxRms: initialMaxRms,
         };
     },
     stopListening: async (): Promise<string> => {
@@ -275,6 +368,7 @@ export const sttService = {
 let activeAudio: HTMLAudioElement | null = null;
 let activeSpeechId = 0;
 let resolveActiveAudio: (() => void) | null = null;
+let activeTtsController: AbortController | null = null;
 
 const speakWithBrowser = (text: string): Promise<void> =>
     new Promise((resolve) => {
@@ -295,10 +389,13 @@ export const ttsService = {
     speak: async (text: string, onStatusChange?: (isPlaying: boolean) => void) => {
         ttsService.stop();
         const speechId = activeSpeechId;
+        const controller = new AbortController();
+        activeTtsController = controller;
         onStatusChange?.(true);
         try {
             const result = await apiClient<TTSApiResult>('/speech/tts', {
                 method: 'POST',
+                signal: controller.signal,
                 body: JSON.stringify({ text }),
             });
             if (speechId !== activeSpeechId) return;
@@ -317,18 +414,22 @@ export const ttsService = {
             });
         } catch (error) {
             if (speechId !== activeSpeechId) return;
+            if (controller.signal.aborted || isAbortError(error)) return;
             console.warn('[TTS] Backend unavailable, using browser fallback:', error);
             await speakWithBrowser(text);
         } finally {
             if (speechId === activeSpeechId) {
                 activeAudio = null;
                 resolveActiveAudio = null;
+                activeTtsController = null;
                 onStatusChange?.(false);
             }
         }
     },
     stop: () => {
         activeSpeechId += 1;
+        activeTtsController?.abort();
+        activeTtsController = null;
         activeAudio?.pause();
         activeAudio = null;
         resolveActiveAudio?.();

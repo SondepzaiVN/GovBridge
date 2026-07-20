@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, Bot, CheckCircle, LoaderCircle, User } from 'lucide-react';
-import { ttsService } from '../../api/aiServices';
 import type { ChatMessage } from '../../types';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import { useForm } from '../../contexts/FormContext';
@@ -107,6 +106,32 @@ const renderContent = (content: string) => {
   });
 };
 
+const getUserMessageStatusLabel = (status: ChatMessage['status']) => {
+  switch (status) {
+    case 'processing':
+      return 'Đang xử lý';
+    case 'failed':
+      return 'Gửi thất bại';
+    case 'cancelled':
+      return 'Đã hủy';
+    default:
+      return null;
+  }
+};
+
+const getBotMessageStatusLabel = (status: ChatMessage['status']) => {
+  switch (status) {
+    case 'speaking':
+      return 'Đang phát';
+    case 'interrupted':
+      return 'Đã bị ngắt';
+    case 'failed':
+      return 'Lỗi phản hồi';
+    default:
+      return null;
+  }
+};
+
 interface ChatMessageProps {
   message: ChatMessage;
 }
@@ -130,6 +155,9 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const isActiveConfirmation = state.requiresUserAction
     && state.messages[state.messages.length - 1]?.id === message.id;
   const time = message.timestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const statusLabel = isBot
+    ? getBotMessageStatusLabel(message.status)
+    : getUserMessageStatusLabel(message.status);
 
   const showFillSuccessMessage = (
     voiceMessage: string,
@@ -153,7 +181,6 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
         suggestions: textSuggestions,
       }
     });
-    void ttsService.speak(textMessage);
   };
 
   const confirmFill = async (fields: Record<string, string>) => {
@@ -194,7 +221,6 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           suggestions: ['Gửi lại thông tin', 'Giải thích thêm']
         }
       });
-      void ttsService.speak(msg);
     }
   };
 
@@ -294,7 +320,6 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
                       suggestions: ['Nhập thông tin thủ công', 'Chọn thủ tục khác']
                     }
                   });
-                  void ttsService.speak(msg);
                 }
                 return;
               }
@@ -337,7 +362,6 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
                     suggestions: ['Gửi ảnh khác', 'Nhập thông tin thủ công']
                   }
                 });
-                void ttsService.speak(msg);
               }
             }}
           >
@@ -482,7 +506,14 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           {Boolean(message.data?.documentReview) && renderDocumentReviewCard()}
         </div>
 
-        <span className="message-time">{time}</span>
+        <span className="message-time">
+          {time}
+          {statusLabel && (
+            <span className={`message-status message-status--${message.status}`}>
+              {statusLabel}
+            </span>
+          )}
+        </span>
 
         {isBot && !isActiveConfirmation && message.suggestions && message.suggestions.length > 0 && (
           <div className="suggestion-chips">

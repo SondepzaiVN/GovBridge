@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import type { FormValues, FormState } from '../types';
+import type { AssistantPageContext, FormValues, FormState } from '../types';
+import { dispatchFormFillApplied } from '../utils/formFillBridge';
 
 interface FormContextValue {
   formState: FormState;
+  pageContext: AssistantPageContext | null;
   setFieldValue: (fieldId: string, value: string) => void;
   setFieldError: (fieldId: string, error: string) => void;
   touchField: (fieldId: string) => void;
   fillFields: (fields: Record<string, string>) => void;
   resetForm: () => void;
   setIsSubmitting: (v: boolean) => void;
+  setPageContext: (context: AssistantPageContext | null) => void;
 }
 
 const FormContext = createContext<FormContextValue | null>(null);
@@ -65,26 +68,52 @@ const resolveRenderedSelectValue = (
 ): { isSelect: boolean; resolvedValue: string | null } => {
   if (typeof document === 'undefined') return { isSelect: false, resolvedValue: null };
   const control = document.getElementById(fieldId);
-  if (!(control instanceof HTMLSelectElement)) {
+  if (!control) {
     return { isSelect: false, resolvedValue: null };
   }
 
-  const options = [...control.options].filter((option) => option.value);
-  const directMatch = options.find((option) => option.value === value);
-  if (directMatch) return { isSelect: true, resolvedValue: directMatch.value };
+  if (control instanceof HTMLSelectElement) {
+    const options = [...control.options].filter((option) => option.value);
+    const directMatch = options.find((option) => option.value === value);
+    if (directMatch) return { isSelect: true, resolvedValue: directMatch.value };
+
+    const lookupKeys = getOptionLookupKeys(value);
+    const labelMatch = options.find(
+      (option) => lookupKeys.includes(normalizeOptionLabel(option.label)),
+    );
+    return {
+      isSelect: true,
+      resolvedValue: labelMatch?.value ?? null,
+    };
+  }
+
+  const renderedOptions = control.dataset.selectOptions;
+  if (!renderedOptions) return { isSelect: false, resolvedValue: null };
+
+  let options: string[] = [];
+  try {
+    const parsed = JSON.parse(renderedOptions);
+    if (Array.isArray(parsed)) {
+      options = parsed.filter((option): option is string => typeof option === 'string' && option.trim().length > 0);
+    }
+  } catch {
+    options = [];
+  }
+
+  const directMatch = options.find((option) => option === value);
+  if (directMatch) return { isSelect: true, resolvedValue: directMatch };
 
   const lookupKeys = getOptionLookupKeys(value);
-  const labelMatch = options.find(
-    (option) => lookupKeys.includes(normalizeOptionLabel(option.label)),
-  );
+  const labelMatch = options.find((option) => lookupKeys.includes(normalizeOptionLabel(option)));
   return {
     isSelect: true,
-    resolvedValue: labelMatch?.value ?? null,
+    resolvedValue: labelMatch ?? null,
   };
 };
 
 export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [formState, setFormState] = useState<FormState>(loadInitialState);
+  const [pageContext, setPageContext] = useState<AssistantPageContext | null>(null);
 
   useEffect(() => {
     window.sessionStorage.setItem(
@@ -146,6 +175,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...Object.fromEntries(updatedFieldIds.map((fieldId) => [fieldId, true])),
       },
     }));
+    dispatchFormFillApplied(preparedFields, 'initial');
 
     // Select phụ thuộc (phường/xã) chỉ có options sau khi tỉnh/thành phố được điền.
     // Thử đối chiếu lại trong vài giây để lấy đúng mã option từ danh mục động.
@@ -166,6 +196,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ...prev,
             values: { ...prev.values, ...resolvedFields },
           }));
+          dispatchFormFillApplied(resolvedFields, 'reconcile');
         }
 
         if (Object.keys(pendingSelectFields).length > 0 && Date.now() < deadline) {
@@ -187,8 +218,8 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <FormContext.Provider value={{
-      formState, setFieldValue, setFieldError, touchField,
-      fillFields, resetForm, setIsSubmitting,
+      formState, pageContext, setFieldValue, setFieldError, touchField,
+      fillFields, resetForm, setIsSubmitting, setPageContext,
     }}>
       {children}
     </FormContext.Provider>

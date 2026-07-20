@@ -292,6 +292,30 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
     expect(instructions).not.toContain('unknownFrontendOnlyField');
   });
 
+  it('routes procedure-knowledge context without full form values or field schema', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      orchestratorResponse('MÃ¬nh sáº½ tra cá»©u thÃ´ng tin thá»§ tá»¥c cho báº¡n.'),
+    ]);
+
+    await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'ÄÄƒng kÃ½ thÆ°á»ng trÃº cáº§n giáº¥y tá» gÃ¬?',
+        currentRoute: '/ho-khau',
+        formValues: {
+          hoTen: 'Nguyen Van An',
+          cccd: '012345678901',
+        },
+      })
+      .expect(200);
+
+    const instructions = String(client.requests[0]?.instructions);
+    expect(instructions).toContain('"contextRouting":{"intent":"PROCEDURE_KNOWLEDGE"');
+    expect(instructions).toContain('"knownFieldCount":2');
+    expect(instructions).not.toContain('"knownFields":{"hoTen":"Nguyen Van An"');
+    expect(instructions).toContain('"fields":[]');
+  });
+
   it('does not call KnowledgeProvider when OpenAI asks for a tool on small talk', async () => {
     const client = new FakeOpenAiResponsesClient([
       toolCallResponse(JSON.stringify({

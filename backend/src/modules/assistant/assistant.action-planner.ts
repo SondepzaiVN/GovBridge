@@ -28,6 +28,16 @@ const inferUiHighlightElement = (normalizedMessage: string): string | null => {
   return asksForSubmitButton ? 'submit-btn' : null;
 };
 
+const normalizeRouteForComparison = (route: string): string => {
+  const cleanRoute = (route.split(/[?#]/u)[0] ?? '')
+    .replace(/\/buoc-\d+\/?$/u, '')
+    .replace(/\/+$/u, '');
+  return cleanRoute || '/';
+};
+
+const isSameRoute = (left: string, right: string): boolean =>
+  normalizeRouteForComparison(left) === normalizeRouteForComparison(right);
+
 // Các giá trị này do hệ thống hoặc logic nghiệp vụ của biểu mẫu quản lý.
 const SYSTEM_MANAGED_FIELDS = new Set([
   'thuTuc',
@@ -35,6 +45,54 @@ const SYSTEM_MANAGED_FIELDS = new Set([
   'sdtCoQuan',
   'noiDungDN',
 ]);
+
+const ADMINISTRATIVE_FIELD_IDS = new Set([
+  'tinhThanhCQ',
+  'xaPhuongCQ',
+  'tinhThanhDN',
+  'xaPhuongDN',
+  'provinceAgency',
+  'wardAgency',
+  'requestProvince',
+  'requestWard',
+  'receiveCityCode',
+  'receiveVillageCode',
+  'temporaryCityCode',
+  'temporaryVillageCode',
+  'ltks_tinhKhaiSinh',
+  'ltks_phuongKhaiSinh',
+  'ltks_tinhThuongTru',
+  'ltks_phuongThuongTru',
+  'ltks_tinhNguoiYeuCau',
+  'ltks_phuongNguoiYeuCau',
+  'ltks_tinhNoiSinh',
+  'ltks_phuongNoiSinh',
+  'ltks_tinhQueQuan',
+  'ltks_phuongQueQuan',
+  'ltks_tinhMe',
+  'ltks_phuongMe',
+  'ltks_tinhCha',
+  'ltks_phuongCha',
+  'ltks_tinhDangKyThuongTru',
+  'ltks_phuongDangKyThuongTru',
+]);
+
+const ADMINISTRATIVE_FIELD_PAIRS = [
+  ['tinhThanhDN', 'xaPhuongDN'],
+  ['temporaryCityCode', 'temporaryVillageCode'],
+  ['requestProvince', 'requestWard'],
+  ['ltks_tinhThuongTru', 'ltks_phuongThuongTru'],
+  ['ltks_tinhNguoiYeuCau', 'ltks_phuongNguoiYeuCau'],
+  ['ltks_tinhKhaiSinh', 'ltks_phuongKhaiSinh'],
+  ['ltks_tinhNoiSinh', 'ltks_phuongNoiSinh'],
+  ['ltks_tinhQueQuan', 'ltks_phuongQueQuan'],
+  ['ltks_tinhMe', 'ltks_phuongMe'],
+  ['ltks_tinhCha', 'ltks_phuongCha'],
+  ['ltks_tinhDangKyThuongTru', 'ltks_phuongDangKyThuongTru'],
+  ['provinceAgency', 'wardAgency'],
+  ['receiveCityCode', 'receiveVillageCode'],
+  ['tinhThanhCQ', 'xaPhuongCQ'],
+] as const;
 
 const normalizeDate = (value: string): string => {
   const trimmed = value.trim();
@@ -50,6 +108,147 @@ const normalizeDate = (value: string): string => {
 const normalizePhone = (value: string): string => {
   const compact = value.replace(/[\s.()-]/g, '');
   return compact.startsWith('+84') ? `0${compact.slice(3)}` : compact;
+};
+
+const titleCaseName = (value: string): string =>
+  value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toLocaleUpperCase('vi-VN') + word.slice(1).toLocaleLowerCase('vi-VN'))
+    .join(' ');
+
+const getFieldByIds = (fields: ProcedureField[], ids: string[]): ProcedureField | null => {
+  const idSet = new Set(ids);
+  return fields.find((field) => idSet.has(field.id)) ?? null;
+};
+
+const getSelfNameField = (fields: ProcedureField[]): ProcedureField | null =>
+  getFieldByIds(fields, [
+    'hoTen',
+    'fullName',
+    'ltks_hoTenNguoiYeuCau',
+    'hoTenNam',
+    'hoTenNu',
+  ]);
+
+const getAdministrativeFieldPair = (
+  context: AssistantToolContext,
+): { provinceField: ProcedureField; wardField: ProcedureField } | null => {
+  if (!context.currentProcedure) return null;
+  const fields = context.currentProcedure.fields;
+  const visibleFieldIds = new Set(context.formContext.importantVisibleFields.map((field) => field.id));
+  const pairs = ADMINISTRATIVE_FIELD_PAIRS
+    .map(([provinceId, wardId]) => ({
+      provinceField: getFieldByIds(fields, [provinceId]),
+      wardField: getFieldByIds(fields, [wardId]),
+      visibleScore: Number(visibleFieldIds.has(provinceId)) + Number(visibleFieldIds.has(wardId)),
+    }))
+    .filter((pair): pair is { provinceField: ProcedureField; wardField: ProcedureField; visibleScore: number } =>
+      Boolean(pair.provinceField && pair.wardField),
+    );
+
+  const bestPair = pairs.sort((left, right) => right.visibleScore - left.visibleScore)[0];
+  if (!bestPair || bestPair.visibleScore === 0) return null;
+  return bestPair;
+};
+
+const cleanAdministrativeName = (prefix: string, rawValue: string): string => {
+  const value = rawValue
+    .replace(/\s+(?:nhe|nhé|a|ạ|nha)$/iu, '')
+    .trim();
+  if (!value) return '';
+  return `${prefix} ${value}`.replace(/\s+/g, ' ').trim();
+};
+
+const trimExtractedPersonalValue = (value: string): string =>
+  value
+    .split(/\b(?:sinh|ngay sinh|cccd|can cuoc|so dien thoai|sdt|email|gioi tinh|dan toc)\b/iu)[0]
+    ?.replace(/\s+(?:nhe|nhé|a|ạ|nha)$/iu, '')
+    .trim() ?? '';
+
+const extractDeterministicFacts = (
+  context: AssistantToolContext,
+  existingFacts: ExtractedFact[],
+): ExtractedFact[] => {
+  if (!context.currentProcedure) return [];
+
+  const existingHints = new Set(existingFacts.map((fact) => fact.fieldHint));
+  const fields = context.currentProcedure.fields;
+  const facts: ExtractedFact[] = [];
+  const message = context.message.trim();
+
+  const addFact = (field: ProcedureField | null, value: string, evidence: string) => {
+    if (!field || existingHints.has(field.id)) return;
+    const normalizedValue = normalizeAndValidateValue(field, value);
+    if (!normalizedValue || context.formContext.knownFields[field.id] === normalizedValue) return;
+    facts.push({
+      fieldHint: field.id,
+      value: normalizedValue,
+      confidence: 0.95,
+      source: 'chat',
+      evidence,
+    });
+    existingHints.add(field.id);
+  };
+
+  const nameMatch = message.match(
+    /(?:(?:tôi|toi)\s+(?:tên|ten)\s+(?:(?:là|la)\s+)?|(?:tôi|toi)\s+(?:là|la)\s+|(?:tên|ten)\s+(?:(?:tôi|toi)|(?:của|cua)\s+(?:tôi|toi))\s+(?:là|la)\s+|(?:họ|ho)\s+(?:tên|ten)\s+(?:(?:tôi|toi)|(?:của|cua)\s+(?:tôi|toi))\s+(?:là|la)\s+)([^,.;\n]+)/iu,
+  );
+  if (nameMatch?.[1]) {
+    const rawName = trimExtractedPersonalValue(nameMatch[1]);
+    if (
+      rawName
+      && rawName.split(/\s+/).length >= 2
+      && !/[\d!@#$%^&*()_+=[\]{};:"\\|<>/?]/u.test(rawName)
+    ) {
+      addFact(getSelfNameField(fields), titleCaseName(rawName), nameMatch[0]);
+    }
+  }
+
+  const citizenIdMatch = message.match(/\b(?:cccd|căn\s*cước|can\s*cuoc|số\s*định\s*danh|so\s*dinh\s*danh)\D{0,20}(\d(?:\D?\d){11})\b/iu);
+  if (citizenIdMatch?.[1]) {
+    const citizenId = citizenIdMatch[1].replace(/\D/g, '');
+    addFact(getFieldByIds(fields, ['cccd', 'citizenId', 'ltks_soDinhDanhNguoiYeuCau']), citizenId, citizenIdMatch[0]);
+  }
+
+  const phoneMatch = message.match(/\b(?:sđt|sdt|số\s*điện\s*thoại|so\s*dien\s*thoai)\D{0,12}((?:\+84|0)[\d\s.()-]{8,14})\b/iu);
+  if (phoneMatch?.[1]) {
+    addFact(getFieldByIds(fields, ['sdt', 'phone', 'phoneNumber']), phoneMatch[1], phoneMatch[0]);
+  }
+
+  const emailMatch = message.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/iu);
+  if (emailMatch?.[0]) {
+    addFact(getFieldByIds(fields, ['email']), emailMatch[0], emailMatch[0]);
+  }
+
+  const administrativePair = getAdministrativeFieldPair(context);
+  if (administrativePair) {
+    const administrativeMessage = context.normalizedMessage;
+    const provinceMatch = administrativeMessage.match(
+      /\b((?:thanh\s*pho|tp\.?|tinh))\s+([^,.;\n]+?)(?=\s*,|\s+(?:phuong|xa|thi\s*tran|dac\s*khu)\b|[.;\n]|$)/u,
+    );
+    const wardMatch = administrativeMessage.match(
+      /\b((?:phuong|xa|thi\s*tran|dac\s*khu))\s+([^,.;\n]+?)(?=[,.;\n]|$)/u,
+    );
+
+    if (provinceMatch?.[1] && provinceMatch[2]) {
+      addFact(
+        administrativePair.provinceField,
+        cleanAdministrativeName(provinceMatch[1], provinceMatch[2]),
+        provinceMatch[0],
+      );
+    }
+
+    if (wardMatch?.[1] && wardMatch[2]) {
+      addFact(
+        administrativePair.wardField,
+        cleanAdministrativeName(wardMatch[1], wardMatch[2]),
+        wardMatch[0],
+      );
+    }
+  }
+
+  return facts;
 };
 
 const findField = (fact: ExtractedFact, fields: ProcedureField[]): ProcedureField | null => {
@@ -72,7 +271,9 @@ const normalizeSelectValue = (field: ProcedureField, value: string): string | nu
     normalizeText(candidate.value) === normalizedValue
     || normalizeText(candidate.label) === normalizedValue,
   );
-  return option?.value ?? null;
+  if (option) return option.value;
+  if (ADMINISTRATIVE_FIELD_IDS.has(field.id)) return value.trim();
+  return null;
 };
 
 const normalizeAndValidateValue = (field: ProcedureField, rawValue: string): string | null => {
@@ -181,7 +382,7 @@ export const planAssistantResult = (
   // 1. Handle Navigation
   if (understanding.navigationRoute) {
     const targetProcedure = context.procedures.find((p) => p.route === understanding.navigationRoute);
-    if (targetProcedure) {
+    if (targetProcedure && !isSameRoute(context.currentRoute, targetProcedure.route)) {
       const navigationConfirmation = `Mình tìm thấy trang **${targetProcedure.name}**. Bạn có muốn chuyển đến trang này không?`;
       const navigationExplanation = finalMessage.trim()
         || `Với thông tin bạn vừa chia sẻ, thủ tục phù hợp là **${targetProcedure.name}**.`;
@@ -271,7 +472,10 @@ export const planAssistantResult = (
   // 3. Handle Form Fill
   const fields: Record<string, string> = {};
   const fieldLabels: Record<string, string> = {};
-  const formFacts = understanding.facts;
+  const formFacts = [
+    ...understanding.facts,
+    ...extractDeterministicFacts(context, understanding.facts),
+  ];
 
   for (const fact of formFacts) {
     if (fact.confidence < MIN_FILL_CONFIDENCE) continue;

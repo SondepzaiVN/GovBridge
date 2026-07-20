@@ -24,6 +24,14 @@ export class DashboardRepository {
 
   async insert(application: DashboardApplication): Promise<DashboardApplication> {
     return this.store.update((data) => {
+      const clientSubmissionId = typeof application.clientSubmissionId === 'string'
+        ? application.clientSubmissionId.trim()
+        : '';
+      if (clientSubmissionId) {
+        const existing = data.applications.find((app) => app.clientSubmissionId === clientSubmissionId);
+        if (existing) return existing;
+      }
+
       // Thêm lên đầu mảng để hồ sơ mới nhất luôn hiện đầu tiên
       data.applications.unshift(application);
       return application;

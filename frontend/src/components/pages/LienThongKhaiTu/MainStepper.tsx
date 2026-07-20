@@ -9,14 +9,77 @@ import PublicServiceAttachments from "./PublicServiceAttachments";
 import PublicServiceResultOptions from "./PublicServiceResultOptions";
 import PublicServiceComplete from "./PublicServiceComplete";
 import { ROUTE_TO_SERVICE_MAP } from "../../../data/services";
+import { useForm } from "../../../contexts/FormContext";
+import {
+  clearSubmissionId,
+  getDashboardApplicationCode,
+  getOrCreateSubmissionId,
+  saveApplicationToDashboard,
+} from "../../../utils/dashboardSync";
+import { isLikelyConnectivityError, notifyConnectivityFallback } from "../../../utils/connectivityFallback";
 
 const MainStepper: React.FC = () => {
   const service = ROUTE_TO_SERVICE_MAP['/lien-thong-khai-tu'] || { requiredDocs: [], steps: [], processingTime: '', fee: '', category: '' };
+  const { formState } = useForm();
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [submittedApplicationCode, setSubmittedApplicationCode] = useState("");
 
   // Hàm chuyển bước (Bạn có thể truyền hàm này vào PublicServiceForm dưới dạng props)
   const nextStep = () => setCurrentStep((prev) => (prev < 6 ? prev + 1 : prev));
   const prevStep = () => setCurrentStep((prev) => (prev > 1 ? prev - 1 : prev));
+
+  const submitApplication = async () => {
+    if (isSubmittingApplication) return;
+
+    setSubmitError("");
+    setIsSubmittingApplication(true);
+    try {
+      const values = formState.values;
+      const submissionId = getOrCreateSubmissionId("lien-thong-khai-tu");
+      const deceasedName = [
+        values.ltkt_deceased_lastName,
+        values.ltkt_deceased_middleName,
+        values.ltkt_deceased_firstName,
+      ].filter(Boolean).join(" ");
+
+      const savedApplication = await saveApplicationToDashboard({
+        clientSubmissionId: submissionId,
+        procedure: "Liên thông khai tử, xóa đăng ký thường trú, trợ cấp mai táng",
+        applicant: values.ltkt_applicant_fullName || values.ltkt_fullName || "",
+        citizenId: values.ltkt_applicant_idNumber || values.ltkt_idNumber || "",
+        phone: values.ltkt_applicant_phone || "",
+        email: values.ltkt_applicant_email || "",
+        documents: [],
+        message: "Người dân đã hoàn tất kê khai hồ sơ liên thông khai tử.",
+        caseNote: "Liên thông khai tử",
+        details: {
+          "Người được khai tử": deceasedName,
+          "Số định danh người được khai tử": values.ltkt_deceased_idNumber || "",
+          "Ngày mất": values.ltkt_deceased_deathDate || "",
+          "Quan hệ với người yêu cầu": values.ltkt_applicant_relationship || "",
+          "Cơ quan đăng ký": values.ltkt_registrationAgency || values.ltkt_agency || "",
+        },
+      });
+
+      setSubmittedApplicationCode(getDashboardApplicationCode(savedApplication));
+      clearSubmissionId("lien-thong-khai-tu");
+      nextStep();
+    } catch (error) {
+      console.error("Không thể xác nhận nộp hồ sơ khai tử.", error);
+      if (isLikelyConnectivityError(error)) {
+        notifyConnectivityFallback({ playAudio: true });
+        setSubmitError(
+          "Chưa xác nhận nộp hồ sơ thành công do kết nối bị gián đoạn. Dữ liệu vẫn được giữ trên màn hình, vui lòng kiểm tra mạng rồi bấm Hoàn thành để gửi lại.",
+        );
+      } else {
+        setSubmitError("Chưa thể nộp hồ sơ. Hệ thống chưa xác nhận đã nhận hồ sơ, vui lòng thử lại sau.");
+      }
+    } finally {
+      setIsSubmittingApplication(false);
+    }
+  };
 
   // Hàm render nội dung tương ứng với từng bước
   const renderStepContent = () => {
@@ -32,10 +95,15 @@ const MainStepper: React.FC = () => {
         return <PublicServiceAttachments onNext={nextStep} onBack={prevStep} />;
       case 5:
         return (
-          <PublicServiceResultOptions onNext={nextStep} onBack={prevStep} />
+          <PublicServiceResultOptions
+            isSubmitting={isSubmittingApplication}
+            submitError={submitError}
+            onSubmit={submitApplication}
+            onBack={prevStep}
+          />
         );
       case 6:
-        return <PublicServiceComplete onReset={() => setCurrentStep(1)} />;
+        return <PublicServiceComplete applicationCode={submittedApplicationCode} onReset={() => setCurrentStep(1)} />;
       default:
         return null;
     }
