@@ -19,7 +19,7 @@ export class AuthService {
       return { user, ...session };
     } catch (error) {
       if (error instanceof Error && error.message === 'USERNAME_EXISTS') {
-        throw new AppError(409, 'USERNAME_EXISTS', 'Ten dang nhap da duoc su dung.');
+        throw new AppError(409, 'USERNAME_EXISTS', 'Tên đăng nhập đã được sử dụng.');
       }
       throw error;
     }
@@ -32,7 +32,7 @@ export class AuthService {
   }): Promise<{ user: PublicAuthUser; token: string; expiresAt: string }> {
     const user = await this.repository.findUserByUsername(input.username);
     if (!user || user.role !== input.role || !verifyPassword(input.password, user.passwordHash)) {
-      throw new UnauthorizedError('Tai khoan hoac mat khau khong dung.');
+      throw new UnauthorizedError('Tài khoản hoặc mật khẩu không đúng.');
     }
     const session = await this.repository.createSession(user.id, SESSION_TTL_MS);
     return { user: this.repository.toPublicUser(user), ...session };

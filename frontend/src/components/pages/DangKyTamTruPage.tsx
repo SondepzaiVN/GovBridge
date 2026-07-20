@@ -936,8 +936,6 @@ const DangKyTamTruPage: React.FC = () => {
                 if (draft.checked) {
                     if (draft.fileName) {
                         extractedDocs.push({ name: draft.fileName, state: 'Đã có' });
-                    } else {
-                        extractedDocs.push({ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' });
                     }
                     if (draft.file) {
                         allFilesToUpload.push(draft.file);

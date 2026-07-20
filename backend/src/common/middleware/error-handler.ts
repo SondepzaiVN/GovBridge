@@ -10,7 +10,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
     normalized = new AppError(
       400,
       'INVALID_REQUEST',
-      'Dữ liệu request không hợp lệ.',
+      'Thông tin gửi lên chưa hợp lệ. Vui lòng kiểm tra lại.',
       error.issues.map((issue) => ({
         field: issue.path.join('.'),
         message: issue.message,

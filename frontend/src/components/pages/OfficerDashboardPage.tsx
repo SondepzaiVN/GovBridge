@@ -50,6 +50,9 @@ const statusClassName = (status: ApplicationStatus) => {
     return 'missing';
 };
 
+const isUploadedDocument = (document: Application['documents'][number]) =>
+    document.state === 'Đã có' && document.name !== 'Chưa tải file đính kèm';
+
 const OfficerDashboardPage: React.FC = () => {
     const { user } = useAuth();
     const [applications, setApplications] = useState<Application[]>([]);
@@ -78,6 +81,7 @@ const OfficerDashboardPage: React.FC = () => {
         ?? applications[0];
     const officerNote = selectedApplication?.officerNote ?? '';
     const officerNoteFlag = selectedApplication?.officerNoteFlag ?? '';
+    const visibleDocuments = selectedApplication?.documents.filter(isUploadedDocument) ?? [];
     const [isNoteExpanded, setIsNoteExpanded] = useState(true);
 
     const loadApplications = async () => {
@@ -398,9 +402,9 @@ const OfficerDashboardPage: React.FC = () => {
 
                             <section className="officer-detail-section">
                                 <h3><Files size={17} /> Thành phần hồ sơ đính kèm</h3>
-                                {(selectedApplication.documents || []).length > 0 ? (
+                                {visibleDocuments.length > 0 ? (
                                     <ul className="officer-document-list officer-attachment-list">
-                                        {(selectedApplication.documents || []).map((document, index) => {
+                                        {visibleDocuments.map((document, index) => {
                                             const attachment = Array.isArray(selectedApplication.attachments) 
                                                 ? selectedApplication.attachments.find(a => a.fileName === document.name)
                                                 : undefined;

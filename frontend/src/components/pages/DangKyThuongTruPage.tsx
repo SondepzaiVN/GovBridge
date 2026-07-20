@@ -2506,8 +2506,6 @@ const DangKyThuongTruPage: React.FC = () => {
             draft.fileNames.forEach((name) => extractedDocs.push({ name, state: 'Đã có' }));
           } else if (draft.useSpecializedData) {
             extractedDocs.push({ name: 'Dữ liệu chuyên ngành', state: 'Đã có' });
-          } else {
-            extractedDocs.push({ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' });
           }
         }
       });

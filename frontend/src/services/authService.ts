@@ -21,6 +21,11 @@ type AuthApiResult = {
     expiresAt: string;
 };
 
+type AuthApiError = {
+    code?: string;
+    message?: string;
+};
+
 const AUTH_STORAGE_KEY = 'govbridge-auth-user';
 const AUTH_TOKEN_STORAGE_KEY = 'govbridge-auth-token';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? '/api' : 'http://127.0.0.1:3000/api');
@@ -34,6 +39,26 @@ const isAuthUser = (value: unknown): value is AuthUser => {
         && user.username
         && (user.role === 'nguoi-dan' || user.role === 'can-bo' || user.role === 'admin'),
     );
+};
+
+const getFriendlyAuthError = (response: Response, error?: AuthApiError): string => {
+    if (error?.code === 'USERNAME_EXISTS' || error?.message === 'Ten dang nhap da duoc su dung.') {
+        return 'Tên đăng nhập đã được sử dụng.';
+    }
+
+    if (response.status === 401 || error?.code === 'UNAUTHORIZED') {
+        return 'Tài khoản hoặc mật khẩu không đúng.';
+    }
+
+    if (error?.code === 'INVALID_REQUEST') {
+        return 'Thông tin chưa hợp lệ. Vui lòng kiểm tra lại tài khoản và mật khẩu.';
+    }
+
+    if (error?.message === 'Tai khoan hoac mat khau khong dung.') {
+        return 'Tài khoản hoặc mật khẩu không đúng.';
+    }
+
+    return error?.message || 'Không thể xử lý yêu cầu. Vui lòng thử lại.';
 };
 
 const persistAuth = (result: AuthApiResult): AuthUser => {
@@ -83,11 +108,11 @@ const readAuthResult = async (response: Response): Promise<AuthApiResult> => {
     const payload = await response.json().catch(() => null) as {
         success?: boolean;
         data?: AuthApiResult;
-        error?: { message?: string };
+        error?: AuthApiError;
     } | null;
 
     if (!response.ok || !payload?.success || !payload.data) {
-        throw new Error(payload?.error?.message || 'Dang nhap khong thanh cong.');
+        throw new Error(getFriendlyAuthError(response, payload?.error));
     }
     return payload.data;
 };
