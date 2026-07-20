@@ -3,7 +3,7 @@ import type { AuthUser, UserRole } from '../services/authService';
 
 export type AuthContextValue = {
     user: AuthUser | null;
-    login: (role: UserRole, username: string, password: string, agency?: string) => Promise<boolean>;
+    login: (role: UserRole, loginIdentifier: string, password: string, agency?: string) => Promise<boolean>;
     registerCitizenAccount: (input: {
         password: string;
         name: string;

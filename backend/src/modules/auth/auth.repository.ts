@@ -27,18 +27,19 @@ export const verifyPassword = (password: string, passwordHash: string): boolean 
 
 export const toPublicUser = (user: AuthUser): PublicAuthUser => ({
   id: user.id,
-  username: user.username,
+  loginIdentifier: user.loginIdentifier,
   name: user.name,
   role: user.role,
   ...(user.agency ? { agency: user.agency } : {}),
   ...(user.agencyId ? { agencyId: user.agencyId } : {}),
 });
 
-export const normalizeUsername = (username: string): string => username.trim().toLowerCase();
+export const normalizeLoginIdentifier = (loginIdentifier: string): string =>
+  loginIdentifier.trim().toLowerCase();
 
 const createDemoUser = (
   id: string,
-  username: string,
+  loginIdentifier: string,
   name: string,
   role: UserRole,
   password: string,
@@ -46,7 +47,7 @@ const createDemoUser = (
   extra: Partial<Pick<AuthUser, 'agency' | 'agencyId' | 'citizenIdHash'>> = {},
 ): AuthUser => ({
   id,
-  username,
+  loginIdentifier,
   passwordHash: hashPassword(password),
   name,
   role,
@@ -55,7 +56,7 @@ const createDemoUser = (
 });
 
 export interface AuthRepositoryPort {
-  findUserByUsername(username: string): Promise<AuthUser | null>;
+  findUserByLoginIdentifier(loginIdentifier: string): Promise<AuthUser | null>;
   findUserById(id: string): Promise<AuthUser | null>;
   createCitizen(input: {
     password: string;
@@ -79,15 +80,15 @@ export class AuthRepository implements AuthRepositoryPort {
     });
   }
 
-  async findUserByUsername(username: string): Promise<AuthUser | null> {
+  async findUserByLoginIdentifier(loginIdentifier: string): Promise<AuthUser | null> {
     await this.ensureDemoUsers();
     const data = await this.store.read();
-    const normalizedUsername = normalizeUsername(username);
-    const normalizedCitizenIdHash = /^(?:\d{9}|\d{12})$/.test(normalizedUsername)
-      ? hashCitizenId(normalizedUsername)
+    const normalizedLoginIdentifier = normalizeLoginIdentifier(loginIdentifier);
+    const normalizedCitizenIdHash = /^(?:\d{9}|\d{12})$/.test(normalizedLoginIdentifier)
+      ? hashCitizenId(normalizedLoginIdentifier)
       : '';
     return data.users.find((user) =>
-      user.username === normalizedUsername
+      user.loginIdentifier === normalizedLoginIdentifier
       || (normalizedCitizenIdHash && user.citizenIdHash === normalizedCitizenIdHash),
     ) ?? null;
   }
@@ -112,7 +113,7 @@ export class AuthRepository implements AuthRepositoryPort {
       }
       const user: AuthUser = {
         id: `citizen-${cryptoRandomId()}`,
-        username: `citizen-${cryptoRandomId()}`,
+        loginIdentifier: `citizen-${cryptoRandomId()}`,
         passwordHash: hashPassword(input.password),
         name: input.name.trim(),
         role: 'nguoi-dan',

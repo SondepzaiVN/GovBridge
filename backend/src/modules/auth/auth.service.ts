@@ -26,10 +26,10 @@ export class AuthService {
 
   async login(input: {
     role: UserRole;
-    username: string;
+    loginIdentifier: string;
     password: string;
   }): Promise<{ user: PublicAuthUser; token: string; expiresAt: string }> {
-    const user = await this.repository.findUserByUsername(input.username);
+    const user = await this.repository.findUserByLoginIdentifier(input.loginIdentifier);
     if (!user || user.role !== input.role || !verifyPassword(input.password, user.passwordHash)) {
       throw new UnauthorizedError('Tài khoản hoặc mật khẩu không đúng.');
     }

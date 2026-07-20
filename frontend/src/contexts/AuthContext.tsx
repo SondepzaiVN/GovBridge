@@ -14,8 +14,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
 
     const value = useMemo<AuthContextValue>(() => ({
         user,
-        login: async (role, username, password, agency) => {
-            const authenticatedUser = await loginWithPassword(role, { username, password, agency });
+        login: async (role, loginIdentifier, password, agency) => {
+            const authenticatedUser = await loginWithPassword(role, { loginIdentifier, password, agency });
             setUser(authenticatedUser);
             return Boolean(authenticatedUser);
         },

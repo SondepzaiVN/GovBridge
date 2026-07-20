@@ -3,7 +3,7 @@ import type { PostgresDatabase } from '../../storage/postgres.js';
 import {
   hashCitizenId,
   hashPassword,
-  normalizeUsername,
+  normalizeLoginIdentifier,
   sha256,
   toPublicUser,
   type AuthRepositoryPort,
@@ -12,7 +12,7 @@ import type { AuthSession, AuthUser, PublicAuthUser } from './auth.types.js';
 
 interface UserRow {
   id: string;
-  username: string;
+  login_identifier: string;
   password_hash: string;
   full_name: string;
   role: AuthUser['role'];
@@ -38,7 +38,7 @@ const toIso = (value: Date | string): string =>
 
 const toAuthUser = (row: UserRow): AuthUser => ({
   id: row.id,
-  username: row.username,
+  loginIdentifier: row.login_identifier,
   passwordHash: row.password_hash,
   name: row.full_name,
   role: row.role,
@@ -58,12 +58,12 @@ const toAuthSession = (row: SessionRow): AuthSession => ({
 export class PostgresAuthRepository implements AuthRepositoryPort {
   constructor(private readonly database: PostgresDatabase) {}
 
-  async findUserByUsername(username: string): Promise<AuthUser | null> {
+  async findUserByLoginIdentifier(loginIdentifier: string): Promise<AuthUser | null> {
     await this.ensureDemoUsers();
     const result = await this.database.query<UserRow>(`
       select
         u.id,
-        u.username,
+        u.login_identifier,
         u.password_hash,
         u.full_name,
         u.role,
@@ -74,12 +74,12 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
       from users u
       left join officer_profiles op on op.user_id = u.id
       left join agencies a on a.id = op.agency_id
-      where u.username = $1
+      where u.login_identifier = $1
         or u.citizen_id_hash = $2
       limit 1
     `, [
-      normalizeUsername(username),
-      /^(?:\d{9}|\d{12})$/.test(username.trim()) ? hashCitizenId(username.trim()) : null,
+      normalizeLoginIdentifier(loginIdentifier),
+      /^(?:\d{9}|\d{12})$/.test(loginIdentifier.trim()) ? hashCitizenId(loginIdentifier.trim()) : null,
     ]);
     return result.rows[0] ? toAuthUser(result.rows[0]) : null;
   }
@@ -89,7 +89,7 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
     const result = await this.database.query<UserRow>(`
       select
         u.id,
-        u.username,
+        u.login_identifier,
         u.password_hash,
         u.full_name,
         u.role,
@@ -119,7 +119,7 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
       const result = await this.database.query<UserRow>(`
         insert into users (
           id,
-          username,
+          login_identifier,
           password_hash,
           full_name,
           role,
@@ -128,7 +128,7 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
         values ($1, $2, $3, $4, 'nguoi-dan', $5)
         returning
           id,
-          username,
+          login_identifier,
           password_hash,
           full_name,
           role,
@@ -181,7 +181,7 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
         s.created_at as session_created_at,
         s.expires_at,
         u.id,
-        u.username,
+        u.login_identifier,
         u.password_hash,
         u.full_name,
         u.role,
@@ -225,14 +225,14 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
     await this.database.query(`
       insert into users (
         id,
-        username,
+        login_identifier,
         password_hash,
         full_name,
         role,
         citizen_id_hash
       )
       values
-        ('citizen-001', 'citizen', $1, 'Nguyen Van A', 'nguoi-dan', $2),
+        ('citizen-001', 'citizen-demo', $1, 'Nguyen Van A', 'nguoi-dan', $2),
         ('officer-001', 'officer', $3, 'Tran Van B', 'can-bo', null)
       on conflict (id) do nothing
     `, [

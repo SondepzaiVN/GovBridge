@@ -8,7 +8,7 @@ const citizenNameSchema = z.string()
 
 export const loginSchema = z.object({
   role: z.enum(['nguoi-dan', 'can-bo', 'admin']),
-  username: z.string().trim().min(1).max(100),
+  loginIdentifier: z.string().trim().min(1).max(100),
   password: z.string().min(6).max(200),
 }).strict();
 

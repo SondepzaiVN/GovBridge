@@ -2,7 +2,7 @@ export type UserRole = 'nguoi-dan' | 'can-bo' | 'admin';
 
 export interface AuthUser {
   id: string;
-  username: string;
+  loginIdentifier: string;
   passwordHash: string;
   name: string;
   role: UserRole;
@@ -14,7 +14,7 @@ export interface AuthUser {
 
 export interface PublicAuthUser {
   id: string;
-  username: string;
+  loginIdentifier: string;
   name: string;
   role: UserRole;
   agency?: string;
