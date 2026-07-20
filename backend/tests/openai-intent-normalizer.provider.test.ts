@@ -152,6 +152,8 @@ describe('OpenAiIntentNormalizerProvider', () => {
     expect(client.requests[0]?.instructions).toEqual(expect.stringContaining('hasActiveFormContext'));
     expect(client.requests[0]?.instructions).toEqual(expect.stringContaining('FORM_FILL/targetTool form_fill'));
     expect(client.requests[0]?.instructions).toEqual(expect.stringContaining('chỗ ở hợp pháp mới'));
+    expect(client.requests[0]?.instructions).toEqual(expect.stringContaining('Tôi mới chuyển tới Cần Thơ'));
+    expect(client.requests[0]?.instructions).toEqual(expect.stringContaining('Không được chỉ nói'));
   });
 
   it('removes procedure hints that are not in the catalog', async () => {

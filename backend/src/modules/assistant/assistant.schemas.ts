@@ -29,6 +29,7 @@ const assistantPageCaseSchema = z.object({
   id: z.string().trim().min(1).max(120),
   title: z.string().trim().min(1).max(500),
   isVisible: z.boolean().optional(),
+  isCurrentlyVisible: z.boolean().optional(),
   isOpen: z.boolean().optional(),
   selectionHint: z.string().trim().max(400).optional(),
   requirements: z.array(assistantPageRequirementSchema).max(12).optional(),
@@ -39,6 +40,7 @@ const assistantPageSectionSchema = z.object({
   title: z.string().trim().min(1).max(300),
   isOpen: z.boolean().optional(),
   isVisible: z.boolean().optional(),
+  isCurrentlyVisible: z.boolean().optional(),
 }).strict();
 
 const assistantSubmissionChecklistItemSchema = z.object({
@@ -63,6 +65,18 @@ const assistantPageContextSchema = z.object({
   }).strict().optional(),
 }).strict();
 
+const visibleFieldGroupSchema = z.object({
+  sectionId: z.string().trim().min(1).max(120).optional(),
+  sectionTitle: z.string().trim().min(1).max(200).optional(),
+  fieldIds: z.array(z.string().trim().min(1).max(100)).max(50),
+  isPrimaryFocus: z.boolean().optional(),
+}).strict();
+
+const clientInterruptedAssistantMessageSchema = z.object({
+  content: z.string().trim().min(1).max(4_000),
+  createdAt: z.string().trim().max(40).optional(),
+}).strict();
+
 export const assistantMessageSchema = z.object({
   sessionId: z.string().trim().min(8).max(100).regex(/^[a-zA-Z0-9_-]+$/).optional(),
   message: z.string().trim().min(1).max(4_000),
@@ -72,7 +86,11 @@ export const assistantMessageSchema = z.object({
   pageContext: assistantPageContextSchema.optional(),
   recentOcrFacts: z.record(z.string().max(2_000)).default({}),
   recentDocumentReviews: z.array(assistantDocumentReviewSchema).max(3).default([]),
-  visibleFieldIds: z.array(z.string().trim().min(1).max(100)).max(50).default([]),
+  /** Legacy flat list kept for tests/older frontend payloads. */
+  visibleFieldIds: z.array(z.string().trim().min(1).max(100)).max(80).default([]),
+  /** Danh sách field phân tầng theo khu vực đang hiển thị trên màn hình. */
+  visibleFieldGroups: z.array(visibleFieldGroupSchema).max(20).default([]),
+  clientInterruptedAssistantMessages: z.array(clientInterruptedAssistantMessageSchema).max(5).default([]),
 }).strict();
 
 export const assistantSessionParamsSchema = z.object({

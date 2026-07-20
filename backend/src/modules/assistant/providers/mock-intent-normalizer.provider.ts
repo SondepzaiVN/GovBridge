@@ -102,7 +102,7 @@ export class MockIntentNormalizerProvider implements IntentNormalizerProvider {
       ...inferred,
       reason: 'Rule-based fallback intent normalization.',
       clarificationQuestion: inferred.intent === 'UNCLEAR'
-        ? 'Anh/chị muốn em tra cứu thủ tục, hướng dẫn thao tác trên màn hình, hay hỗ trợ điền thông tin vào biểu mẫu?'
+        ? 'Mình chưa thể chọn đúng hướng hỗ trợ vì câu này chưa cho biết bạn đang muốn tìm hiểu một thủ tục, thao tác trên màn hình hay cung cấp dữ liệu cho biểu mẫu. Bạn muốn tra cứu thủ tục, tìm nút hoặc ô nhập trên màn hình, hay điền thông tin vào biểu mẫu?'
         : null,
       procedureHint: procedure
         ? { id: procedure.id, name: procedure.name, route: procedure.route }

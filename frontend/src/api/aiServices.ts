@@ -1,5 +1,5 @@
 import type { AgentEvent } from '../utils/eventBus';
-import type { AIResponse, AssistantPageContext, CCCDInfo, DocumentReviewResult, DocumentReviewRuleType, DocumentReviewUiStatus } from '../types';
+import type { AIResponse, AssistantPageContext, CCCDInfo, DocumentReviewResult, DocumentReviewRuleType, DocumentReviewUiStatus, VisibleFieldGroup } from '../types';
 import { apiClient } from './client';
 import { notifyCccdOcrExternalProcessing } from '../utils/externalProcessingNotices';
 
@@ -12,8 +12,15 @@ interface AssistantApiResult {
 interface AssistantContext {
     currentRoute?: string;
     formValues?: Record<string, string>;
-    visibleFieldIds?: string[];
+    /** Danh sách field phân tầng theo khu vực đang hiển thị trên màn hình. */
+    visibleFieldGroups?: VisibleFieldGroup[];
     pageContext?: AssistantPageContext | null;
+    clientInterruptedAssistantMessages?: ClientInterruptedAssistantMessage[];
+}
+
+export interface ClientInterruptedAssistantMessage {
+    content: string;
+    createdAt?: string;
 }
 
 export interface RecentDocumentReviewContext {
@@ -148,10 +155,11 @@ export const smartbotService = {
                 message,
                 currentRoute: context.currentRoute ?? currentRoute,
                 formValues: context.formValues ?? {},
-                visibleFieldIds: context.visibleFieldIds ?? [],
+                visibleFieldGroups: context.visibleFieldGroups ?? [],
                 ...(context.pageContext ? { pageContext: context.pageContext } : {}),
                 recentOcrFacts,
                 recentDocumentReviews,
+                clientInterruptedAssistantMessages: context.clientInterruptedAssistantMessages ?? [],
             }),
         });
 

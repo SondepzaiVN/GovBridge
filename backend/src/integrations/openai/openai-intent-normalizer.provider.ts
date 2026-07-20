@@ -251,6 +251,39 @@ const buildInstructions = (request: IntentNormalizerRequest): string => {
   const normalizerFieldIds = selectNormalizerFieldIds(request);
   const knownFields = selectKnownFields(request, normalizerFieldIds);
   const normalizerFieldIdSet = new Set(normalizerFieldIds);
+  // Tính primaryFocusSection: khu vực UI đang được người dùng tập trung nhìn vào.
+  const allGroups = context.formContext.importantVisibleFields;
+  const primaryFocusFields = allGroups.filter((f) => f.isPrimaryFocus);
+  const primaryFocusSectionTitle = primaryFocusFields[0]?.sectionTitle ?? null;
+
+  // Chỉ giữ uploadCases/sections đang thực sự hiển thị trên màn hình (isCurrentlyVisible).
+  const pageCtx = context.formContext.pageContext;
+  const compactedPageContext = pageCtx
+    ? {
+        ...pageCtx,
+        sections: pageCtx.sections?.map(({ isCurrentlyVisible: _, ...rest }) => rest),
+        currentlyVisibleSectionIds: pageCtx.sections
+          ?.filter((s) => s.isCurrentlyVisible)
+          .map((s) => s.id) ?? [],
+        residenceRegistration: pageCtx.residenceRegistration
+          ? {
+              ...pageCtx.residenceRegistration,
+              // uploadCases: tất cả (để AI biết toàn bộ)
+              uploadCases: pageCtx.residenceRegistration.uploadCases?.map(
+                ({ isCurrentlyVisible, ...rest }) => ({
+                  ...rest,
+                  isCurrentlyVisible,
+                }),
+              ),
+              // Chỉ liệt kê ID của case đang thật sự nhìn thấy
+              currentlyVisibleCaseIds: pageCtx.residenceRegistration.uploadCases
+                ?.filter((c) => c.isCurrentlyVisible)
+                .map((c) => c.id) ?? [],
+            }
+          : undefined,
+      }
+    : null;
+
   const runtimeContext = {
     currentRoute: context.currentRoute,
     currentProcedure: context.currentProcedure
@@ -280,7 +313,9 @@ const buildInstructions = (request: IntentNormalizerRequest): string => {
     knownFieldCount: Object.keys(context.formContext.knownFields).length,
     missingRequiredFields: context.formContext.missingRequiredFields,
     importantVisibleFields: context.formContext.importantVisibleFields,
-    pageContext: context.formContext.pageContext,
+    /** Tiêu đề khu vực UI đang được người dùng tập trung (chiếm diện tích lớn nhất viewport). */
+    primaryFocusSectionTitle,
+    pageContext: compactedPageContext,
     hasActiveFormContext: Boolean(context.currentProcedure && (
       context.formContext.importantVisibleFields.length > 0
       || context.formContext.missingRequiredFields.length > 0
@@ -314,9 +349,18 @@ QUY TẮC
 - Nếu "nộp ở đâu" có thể là hỏi nút trên UI hoặc cơ quan tiếp nhận, dùng ngữ cảnh: có các từ vị trí/bấm/nút thì UI_HIGHLIGHT; hỏi nơi/cơ quan tiếp nhận thì PROCEDURE_KNOWLEDGE; nếu vẫn mơ hồ thì UNCLEAR.
 - procedureHint chỉ dùng thủ tục có thật trong procedureCatalog. Nếu không chắc thủ tục, dùng null.
 - fieldHints chỉ dùng field id có thật trong currentProcedure.fields hoặc importantVisibleFields.
-- UNCLEAR phải có clarificationQuestion cụ thể, tự nhiên, bằng tiếng Việt.
+- UNCLEAR phải có clarificationQuestion tự nhiên bằng tiếng Việt gồm 2-4 câu và tự đủ nghĩa. Bắt buộc: (1) nói phần nào trong yêu cầu đã hiểu được; (2) giải thích vì sao chưa thể chọn an toàn, đang có những cách hiểu/ứng viên nào và chúng khác nhau ở điểm thực tế nào; (3) chỉ rõ đúng dữ kiện còn thiếu hoặc hai dữ kiện đang mâu thuẫn; (4) hỏi một câu cụ thể để người dân bổ sung. Không được chỉ nói "chưa nghe rõ", "vui lòng nói lại", "cần thêm thông tin" hoặc hỏi chung chung mà không nêu thông tin nào cần thêm.
+- Khi có nhiều thủ tục gần ngang nhau, clarificationQuestion phải gọi tên tối đa 3 lựa chọn có thật trong procedureCatalog và phân biệt chúng bằng description, citizenSituations, citizenOutcomes hoặc negativeHints; không tự đặt điều kiện pháp lý hay mốc thời gian không có trong catalog. Ví dụ với "Tôi mới chuyển tới Cần Thơ, cần làm gì?", cần nói chưa thể chọn giữa tạm trú và thường trú vì chưa biết đây là nơi ở tạm thời hay nơi sinh sống ổn định/chính thức; sau đó hỏi người dân thuộc trường hợp nào.
+- Khi lời mới mâu thuẫn với lịch sử hoặc dữ liệu hiện có và mâu thuẫn ảnh hưởng quyết định, clarificationQuestion phải nêu lại ngắn gọn cả hai thông tin xung đột rồi hỏi thông tin nào là đúng/hiện tại. Không âm thầm chọn một phía.
 - confidence là mức chắc chắn của phân loại intent chính. Nếu thật sự mơ hồ, dùng UNCLEAR với confidence >= 0.75.
 - Không nhắc "backend", "tool", "normalizer" trong clarificationQuestion.
+
+NGỮ CẢNH GIAO DIỆN (ĐỌC KỸ TRƯỚC KHI PHÂN LOẠI)
+- runtimeContext.primaryFocusSectionTitle: tên khu vực giao diện người dùng đang NHÌN VÀO (chiếm diện tích lớn nhất màn hình). Khi người dùng nói "cái này", "mấy cái kia", "trên màn hình", hãy ưu tiên liên kết với khu vực này trước.
+- runtimeContext.pageContext.currentlyVisibleCaseIds: danh sách ID các "trường hợp/case" đang THỰC SỰ hiển thị trên màn hình lúc người dùng gửi tin. Nếu người dùng hỏi "mấy trường hợp này là sao", "tôi nên chọn cái nào", hãy tra trong uploadCases và chỉ xét những case có id nằm trong currentlyVisibleCaseIds để giải thích hoặc hỏi lại.
+- runtimeContext.pageContext.currentlyVisibleSectionIds: tương tự nhưng cho sections.
+- importantVisibleFields[].sectionTitle: tên khu vực mà từng field thuộc về. Dùng để liên kết câu hỏi mơ hồ với đúng khu vực form người dùng đang thấy.
+- importantVisibleFields[].isPrimaryFocus: true nếu field đó nằm trong khu vực đang được tập trung. Ưu tiên những field này khi phân loại FORM_FILL hoặc UI_HIGHLIGHT.
 
 OUTPUT
 Trả đúng JSON schema, không markdown/code fence. reason ngắn gọn cho log nội bộ.
