@@ -432,7 +432,7 @@ const buildRoutedRuntimeContext = (context: AssistantToolContext) => {
         },
         currentRoute: context.currentRoute,
         currentStep: context.formContext.currentStep,
-        // Procedure schema chÆ°a cÃ³ catalog section Ä‘á»ƒ xÃ¡c minh giÃ¡ trá»‹ tá»« frontend.
+        // Procedure schema chưa có catalog section để xác minh giá trị từ frontend.
         currentSection: context.formContext.currentSection,
         currentProcedure: buildRoutedCurrentProcedure(context, routedFieldIds),
         procedureCatalog: summarizeProcedureCatalog(context, includeCatalogDescription),

@@ -39,7 +39,7 @@ const FALLBACK_CCCD_FIELD_MAP: Record<string, Record<string, string>> = {
 
 const normalizeGenderValue = (value: string) => {
   const normalized = value.trim().toLowerCase();
-  return normalized.includes('nữ') || normalized.includes('nu') || normalized.includes('ná»¯') ? 'Nu' : 'Nam';
+  return normalized.includes('nữ') || normalized.includes('nu') ? 'Nu' : 'Nam';
 };
 
 const normalizeServiceRoute = (pathname: string) => pathname.replace(/\/buoc-\d+\/?$/, '');

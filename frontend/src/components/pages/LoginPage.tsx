@@ -86,6 +86,9 @@ const LoginPage: React.FC = () => {
         }
         if (!username.trim()) nextErrors.username = 'Vui lòng nhập tài khoản.';
         if (!password) nextErrors.password = 'Vui lòng nhập mật khẩu.';
+        if (!isRegister && password && password.length < 6) {
+            nextErrors.password = 'Mật khẩu cần tối thiểu 6 ký tự.';
+        }
         if (isRegister && password && password.length < 8) {
             nextErrors.password = 'Mật khẩu đăng ký cần tối thiểu 8 ký tự.';
         }
@@ -287,9 +290,6 @@ const LoginPage: React.FC = () => {
                         </button>
 
                         <div className="login-ref-form-footer">
-                            <p className="login-ref-help">
-                                Trường hợp không đăng nhập được, vui lòng <button type="button">xem hướng dẫn</button>
-                            </p>
                             {!isRegister && (
                                 <button type="button" className="login-ref-secondary-action" onClick={() => openMethod('register')}>
                                     Chưa có tài khoản? Đăng ký tài khoản công dân

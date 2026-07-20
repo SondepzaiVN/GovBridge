@@ -1055,7 +1055,7 @@ const XacNhanCuTruPage: React.FC = () => {
 
             const documents: DashboardDocument[] = uploadedFile
                 ? [{ name: uploadedFile.name, state: 'Đã có' }]
-                : [{ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' }];
+                : [];
 
             let aggregatedOfficerNote = '';
             let finalFlag = '';
