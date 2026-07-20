@@ -119,6 +119,17 @@ export type FieldType =
   | 'textarea'
   | 'phone';
 
+/**
+ * Nhóm các field đang hiển thị trên màn hình, phân theo khu vực (section/fieldset/card).
+ * isPrimaryFocus = true nếu khu vực này chiếm diện tích lớn nhất trong viewport.
+ */
+export interface VisibleFieldGroup {
+  sectionId?: string;
+  sectionTitle?: string;
+  fieldIds: string[];
+  isPrimaryFocus?: boolean;
+}
+
 export interface FormFieldOption {
   value: string;
   label: string;
@@ -170,6 +181,8 @@ export interface AssistantPageCaseContext {
   id: string;
   title: string;
   isVisible?: boolean;
+  /** true nếu case này đang thực sự nằm trong vùng nhìn thấy của màn hình lúc gửi tin nhắn. */
+  isCurrentlyVisible?: boolean;
   isOpen?: boolean;
   selectionHint?: string;
   requirements?: AssistantPageRequirementContext[];
@@ -180,6 +193,8 @@ export interface AssistantPageSectionContext {
   title: string;
   isOpen?: boolean;
   isVisible?: boolean;
+  /** true nếu section này đang thực sự nằm trong vùng nhìn thấy của màn hình lúc gửi tin nhắn. */
+  isCurrentlyVisible?: boolean;
 }
 
 export interface AssistantSubmissionChecklistItemContext {

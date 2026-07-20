@@ -46,6 +46,13 @@ export interface AssistantSessionStore {
   sessions: AssistantSession[];
 }
 
+export interface VisibleFieldGroup {
+  sectionId?: string;
+  sectionTitle?: string;
+  fieldIds: string[];
+  isPrimaryFocus?: boolean;
+}
+
 export interface AssistantMessageInput {
   sessionId?: string;
   message: string;
@@ -56,6 +63,14 @@ export interface AssistantMessageInput {
   recentOcrFacts?: Record<string, string>;
   recentDocumentReviews?: AssistantDocumentReviewContext[];
   visibleFieldIds?: string[];
+  /** Danh sách field phân tầng theo khu vực đang hiển thị trên màn hình. */
+  visibleFieldGroups?: VisibleFieldGroup[];
+  clientInterruptedAssistantMessages?: ClientInterruptedAssistantMessage[];
+}
+
+export interface ClientInterruptedAssistantMessage {
+  content: string;
+  createdAt?: string;
 }
 
 export interface AssistantResult {
@@ -110,6 +125,8 @@ export interface AssistantPageCaseContext {
   id: string;
   title: string;
   isVisible?: boolean;
+  /** true nếu case này đang nằm trong vùng nhìn thấy của màn hình lúc gửi tin nhắn. */
+  isCurrentlyVisible?: boolean;
   isOpen?: boolean;
   selectionHint?: string;
   requirements?: AssistantPageRequirementContext[];
@@ -120,6 +137,8 @@ export interface AssistantPageSectionContext {
   title: string;
   isOpen?: boolean;
   isVisible?: boolean;
+  /** true nếu section này đang nằm trong vùng nhìn thấy của màn hình lúc gửi tin nhắn. */
+  isCurrentlyVisible?: boolean;
 }
 
 export interface AssistantSubmissionChecklistItemContext {
@@ -177,6 +196,10 @@ export interface AssistantFormContext {
     required: boolean;
     isEmpty: boolean;
     priority: 'high';
+    /** Tên khu vực (section/group) trên giao diện mà field này thuộc về. */
+    sectionTitle?: string;
+    /** true nếu field này thuộc khu vực đang chiếm diện tích lớn nhất trong viewport. */
+    isPrimaryFocus?: boolean;
     options?: Array<{ value: string; label: string }>;
   }>;
   recentChanges: Record<string, string>;

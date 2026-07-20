@@ -49,8 +49,18 @@ const AI_DECLARATION_PROCESSING_MESSAGE =
 
 const waitForAiDeclarationProcessing = () =>
   new Promise((resolve) => {
-    window.setTimeout(resolve, 3000 + Math.floor(Math.random() * 3001));
+    window.setTimeout(resolve, 550);
   });
+
+const normalizeConfirmOptionText = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('vi-VN')
+    .replace(/đ/g, 'd')
+    .replace(/\b(?:tinh|thanh pho|phuong|xa|thi tran|dac khu)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
 
 const buildFieldsFromCccdMap = (info: Record<string, string>, fieldMap: Record<string, string>) => {
   const fields: Record<string, string> = {};
@@ -377,6 +387,30 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
     const labels = message.data?.fieldLabels as Record<string, string> | undefined;
     const previousValues = message.data?.previousValues as Record<string, string> | undefined;
     if (!fields || Object.keys(fields).length === 0) return null;
+    const serviceRoute = normalizeServiceRoute(location.pathname);
+    const service = ROUTE_TO_SERVICE_MAP[serviceRoute];
+    const getConfirmDisplayValue = (fieldId: string, value: string) => {
+      const fieldOption = service?.fields
+        .find((field) => field.id === fieldId)
+        ?.options?.find((option) =>
+          option.value === value
+          || normalizeConfirmOptionText(option.value) === normalizeConfirmOptionText(value)
+          || normalizeConfirmOptionText(option.label) === normalizeConfirmOptionText(value)
+        );
+      if (fieldOption) return fieldOption.label;
+
+      const control = typeof document !== 'undefined' ? document.getElementById(fieldId) : null;
+      if (control instanceof HTMLSelectElement) {
+        const option = [...control.options].find((candidate) =>
+          candidate.value === value
+          || normalizeConfirmOptionText(candidate.value) === normalizeConfirmOptionText(value)
+          || normalizeConfirmOptionText(candidate.label) === normalizeConfirmOptionText(value)
+        );
+        return option?.label || value;
+      }
+
+      return value;
+    };
 
     return (
       <div className="fill-confirm-card">
@@ -391,9 +425,9 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
             <div className="fill-confirm-field" key={fieldId}>
               <span className="fill-confirm-label">{labels?.[fieldId] || fieldId}</span>
               {previousValues?.[fieldId] && previousValues[fieldId] !== value && (
-                <span className="fill-confirm-old">{previousValues[fieldId]} →</span>
+                <span className="fill-confirm-old">{getConfirmDisplayValue(fieldId, previousValues[fieldId])} →</span>
               )}
-              <span className="fill-confirm-value">{value}</span>
+              <span className="fill-confirm-value">{getConfirmDisplayValue(fieldId, value)}</span>
             </div>
           ))}
         </div>

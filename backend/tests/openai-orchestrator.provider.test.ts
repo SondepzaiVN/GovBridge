@@ -192,6 +192,12 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
         }),
       ],
     }));
+    expect(client.requests[0]?.instructions).toEqual(
+      expect.stringContaining('HỢP ĐỒNG HỎI LẠI KHI CHƯA ĐỦ CĂN CỨ'),
+    );
+    expect(client.requests[0]?.instructions).toEqual(
+      expect.stringContaining('Tôi mới chuyển tới Cần Thơ'),
+    );
     expect(client.requests[1]?.input).toEqual(expect.arrayContaining([
       expect.objectContaining({
         type: 'function_call_output',

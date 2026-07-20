@@ -54,12 +54,19 @@ const normalizeOptionLabel = (value: string): string =>
 
 const getOptionLookupKeys = (value: string): string[] => {
   const normalizedValue = normalizeOptionLabel(value);
+  const compactValue = normalizedValue.replace(/\s+/g, '');
   const trailingValue = normalizedValue
     .split(/\b(?:la|tai|o)\b/g)
     .map((part) => part.trim())
     .filter(Boolean)
     .at(-1);
-  return [...new Set([normalizedValue, trailingValue].filter(Boolean) as string[])];
+  const compactTrailingValue = trailingValue?.replace(/\s+/g, '');
+  return [...new Set([
+    normalizedValue,
+    compactValue,
+    trailingValue,
+    compactTrailingValue,
+  ].filter(Boolean) as string[])];
 };
 
 const resolveRenderedSelectValue = (
@@ -79,7 +86,11 @@ const resolveRenderedSelectValue = (
 
     const lookupKeys = getOptionLookupKeys(value);
     const labelMatch = options.find(
-      (option) => lookupKeys.includes(normalizeOptionLabel(option.label)),
+      (option) => {
+        const normalizedLabel = normalizeOptionLabel(option.label);
+        return lookupKeys.includes(normalizedLabel)
+          || lookupKeys.includes(normalizedLabel.replace(/\s+/g, ''));
+      },
     );
     return {
       isSelect: true,
@@ -104,7 +115,11 @@ const resolveRenderedSelectValue = (
   if (directMatch) return { isSelect: true, resolvedValue: directMatch };
 
   const lookupKeys = getOptionLookupKeys(value);
-  const labelMatch = options.find((option) => lookupKeys.includes(normalizeOptionLabel(option)));
+  const labelMatch = options.find((option) => {
+    const normalizedOption = normalizeOptionLabel(option);
+    return lookupKeys.includes(normalizedOption)
+      || lookupKeys.includes(normalizedOption.replace(/\s+/g, ''));
+  });
   return {
     isSelect: true,
     resolvedValue: labelMatch ?? null,
@@ -156,10 +171,11 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     Object.entries(fields).forEach(([fieldId, value]) => {
       const resolution = resolveRenderedSelectValue(fieldId, value);
-      preparedFields[fieldId] = resolution.resolvedValue ?? value;
       if (resolution.isSelect && !resolution.resolvedValue) {
         pendingSelectFields[fieldId] = value;
+        return;
       }
+      preparedFields[fieldId] = resolution.resolvedValue ?? value;
     });
 
     const updatedFieldIds = Object.keys(preparedFields);

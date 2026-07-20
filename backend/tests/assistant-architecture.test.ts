@@ -85,7 +85,7 @@ describe('assistant orchestration boundaries', () => {
           confidence: 0.92,
           reason: 'Câu hỏi thiếu mục tiêu thao tác.',
           targetTool: null,
-          clarificationQuestion: 'Anh/chị muốn em tra cứu thủ tục, hướng dẫn thao tác, hay hỗ trợ điền biểu mẫu?',
+          clarificationQuestion: 'Mình hiểu anh/chị đang nhắc đến một nội dung trên trang đăng ký thường trú, nhưng chưa thể chọn cách hỗ trợ vì chưa biết anh/chị muốn tra cứu thủ tục, tìm vị trí thao tác hay điền dữ liệu. Anh/chị muốn em hỗ trợ theo hướng nào?',
           procedureHint: null,
           fieldHints: [],
           secondaryIntents: [],
@@ -106,9 +106,60 @@ describe('assistant orchestration boundaries', () => {
     expect(knowledge.requests).toEqual([]);
     expect(response.body.data.response).toEqual(expect.objectContaining({
       intent: 'CLARIFY',
-      message: 'Anh/chị muốn em tra cứu thủ tục, hướng dẫn thao tác, hay hỗ trợ điền biểu mẫu?',
+      message: 'Mình hiểu anh/chị đang nhắc đến một nội dung trên trang đăng ký thường trú, nhưng chưa thể chọn cách hỗ trợ vì chưa biết anh/chị muốn tra cứu thủ tục, tìm vị trí thao tác hay điền dữ liệu. Anh/chị muốn em hỗ trợ theo hướng nào?',
     }));
     expect(response.body.data.actions).toEqual([]);
+  });
+
+  it('lets the orchestrator replace a generic unclear question with an explanatory clarification', async () => {
+    const knowledge = new MockKnowledgeProvider();
+    const orchestrate = vi.fn<OrchestratorProvider['orchestrate']>(async () => ({
+      kind: 'final',
+      result: {
+        response: {
+          intent: 'CLARIFY',
+          message: 'Mình hiểu bạn đang hỏi về việc chuyển nơi ở, nhưng chưa thể chọn thủ tục vì chưa biết đây là nơi ở tạm thời hay nơi ở ổn định chính thức.',
+          followUpQuestion: 'Bạn muốn đăng ký tạm trú hay chuyển nơi thường trú?',
+          suggestions: ['Ở tạm thời', 'Chuyển thường trú'],
+        },
+        actions: [],
+      },
+    }));
+    const orchestrator: OrchestratorProvider = {
+      name: 'explanatory-clarification-test',
+      orchestrate,
+    };
+    const intentNormalizer: IntentNormalizerProvider = {
+      name: 'generic-unclear-test-normalizer',
+      async normalize() {
+        return {
+          intent: 'UNCLEAR',
+          confidence: 0.92,
+          reason: 'Unclear.',
+          targetTool: null,
+          clarificationQuestion: 'Tôi chưa nghe rõ, bạn vui lòng nói lại?',
+          procedureHint: null,
+          fieldHints: [],
+          secondaryIntents: [],
+          safetyFlags: ['test_generic_unclear'],
+        };
+      },
+    };
+
+    const response = await request(createTestApp(knowledge, orchestrator, intentNormalizer))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Tôi mới chuyển tới Cần Thơ cần làm gì?',
+        currentRoute: '/',
+      })
+      .expect(200);
+
+    expect(orchestrate).toHaveBeenCalledOnce();
+    expect(response.body.data.response).toEqual(expect.objectContaining({
+      intent: 'CLARIFY',
+      followUpQuestion: 'Bạn muốn đăng ký tạm trú hay chuyển nơi thường trú?',
+      suggestions: ['Ở tạm thời', 'Chuyển thường trú'],
+    }));
   });
 
   it('routes knowledge questions through KnowledgeProvider without creating UI actions', async () => {

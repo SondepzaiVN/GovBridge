@@ -117,6 +117,11 @@ const titleCaseName = (value: string): string =>
     .map((word) => word.charAt(0).toLocaleUpperCase('vi-VN') + word.slice(1).toLocaleLowerCase('vi-VN'))
     .join(' ');
 
+const looksLikeAdministrativeUnit = (value: string): boolean => {
+  const normalized = normalizeText(value);
+  return /\b(?:tinh|thanh pho|tp|phuong|xa|thi tran|dac khu|quan|huyen|thi xa)\b/u.test(normalized);
+};
+
 const getFieldByIds = (fields: ProcedureField[], ids: string[]): ProcedureField | null => {
   const idSet = new Set(ids);
   return fields.find((field) => idSet.has(field.id)) ?? null;
@@ -137,18 +142,59 @@ const getAdministrativeFieldPair = (
   if (!context.currentProcedure) return null;
   const fields = context.currentProcedure.fields;
   const visibleFieldIds = new Set(context.formContext.importantVisibleFields.map((field) => field.id));
+  const isAgencyContext = /\b(?:co quan|co quan thuc hien|co quan tiep nhan|cong an|noi tiep nhan|tiep nhan)\b/u
+    .test(context.normalizedMessage);
+  const isRequestResidenceContext = !isAgencyContext
+    && /\b(?:de nghi|noi de nghi|noi dang ky|thuong tru|tam tru|noi o|song o|cu tru)\b/u
+      .test(context.normalizedMessage);
+
+  const getContextScore = (provinceId: string, wardId: string): number => {
+    if (
+      isAgencyContext
+      && (
+        (provinceId === 'tinhThanhCQ' && wardId === 'xaPhuongCQ')
+        || (provinceId === 'receiveCityCode' && wardId === 'receiveVillageCode')
+        || (provinceId === 'provinceAgency' && wardId === 'wardAgency')
+      )
+    ) {
+      return 2;
+    }
+
+    if (
+      isRequestResidenceContext
+      && (
+        (provinceId === 'tinhThanhDN' && wardId === 'xaPhuongDN')
+        || (provinceId === 'temporaryCityCode' && wardId === 'temporaryVillageCode')
+        || (provinceId === 'requestProvince' && wardId === 'requestWard')
+        || (provinceId === 'ltks_tinhThuongTru' && wardId === 'ltks_phuongThuongTru')
+      )
+    ) {
+      return 2;
+    }
+
+    return 0;
+  };
+
   const pairs = ADMINISTRATIVE_FIELD_PAIRS
     .map(([provinceId, wardId]) => ({
       provinceField: getFieldByIds(fields, [provinceId]),
       wardField: getFieldByIds(fields, [wardId]),
       visibleScore: Number(visibleFieldIds.has(provinceId)) + Number(visibleFieldIds.has(wardId)),
+      contextScore: getContextScore(provinceId, wardId),
     }))
-    .filter((pair): pair is { provinceField: ProcedureField; wardField: ProcedureField; visibleScore: number } =>
+    .filter((pair): pair is {
+      provinceField: ProcedureField;
+      wardField: ProcedureField;
+      visibleScore: number;
+      contextScore: number;
+    } =>
       Boolean(pair.provinceField && pair.wardField),
     );
 
-  const bestPair = pairs.sort((left, right) => right.visibleScore - left.visibleScore)[0];
-  if (!bestPair || bestPair.visibleScore === 0) return null;
+  const bestPair = pairs.sort((left, right) =>
+    (right.contextScore * 10 + right.visibleScore) - (left.contextScore * 10 + left.visibleScore),
+  )[0];
+  if (!bestPair || (bestPair.visibleScore === 0 && bestPair.contextScore === 0)) return null;
   return bestPair;
 };
 
@@ -300,7 +346,11 @@ const normalizeAndValidateValue = (field: ProcedureField, rawValue: string): str
     return null;
   }
   if (normalizeText(field.id).includes('hoten')) {
-    if (value.split(/\s+/).length < 2 || /[\d!@#$%^&*()_+=[\]{};:"\\|,.<>/?]/u.test(value)) {
+    if (
+      value.split(/\s+/).length < 2
+      || /[\d!@#$%^&*()_+=[\]{};:"\\|,.<>/?]/u.test(value)
+      || looksLikeAdministrativeUnit(value)
+    ) {
       return null;
     }
   }

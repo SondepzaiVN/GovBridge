@@ -1,4 +1,4 @@
-import { copyFile, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import request from 'supertest';
@@ -112,6 +112,87 @@ describe('Gov Bridge API', () => {
       },
     }).expect(200);
     expect(second.body.data.actions[0].type).toBe('NEXT_STEP');
+  });
+
+  it('stores interrupted assistant replies from the client as normal history', async () => {
+    const interruptedReply = 'Cau tra loi bi ngat van la context.';
+    const newUserMessage = 'toi muon hoi tiep';
+    const finalReply = 'Da nhan cau moi.';
+    let capturedHistory: Array<{ role: string; content: string }> = [];
+    const intentNormalizerProvider: IntentNormalizerProvider = {
+      name: 'interrupted-history-normalizer',
+      async normalize() {
+        return {
+          intent: 'CHITCHAT',
+          confidence: 0.99,
+          reason: 'test',
+          targetTool: 'chat',
+          clarificationQuestion: null,
+          procedureHint: null,
+          fieldHints: [],
+          secondaryIntents: [],
+          safetyFlags: [],
+        };
+      },
+    };
+    const orchestratorProvider: OrchestratorProvider = {
+      name: 'interrupted-history-capture',
+      async orchestrate(request) {
+        capturedHistory = request.history.map((message) => ({
+          role: message.role,
+          content: message.content,
+        }));
+        return {
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: finalReply,
+            },
+            actions: [],
+          },
+        };
+      },
+    };
+
+    await request(createApp({
+      dataDirectory,
+      ocrProvider: new MockOcrProvider(),
+      ttsProvider: new MockTtsProvider(),
+      sttProvider: new MockSttProvider(),
+      orchestratorProvider,
+      intentNormalizerProvider,
+      knowledgeProvider: new MockKnowledgeProvider(),
+    })).post('/api/v1/assistant/messages').send({
+      sessionId: 'client_interrupt_session',
+      message: newUserMessage,
+      currentRoute: '/',
+      clientInterruptedAssistantMessages: [{
+        content: interruptedReply,
+        createdAt: '2026-07-20T00:00:00.000Z',
+      }],
+    }).expect(200);
+
+    expect(capturedHistory).toContainEqual({
+      role: 'assistant',
+      content: interruptedReply,
+    });
+    const store = JSON.parse(
+      await readFile(path.join(dataDirectory, 'assistant-sessions.json'), 'utf8'),
+    ) as {
+      sessions: Array<{
+        id: string;
+        messages: Array<{ role: string; content: string }>;
+      }>;
+    };
+    const messages = store.sessions.find((session) => session.id === 'client_interrupt_session')?.messages ?? [];
+    const contents = messages.map((message) => message.content);
+    expect(contents).toEqual(expect.arrayContaining([
+      interruptedReply,
+      newUserMessage,
+      finalReply,
+    ]));
+    expect(contents.indexOf(interruptedReply)).toBeLessThan(contents.indexOf(newUserMessage));
   });
 
   it('asks for confirmation before mock autofill changes the form', async () => {
@@ -368,6 +449,101 @@ describe('Gov Bridge API', () => {
         },
       }),
     ]);
+  });
+
+  it('does not treat "co" inside "co quan" as pending-fill confirmation', async () => {
+    let callCount = 0;
+    const orchestratorProvider: OrchestratorProvider = {
+      name: 'pending-confirm-word-boundary-test',
+      async orchestrate() {
+        callCount += 1;
+        if (callCount === 1) {
+          return {
+            kind: 'final',
+            result: {
+              response: {
+                intent: 'CHAT',
+                message: 'Mình đã ghi nhận phường cơ quan thực hiện.',
+              },
+              actions: [],
+              understanding: {
+                facts: [{
+                  fieldHint: 'xaPhuongCQ',
+                  value: 'Phường Tân An',
+                  confidence: 0.99,
+                  source: 'chat',
+                }],
+                caseSuggestion: null,
+                followUpQuestion: null,
+                fieldExplanation: null,
+                navigationRoute: null,
+                highlightElementId: null,
+                nextStepRequested: false,
+              },
+            },
+          };
+        }
+
+        return {
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: 'Mình sẽ đổi cơ quan thực hiện theo tỉnh/thành phố mới.',
+            },
+            actions: [],
+            understanding: {
+              facts: [],
+              caseSuggestion: null,
+              followUpQuestion: null,
+              fieldExplanation: null,
+              navigationRoute: null,
+              highlightElementId: null,
+              nextStepRequested: false,
+            },
+          },
+        };
+      },
+    };
+
+    const app = createApp({
+      dataDirectory,
+      ocrProvider: new MockOcrProvider(),
+      ttsProvider: new MockTtsProvider(),
+      orchestratorProvider,
+      knowledgeProvider: new MockKnowledgeProvider(),
+    });
+
+    const first = await request(app).post('/api/v1/assistant/messages').send({
+      message: 'co quan thuc hien cua toi la phuong tan an',
+      currentRoute: '/ho-khau',
+      formValues: { thuTuc: 'dktt' },
+      visibleFieldIds: ['tinhThanhCQ', 'xaPhuongCQ'],
+    }).expect(200);
+
+    expect(first.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: { xaPhuongCQ: 'Phường Tân An' },
+      }),
+    ]);
+
+    const second = await request(app).post('/api/v1/assistant/messages').send({
+      sessionId: first.body.data.sessionId,
+      message: 'doi co quan thuc hien cua toi la thanh pho ha noi',
+      currentRoute: '/ho-khau',
+      formValues: { thuTuc: 'dktt', tinhThanhCQ: 'cantho', xaPhuongCQ: '31147' },
+      visibleFieldIds: ['tinhThanhCQ', 'xaPhuongCQ'],
+    }).expect(200);
+
+    expect(callCount).toBe(2);
+    expect(second.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'REQUEST_CONFIRM_FILL',
+        fields: { tinhThanhCQ: 'hanoi' },
+      }),
+    ]);
+    expect(second.body.data.actions[0].fields).not.toHaveProperty('xaPhuongCQ');
   });
 
   it('canonicalizes visible frontend fields before marking them as important', async () => {
@@ -689,6 +865,12 @@ describe('Gov Bridge API', () => {
             understanding: {
               facts: [
                 {
+                  fieldHint: 'hoTen',
+                  value: 'Thành phố Cần Thơ',
+                  confidence: 0.99,
+                  source: 'chat',
+                },
+                {
                   fieldHint: 'tinhThanhDN',
                   value: 'Thành phố Cần Thơ',
                   confidence: 0.99,
@@ -726,6 +908,7 @@ describe('Gov Bridge API', () => {
     }).expect(200);
 
     // tinhThanhDN has 'Thành phố Cần Thơ' as an option label → resolves to 'cantho'
+    // hoTen must reject administrative-unit values even if the model emits a bad fact.
     // xaPhuongDN is administrative, so unmatched labels are kept for frontend dynamic-option reconciliation.
     expect(response.body.data.actions).toEqual([
       expect.objectContaining({
