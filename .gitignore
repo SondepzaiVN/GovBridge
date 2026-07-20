@@ -9,3 +9,9 @@ ref/
 outputs/
 prompt.md
 dev-server*.log
+
+# Runtime data and user uploads
+backend/src/storage/data/applications.json
+backend/src/storage/data/dashboard-applications.json
+backend/src/storage/data/assistant-sessions.json
+backend/data/uploads/
