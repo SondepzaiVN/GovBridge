@@ -3,7 +3,7 @@
 -- target for the next migration to PostgreSQL.
 
 create table if not exists agencies (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
   name text not null,
   province_code text,
   district_code text,
@@ -12,7 +12,7 @@ create table if not exists agencies (
 );
 
 create table if not exists users (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
   username text not null unique,
   email text unique,
   phone text unique,
@@ -26,7 +26,7 @@ create table if not exists users (
 );
 
 create table if not exists citizen_profiles (
-  user_id uuid primary key references users(id) on delete cascade,
+  user_id text primary key references users(id) on delete cascade,
   citizen_id_encrypted text,
   date_of_birth date,
   address_encrypted text,
@@ -35,8 +35,8 @@ create table if not exists citizen_profiles (
 );
 
 create table if not exists officer_profiles (
-  user_id uuid primary key references users(id) on delete cascade,
-  agency_id uuid not null references agencies(id),
+  user_id text primary key references users(id) on delete cascade,
+  agency_id text not null references agencies(id),
   position text,
   permissions jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
@@ -44,9 +44,9 @@ create table if not exists officer_profiles (
 
 create table if not exists applications (
   id text primary key,
-  owner_user_id uuid not null references users(id),
+  owner_user_id text not null references users(id),
   service_id text not null,
-  receiving_agency_id uuid references agencies(id),
+  receiving_agency_id text references agencies(id),
   status text not null,
   data_json jsonb not null default '{}'::jsonb,
   submitted_at timestamptz not null default now(),
@@ -57,9 +57,9 @@ create index if not exists idx_applications_owner on applications(owner_user_id)
 create index if not exists idx_applications_agency_status on applications(receiving_agency_id, status);
 
 create table if not exists attachments (
-  id uuid primary key default gen_random_uuid(),
+  id text primary key,
   application_id text references applications(id) on delete cascade,
-  owner_user_id uuid not null references users(id),
+  owner_user_id text not null references users(id),
   storage_key text not null unique,
   original_name text not null,
   mime_type text not null,
@@ -73,7 +73,7 @@ create index if not exists idx_attachments_application on attachments(applicatio
 
 create table if not exists auth_sessions (
   token_hash text primary key,
-  user_id uuid not null references users(id) on delete cascade,
+  user_id text not null references users(id) on delete cascade,
   created_at timestamptz not null default now(),
   expires_at timestamptz not null
 );
@@ -82,8 +82,8 @@ create index if not exists idx_auth_sessions_user on auth_sessions(user_id);
 create index if not exists idx_auth_sessions_expires_at on auth_sessions(expires_at);
 
 create table if not exists audit_logs (
-  id uuid primary key default gen_random_uuid(),
-  actor_user_id uuid references users(id),
+  id text primary key,
+  actor_user_id text references users(id),
   action text not null,
   resource_type text not null,
   resource_id text not null,

@@ -6,7 +6,7 @@ import type { AuthSession, AuthStore, AuthUser, PublicAuthUser, UserRole } from 
 const TOKEN_BYTES = 32;
 const PASSWORD_KEY_BYTES = 64;
 
-const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
+export const sha256 = (value: string): string => createHash('sha256').update(value).digest('hex');
 
 export const hashCitizenId = (citizenId: string): string =>
   sha256(citizenId.replace(/\s+/g, ''));
@@ -25,7 +25,7 @@ export const verifyPassword = (password: string, passwordHash: string): boolean 
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 };
 
-const toPublicUser = (user: AuthUser): PublicAuthUser => ({
+export const toPublicUser = (user: AuthUser): PublicAuthUser => ({
   id: user.id,
   username: user.username,
   name: user.name,
@@ -34,7 +34,7 @@ const toPublicUser = (user: AuthUser): PublicAuthUser => ({
   ...(user.agencyId ? { agencyId: user.agencyId } : {}),
 });
 
-const normalizeUsername = (username: string): string => username.trim().toLowerCase();
+export const normalizeUsername = (username: string): string => username.trim().toLowerCase();
 
 const createDemoUser = (
   id: string,
@@ -54,7 +54,22 @@ const createDemoUser = (
   ...extra,
 });
 
-export class AuthRepository {
+export interface AuthRepositoryPort {
+  findUserByUsername(username: string): Promise<AuthUser | null>;
+  findUserById(id: string): Promise<AuthUser | null>;
+  createCitizen(input: {
+    username: string;
+    password: string;
+    name: string;
+    citizenId?: string;
+  }): Promise<PublicAuthUser>;
+  createSession(userId: string, ttlMs: number): Promise<{ token: string; expiresAt: string }>;
+  findSessionByToken(token: string): Promise<{ session: AuthSession; user: AuthUser } | null>;
+  deleteSession(tokenHash: string): Promise<boolean>;
+  toPublicUser(user: AuthUser): PublicAuthUser;
+}
+
+export class AuthRepository implements AuthRepositoryPort {
   private readonly store: JsonFileStore<AuthStore>;
 
   constructor(dataDirectory: string) {

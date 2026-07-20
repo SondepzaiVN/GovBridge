@@ -208,7 +208,7 @@ describe('Upload and speech API edge cases', () => {
       synthesize: vi.fn(async (input) => ({
         provider: 'mock',
         audioUrl: 'data:audio/wav;base64,AAAA',
-        useBrowserFallback: input.speed === 1,
+        useBrowserFallback: input.speed === 1.2,
       })),
     };
     const sttProvider: SttProvider = {
@@ -230,7 +230,7 @@ describe('Upload and speech API edge cases', () => {
     });
     expect(ttsProvider.synthesize).toHaveBeenCalledWith({
       text: 'Xin chào',
-      speed: 1,
+      speed: 1.2,
       voice: 'female_south',
       domain: 'general',
     });

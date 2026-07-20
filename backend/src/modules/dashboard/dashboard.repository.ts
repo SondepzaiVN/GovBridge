@@ -17,7 +17,16 @@ export type DashboardStore = {
   uploads?: DashboardUploadRecord[];
 };
 
-export class DashboardRepository {
+export interface DashboardRepositoryPort {
+  findAll(): Promise<DashboardApplication[]>;
+  findByOwner(ownerUserId: string): Promise<DashboardApplication[]>;
+  insert(application: DashboardApplication): Promise<DashboardApplication>;
+  update(id: string, updates: Partial<DashboardApplication>): Promise<DashboardApplication | null>;
+  recordUpload(upload: DashboardUploadRecord): Promise<void>;
+  canReadAttachment(storageKey: string, user: AuthenticatedUser): Promise<boolean>;
+}
+
+export class DashboardRepository implements DashboardRepositoryPort {
   private readonly store: JsonFileStore<DashboardStore>;
 
   constructor(dataDirectory: string) {

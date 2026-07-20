@@ -1,11 +1,11 @@
 import { AppError, UnauthorizedError } from '../../common/errors/app-error.js';
-import { AuthRepository, verifyPassword } from './auth.repository.js';
+import { verifyPassword, type AuthRepositoryPort } from './auth.repository.js';
 import type { AuthenticatedUser, PublicAuthUser, UserRole } from './auth.types.js';
 
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
 export class AuthService {
-  constructor(private readonly repository: AuthRepository) {}
+  constructor(private readonly repository: AuthRepositoryPort) {}
 
   async registerCitizen(input: {
     username: string;

@@ -21,7 +21,10 @@ import { ApplicationRepository } from './modules/applications/application.reposi
 import { ApplicationService } from './modules/applications/application.service.js';
 import { AssistantSessionRepository } from './modules/assistant/assistant.repository.js';
 import { AssistantService } from './modules/assistant/assistant.service.js';
+import { NoopAuditRepository } from './modules/audit/audit.repository.js';
+import { PostgresAuditRepository } from './modules/audit/postgres-audit.repository.js';
 import { AuthRepository } from './modules/auth/auth.repository.js';
+import { PostgresAuthRepository } from './modules/auth/postgres-auth.repository.js';
 import { AuthService } from './modules/auth/auth.service.js';
 import type { IntentNormalizerProvider } from './modules/assistant/intent-normalizer.types.js';
 import type { KnowledgeProvider } from './modules/assistant/knowledge.types.js';
@@ -31,6 +34,7 @@ import { MockKnowledgeProvider } from './modules/assistant/providers/mock-knowle
 import { MockOrchestratorProvider } from './modules/assistant/providers/mock-orchestrator.provider.js';
 import { buildAssistantTools } from './modules/assistant/tools/index.js';
 import { DashboardRepository } from './modules/dashboard/dashboard.repository.js';
+import { PostgresDashboardRepository } from './modules/dashboard/postgres-dashboard.repository.js';
 import { DocumentReviewService } from './modules/document-review/document-review.service.js';
 import type { DocumentReaderProvider, DocumentReviewerProvider } from './modules/document-review/document-review.types.js';
 import { MockDocumentReaderProvider } from './modules/document-review/providers/mock-document-reader.provider.js';
@@ -45,6 +49,7 @@ import { SpeechService } from './modules/speech/speech.service.js';
 import type { SttProvider, TtsProvider } from './modules/speech/speech.types.js';
 import type { IdentityOcrProvider } from './modules/identity/identity.types.js';
 import { createApiRouter } from './routes/index.js';
+import { getPostgresPool, PostgresDatabase } from './storage/postgres.js';
 
 export interface CreateAppOptions {
   dataDirectory?: string;
@@ -66,8 +71,20 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
   const procedures = new ProcedureRepository(dataDirectory);
   const applications = new ApplicationRepository(dataDirectory);
   const sessions = new AssistantSessionRepository(dataDirectory);
-  const dashboardRepository = new DashboardRepository(dataDirectory);
-  const authService = new AuthService(new AuthRepository(dataDirectory));
+  const postgresDatabase = env.DATA_STORE === 'postgres' && !options.dataDirectory
+    ? new PostgresDatabase(getPostgresPool(env.DATABASE_URL))
+    : null;
+  const dashboardRepository = postgresDatabase
+    ? new PostgresDashboardRepository(postgresDatabase)
+    : new DashboardRepository(dataDirectory);
+  const auditRepository = postgresDatabase
+    ? new PostgresAuditRepository(postgresDatabase)
+    : new NoopAuditRepository();
+  const authService = new AuthService(
+    postgresDatabase
+      ? new PostgresAuthRepository(postgresDatabase)
+      : new AuthRepository(dataDirectory),
+  );
   const openAiClient = env.OPENAI_API_KEY.trim()
     ? new HttpOpenAiResponsesClient({
         baseUrl: env.OPENAI_BASE_URL,
@@ -169,6 +186,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
       intentNormalizerProvider,
     ),
     authService,
+    auditRepository,
     documentReviewService: new DocumentReviewService(
       documentReaderProvider,
       documentReviewerProvider,

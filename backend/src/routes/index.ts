@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import type { ApplicationService } from '../modules/applications/application.service.js';
 import type { AssistantService } from '../modules/assistant/assistant.service.js';
+import type { AuditRepositoryPort } from '../modules/audit/audit.repository.js';
 import { createAuthRouter } from '../modules/auth/auth.routes.js';
 import type { AuthService } from '../modules/auth/auth.service.js';
 import { createDocumentReviewRouter } from '../modules/document-review/document-review.routes.js';
@@ -15,18 +16,19 @@ import type { ProcedureService } from '../modules/procedures/procedure.service.j
 import { createSpeechRouter } from '../modules/speech/speech.routes.js';
 import type { SpeechService } from '../modules/speech/speech.service.js';
 
-import type { DashboardRepository } from '../modules/dashboard/dashboard.repository.js';
+import type { DashboardRepositoryPort } from '../modules/dashboard/dashboard.repository.js';
 import { createDashboardRouter } from '../modules/dashboard/dashboard.routes.js';
 
 export interface ApiDependencies {
   applicationService: ApplicationService;
   assistantService: AssistantService;
   authService: AuthService;
+  auditRepository: AuditRepositoryPort;
   documentReviewService: DocumentReviewService;
   identityService: IdentityService;
   procedureService: ProcedureService;
   speechService: SpeechService;
-  dashboardRepository: DashboardRepository;
+  dashboardRepository: DashboardRepositoryPort;
   uploadMaxMb: number;
   providerNames: {
     assistant: string;
@@ -56,6 +58,7 @@ export const createApiRouter = (dependencies: ApiDependencies): Router => {
   router.use('/dashboard/applications', createDashboardRouter(
     dependencies.dashboardRepository,
     dependencies.authService,
+    dependencies.auditRepository,
   ));
   return router;
 };
