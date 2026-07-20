@@ -47,11 +47,19 @@ import {
     type TamTruHouseholdMember,
     type TamTruReviewResult,
 } from '../../utils/validateTamTruApplication';
-import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
+import {
+    clearSubmissionId,
+    getOrCreateSubmissionId,
+    saveApplicationToDashboard,
+    type DashboardDocument,
+} from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { isLikelyConnectivityError, notifyConnectivityFallback } from '../../utils/connectivityFallback';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
+import { addFormFillAppliedListener } from '../../utils/formFillBridge';
 import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
 import { MissingRequiredFieldsModal } from '../common/MissingRequiredFieldsModal';
+import type { ResidenceFieldSuggestion } from '../../utils/residenceCccdSuggestions';
 
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
@@ -125,6 +133,55 @@ const initialForm: TamTruApplicationData = {
     feeDescription: 'Thu lệ phí Đăng ký tạm trú',
     committed: false,
 };
+
+const TAM_TRU_FORM_FILL_FIELD_IDS = new Set([
+    'receiveCityCode',
+    'receiveVillageCode',
+    'receiveOrgAddress',
+    'receiveOrgPhone',
+    'procedureTypeCode',
+    'procedureCaseCode',
+    'registrationMode',
+    'declareMode',
+    'fullName',
+    'dateFormat',
+    'dateOfBirth',
+    'gender',
+    'ethnicity',
+    'religion',
+    'citizenId',
+    'phoneNumber',
+    'email',
+    'temporaryCityCode',
+    'temporaryVillageCode',
+    'temporaryAddress',
+    'householderName',
+    'householderCitizenId',
+    'householderRelationship',
+    'requestContent',
+    'temporaryUntilDate',
+    'notificationMethod',
+    'resultMethod',
+    'feeType',
+    'feeAmount',
+    'feeExemptionReason',
+    'feeDescription',
+]);
+
+const TAM_TRU_FORM_FILL_ORDER = new Map(
+    [
+        'receiveCityCode',
+        'receiveVillageCode',
+        'temporaryCityCode',
+        'temporaryVillageCode',
+        'temporaryAddress',
+    ].map((fieldId, index) => [fieldId, index]),
+);
+
+const getSortedTamTruFillEntries = (fields: Record<string, string>) =>
+    Object.entries(fields)
+        .filter(([fieldId]) => TAM_TRU_FORM_FILL_FIELD_IDS.has(fieldId))
+        .sort(([left], [right]) => (TAM_TRU_FORM_FILL_ORDER.get(left) ?? 100) - (TAM_TRU_FORM_FILL_ORDER.get(right) ?? 100));
 
 const requiredFields = new Set([
     'receiveCityCode',
@@ -262,6 +319,7 @@ const DangKyTamTruPage: React.FC = () => {
     const [administrativeError, setAdministrativeError] = useState('');
     const [review, setReview] = useState<TamTruReviewResult | null>(null);
     const [toast, setToast] = useState('');
+    const [isSubmittingApplication, setIsSubmittingApplication] = useState(false);
     const [showMissingRequiredModal, setShowMissingRequiredModal] = useState(false);
     const [activeDossierCaseId, setActiveDossierCaseId] = useState(dossierCases[0]?.id || '');
     const [memberCounter, setMemberCounter] = useState(2);
@@ -272,6 +330,8 @@ const DangKyTamTruPage: React.FC = () => {
     const [memberUploadCount, setMemberUploadCount] = useState(1);
     const [memberUploadError, setMemberUploadError] = useState('');
     const [cccdQueue, setCccdQueue] = useState<CccdQueueItem[]>([]);
+    const [pendingResidenceSuggestion, setPendingResidenceSuggestion] =
+        useState<ResidenceFieldSuggestion | null>(null);
 
     const procedureCases = procedureCasesByType[form.procedureTypeCode] || [];
     const showRegistrationMode = form.procedureTypeCode === 'dang-ky-tam-tru';
@@ -377,6 +437,86 @@ const DangKyTamTruPage: React.FC = () => {
         const provinceLabel = getProvinceLabel(provinceCode);
         return wardLabel && provinceLabel ? `Đăng ký tạm trú tại ${wardLabel} - ${provinceLabel}` : '';
     };
+
+    const getFillLabel = (value: string, label: string) => {
+        if (label) return label;
+        return /^\d+$/.test(value) ? '' : value;
+    };
+
+    const applyFillEntry = (current: TamTruApplicationData, fieldId: string, value: string): TamTruApplicationData => {
+        if (fieldId === 'receiveCityCode') {
+            return {
+                ...current,
+                receiveCityCode: value,
+                receiveVillageCode: '',
+                receiveOrgAddress: '',
+                receiveOrgPhone: '',
+            };
+        }
+
+        if (fieldId === 'receiveVillageCode') {
+            const wardLabel = getFillLabel(value, getReceiveWardLabel(value));
+            return {
+                ...current,
+                receiveVillageCode: value,
+                receiveOrgAddress: wardLabel ? agencyNameFromWard(wardLabel) : current.receiveOrgAddress,
+                receiveOrgPhone: '',
+            };
+        }
+
+        if (fieldId === 'temporaryCityCode') {
+            return {
+                ...current,
+                temporaryCityCode: value,
+                temporaryVillageCode: '',
+                requestContent: current.requestContent.startsWith('Đăng ký tạm trú tại') ? '' : current.requestContent,
+            };
+        }
+
+        if (fieldId === 'temporaryVillageCode') {
+            const wardLabel = getFillLabel(value, getTemporaryWardLabel(value));
+            const provinceLabel = getProvinceLabel(current.temporaryCityCode);
+            const nextContent = wardLabel && provinceLabel
+                ? `Đăng ký tạm trú tại ${wardLabel} - ${provinceLabel}`
+                : buildRequestContent(value, current.temporaryCityCode);
+            return {
+                ...current,
+                temporaryVillageCode: value,
+                requestContent:
+                    !current.requestContent || current.requestContent.startsWith('Đăng ký tạm trú tại')
+                        ? nextContent
+                        : current.requestContent,
+            };
+        }
+
+        if (fieldId === 'procedureTypeCode') {
+            const nextCases = procedureCasesByType[value] || [];
+            return {
+                ...current,
+                procedureTypeCode: value,
+                procedureCaseCode: nextCases[0]?.value || current.procedureCaseCode,
+            };
+        }
+
+        return {
+            ...current,
+            [fieldId]: value,
+        };
+    };
+
+    useEffect(() => addFormFillAppliedListener(({ fields }) => {
+        const entries = getSortedTamTruFillEntries(fields);
+        if (entries.length === 0) return;
+
+        setForm((current) =>
+            entries.reduce(
+                (nextForm, [fieldId, value]) => applyFillEntry(nextForm, fieldId, value),
+                current,
+            ),
+        );
+        setReview(null);
+        setShowMissingRequiredModal(false);
+    }), [receiveWardOptions, temporaryWardOptions, provinceOptions]);
 
     const handleReceiveProvinceChange = (code: string) => {
         setForm((prev) => ({
@@ -530,6 +670,44 @@ const DangKyTamTruPage: React.FC = () => {
         setReview(null);
     };
 
+    const buildReceiveAgencySuggestion = (): ResidenceFieldSuggestion | null => {
+        if (!form.temporaryCityCode || !form.temporaryVillageCode) return null;
+        if (form.receiveCityCode || form.receiveVillageCode || form.receiveOrgAddress) return null;
+
+        const provinceLabel = getProvinceLabel(form.temporaryCityCode);
+        const wardLabel = getTemporaryWardLabel(form.temporaryVillageCode);
+        if (!provinceLabel || !wardLabel) return null;
+
+        return {
+            id: 'tam-tru-receive-agency-from-temporary-address',
+            title: 'Gợi ý cơ quan tiếp nhận theo nơi tạm trú?',
+            description: `Bạn đã chọn nơi tạm trú tại ${wardLabel}, ${provinceLabel}.`,
+            fields: {
+                receiveCityCode: form.temporaryCityCode,
+                receiveVillageCode: form.temporaryVillageCode,
+                receiveOrgAddress: agencyNameFromWard(wardLabel),
+            },
+            fieldLabels: {
+                receiveCityCode: 'Tỉnh/Thành phố cơ quan thực hiện',
+                receiveVillageCode: 'Xã/Phường cơ quan thực hiện',
+                receiveOrgAddress: 'Cơ quan đăng ký cư trú',
+            },
+            displayValues: {
+                receiveCityCode: provinceLabel,
+                receiveVillageCode: wardLabel,
+                receiveOrgAddress: agencyNameFromWard(wardLabel),
+            },
+        };
+    };
+
+    const acceptResidenceSuggestion = () => {
+        if (!pendingResidenceSuggestion) return;
+        setForm((prev) => ({ ...prev, ...pendingResidenceSuggestion.fields }));
+        setReview(null);
+        setPendingResidenceSuggestion(null);
+        showToast('Đã áp dụng cơ quan tiếp nhận theo địa bàn tạm trú.');
+    };
+
     const applyCccdToHouseholder = (info: CCCDInfo) => {
         setForm((prev) => ({
             ...prev,
@@ -575,6 +753,12 @@ const DangKyTamTruPage: React.FC = () => {
                 const info = await ocrService.extractCCCDInfo(resizedFile, { showProcessingNotice: false });
                 if (target === 'applicant') {
                     applyCccdToApplicant(info);
+                    const suggestion = buildReceiveAgencySuggestion();
+                    if (suggestion) {
+                        setPendingResidenceSuggestion(suggestion);
+                        showToast('Đã điền thông tin định danh từ CCCD. Vui lòng xác nhận cơ quan tiếp nhận gợi ý.');
+                        return;
+                    }
                     showToast('Đã điền thông tin người đề nghị từ CCCD.');
                 } else {
                     applyCccdToHouseholder(info);
@@ -660,13 +844,13 @@ const DangKyTamTruPage: React.FC = () => {
     };
 
     const openCccdFilePicker = (source: 'file' | 'camera') => {
-        window.setTimeout(() => {
-            if (source === 'camera') {
-                cccdCameraInputRef.current?.click();
-                return;
-            }
-            cccdInputRef.current?.click();
-        }, 0);
+        if (source === 'camera') {
+            if (cccdCameraInputRef.current) cccdCameraInputRef.current.value = '';
+            cccdCameraInputRef.current?.click();
+            return;
+        }
+        if (cccdInputRef.current) cccdInputRef.current.value = '';
+        cccdInputRef.current?.click();
     };
 
     const openSectionCccdCamera = (target: TamTruCccdTarget) => {
@@ -735,6 +919,7 @@ const DangKyTamTruPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
+        if (isSubmittingApplication) return;
         setShowMissingRequiredModal(false);
         const result = runReview();
         if (result.status === 'INVALID') {
@@ -742,61 +927,77 @@ const DangKyTamTruPage: React.FC = () => {
             return;
         }
 
-        const extractedDocs: DashboardDocument[] = [];
-        const allFilesToUpload: File[] = [];
-        Object.values(form.attachmentDrafts).forEach((draft) => {
-            if (draft.checked) {
-                if (draft.fileName) {
-                    extractedDocs.push({ name: draft.fileName, state: 'Đã có' });
-                } else {
-                    extractedDocs.push({ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' });
+        setIsSubmittingApplication(true);
+        try {
+            const submissionId = getOrCreateSubmissionId('dang-ky-tam-tru');
+            const extractedDocs: DashboardDocument[] = [];
+            const allFilesToUpload: File[] = [];
+            Object.values(form.attachmentDrafts).forEach((draft) => {
+                if (draft.checked) {
+                    if (draft.fileName) {
+                        extractedDocs.push({ name: draft.fileName, state: 'Đã có' });
+                    } else {
+                        extractedDocs.push({ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' });
+                    }
+                    if (draft.file) {
+                        allFilesToUpload.push(draft.file);
+                    }
                 }
-                if (draft.file) {
-                    allFilesToUpload.push(draft.file);
+            });
+
+            const attachments = await Promise.all(allFilesToUpload.map((file) => saveAttachmentFile(file)));
+
+            let aggregatedOfficerNote = '';
+            let finalFlag = '';
+            Object.values(form.attachmentDrafts).forEach((draft) => {
+                if (draft.checked && draft.documentReview?.text) {
+                    aggregatedOfficerNote += `[${draft.fileName}]: ${draft.documentReview.text}\n\n`;
+                    if (draft.documentReview.flag === 'red') {
+                        finalFlag = 'red';
+                    } else if (!finalFlag && draft.documentReview.flag) {
+                        finalFlag = draft.documentReview.flag;
+                    }
                 }
+            });
+
+            await saveApplicationToDashboard({
+                clientSubmissionId: submissionId,
+                procedure: 'Đăng ký tạm trú',
+                applicant: form.fullName || '',
+                citizenId: form.citizenId || '',
+                phone: form.phoneNumber || '',
+                email: form.email || '',
+                documents: extractedDocs,
+                message: form.requestContent || 'Điền thiếu',
+                caseNote: 'Tạm trú',
+                details: {
+                    'Tỉnh/Thành phố tạm trú': form.temporaryCityCode || '',
+                    'Phường/Xã tạm trú': form.temporaryVillageCode || '',
+                    'Địa chỉ tạm trú': form.temporaryAddress || '',
+                    'Đến ngày': form.temporaryUntilDate || '',
+                    'Chủ hộ': form.householderName || '',
+                    'Quan hệ với chủ hộ': form.householderRelationship || '',
+                    'Trường hợp': form.procedureCaseCode || '',
+                    'Cơ quan thực hiện': form.receiveOrgAddress || '',
+                },
+                officerNote: aggregatedOfficerNote.trim(),
+                officerNoteFlag: finalFlag,
+                attachments,
+            });
+
+            clearSubmissionId('dang-ky-tam-tru');
+            showToast('Nộp hồ sơ thành công.');
+        } catch (error) {
+            console.error('Không thể xác nhận nộp hồ sơ tạm trú.', error);
+            if (isLikelyConnectivityError(error)) {
+                notifyConnectivityFallback({ playAudio: true });
+                showToast('Chưa xác nhận nộp hồ sơ do kết nối gián đoạn. Vui lòng kiểm tra mạng rồi gửi lại.');
+            } else {
+                showToast('Chưa thể nộp hồ sơ. Hệ thống chưa xác nhận đã nhận hồ sơ, vui lòng thử lại sau.');
             }
-        });
-
-        const attachments = await Promise.all(allFilesToUpload.map((file) => saveAttachmentFile(file)));
-
-        let aggregatedOfficerNote = '';
-        let finalFlag = '';
-        Object.values(form.attachmentDrafts).forEach((draft) => {
-            if (draft.checked && draft.documentReview?.text) {
-                aggregatedOfficerNote += `[${draft.fileName}]: ${draft.documentReview.text}\n\n`;
-                if (draft.documentReview.flag === 'red') {
-                    finalFlag = 'red';
-                } else if (!finalFlag && draft.documentReview.flag) {
-                    finalFlag = draft.documentReview.flag;
-                }
-            }
-        });
-
-        saveApplicationToDashboard({
-            procedure: 'Đăng ký tạm trú',
-            applicant: form.fullName || '',
-            citizenId: form.citizenId || '',
-            phone: form.phoneNumber || '',
-            email: form.email || '',
-            documents: extractedDocs,
-            message: form.requestContent || 'Điền thiếu',
-            caseNote: 'Tạm trú',
-            details: {
-                'Tỉnh/Thành phố tạm trú': form.temporaryCityCode || '',
-                'Phường/Xã tạm trú': form.temporaryVillageCode || '',
-                'Địa chỉ tạm trú': form.temporaryAddress || '',
-                'Đến ngày': form.temporaryUntilDate || '',
-                'Chủ hộ': form.householderName || '',
-                'Quan hệ với chủ hộ': form.householderRelationship || '',
-                'Trường hợp': form.procedureCaseCode || '',
-                'Cơ quan thực hiện': form.receiveOrgAddress || '',
-            },
-            officerNote: aggregatedOfficerNote.trim(),
-            officerNoteFlag: finalFlag,
-            attachments,
-        });
-
-        showToast('Đã nộp hồ sơ demo. GovBridge sẽ chuyển hồ sơ sang bước xử lý mô phỏng.');
+        } finally {
+            setIsSubmittingApplication(false);
+        }
     };
 
     const handleAutofill = async () => {
@@ -1685,8 +1886,8 @@ const DangKyTamTruPage: React.FC = () => {
                         >
                             <Save size={16} /> Lưu nháp
                         </button>
-                        <button className="btn btn-primary" type="button" onClick={handleSubmit}>
-                            <Send size={16} /> Nộp hồ sơ
+                        <button className="btn btn-primary" type="button" onClick={handleSubmit} disabled={isSubmittingApplication}>
+                            <Send size={16} /> {isSubmittingApplication ? 'Đang gửi...' : 'Nộp hồ sơ'}
                         </button>
                     </div>
 
@@ -1887,6 +2088,43 @@ const DangKyTamTruPage: React.FC = () => {
                                 </div>
                             </>
                         )}
+                    </section>
+                </div>
+            )}
+
+            {pendingResidenceSuggestion && (
+                <div className="cccd-consent-backdrop" role="presentation">
+                    <section
+                        className="cccd-consent-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="residence-suggestion-title"
+                    >
+                        <div className="cccd-consent-icon">
+                            <Home size={24} />
+                        </div>
+                        <h2 id="residence-suggestion-title">{pendingResidenceSuggestion.title}</h2>
+                        <p>{pendingResidenceSuggestion.description}</p>
+                        <div className="cccd-suggestion-list">
+                            {Object.entries(pendingResidenceSuggestion.fields).map(([fieldId, value]) => (
+                                <div className="cccd-suggestion-item" key={fieldId}>
+                                    <span>{pendingResidenceSuggestion.fieldLabels[fieldId] || fieldId}</span>
+                                    <strong>{pendingResidenceSuggestion.displayValues?.[fieldId] || value}</strong>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="cccd-consent-actions">
+                            <button
+                                type="button"
+                                className="cccd-consent-decline"
+                                onClick={() => setPendingResidenceSuggestion(null)}
+                            >
+                                Bỏ qua
+                            </button>
+                            <button type="button" className="cccd-consent-accept" onClick={acceptResidenceSuggestion}>
+                                Áp dụng gợi ý
+                            </button>
+                        </div>
                     </section>
                 </div>
             )}

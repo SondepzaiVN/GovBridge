@@ -44,6 +44,9 @@ export interface Procedure {
   requiredDocs: string[];
   steps: string[];
   keywords: string[];
+  citizenSituations?: string[];
+  citizenOutcomes?: string[];
+  negativeHints?: string[];
 }
 
 export interface ProcedureStore {

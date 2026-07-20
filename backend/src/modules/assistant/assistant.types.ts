@@ -1,4 +1,5 @@
 import type { Procedure, ProcedureField } from '../procedures/procedure.types.js';
+import type { IntentNormalizationResult } from './intent-normalizer.types.js';
 import type { KnowledgeSessionIdentity } from './knowledge.types.js';
 
 export type AIIntent = 'CHAT' | 'FILL_FORM' | 'NAVIGATE' | 'HIGHLIGHT' | 'VALIDATE' | 'OCR_CONFIRM' | 'CLARIFY';
@@ -51,7 +52,9 @@ export interface AssistantMessageInput {
   currentRoute?: string;
   formValues?: Record<string, string>;
   currentSection?: string;
+  pageContext?: AssistantPageContext;
   recentOcrFacts?: Record<string, string>;
+  recentDocumentReviews?: AssistantDocumentReviewContext[];
   visibleFieldIds?: string[];
 }
 
@@ -78,6 +81,69 @@ export interface CaseSuggestion {
   reason: string;
 }
 
+export interface AssistantDocumentReviewContext {
+  label: string;
+  fileName?: string;
+  documentType?: 'ct01' | 'chung_minh_cho_o_hop_phap';
+  status: 'valid' | 'invalid' | 'error';
+  flag?: 'green' | 'red';
+  text: string;
+  warnings: string[];
+  readerProvider?: string;
+  reviewerProvider?: string;
+  checkedAt?: string;
+}
+
+export interface AssistantPageRequirementContext {
+  id: string;
+  name: string;
+  required: boolean;
+  selected?: boolean;
+  hasFile?: boolean;
+  fileCount?: number;
+  canUseSpecializedData?: boolean;
+  useSpecializedData?: boolean;
+  guidance?: string;
+}
+
+export interface AssistantPageCaseContext {
+  id: string;
+  title: string;
+  isVisible?: boolean;
+  isOpen?: boolean;
+  selectionHint?: string;
+  requirements?: AssistantPageRequirementContext[];
+}
+
+export interface AssistantPageSectionContext {
+  id: string;
+  title: string;
+  isOpen?: boolean;
+  isVisible?: boolean;
+}
+
+export interface AssistantSubmissionChecklistItemContext {
+  id: string;
+  label: string;
+  required: boolean;
+  completed: boolean;
+  reminder?: string;
+}
+
+export interface AssistantPageContext {
+  pageId: string;
+  currentSection?: string | null;
+  sections?: AssistantPageSectionContext[];
+  submissionChecklist?: AssistantSubmissionChecklistItemContext[];
+  residenceRegistration?: {
+    procedureCase?: string;
+    registrationMode?: string;
+    isOverseasDossier?: boolean;
+    openUploadCaseId?: string;
+    uploadCases?: AssistantPageCaseContext[];
+  };
+}
+
 export interface FieldExplanation {
   fieldId: string;
   explanation: string;
@@ -101,6 +167,7 @@ export interface OrchestratorFinalResult extends AssistantResult {
 export interface AssistantFormContext {
   currentStep: number | null;
   currentSection: string | null;
+  pageContext: AssistantPageContext | null;
   knownFields: Record<string, string>;
   missingRequiredFields: Array<{ id: string; label: string }>;
   importantVisibleFields: Array<{
@@ -110,18 +177,26 @@ export interface AssistantFormContext {
     required: boolean;
     isEmpty: boolean;
     priority: 'high';
+    options?: Array<{ value: string; label: string }>;
   }>;
   recentChanges: Record<string, string>;
   candidateCases: CaseSuggestion[];
   recentOcrFacts: Record<string, string>;
+  recentDocumentReviews: AssistantDocumentReviewContext[];
 }
 
 export interface AssistantSessionState {
   formSnapshot: Record<string, string>;
   candidateCases: CaseSuggestion[];
   recentFacts: ExtractedFact[];
+  pendingFill?: {
+    fields: Record<string, string>;
+    fieldLabels: Record<string, string>;
+    previousValues: Record<string, string>;
+  };
   confirmedCase?: ConfirmedProcedureCase;
   knowledgeSession?: KnowledgeSessionIdentity;
+  lastIntentNormalization?: IntentNormalizationResult;
 }
 
 export interface ConfirmedProcedureCase {
@@ -138,6 +213,7 @@ export interface AssistantToolContext {
   procedures: Procedure[];
   formValues: Record<string, string>;
   formContext: AssistantFormContext;
+  intentNormalization?: IntentNormalizationResult;
 }
 
 export interface AssistantTool {

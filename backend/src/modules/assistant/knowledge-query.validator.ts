@@ -54,6 +54,9 @@ const allAliases = (procedure: Procedure): string[] =>
     procedure.name,
     procedure.shortName,
     ...procedure.keywords,
+    ...(procedure.citizenSituations ?? []),
+    ...(procedure.citizenOutcomes ?? []),
+    ...(procedure.negativeHints ?? []),
   ]);
 
 const messageContainsAlias = (message: string, aliases: string[]): boolean =>

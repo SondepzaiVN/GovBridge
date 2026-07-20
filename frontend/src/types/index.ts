@@ -15,12 +15,23 @@ export type MessageType =
   | 'form-filled'
   | 'loading';
 
+export type MessageStatus =
+  | 'processing'
+  | 'speaking'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'interrupted';
+
 export interface ChatMessage {
   id: string;
   role: MessageRole;
   type: MessageType;
   content: string;
   timestamp: Date;
+  status?: MessageStatus;
+  generationId?: number;
+  interruptedAt?: Date;
   data?: Record<string, unknown>;
   suggestions?: string[];
 }
@@ -143,6 +154,56 @@ export interface FormState {
   isSubmitting: boolean;
 }
 
+export interface AssistantPageRequirementContext {
+  id: string;
+  name: string;
+  required: boolean;
+  selected?: boolean;
+  hasFile?: boolean;
+  fileCount?: number;
+  canUseSpecializedData?: boolean;
+  useSpecializedData?: boolean;
+  guidance?: string;
+}
+
+export interface AssistantPageCaseContext {
+  id: string;
+  title: string;
+  isVisible?: boolean;
+  isOpen?: boolean;
+  selectionHint?: string;
+  requirements?: AssistantPageRequirementContext[];
+}
+
+export interface AssistantPageSectionContext {
+  id: string;
+  title: string;
+  isOpen?: boolean;
+  isVisible?: boolean;
+}
+
+export interface AssistantSubmissionChecklistItemContext {
+  id: string;
+  label: string;
+  required: boolean;
+  completed: boolean;
+  reminder?: string;
+}
+
+export interface AssistantPageContext {
+  pageId: string;
+  currentSection?: string | null;
+  sections?: AssistantPageSectionContext[];
+  submissionChecklist?: AssistantSubmissionChecklistItemContext[];
+  residenceRegistration?: {
+    procedureCase?: string;
+    registrationMode?: string;
+    isOverseasDossier?: boolean;
+    openUploadCaseId?: string;
+    uploadCases?: AssistantPageCaseContext[];
+  };
+}
+
 // ============================================================
 // Public Services
 // ============================================================
@@ -160,6 +221,9 @@ export interface PublicService {
   requiredDocs: string[];
   steps: string[];
   keywords: string[];
+  citizenSituations?: string[];
+  citizenOutcomes?: string[];
+  negativeHints?: string[];
 }
 
 // ============================================================
@@ -175,7 +239,7 @@ export interface ChatbotState {
   isListening: boolean;
   isSpeaking: boolean;
   isCallMode: boolean;
-  callStatus: 'idle' | 'connecting' | 'listening' | 'transcribing' | 'thinking' | 'speaking' | 'error';
+  callStatus: 'idle' | 'connecting' | 'listening' | 'transcribing' | 'thinking' | 'speaking' | 'interrupting' | 'error';
   callStatusText: string | null;
   conversationState: ConversationState;
   requiresUserAction: boolean;
@@ -183,6 +247,7 @@ export interface ChatbotState {
   highlightedElementId: string | null;
   pendingNavigation: { route: string; serviceName: string } | null;
   currentService: string | null;
+  conversationVersion: number;
 }
 
 export type ChatbotAction =
@@ -190,6 +255,8 @@ export type ChatbotAction =
   | { type: 'CLOSE' }
   | { type: 'MINIMIZE' }
   | { type: 'ADD_MESSAGE'; payload: ChatMessage }
+  | { type: 'UPDATE_MESSAGE_STATUS'; payload: { id: string; status: MessageStatus } }
+  | { type: 'MARK_LATEST_ASSISTANT_INTERRUPTED'; payload: { interruptedAt: Date } }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_LISTENING'; payload: boolean }
   | { type: 'SET_SPEAKING'; payload: boolean }

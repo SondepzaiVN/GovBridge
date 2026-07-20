@@ -4,6 +4,7 @@ import path from 'node:path';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../src/app.js';
+import type { IntentNormalizerProvider } from '../src/modules/assistant/intent-normalizer.types.js';
 import type { KnowledgeProviderRequest } from '../src/modules/assistant/knowledge.types.js';
 import type { OrchestratorProvider } from '../src/modules/assistant/orchestrator.types.js';
 import { MockKnowledgeProvider } from '../src/modules/assistant/providers/mock-knowledge.provider.js';
@@ -16,12 +17,14 @@ let dataDirectory: string;
 const createTestApp = (
   knowledgeProvider: MockKnowledgeProvider,
   orchestratorProvider?: OrchestratorProvider,
+  intentNormalizerProvider?: IntentNormalizerProvider,
 ) => createApp({
   dataDirectory,
   ocrProvider: new MockOcrProvider(),
   ttsProvider: new MockTtsProvider(),
   knowledgeProvider,
   ...(orchestratorProvider ? { orchestratorProvider } : {}),
+  ...(intentNormalizerProvider ? { intentNormalizerProvider } : {}),
 });
 
 const seedCanonicalSession = async (sessionId: string): Promise<void> => {
@@ -67,6 +70,47 @@ afterEach(async () => {
 });
 
 describe('assistant orchestration boundaries', () => {
+  it('asks for clarification before orchestration when normalized intent is unclear', async () => {
+    const knowledge = new MockKnowledgeProvider();
+    const orchestrate = vi.fn<OrchestratorProvider['orchestrate']>();
+    const orchestrator: OrchestratorProvider = {
+      name: 'should-not-run',
+      orchestrate,
+    };
+    const intentNormalizer: IntentNormalizerProvider = {
+      name: 'unclear-test-normalizer',
+      async normalize() {
+        return {
+          intent: 'UNCLEAR',
+          confidence: 0.92,
+          reason: 'Câu hỏi thiếu mục tiêu thao tác.',
+          targetTool: null,
+          clarificationQuestion: 'Anh/chị muốn em tra cứu thủ tục, hướng dẫn thao tác, hay hỗ trợ điền biểu mẫu?',
+          procedureHint: null,
+          fieldHints: [],
+          secondaryIntents: [],
+          safetyFlags: ['test_unclear'],
+        };
+      },
+    };
+
+    const response = await request(createTestApp(knowledge, orchestrator, intentNormalizer))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'cái đó sao nhỉ',
+        currentRoute: '/ho-khau',
+      })
+      .expect(200);
+
+    expect(orchestrate).not.toHaveBeenCalled();
+    expect(knowledge.requests).toEqual([]);
+    expect(response.body.data.response).toEqual(expect.objectContaining({
+      intent: 'CLARIFY',
+      message: 'Anh/chị muốn em tra cứu thủ tục, hướng dẫn thao tác, hay hỗ trợ điền biểu mẫu?',
+    }));
+    expect(response.body.data.actions).toEqual([]);
+  });
+
   it('routes knowledge questions through KnowledgeProvider without creating UI actions', async () => {
     const knowledge = new MockKnowledgeProvider(() => ({
       answer: 'Bạn cần tờ khai và giấy tờ chứng minh chỗ ở hợp pháp. [Nguồn 1]',
@@ -164,6 +208,88 @@ describe('assistant orchestration boundaries', () => {
         message,
       }),
     ]);
+  });
+
+  it('does not offer navigation when the target procedure is already the current page', async () => {
+    const knowledge = new MockKnowledgeProvider();
+    const orchestrator: OrchestratorProvider = {
+      name: 'same-route-navigation-test',
+      async orchestrate() {
+        return {
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: 'Ban dang o trang Dang ky tam tru, minh co the ho tro dien thong tin tai day.',
+            },
+            actions: [],
+            understanding: {
+              facts: [],
+              caseSuggestion: null,
+              followUpQuestion: null,
+              fieldExplanation: null,
+              navigationRoute: '/dang-ky-tam-tru',
+              highlightElementId: null,
+              nextStepRequested: false,
+            },
+            responseProvenance: 'orchestrator',
+          },
+        };
+      },
+    };
+
+    const response = await request(createTestApp(knowledge, orchestrator))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Toi muon dang ky tam tru',
+        currentRoute: '/dang-ky-tam-tru',
+      })
+      .expect(200);
+
+    expect(response.body.data.response.intent).toBe('CHAT');
+    expect(response.body.data.response.message).not.toContain('Ban co muon chuyen den trang nay khong?');
+    expect(response.body.data.actions).toEqual([]);
+  });
+
+  it('does not offer navigation from a step route to the same procedure root', async () => {
+    const knowledge = new MockKnowledgeProvider();
+    const orchestrator: OrchestratorProvider = {
+      name: 'same-step-route-navigation-test',
+      async orchestrate() {
+        return {
+          kind: 'final',
+          result: {
+            response: {
+              intent: 'CHAT',
+              message: 'Ban dang trong luong Lien thong khai sinh, minh se ho tro tiep tren trang nay.',
+            },
+            actions: [],
+            understanding: {
+              facts: [],
+              caseSuggestion: null,
+              followUpQuestion: null,
+              fieldExplanation: null,
+              navigationRoute: '/lien-thong-khai-sinh',
+              highlightElementId: null,
+              nextStepRequested: false,
+            },
+            responseProvenance: 'orchestrator',
+          },
+        };
+      },
+    };
+
+    const response = await request(createTestApp(knowledge, orchestrator))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Toi muon lam lien thong khai sinh',
+        currentRoute: '/lien-thong-khai-sinh/buoc-2',
+      })
+      .expect(200);
+
+    expect(response.body.data.response.intent).toBe('CHAT');
+    expect(response.body.data.response.message).not.toContain('Ban co muon chuyen den trang nay khong?');
+    expect(response.body.data.actions).toEqual([]);
   });
 
   it('prepares stable opaque knowledge identities per assistant session', async () => {

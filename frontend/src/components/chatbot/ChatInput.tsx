@@ -1,10 +1,11 @@
 ﻿import React, { useRef, useEffect, useState } from 'react';
-import { useChatbot } from '../../contexts/ChatbotContext';
-import { Send } from 'lucide-react';
+import { Send, Square } from 'lucide-react';
 
 interface ChatInputProps {
     onSend: (text: string) => void | Promise<void>;
     disabled?: boolean;
+    isProcessing?: boolean;
+    onCancel?: () => void;
     variant?: 'panel' | 'bar';
     autoFocus?: boolean;
     onFocusInput?: () => void;
@@ -14,12 +15,13 @@ interface ChatInputProps {
 const ChatInput: React.FC<ChatInputProps> = ({
     onSend,
     disabled,
+    isProcessing = false,
+    onCancel,
     variant = 'panel',
     autoFocus = false,
     onFocusInput,
     onBeforeSend,
 }) => {
-    const { state } = useChatbot();
     const [inputValue, setInputValue] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -39,7 +41,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
     const handleSend = () => {
         const text = inputValue.trim();
-        if (!text || disabled || state.isLoading) return;
+        if (!text || disabled || isProcessing) return;
         onBeforeSend?.();
         onSend(text);
         setInputValue('');
@@ -64,22 +66,36 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     onKeyDown={handleKeyDown}
                     onFocus={onFocusInput}
                     placeholder={variant === 'bar' ? 'Bạn có cần Agent giúp?' : 'Nhập tin nhắn hoặc câu hỏi...'}
-                    disabled={disabled || state.isLoading}
+                    disabled={disabled || isProcessing}
                     rows={1}
                     aria-label="Nhập tin nhắn"
                     id="chat-input-field"
                 />
 
                 <div className="chatbot-input-actions">
-                    <button
-                        className="send-btn"
-                        onClick={handleSend}
-                        disabled={!inputValue.trim() || disabled || state.isLoading}
-                        title="Gửi tin nhắn"
-                        aria-label="Gửi"
-                    >
-                        <Send size={16} />
-                    </button>
+                    {isProcessing ? (
+                        <button
+                            className="send-btn send-btn--cancel"
+                            onClick={onCancel}
+                            disabled={disabled || !onCancel}
+                            title="Hủy phản hồi"
+                            aria-label="Hủy phản hồi"
+                            type="button"
+                        >
+                            <Square size={13} fill="currentColor" />
+                        </button>
+                    ) : (
+                        <button
+                            className="send-btn"
+                            onClick={handleSend}
+                            disabled={!inputValue.trim() || disabled}
+                            title="Gửi tin nhắn"
+                            aria-label="Gửi"
+                            type="button"
+                        >
+                            <Send size={16} />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
