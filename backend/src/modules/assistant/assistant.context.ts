@@ -1,13 +1,23 @@
 import type { Procedure, ProcedureField } from '../procedures/procedure.types.js';
 import type {
+  AssistantDocumentReviewContext,
   AssistantFormContext,
   AssistantMessageInput,
+  AssistantPageContext,
   AssistantSession,
 } from './assistant.types.js';
 
 const MAX_CONTEXT_VALUE_LENGTH = 500;
 const MAX_CONTEXT_FIELDS = 40;
 const MAX_VISIBLE_FIELDS = 40;
+const MAX_VISIBLE_FIELD_OPTIONS = 12;
+const MAX_DOCUMENT_REVIEWS = 3;
+const MAX_DOCUMENT_REVIEW_TEXT_LENGTH = 800;
+const MAX_DOCUMENT_REVIEW_WARNINGS = 5;
+const MAX_PAGE_CONTEXT_SECTIONS = 8;
+const MAX_PAGE_CONTEXT_CASES = 12;
+const MAX_PAGE_CONTEXT_REQUIREMENTS = 8;
+const MAX_PAGE_CONTEXT_CHECKLIST_ITEMS = 12;
 
 const compactValue = (value: string): string => value.trim().slice(0, MAX_CONTEXT_VALUE_LENGTH);
 
@@ -20,6 +30,19 @@ const getCurrentStep = (route: string): number | null => {
 
 const isFieldRelevantToStep = (field: ProcedureField, currentStep: number | null): boolean =>
   currentStep === null || field.step === undefined || field.step === currentStep;
+
+const compactVisibleFieldOptions = (
+  field: ProcedureField,
+): Array<{ value: string; label: string }> | undefined => {
+  if (!field.options || field.options.length === 0 || field.options.length > MAX_VISIBLE_FIELD_OPTIONS) {
+    return undefined;
+  }
+
+  return field.options.map((option) => ({
+    value: compactValue(option.value).slice(0, 120),
+    label: compactValue(option.label).slice(0, 200),
+  }));
+};
 
 const selectSchemaValues = (
   procedure: Procedure | null,
@@ -38,6 +61,106 @@ const selectSchemaValues = (
   }
 
   return Object.fromEntries(selectedValues);
+};
+
+const compactDocumentReviews = (
+  reviews: AssistantMessageInput['recentDocumentReviews'],
+): AssistantDocumentReviewContext[] => (reviews ?? [])
+  .flatMap((review) => {
+    const label = review.label.trim().slice(0, 200);
+    const text = review.text.trim().slice(0, MAX_DOCUMENT_REVIEW_TEXT_LENGTH);
+    if (!label || !text) return [];
+
+    return [{
+      label,
+      ...(review.fileName ? { fileName: review.fileName.trim().slice(0, 200) } : {}),
+      ...(review.documentType ? { documentType: review.documentType } : {}),
+      status: review.status,
+      ...(review.flag ? { flag: review.flag } : {}),
+      text,
+      warnings: review.warnings
+        .map((warning) => warning.trim().slice(0, 300))
+        .filter(Boolean)
+        .slice(0, MAX_DOCUMENT_REVIEW_WARNINGS),
+      ...(review.readerProvider ? { readerProvider: review.readerProvider.trim().slice(0, 80) } : {}),
+      ...(review.reviewerProvider ? { reviewerProvider: review.reviewerProvider.trim().slice(0, 80) } : {}),
+      ...(review.checkedAt ? { checkedAt: review.checkedAt.trim().slice(0, 40) } : {}),
+    }];
+  })
+  .slice(0, MAX_DOCUMENT_REVIEWS);
+
+const compactPageContext = (pageContext: AssistantMessageInput['pageContext']): AssistantPageContext | null => {
+  if (!pageContext?.pageId.trim()) return null;
+
+  const residenceRegistration = pageContext.residenceRegistration
+    ? {
+        ...(pageContext.residenceRegistration.procedureCase
+          ? { procedureCase: compactValue(pageContext.residenceRegistration.procedureCase).slice(0, 120) }
+          : {}),
+        ...(pageContext.residenceRegistration.registrationMode
+          ? { registrationMode: compactValue(pageContext.residenceRegistration.registrationMode).slice(0, 120) }
+          : {}),
+        ...(typeof pageContext.residenceRegistration.isOverseasDossier === 'boolean'
+          ? { isOverseasDossier: pageContext.residenceRegistration.isOverseasDossier }
+          : {}),
+        ...(pageContext.residenceRegistration.openUploadCaseId
+          ? { openUploadCaseId: compactValue(pageContext.residenceRegistration.openUploadCaseId).slice(0, 120) }
+          : {}),
+        uploadCases: (pageContext.residenceRegistration.uploadCases ?? [])
+          .filter((item) => item.id.trim() && item.title.trim())
+          .slice(0, MAX_PAGE_CONTEXT_CASES)
+          .map((item) => ({
+            id: compactValue(item.id).slice(0, 120),
+            title: compactValue(item.title),
+            ...(typeof item.isVisible === 'boolean' ? { isVisible: item.isVisible } : {}),
+            ...(typeof item.isOpen === 'boolean' ? { isOpen: item.isOpen } : {}),
+            ...(item.selectionHint ? { selectionHint: compactValue(item.selectionHint).slice(0, 300) } : {}),
+            requirements: (item.requirements ?? [])
+              .filter((requirement) => requirement.id.trim() && requirement.name.trim())
+              .slice(0, MAX_PAGE_CONTEXT_REQUIREMENTS)
+              .map((requirement) => ({
+                id: compactValue(requirement.id).slice(0, 120),
+                name: compactValue(requirement.name).slice(0, 300),
+                required: requirement.required,
+                ...(typeof requirement.selected === 'boolean' ? { selected: requirement.selected } : {}),
+                ...(typeof requirement.hasFile === 'boolean' ? { hasFile: requirement.hasFile } : {}),
+                ...(typeof requirement.fileCount === 'number' ? { fileCount: requirement.fileCount } : {}),
+                ...(typeof requirement.canUseSpecializedData === 'boolean'
+                  ? { canUseSpecializedData: requirement.canUseSpecializedData }
+                  : {}),
+                ...(typeof requirement.useSpecializedData === 'boolean'
+                  ? { useSpecializedData: requirement.useSpecializedData }
+                  : {}),
+                ...(requirement.guidance ? { guidance: compactValue(requirement.guidance).slice(0, 250) } : {}),
+              })),
+          })),
+      }
+    : undefined;
+
+  return {
+    pageId: compactValue(pageContext.pageId).slice(0, 120),
+    currentSection: pageContext.currentSection ? compactValue(pageContext.currentSection).slice(0, 120) : null,
+    sections: (pageContext.sections ?? [])
+      .filter((section) => section.id.trim() && section.title.trim())
+      .slice(0, MAX_PAGE_CONTEXT_SECTIONS)
+      .map((section) => ({
+        id: compactValue(section.id).slice(0, 120),
+        title: compactValue(section.title).slice(0, 300),
+        ...(typeof section.isOpen === 'boolean' ? { isOpen: section.isOpen } : {}),
+        ...(typeof section.isVisible === 'boolean' ? { isVisible: section.isVisible } : {}),
+      })),
+    submissionChecklist: (pageContext.submissionChecklist ?? [])
+      .filter((item) => item.id.trim() && item.label.trim())
+      .slice(0, MAX_PAGE_CONTEXT_CHECKLIST_ITEMS)
+      .map((item) => ({
+        id: compactValue(item.id).slice(0, 120),
+        label: compactValue(item.label).slice(0, 300),
+        required: item.required,
+        completed: item.completed,
+        ...(item.reminder ? { reminder: compactValue(item.reminder).slice(0, 300) } : {}),
+      })),
+    ...(residenceRegistration ? { residenceRegistration } : {}),
+  };
 };
 
 export const buildAssistantFormContext = (
@@ -75,23 +198,29 @@ export const buildAssistantFormContext = (
   const importantVisibleFields = currentProcedure?.fields
     .filter((field) => visibleFieldIds.has(field.id))
     .slice(0, MAX_VISIBLE_FIELDS)
-    .map((field) => ({
-      id: field.id,
-      label: field.label,
-      type: field.type,
-      required: field.required,
-      isEmpty: !knownFields[field.id]?.trim(),
-      priority: 'high' as const,
-    })) ?? [];
+    .map((field) => {
+      const options = compactVisibleFieldOptions(field);
+      return {
+        id: field.id,
+        label: field.label,
+        type: field.type,
+        required: field.required,
+        isEmpty: !knownFields[field.id]?.trim(),
+        priority: 'high' as const,
+        ...(options ? { options } : {}),
+      };
+    }) ?? [];
 
   return {
     currentStep,
-    currentSection: input.currentSection?.trim() || null,
+    currentSection: input.currentSection?.trim() || input.pageContext?.currentSection?.trim() || null,
+    pageContext: compactPageContext(input.pageContext),
     knownFields,
     missingRequiredFields,
     importantVisibleFields,
     recentChanges,
     candidateCases: existing?.state?.candidateCases ?? [],
     recentOcrFacts: selectSchemaValues(currentProcedure, input.recentOcrFacts, true),
+    recentDocumentReviews: compactDocumentReviews(input.recentDocumentReviews),
   };
 };

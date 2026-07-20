@@ -1,3 +1,5 @@
+import { isLikelyConnectivityError, notifyConnectivityFallback } from '../utils/connectivityFallback';
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? '/api' : 'http://127.0.0.1:3000/api');
 
 interface ApiSuccess<T> {
@@ -78,6 +80,9 @@ export const apiClient = async <T>(endpoint: string, options: RequestInit = {}):
   } catch (error) {
     if (!(error instanceof ApiClientError)) {
       console.error(`[API Client] Error calling ${url}:`, error);
+    }
+    if (isLikelyConnectivityError(error)) {
+      notifyConnectivityFallback();
     }
     throw error;
   }

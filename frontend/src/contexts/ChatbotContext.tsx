@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
-import type { ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
+import type { AssistantPageContext, ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
 import { smartbotService } from '../api/aiServices';
 import { ttsService } from '../api/aiServices';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
 import { collectVisibleFormFieldIds } from '../utils/visibleFormFields';
+import {
+  CONNECTIVITY_FALLBACK_MESSAGE,
+  isLikelyConnectivityError,
+  notifyConnectivityFallback,
+  suppressConnectivityFallback,
+} from '../utils/connectivityFallback';
 
 const CONFIRMATION_GUIDANCE = 'Vui lòng lựa chọn để tiếp tục cuộc trò chuyện.';
 
@@ -19,6 +25,9 @@ const toSpeechText = (message: string) =>
     .replace(/\s+/g, ' ')
     .trim();
 
+const isAbortError = (error: unknown) =>
+  error instanceof DOMException && error.name === 'AbortError';
+
 // ============================================================
 // Reducer
 // ============================================================
@@ -29,11 +38,36 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
       ...state,
       isOpen: false,
       isCallMode: false,
+      isListening: false,
+      isSpeaking: false,
       callStatus: 'idle',
       callStatusText: null,
+      conversationState: state.requiresUserAction ? 'WAITING_FOR_CONFIRMATION' : 'IDLE',
     };
     case 'MINIMIZE': return { ...state, isMinimized: !state.isMinimized };
     case 'ADD_MESSAGE': return { ...state, messages: [...state.messages, action.payload] };
+    case 'UPDATE_MESSAGE_STATUS': return {
+      ...state,
+      messages: state.messages.map((message) =>
+        message.id === action.payload.id
+          ? { ...message, status: action.payload.status }
+          : message
+      ),
+    };
+    case 'MARK_LATEST_ASSISTANT_INTERRUPTED': {
+      const messages = [...state.messages];
+      for (let index = messages.length - 1; index >= 0; index -= 1) {
+        const message = messages[index];
+        if (message.role !== 'bot' || message.status === 'interrupted' || message.status === 'failed') continue;
+        messages[index] = {
+          ...message,
+          status: 'interrupted',
+          interruptedAt: action.payload.interruptedAt,
+        };
+        break;
+      }
+      return { ...state, messages };
+    }
     case 'SET_LOADING': return { ...state, isLoading: action.payload };
     case 'SET_LISTENING': return { ...state, isListening: action.payload };
     case 'SET_SPEAKING': return { ...state, isSpeaking: action.payload };
@@ -75,7 +109,16 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
     case 'SET_HIGHLIGHT': return { ...state, highlightedElementId: action.payload };
     case 'SET_PENDING_NAV': return { ...state, pendingNavigation: action.payload };
     case 'SET_CURRENT_SERVICE': return { ...state, currentService: action.payload };
-    case 'CLEAR_MESSAGES': return { ...state, messages: [] };
+    case 'CLEAR_MESSAGES': return {
+      ...state,
+      messages: [],
+      isLoading: false,
+      requiresUserAction: false,
+      confirmationSource: null,
+      pendingNavigation: null,
+      conversationState: state.isCallMode ? 'REALTIME' : 'IDLE',
+      conversationVersion: state.conversationVersion + 1,
+    };
     default: return state;
   }
 };
@@ -96,6 +139,7 @@ const initialState: ChatbotState = {
   highlightedElementId: null,
   pendingNavigation: null,
   currentService: null,
+  conversationVersion: 0,
 };
 
 // ============================================================
@@ -105,7 +149,9 @@ interface ChatbotContextValue {
   state: ChatbotState;
   dispatch: React.Dispatch<ChatbotAction>;
   sendMessage: (text: string) => Promise<void>;
+  cancelAssistantResponse: () => void;
   handleAIResponse: (response: AIResponse) => void;
+  interruptAssistantTurn: () => void;
   openChatbot: () => void;
   clearHighlight: () => void;
   confirmNavigation: () => void;
@@ -125,6 +171,13 @@ interface ChatbotProviderProps {
   onFillForm: (fields: Record<string, string>) => void;
   currentRoute: string;
   formValues: Record<string, string>;
+  pageContext: AssistantPageContext | null;
+}
+
+interface ChatMessageRequest {
+  id: string;
+  text: string;
+  conversationVersion: number;
 }
 
 export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
@@ -133,9 +186,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   onFillForm,
   currentRoute,
   formValues,
+  pageContext,
 }) => {
   const [state, dispatch] = useReducer(chatbotReducer, initialState);
   const messageIdCounter = useRef(0);
+  const isProcessingMessageRef = useRef(false);
+  const activeGenerationRef = useRef(0);
+  const assistantAbortControllerRef = useRef<AbortController | null>(null);
+  const activeMessageRequestIdRef = useRef<string | null>(null);
 
   // Dùng ref để tránh stale closure trong event handlers.
   const onNavigateRef = useRef(onNavigate);
@@ -143,17 +201,24 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const callModeRef = useRef(state.isCallMode);
   const currentRouteRef = useRef(currentRoute);
   const formValuesRef = useRef(formValues);
+  const pageContextRef = useRef(pageContext);
   const requiresUserActionRef = useRef(state.requiresUserAction);
   const confirmationSourceRef = useRef(state.confirmationSource);
+  const conversationVersionRef = useRef(state.conversationVersion);
   const pendingHighlightSpeechRef = useRef<string | null>(null);
+  const pendingHighlightShouldSpeakRef = useRef(false);
   const highlightSpeechTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (conversationVersionRef.current !== state.conversationVersion) {
+      conversationVersionRef.current = state.conversationVersion;
+    }
     onNavigateRef.current = onNavigate;
     onFillFormRef.current = onFillForm;
     callModeRef.current = state.isCallMode;
     currentRouteRef.current = currentRoute;
     formValuesRef.current = formValues;
+    pageContextRef.current = pageContext;
     requiresUserActionRef.current = state.requiresUserAction;
     confirmationSourceRef.current = state.confirmationSource;
   });
@@ -162,9 +227,15 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
   const speakPendingHighlight = useCallback(() => {
     const message = pendingHighlightSpeechRef.current;
-    if (!message) return;
+    const shouldSpeak = pendingHighlightShouldSpeakRef.current;
+    if (!message || !shouldSpeak) {
+      pendingHighlightSpeechRef.current = null;
+      pendingHighlightShouldSpeakRef.current = false;
+      return;
+    }
 
     pendingHighlightSpeechRef.current = null;
+    pendingHighlightShouldSpeakRef.current = false;
     if (highlightSpeechTimerRef.current !== null) {
       window.clearTimeout(highlightSpeechTimerRef.current);
       highlightSpeechTimerRef.current = null;
@@ -194,6 +265,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       type,
       content,
       timestamp: new Date(),
+      status: callModeRef.current ? 'speaking' : 'completed',
+      generationId: activeGenerationRef.current,
       data,
       suggestions,
     };
@@ -202,6 +275,9 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     if (callModeRef.current) {
       ttsService.speak(content, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        if (!isPlaying) {
+          dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: msg.id, status: 'completed' } });
+        }
         dispatch({
           type: 'SET_CALL_STATUS',
           payload: {
@@ -218,6 +294,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     callModeRef.current = false;
     ttsService.stop();
     dispatch({ type: 'SET_REQUIRES_USER_ACTION', payload: { action: true, source } });
+    return source;
   }, []);
 
   const speakConfirmation = useCallback((message: string) => {
@@ -260,11 +337,18 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           break;
 
         case 'HIGHLIGHT_ELEMENT':
+          {
+          const shouldSpeakAfterHighlight = callModeRef.current;
+          if (shouldSpeakAfterHighlight) {
+            callModeRef.current = false;
+            ttsService.stop();
+          }
           addBotMessage(event.message, 'text', undefined, event.suggestions);
           // Thu chat xuống trước để không che phần giao diện đang được chỉ dẫn.
           dispatch({ type: 'CLOSE' });
           dispatch({ type: 'SET_HIGHLIGHT', payload: event.elementId });
           pendingHighlightSpeechRef.current = event.message;
+          pendingHighlightShouldSpeakRef.current = shouldSpeakAfterHighlight;
           if (highlightSpeechTimerRef.current !== null) {
             window.clearTimeout(highlightSpeechTimerRef.current);
           }
@@ -273,6 +357,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
             1_200,
           );
           break;
+          }
 
         case 'HIGHLIGHT_READY':
           // Chỉ đọc sau khi spotlight đã cuộn tới và hiển thị xong.
@@ -290,7 +375,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         case 'REQUEST_CONFIRM_FILL':
           {
           const confirmationMessage = withConfirmationGuidance(event.message);
-          enterConfirmationMode();
+          const source = enterConfirmationMode();
           addBotMessage(
             confirmationMessage,
             'fill-confirm',
@@ -301,21 +386,21 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
             },
             event.suggestions,
           );
-          speakConfirmation(confirmationMessage);
+          if (source === 'voice') speakConfirmation(confirmationMessage);
           break;
           }
 
         case 'NAVIGATE':
           {
           const confirmationMessage = withConfirmationGuidance(event.message);
-          enterConfirmationMode();
+          const source = enterConfirmationMode();
           addBotMessage(confirmationMessage, 'navigation-confirm', undefined, event.suggestions);
           // Đặt pending navigation, user confirm thì mới navigate.
           dispatch({
             type: 'SET_PENDING_NAV',
             payload: { route: event.route, serviceName: event.serviceName },
           });
-          speakConfirmation(confirmationMessage);
+          if (source === 'voice') speakConfirmation(confirmationMessage);
           break;
           }
 
@@ -374,6 +459,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         : 'text',
       content: responseMessage,
       timestamp: new Date(),
+      status: callModeRef.current ? 'speaking' : 'completed',
+      generationId: activeGenerationRef.current,
       data: response.data as Record<string, unknown> | undefined,
       suggestions: response.suggestions,
     };
@@ -390,19 +477,24 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         break;
       case 'NAVIGATE':
         if (response.data?.route && response.data?.serviceName) {
-          enterConfirmationMode();
+          const source = enterConfirmationMode();
           dispatch({
             type: 'SET_PENDING_NAV',
             payload: { route: response.data.route, serviceName: response.data.serviceName },
           });
-          speakConfirmation(responseMessage);
+          if (source === 'voice') speakConfirmation(responseMessage);
         }
         break;
       case 'HIGHLIGHT':
         if (response.data?.elementId) {
+          const shouldSpeakAfterHighlight = callModeRef.current;
+          if (shouldSpeakAfterHighlight) {
+            callModeRef.current = false;
+            ttsService.stop();
+          }
           dispatch({ type: 'CLOSE' });
           dispatch({ type: 'SET_HIGHLIGHT', payload: response.data.elementId });
-          window.setTimeout(() => {
+          if (shouldSpeakAfterHighlight) window.setTimeout(() => {
             void ttsService.speak(toSpeechText(response.message), (isPlaying) => {
               dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
             });
@@ -412,13 +504,16 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     }
 
     if (response.intent === 'OCR_CONFIRM') {
-      enterConfirmationMode();
-      speakConfirmation(responseMessage);
+      const source = enterConfirmationMode();
+      if (source === 'voice') speakConfirmation(responseMessage);
     }
 
     if (callModeRef.current) {
       ttsService.speak(response.message, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+        if (!isPlaying) {
+          dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: msg.id, status: 'completed' } });
+        }
         dispatch({
           type: 'SET_CALL_STATUS',
           payload: {
@@ -430,22 +525,53 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     }
   }, [enterConfirmationMode, speakConfirmation]);
 
-  // ============================================================
-  // sendMessage là điểm vào chính.
-  // ============================================================
-  const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+  const interruptAssistantTurn = useCallback(() => {
+    activeGenerationRef.current += 1;
+    suppressConnectivityFallback();
+    assistantAbortControllerRef.current?.abort();
+    assistantAbortControllerRef.current = null;
+    activeMessageRequestIdRef.current = null;
+    isProcessingMessageRef.current = false;
+    ttsService.stop();
 
-    const userMsg: ChatMessage = {
-      id: createMessageId(),
-      role: 'user',
-      type: 'text',
-      content: text,
-      timestamp: new Date(),
-    };
-    dispatch({ type: 'ADD_MESSAGE', payload: userMsg });
+    dispatch({ type: 'MARK_LATEST_ASSISTANT_INTERRUPTED', payload: { interruptedAt: new Date() } });
+    dispatch({ type: 'SET_LOADING', payload: false });
+    dispatch({ type: 'SET_SPEAKING', payload: false });
+    dispatch({
+      type: 'SET_CALL_STATUS',
+      payload: { status: 'interrupting', text: 'Đã nghe bạn, tôi dừng câu trả lời hiện tại...' },
+    });
+    console.info('[Voice] interrupt requested: current generation invalidated and audio stopped.');
+  }, []);
 
+  const cancelAssistantResponse = useCallback(() => {
+    const activeMessageId = activeMessageRequestIdRef.current;
+    activeGenerationRef.current += 1;
+    suppressConnectivityFallback();
+    assistantAbortControllerRef.current?.abort();
+    assistantAbortControllerRef.current = null;
+    activeMessageRequestIdRef.current = null;
+    isProcessingMessageRef.current = false;
+    ttsService.stop();
+
+    if (activeMessageId) {
+      dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: activeMessageId, status: 'cancelled' } });
+    }
+    dispatch({ type: 'SET_LOADING', payload: false });
+    dispatch({ type: 'SET_SPEAKING', payload: false });
+    console.info('[Assistant] text response cancelled by user.');
+  }, []);
+
+  const processMessage = useCallback(async (messageRequest: ChatMessageRequest) => {
+    const generationId = activeGenerationRef.current + 1;
+    activeGenerationRef.current = generationId;
+    const controller = new AbortController();
+    assistantAbortControllerRef.current = controller;
+    activeMessageRequestIdRef.current = messageRequest.id;
+    isProcessingMessageRef.current = true;
+    dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: messageRequest.id, status: 'processing' } });
     dispatch({ type: 'SET_LOADING', payload: true });
+
     if (callModeRef.current) {
       dispatch({
         type: 'SET_CALL_STATUS',
@@ -454,39 +580,128 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     }
 
     try {
-      const result = await smartbotService.sendMessage(text, {
+      const result = await smartbotService.sendMessage(messageRequest.text, {
         currentRoute: currentRouteRef.current,
         formValues: formValuesRef.current,
+        pageContext: pageContextRef.current,
         visibleFieldIds: collectVisibleFormFieldIds(),
+      }, {
+        signal: controller.signal,
       });
+
+      if (
+        messageRequest.conversationVersion !== conversationVersionRef.current
+        || controller.signal.aborted
+        || generationId !== activeGenerationRef.current
+      ) {
+        if (generationId === activeGenerationRef.current) {
+          isProcessingMessageRef.current = false;
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
+        return;
+      }
 
       if (result.actions.length > 0) {
         result.actions.forEach((action) => agentEventBus.emit(action));
       } else {
         handleAIResponse(result.response);
       }
+      dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: messageRequest.id, status: 'completed' } });
     } catch (err) {
+      if (
+        messageRequest.conversationVersion !== conversationVersionRef.current
+        || controller.signal.aborted
+        || generationId !== activeGenerationRef.current
+        || isAbortError(err)
+      ) {
+        console.info('[Assistant] request ignored after interruption or conversation change.');
+        return;
+      }
+
       console.error('Send message error:', err);
-      const message = 'Có vẻ tôi chưa nghe rõ, bạn nói lại giúp tôi nhé.';
+      dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: messageRequest.id, status: 'failed' } });
+      const isConnectivityIssue = isLikelyConnectivityError(err);
+      const message = isConnectivityIssue
+        ? CONNECTIVITY_FALLBACK_MESSAGE
+        : 'Có vẻ tôi chưa nghe rõ, bạn nói lại giúp tôi nhé.';
       const errMsg: ChatMessage = {
         id: createMessageId(),
         role: 'bot',
         type: 'text',
         content: message,
         timestamp: new Date(),
-        suggestions: ['Nói lại', 'Tôi cần hỗ trợ'],
+        suggestions: isConnectivityIssue
+          ? ['Kiểm tra Wi-Fi', 'Thử lại sau']
+          : ['Nói lại', 'Tôi cần hỗ trợ'],
       };
       dispatch({ type: 'ADD_MESSAGE', payload: errMsg });
 
       if (callModeRef.current) {
-        ttsService.speak(message, (isPlaying) => {
-          dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
-        });
+        if (isConnectivityIssue) {
+          dispatch({
+            type: 'SET_CALL_STATUS',
+            payload: { status: 'error', text: message },
+          });
+          dispatch({ type: 'SET_SPEAKING', payload: true });
+          notifyConnectivityFallback({ playAudio: true });
+          window.setTimeout(() => dispatch({ type: 'SET_SPEAKING', payload: false }), 4_000);
+        } else {
+          ttsService.speak(message, (isPlaying) => {
+            dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+          });
+        }
+      } else if (isConnectivityIssue) {
+        notifyConnectivityFallback();
       }
     } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
+      if (assistantAbortControllerRef.current === controller) {
+        assistantAbortControllerRef.current = null;
+      }
+      if (activeMessageRequestIdRef.current === messageRequest.id) {
+        activeMessageRequestIdRef.current = null;
+      }
+      const shouldIgnoreStaleRequest =
+        messageRequest.conversationVersion !== conversationVersionRef.current
+        || controller.signal.aborted
+        || generationId !== activeGenerationRef.current;
+
+      if (shouldIgnoreStaleRequest) {
+        if (generationId === activeGenerationRef.current && !controller.signal.aborted) {
+          isProcessingMessageRef.current = false;
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
+      } else {
+        isProcessingMessageRef.current = false;
+        dispatch({ type: 'SET_LOADING', payload: false });
+      }
     }
   }, [handleAIResponse]);
+
+  // ============================================================
+  // sendMessage là điểm vào chính.
+  // ============================================================
+  const sendMessage = useCallback(async (text: string) => {
+    const trimmedText = text.trim();
+    if (!trimmedText) return;
+    if (isProcessingMessageRef.current) return;
+
+    const messageRequest: ChatMessageRequest = {
+      id: createMessageId(),
+      text: trimmedText,
+      conversationVersion: conversationVersionRef.current,
+    };
+    const userMsg: ChatMessage = {
+      id: messageRequest.id,
+      role: 'user',
+      type: 'text',
+      content: trimmedText,
+      timestamp: new Date(),
+      status: 'processing',
+    };
+    dispatch({ type: 'ADD_MESSAGE', payload: userMsg });
+
+    await processMessage(messageRequest);
+  }, [processMessage]);
 
   const openChatbot = useCallback(() => {
     dispatch({ type: 'OPEN' });
@@ -533,10 +748,6 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
             undefined,
             ['Hướng dẫn điền thông tin', 'Kiểm tra hồ sơ', 'Giải thích điều kiện']
           );
-          // Đọc tin nhắn sau khi chuyển trang để người dùng biết đã hoàn tất.
-          void ttsService.speak(toSpeechText(followUpMessage), (isPlaying) => {
-            dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
-          });
         }
       }, 120);
     }
@@ -564,9 +775,6 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         undefined,
         ['Giải thích thêm', 'Hỗ trợ việc khác']
       );
-      void ttsService.speak(toSpeechText(cancelMessage), (isPlaying) => {
-        dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
-      });
     }
   }, [addBotMessage, resumeRealtimeWithVoice, state.pendingNavigation, state.confirmationSource]);
 
@@ -579,12 +787,14 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       reviewMessage,
       'navigation-confirm',
     );
-    speakConfirmation(reviewMessage);
-  }, [addBotMessage, speakConfirmation, state.pendingNavigation]);
+    if (state.confirmationSource === 'voice') speakConfirmation(reviewMessage);
+  }, [addBotMessage, speakConfirmation, state.pendingNavigation, state.confirmationSource]);
 
   return (
     <ChatbotContext.Provider value={{
       state, dispatch, sendMessage, handleAIResponse,
+      cancelAssistantResponse,
+      interruptAssistantTurn,
       openChatbot, clearHighlight, confirmNavigation, cancelNavigation, reviewNavigation,
       resumeRealtimeWithVoice,
     }}>

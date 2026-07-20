@@ -9,6 +9,7 @@ import { notFoundHandler } from './common/middleware/not-found.js';
 import { requestId } from './common/middleware/request-id.js';
 import { env } from './config/env.js';
 import { OpenAiDocumentReviewerProvider } from './integrations/openai/openai-document-reviewer.provider.js';
+import { OpenAiIntentNormalizerProvider } from './integrations/openai/openai-intent-normalizer.provider.js';
 import { OpenAiOrchestratorProvider } from './integrations/openai/openai-orchestrator.provider.js';
 import { HttpOpenAiResponsesClient } from './integrations/openai/openai-responses.client.js';
 import { VnptOcrProvider } from './integrations/vnpt/vnpt-ocr.provider.js';
@@ -20,8 +21,10 @@ import { ApplicationRepository } from './modules/applications/application.reposi
 import { ApplicationService } from './modules/applications/application.service.js';
 import { AssistantSessionRepository } from './modules/assistant/assistant.repository.js';
 import { AssistantService } from './modules/assistant/assistant.service.js';
+import type { IntentNormalizerProvider } from './modules/assistant/intent-normalizer.types.js';
 import type { KnowledgeProvider } from './modules/assistant/knowledge.types.js';
 import type { OrchestratorProvider } from './modules/assistant/orchestrator.types.js';
+import { MockIntentNormalizerProvider } from './modules/assistant/providers/mock-intent-normalizer.provider.js';
 import { MockKnowledgeProvider } from './modules/assistant/providers/mock-knowledge.provider.js';
 import { MockOrchestratorProvider } from './modules/assistant/providers/mock-orchestrator.provider.js';
 import { buildAssistantTools } from './modules/assistant/tools/index.js';
@@ -48,6 +51,7 @@ export interface CreateAppOptions {
   ttsProvider?: TtsProvider;
   sttProvider?: SttProvider;
   orchestratorProvider?: OrchestratorProvider;
+  intentNormalizerProvider?: IntentNormalizerProvider;
   knowledgeProvider?: KnowledgeProvider;
   documentReaderProvider?: DocumentReaderProvider;
   documentReviewerProvider?: DocumentReviewerProvider;
@@ -111,6 +115,16 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
         })
       : new MockOrchestratorProvider(buildAssistantTools())
   );
+  const intentNormalizerProvider = options.intentNormalizerProvider ?? (
+    env.ORCHESTRATOR_PROVIDER === 'openai' && openAiClient && !options.orchestratorProvider
+      ? new OpenAiIntentNormalizerProvider({
+          client: openAiClient,
+          model: env.OPENAI_MODEL,
+          maxOutputTokens: env.OPENAI_MAX_TOKENS,
+          temperature: 0,
+        })
+      : new MockIntentNormalizerProvider()
+  );
   const knowledgeProvider = options.knowledgeProvider ?? (env.KNOWLEDGE_PROVIDER === 'vnpt'
     ? new VnptAgenticKnowledgeProvider({
         url: env.VNPT_AGENTIC_URL,
@@ -149,6 +163,7 @@ export const createApp = (options: CreateAppOptions = {}): Express => {
       procedures,
       orchestratorProvider,
       knowledgeProvider,
+      intentNormalizerProvider,
     ),
     documentReviewService: new DocumentReviewService(
       documentReaderProvider,

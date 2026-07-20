@@ -4,6 +4,7 @@ const FORM_CONTROL_SELECTOR = [
   'input[name]',
   'select[id]',
   'select[name]',
+  'button[id][data-select-options]',
   'textarea[id]',
   'textarea[name]',
 ].join(',');

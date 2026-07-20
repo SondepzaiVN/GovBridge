@@ -1727,6 +1727,10 @@ button.header-nav-link.active {
     transform: translateX(50%);
 }
 
+.realtime-voice-control--active.realtime-voice-control--input-rail-visible {
+    bottom: max(104px, calc(env(safe-area-inset-bottom, 24px) + 80px));
+}
+
 .realtime-voice-control--listening {
     --voice-accent: #159669;
     --voice-accent-rgb: 21, 150, 105;
@@ -1734,6 +1738,7 @@ button.header-nav-link.active {
 
 .realtime-voice-control--transcribing,
 .realtime-voice-control--thinking,
+.realtime-voice-control--interrupting,
 .realtime-voice-control--connecting {
     --voice-accent: #d97706;
     --voice-accent-rgb: 217, 119, 6;
@@ -2642,6 +2647,38 @@ button.header-nav-link.active {
     text-align: right;
 }
 
+.message-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+.message-wrapper.user .message-status {
+    justify-content: flex-end;
+}
+
+.message-status--processing {
+    color: #2563eb;
+}
+
+.message-status--speaking {
+    color: #2563eb;
+}
+
+.message-status--interrupted {
+    color: #7c3aed;
+}
+
+.message-status--cancelled {
+    color: #64748b;
+}
+
+.message-status--failed {
+    color: #dc2626;
+}
+
 /* Typing indicator */
 .typing-indicator {
     display: flex;
@@ -3017,6 +3054,14 @@ button.header-nav-link.active {
 .send-btn:hover {
     background: #a33515;
     transform: scale(1.08);
+}
+
+.send-btn--cancel {
+    background: #dc2626;
+}
+
+.send-btn--cancel:hover {
+    background: #b91c1c;
 }
 
 .send-btn:disabled {
@@ -3667,6 +3712,100 @@ button.header-nav-link.active {
         grid-column: 1 / -1;
         justify-content: flex-end;
     }
+}
+
+.connectivity-fallback-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-modal) + 60);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.52);
+    animation: modal-backdrop-fadeIn 0.2s ease-out;
+}
+
+.connectivity-fallback-modal {
+    position: relative;
+    width: min(430px, 100%);
+    padding: 28px 24px 22px;
+    border: 1px solid color-mix(in srgb, var(--warning) 36%, var(--border));
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+    text-align: center;
+    animation: modal-popup-smooth 0.24s ease-out;
+}
+
+.connectivity-fallback-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.connectivity-fallback-close:hover {
+    color: var(--text-primary);
+    background: var(--border);
+}
+
+.connectivity-fallback-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: var(--warning);
+    background: color-mix(in srgb, var(--warning) 14%, white);
+}
+
+.connectivity-fallback-modal h2 {
+    margin: 0 28px 10px;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    line-height: 1.25;
+}
+
+.connectivity-fallback-modal p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.94rem;
+    line-height: 1.55;
+}
+
+.connectivity-fallback-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.connectivity-fallback-actions button {
+    min-height: 38px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--primary);
+    color: white;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.connectivity-fallback-actions button:hover {
+    background: var(--primary-dark);
 }
 
 /* ============================================================
@@ -4377,6 +4516,10 @@ button.header-nav-link.active {
         height: 72px;
     }
 
+    .realtime-voice-control--active.realtime-voice-control--input-rail-visible {
+        bottom: max(86px, calc(env(safe-area-inset-bottom, 12px) + 74px));
+    }
+
     .realtime-voice-control--active .realtime-voice-button {
         width: 72px;
         height: 72px;
@@ -4490,7 +4633,12 @@ button.header-nav-link.active {
 }
 
 .dktt-hidden-file-input {
-    display: none;
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    inset: 0 auto auto 0;
 }
 
 .cccd-consent-backdrop {
@@ -4543,6 +4691,37 @@ button.header-nav-link.active {
 
 .cccd-consent-dialog > p strong {
     color: var(--text-primary);
+}
+
+.cccd-suggestion-list {
+    display: grid;
+    gap: 8px;
+    max-height: min(38vh, 260px);
+    overflow: auto;
+    margin-top: 16px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.cccd-suggestion-item {
+    display: grid;
+    grid-template-columns: minmax(110px, 0.9fr) minmax(0, 1.1fr);
+    gap: 10px;
+    align-items: start;
+    font-size: 0.82rem;
+}
+
+.cccd-suggestion-item span {
+    color: var(--text-secondary);
+}
+
+.cccd-suggestion-item strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--text-primary);
+    font-weight: 700;
 }
 
 .cccd-source-options {

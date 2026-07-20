@@ -110,6 +110,7 @@ describe('VNPT outbound privacy boundary', () => {
       recentChanges: {},
       candidateCases: [],
       recentOcrFacts: { hoChieu: 'B1234567' },
+      recentDocumentReviews: [],
     } satisfies AssistantFormContext;
     const { knownPii } = buildKnowledgePrivacyContext(procedure, formContext);
     const outbound = prepareVnptKnowledgeOutbound(requestFor(

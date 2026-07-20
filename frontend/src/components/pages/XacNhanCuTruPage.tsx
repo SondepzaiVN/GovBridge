@@ -21,14 +21,28 @@ import {
     X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { provinces, getResidenceAgencyName, useWards } from '../../hooks/useAdministrativeUnits';
-import { saveApplicationToDashboard, type DashboardDocument } from '../../utils/dashboardSync';
+import { provinces, provinceCodeByName, getResidenceAgencyName, useWards } from '../../hooks/useAdministrativeUnits';
+import { administrativeUnitService } from '../../api/administrativeUnitService';
+import {
+    clearSubmissionId,
+    getDashboardApplicationCode,
+    getOrCreateSubmissionId,
+    saveApplicationToDashboard,
+    type DashboardDocument,
+} from '../../utils/dashboardSync';
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
+import { isLikelyConnectivityError, notifyConnectivityFallback } from '../../utils/connectivityFallback';
 import { SERVICE_MAP } from '../../data/services';
 import { useForm } from '../../contexts/FormContext';
 import { ocrService } from '../../api/aiServices';
 import type { CCCDInfo, DocumentReviewUiState } from '../../types';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
+import { addFormFillAppliedListener } from '../../utils/formFillBridge';
+import {
+    resolveCccdResidenceAddress,
+    toResidenceOptionsFromLabels,
+    type ResidenceFieldSuggestion,
+} from '../../utils/residenceCccdSuggestions';
 import { AttachmentReviewBadge } from '../common/AttachmentReviewBadge';
 import { MissingRequiredFieldsModal } from '../common/MissingRequiredFieldsModal';
 type FieldKind = 'text' | 'date' | 'select' | 'textarea';
@@ -328,6 +342,95 @@ const initialValues: Record<string, string> = {
     resultMethod: 'Nhận qua cổng thông tin',
 };
 
+const XCTT_FORM_FILL_FIELD_IDS = new Set([
+    'provinceAgency',
+    'wardAgency',
+    'residenceAgency',
+    'agencyPhone',
+    'procedure',
+    'caseType',
+    'fullName',
+    'birthType',
+    'birthDate',
+    'gender',
+    'ethnicity',
+    'citizenId',
+    'phone',
+    'email',
+    'requestProvince',
+    'requestWard',
+    'address',
+    'requestContent',
+    'notificationMethod',
+    'resultMethod',
+]);
+
+const XCTT_FORM_FILL_ORDER = new Map(
+    [
+        'provinceAgency',
+        'wardAgency',
+        'requestProvince',
+        'requestWard',
+        'address',
+    ].map((fieldId, index) => [fieldId, index]),
+);
+
+const getSortedXcttFillEntries = (fields: Record<string, string>) =>
+    Object.entries(fields)
+        .filter(([fieldId]) => XCTT_FORM_FILL_FIELD_IDS.has(fieldId))
+        .sort(([left], [right]) => (XCTT_FORM_FILL_ORDER.get(left) ?? 100) - (XCTT_FORM_FILL_ORDER.get(right) ?? 100));
+
+const applyXcttFieldValue = (
+    current: Record<string, string>,
+    fieldId: string,
+    value: string,
+): Record<string, string> => {
+    let nextValues = { ...current };
+
+    if (fieldId === 'provinceAgency') {
+        nextValues = { ...nextValues, provinceAgency: value, wardAgency: '', residenceAgency: '' };
+    } else if (fieldId === 'requestProvince') {
+        nextValues = { ...nextValues, requestProvince: value, requestWard: '' };
+    } else if (fieldId === 'wardAgency') {
+        nextValues = {
+            ...nextValues,
+            wardAgency: value,
+            residenceAgency: value ? getResidenceAgencyName(value) : '',
+        };
+    } else if (fieldId === 'birthType' && value !== current.birthType) {
+        nextValues = { ...nextValues, birthType: value, birthDate: '' };
+    } else {
+        nextValues = { ...nextValues, [fieldId]: value };
+    }
+
+    if (['requestProvince', 'requestWard', 'address'].includes(fieldId)) {
+        const address = nextValues.address;
+        const wardName = nextValues.requestWard;
+        const provinceName = nextValues.requestProvince;
+        nextValues.requestContent = address && wardName && provinceName
+            ? `Xác nhận cư trú tại ${address}, ${wardName}, ${provinceName}.`
+            : '';
+    }
+
+    return nextValues;
+};
+
+const clearXcttFieldErrors = (current: Record<string, string>, fieldIds: string[]) => {
+    const nextErrors = { ...current };
+
+    fieldIds.forEach((fieldId) => {
+        nextErrors[fieldId] = '';
+        if (fieldId === 'provinceAgency') {
+            nextErrors.wardAgency = '';
+            nextErrors.residenceAgency = '';
+        }
+        if (fieldId === 'requestProvince') nextErrors.requestWard = '';
+        if (fieldId === 'wardAgency') nextErrors.residenceAgency = '';
+    });
+
+    return nextErrors;
+};
+
 const CT01_TEMPLATE_URL = 'https://cdn.thuvienphapluat.vn/uploads/mst/images/DoanTien/CT01-mau.docx';
 
 const escapeDeclarationHtml = (value: string) =>
@@ -488,6 +591,9 @@ const XacNhanCuTruPage: React.FC = () => {
     const declarationPreviewUrlRef = React.useRef<string | null>(null);
     const [pledged, setPledged] = React.useState(false);
     const [showSuccess, setShowSuccess] = React.useState(false);
+    const [isSubmittingApplication, setIsSubmittingApplication] = React.useState(false);
+    const [submitError, setSubmitError] = React.useState('');
+    const [submittedApplicationCode, setSubmittedApplicationCode] = React.useState('');
     const [showMissingRequiredModal, setShowMissingRequiredModal] = React.useState(false);
     const [draftSaved, setDraftSaved] = React.useState(false);
     const [ocrNotice, setOcrNotice] = React.useState('');
@@ -501,6 +607,8 @@ const XacNhanCuTruPage: React.FC = () => {
     const [memberUploadCount, setMemberUploadCount] = React.useState(1);
     const [memberUploadError, setMemberUploadError] = React.useState('');
     const [cccdQueue, setCccdQueue] = React.useState<CccdQueueItem[]>([]);
+    const [pendingResidenceSuggestion, setPendingResidenceSuggestion] =
+        React.useState<ResidenceFieldSuggestion | null>(null);
     const { wardOptions: agencyWardOptions, loading: loadingAgencyWards } = useWards(values.provinceAgency);
     const { wardOptions: requestWardOptions, loading: loadingRequestWards } = useWards(values.requestProvince);
 
@@ -552,51 +660,25 @@ const XacNhanCuTruPage: React.FC = () => {
         [loadingRequestWards, requestWardOptions, values.requestProvince],
     );
 
-    const setFieldValue = (fieldId: string, value: string) => {
+    const setFieldValue = React.useCallback((fieldId: string, value: string) => {
         setShowMissingRequiredModal(false);
-        setValues((current) => {
-            let nextValues = { ...current };
+        setValues((current) => applyXcttFieldValue(current, fieldId, value));
+        setErrors((current) => clearXcttFieldErrors(current, [fieldId]));
+    }, []);
 
-            if (fieldId === 'provinceAgency') {
-                nextValues = { ...nextValues, provinceAgency: value, wardAgency: '', residenceAgency: '' };
-            } else if (fieldId === 'requestProvince') {
-                nextValues = { ...nextValues, requestProvince: value, requestWard: '' };
-            } else if (fieldId === 'wardAgency') {
-                nextValues = {
-                    ...nextValues,
-                    wardAgency: value,
-                    residenceAgency: value ? getResidenceAgencyName(value) : '',
-                };
-            } else if (fieldId === 'birthType' && value !== current.birthType) {
-                nextValues = { ...nextValues, birthType: value, birthDate: '' };
-            } else {
-                nextValues = { ...nextValues, [fieldId]: value };
-            }
+    React.useEffect(() => addFormFillAppliedListener(({ fields }) => {
+        const entries = getSortedXcttFillEntries(fields);
+        if (entries.length === 0) return;
 
-            if (['requestProvince', 'requestWard', 'address'].includes(fieldId)) {
-                const address = nextValues.address;
-                const wardName = nextValues.requestWard;
-                const provinceName = nextValues.requestProvince;
-                if (address && wardName && provinceName) {
-                    nextValues.requestContent = `Xác nhận cư trú tại ${address}, ${wardName}, ${provinceName}.`;
-                } else {
-                    nextValues.requestContent = '';
-                }
-            }
-
-            return nextValues;
-        });
-        setErrors((current) => {
-            const nextErrors = { ...current, [fieldId]: '' };
-            if (fieldId === 'provinceAgency') {
-                nextErrors.wardAgency = '';
-                nextErrors.residenceAgency = '';
-            }
-            if (fieldId === 'requestProvince') nextErrors.requestWard = '';
-            if (fieldId === 'wardAgency') nextErrors.residenceAgency = '';
-            return nextErrors;
-        });
-    };
+        setShowMissingRequiredModal(false);
+        setValues((current) =>
+            entries.reduce(
+                (nextValues, [fieldId, value]) => applyXcttFieldValue(nextValues, fieldId, value),
+                current,
+            ),
+        );
+        setErrors((current) => clearXcttFieldErrors(current, entries.map(([fieldId]) => fieldId)));
+    }), []);
 
     const handleAttachmentFileChange = (file: File | undefined) => {
         if (!file) return;
@@ -662,6 +744,70 @@ const XacNhanCuTruPage: React.FC = () => {
         }));
     };
 
+    const buildResidenceSuggestionFromCccd = async (info: CCCDInfo): Promise<ResidenceFieldSuggestion | null> => {
+        const resolved = await resolveCccdResidenceAddress(
+            info,
+            toResidenceOptionsFromLabels(provinces),
+            async (provinceName) => {
+                const provinceCode = provinceCodeByName[provinceName];
+                if (!provinceCode) return [];
+                const wards = await administrativeUnitService.getWards(provinceCode);
+                return wards.map((ward) => ({ value: ward.label, label: ward.label }));
+            },
+        );
+        if (!resolved) return null;
+
+        const fields: Record<string, string> = {
+            provinceAgency: resolved.province.label,
+            requestProvince: resolved.province.label,
+        };
+        const fieldLabels: Record<string, string> = {
+            provinceAgency: 'Tỉnh/Thành phố cơ quan thực hiện',
+            requestProvince: 'Tỉnh/Thành phố đề nghị xác nhận',
+        };
+
+        if (resolved.ward) {
+            fields.wardAgency = resolved.ward.label;
+            fields.requestWard = resolved.ward.label;
+            fields.residenceAgency = getResidenceAgencyName(resolved.ward.label);
+            fields.caseType = 'Cấp cho NK trên địa bàn quản lí';
+            fieldLabels.wardAgency = 'Xã/Phường cơ quan thực hiện';
+            fieldLabels.requestWard = 'Xã/Phường đề nghị xác nhận';
+            fieldLabels.residenceAgency = 'Cơ quan đăng ký cư trú';
+            fieldLabels.caseType = 'Trường hợp';
+        }
+        if (resolved.detailAddress) {
+            fields.address = resolved.detailAddress;
+            fieldLabels.address = 'Địa chỉ đề nghị xác nhận';
+        }
+
+        const requestAddress = [fields.address, fields.requestWard, fields.requestProvince].filter(Boolean).join(', ');
+        if (requestAddress) {
+            fields.requestContent = `Xác nhận cư trú tại ${requestAddress}.`;
+            fieldLabels.requestContent = 'Nội dung đề nghị';
+        }
+
+        return {
+            id: 'cccd-thuong-tru-xac-nhan-cu-tru',
+            title: 'Dùng địa chỉ thường trú trên CCCD?',
+            description: `CCCD ghi thường trú: ${resolved.rawAddress}.`,
+            fields,
+            fieldLabels,
+        };
+    };
+
+    const acceptResidenceSuggestion = () => {
+        if (!pendingResidenceSuggestion) return;
+        const fields = pendingResidenceSuggestion.fields;
+        setValues((current) => ({ ...current, ...fields }));
+        setErrors((current) => ({
+            ...current,
+            ...Object.fromEntries(Object.keys(fields).map((fieldId) => [fieldId, ''])),
+        }));
+        setPendingResidenceSuggestion(null);
+        showOcrNotice('Đã áp dụng địa bàn và cơ quan tiếp nhận từ CCCD.');
+    };
+
     const handleSectionCccdUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(event.target.files || []);
         event.target.value = '';
@@ -698,6 +844,12 @@ const XacNhanCuTruPage: React.FC = () => {
                     showProcessingNotice: false,
                 });
                 applyCccdToApplicant(info);
+                const suggestion = await buildResidenceSuggestionFromCccd(info);
+                if (suggestion) {
+                    setPendingResidenceSuggestion(suggestion);
+                    showOcrNotice('Đã điền thông tin định danh từ CCCD. Vui lòng xác nhận địa bàn gợi ý.');
+                    return;
+                }
                 showOcrNotice('Đã điền thông tin người đề nghị từ CCCD.');
             } catch (error) {
                 console.error('Không đọc được CCCD cho xác nhận cư trú:', error);
@@ -781,13 +933,13 @@ const XacNhanCuTruPage: React.FC = () => {
     };
 
     const openCccdFilePicker = (source: 'file' | 'camera') => {
-        window.setTimeout(() => {
-            if (source === 'camera') {
-                cccdCameraInputRef.current?.click();
-                return;
-            }
-            cccdInputRef.current?.click();
-        }, 0);
+        if (source === 'camera') {
+            if (cccdCameraInputRef.current) cccdCameraInputRef.current.value = '';
+            cccdCameraInputRef.current?.click();
+            return;
+        }
+        if (cccdInputRef.current) cccdInputRef.current.value = '';
+        cccdInputRef.current?.click();
     };
 
     const openSectionCccdCamera = (target: XcttCccdTarget) => {
@@ -886,48 +1038,70 @@ const XacNhanCuTruPage: React.FC = () => {
     };
 
     const handleSubmit = async () => {
+        if (isSubmittingApplication) return;
+
         setDraftSaved(false);
+        setSubmitError('');
         if (!validate()) return;
 
-        const attachments = [];
-        if (uploadedFile) {
-            const metadata = await saveAttachmentFile(uploadedFile);
-            attachments.push(metadata);
+        setIsSubmittingApplication(true);
+        try {
+            const submissionId = getOrCreateSubmissionId('xac-nhan-cu-tru');
+            const attachments = [];
+            if (uploadedFile) {
+                const metadata = await saveAttachmentFile(uploadedFile);
+                attachments.push(metadata);
+            }
+
+            const documents: DashboardDocument[] = uploadedFile
+                ? [{ name: uploadedFile.name, state: 'Đã có' }]
+                : [{ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' }];
+
+            let aggregatedOfficerNote = '';
+            let finalFlag = '';
+            if (attachmentReview?.text) {
+                aggregatedOfficerNote = `[${uploadedFile?.name || 'Tệp đính kèm'}]: ${attachmentReview.text}`;
+                finalFlag = attachmentReview.flag || '';
+            }
+
+            const savedApplication = await saveApplicationToDashboard({
+                clientSubmissionId: submissionId,
+                procedure: 'Xác nhận thông tin về cư trú',
+                applicant: values.fullName || values.xctt_hoTen || '',
+                citizenId: values.citizenId || values.xctt_cccd || '',
+                phone: values.phone || values.xctt_sdt || '',
+                email: values.email || values.xctt_email || '',
+                documents,
+                message: values.requestContent || 'Điền thiếu',
+                caseNote: 'Xác nhận cư trú',
+                details: {
+                    'Tỉnh/Thành phố đề nghị': values.requestProvince || '',
+                    'Phường/Xã đề nghị': values.requestWard || '',
+                    'Địa chỉ hiện tại': values.address || '',
+                    'Cơ quan tiếp nhận': values.residenceAgency || '',
+                    'Trường hợp': values.caseType || '',
+                },
+                officerNote: aggregatedOfficerNote.trim(),
+                officerNoteFlag: finalFlag,
+                attachments,
+            });
+
+            setSubmittedApplicationCode(getDashboardApplicationCode(savedApplication));
+            clearSubmissionId('xac-nhan-cu-tru');
+            setShowSuccess(true);
+        } catch (error) {
+            console.error('Không thể xác nhận nộp hồ sơ xác nhận cư trú.', error);
+            if (isLikelyConnectivityError(error)) {
+                notifyConnectivityFallback({ playAudio: true });
+                setSubmitError(
+                    'Chưa xác nhận nộp hồ sơ thành công do kết nối bị gián đoạn. Dữ liệu vẫn được giữ trên màn hình, vui lòng kiểm tra mạng rồi bấm Nộp hồ sơ để gửi lại.',
+                );
+            } else {
+                setSubmitError('Chưa thể nộp hồ sơ. Hệ thống chưa xác nhận đã nhận hồ sơ, vui lòng thử lại sau.');
+            }
+        } finally {
+            setIsSubmittingApplication(false);
         }
-
-        const documents: DashboardDocument[] = uploadedFile
-            ? [{ name: uploadedFile.name, state: 'Đã có' }]
-            : [{ name: 'Chưa tải file đính kèm', state: 'Cần kiểm tra' }];
-
-        let aggregatedOfficerNote = '';
-        let finalFlag = '';
-        if (attachmentReview?.text) {
-            aggregatedOfficerNote = `[${uploadedFile?.name || 'Tệp đính kèm'}]: ${attachmentReview.text}`;
-            finalFlag = attachmentReview.flag || '';
-        }
-
-        saveApplicationToDashboard({
-            procedure: 'Xác nhận thông tin về cư trú',
-            applicant: values.fullName || values.xctt_hoTen || '',
-            citizenId: values.citizenId || values.xctt_cccd || '',
-            phone: values.phone || values.xctt_sdt || '',
-            email: values.email || values.xctt_email || '',
-            documents,
-            message: values.requestContent || 'Điền thiếu',
-            caseNote: 'Xác nhận cư trú',
-            details: {
-                'Tỉnh/Thành phố đề nghị': values.requestProvince || '',
-                'Phường/Xã đề nghị': values.requestWard || '',
-                'Địa chỉ hiện tại': values.address || '',
-                'Cơ quan tiếp nhận': values.residenceAgency || '',
-                'Trường hợp': values.caseType || '',
-            },
-            officerNote: aggregatedOfficerNote.trim(),
-            officerNoteFlag: finalFlag,
-            attachments,
-        });
-
-        setShowSuccess(true);
     };
 
     const handleSaveDraft = () => {
@@ -1250,6 +1424,7 @@ const XacNhanCuTruPage: React.FC = () => {
             {errors.pledge && <p className="xctt-error pledge">{errors.pledge}</p>}
 
             {draftSaved && <div className="xctt-toast">Đã lưu nháp hồ sơ cư trú.</div>}
+            {submitError && <div className="xctt-error pledge">{submitError}</div>}
 
             <div className="xctt-actions">
                 <button type="button" className="xctt-btn ghost" onClick={() => navigate(-1)}>
@@ -1260,9 +1435,9 @@ const XacNhanCuTruPage: React.FC = () => {
                     <Save size={18} />
                     Lưu nháp
                 </button>
-                <button type="button" className="xctt-btn primary" onClick={handleSubmit}>
+                <button type="button" className="xctt-btn primary" onClick={handleSubmit} disabled={isSubmittingApplication}>
                     <Send size={18} />
-                    Nộp hồ sơ
+                    {isSubmittingApplication ? 'Đang gửi...' : 'Nộp hồ sơ'}
                 </button>
             </div>
 
@@ -1429,6 +1604,43 @@ const XacNhanCuTruPage: React.FC = () => {
                 </div>
             )}
 
+            {pendingResidenceSuggestion && (
+                <div className="cccd-consent-backdrop" role="presentation">
+                    <section
+                        className="cccd-consent-dialog"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="residence-suggestion-title"
+                    >
+                        <div className="cccd-consent-icon">
+                            <Home size={24} />
+                        </div>
+                        <h2 id="residence-suggestion-title">{pendingResidenceSuggestion.title}</h2>
+                        <p>{pendingResidenceSuggestion.description}</p>
+                        <div className="cccd-suggestion-list">
+                            {Object.entries(pendingResidenceSuggestion.fields).map(([fieldId, value]) => (
+                                <div className="cccd-suggestion-item" key={fieldId}>
+                                    <span>{pendingResidenceSuggestion.fieldLabels[fieldId] || fieldId}</span>
+                                    <strong>{value}</strong>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="cccd-consent-actions">
+                            <button
+                                type="button"
+                                className="cccd-consent-decline"
+                                onClick={() => setPendingResidenceSuggestion(null)}
+                            >
+                                Bỏ qua
+                            </button>
+                            <button type="button" className="cccd-consent-accept" onClick={acceptResidenceSuggestion}>
+                                Áp dụng gợi ý
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+
             {ocrNotice && (
                 <div
                     className={`dktt-toast ocr-toast${/Trùng|Giới tính|Không đọc/.test(ocrNotice) ? ' error' : ''}`}
@@ -1494,8 +1706,8 @@ const XacNhanCuTruPage: React.FC = () => {
                         </button>
                         <div className="xctt-modal-icon">✓</div>
                         <h2 id="xctt-success-title">Nộp hồ sơ thành công</h2>
-                        <p>Hồ sơ xác nhận thông tin về cư trú đã được tiếp nhận ở chế độ mô phỏng.</p>
-                        <strong>Mã hồ sơ: XCTT-2026-0001</strong>
+                        <p>Nộp hồ sơ thành công.</p>
+                        <strong>Mã hồ sơ: {submittedApplicationCode}</strong>
                         <button type="button" className="xctt-btn primary" onClick={() => setShowSuccess(false)}>
                             Hoàn tất
                         </button>

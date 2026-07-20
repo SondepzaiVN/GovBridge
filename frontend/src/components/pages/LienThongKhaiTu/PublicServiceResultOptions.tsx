@@ -2,13 +2,17 @@ import React, { useState } from "react";
 import { MissingRequiredFieldsModal } from "../../common/MissingRequiredFieldsModal";
 
 interface PublicServiceResultOptionsProps {
-  onNext: () => void;
   onBack: () => void;
+  onSubmit: () => Promise<void> | void;
+  isSubmitting?: boolean;
+  submitError?: string;
 }
 
 const PublicServiceResultOptions: React.FC<PublicServiceResultOptionsProps> = ({
-  onNext,
   onBack,
+  onSubmit,
+  isSubmitting = false,
+  submitError = "",
 }) => {
   // --- STATES ---
   const [khaiTuResult, setKhaiTuResult] = useState(
@@ -402,20 +406,22 @@ const PublicServiceResultOptions: React.FC<PublicServiceResultOptionsProps> = ({
               setShowMissingRequiredModal(true);
               return;
             }
-            onNext();
+            void onSubmit();
           }}
+          disabled={isSubmitting}
           style={{
             padding: "10px 24px",
             backgroundColor: "#a04000",
             color: "#fff",
             border: "none",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: isSubmitting ? "wait" : "pointer",
             fontSize: "14px",
             fontWeight: "bold",
+            opacity: isSubmitting ? 0.75 : 1,
           }}
         >
-          Hoàn thành
+          {isSubmitting ? "Đang gửi hồ sơ..." : "Hoàn thành"}
         </button>
         <button
           style={{
@@ -432,6 +438,22 @@ const PublicServiceResultOptions: React.FC<PublicServiceResultOptionsProps> = ({
           Lưu nháp
         </button>
       </div>
+      {submitError && (
+        <div
+          style={{
+            marginTop: "16px",
+            padding: "12px 14px",
+            border: "1px solid #ef4444",
+            backgroundColor: "#fef2f2",
+            color: "#991b1b",
+            borderRadius: "6px",
+            fontSize: "14px",
+            lineHeight: 1.5,
+          }}
+        >
+          {submitError}
+        </div>
+      )}
       {showMissingRequiredModal && (
         <MissingRequiredFieldsModal onClose={() => setShowMissingRequiredModal(false)} />
       )}

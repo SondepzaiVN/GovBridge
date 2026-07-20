@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 
 interface PublicServiceCompleteProps {
+  applicationCode: string;
   onReset?: () => void; // Hàm để quay lại từ đầu nếu cần
 }
 
 const PublicServiceComplete: React.FC<PublicServiceCompleteProps> = ({
+  applicationCode,
   onReset,
 }) => {
   // State để quản lý việc hiển thị thông báo thành công
@@ -138,7 +140,7 @@ const PublicServiceComplete: React.FC<PublicServiceCompleteProps> = ({
               margin: "0 0 20px 0",
             }}
           >
-            Số hồ sơ: G22.99.09-240114-0001
+            Số hồ sơ: {applicationCode}
           </p>
 
           <div style={{ fontSize: "15px" }}>

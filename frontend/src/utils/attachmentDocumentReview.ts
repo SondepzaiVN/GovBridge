@@ -1,4 +1,4 @@
-import { documentReviewService } from '../api/aiServices';
+import { documentReviewService, smartbotService } from '../api/aiServices';
 import { ApiClientError } from '../api/client';
 import type { DocumentReviewRuleType, DocumentReviewUiState } from '../types';
 import { agentEventBus } from './eventBus';
@@ -118,12 +118,25 @@ export const reviewUploadedDocument = async ({
             currentRoute,
             documentType: ruleType,
         });
+        const reviewStatus = result.flag === 'green' ? 'valid' : 'invalid';
         const nextState: DocumentReviewUiState = {
-            status: result.flag === 'green' ? 'valid' : 'invalid',
+            status: reviewStatus,
             flag: result.flag,
             text: result.text,
             result,
         };
+        smartbotService.rememberDocumentReview({
+            label: fileLabel,
+            fileName: file.name,
+            documentType: ruleType,
+            status: reviewStatus,
+            flag: result.flag,
+            text: result.text,
+            warnings: result.warnings,
+            readerProvider: result.readerProvider,
+            reviewerProvider: result.provider,
+            checkedAt: new Date().toISOString(),
+        });
         onStatusChange(nextState);
         agentEventBus.emit({
             type: 'CHAT',
@@ -141,6 +154,15 @@ export const reviewUploadedDocument = async ({
             flag: 'red',
             text: message,
         };
+        smartbotService.rememberDocumentReview({
+            label: fileLabel,
+            fileName: file.name,
+            documentType: ruleType,
+            status: 'error',
+            flag: 'red',
+            text: message,
+            checkedAt: new Date().toISOString(),
+        });
         onStatusChange(nextState);
         agentEventBus.emit({
             type: 'CHAT',
