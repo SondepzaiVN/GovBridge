@@ -12133,6 +12133,7 @@ button.header-nav-link.active {
     border-radius: 6px;
     background: #fff;
     color: #3e3333;
+    cursor: text;
 }
 
 .login-ref-input:focus-within {

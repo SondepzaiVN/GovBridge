@@ -5,10 +5,9 @@ export type AuthContextValue = {
     user: AuthUser | null;
     login: (role: UserRole, username: string, password: string, agency?: string) => Promise<boolean>;
     registerCitizenAccount: (input: {
-        username: string;
         password: string;
         name: string;
-        citizenId?: string;
+        citizenId: string;
     }) => Promise<boolean>;
     loginWithCitizenProvider: () => Promise<void>;
     logout: () => void;

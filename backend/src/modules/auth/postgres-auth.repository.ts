@@ -75,8 +75,12 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
       left join officer_profiles op on op.user_id = u.id
       left join agencies a on a.id = op.agency_id
       where u.username = $1
+        or u.citizen_id_hash = $2
       limit 1
-    `, [normalizeUsername(username)]);
+    `, [
+      normalizeUsername(username),
+      /^(?:\d{9}|\d{12})$/.test(username.trim()) ? hashCitizenId(username.trim()) : null,
+    ]);
     return result.rows[0] ? toAuthUser(result.rows[0]) : null;
   }
 
@@ -103,14 +107,14 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
   }
 
   async createCitizen(input: {
-    username: string;
     password: string;
     name: string;
-    citizenId?: string;
+    citizenId: string;
   }): Promise<PublicAuthUser> {
     await this.ensureDemoUsers();
     const id = createId('citizen');
-    const username = normalizeUsername(input.username);
+    const citizenId = input.citizenId.trim();
+    const internalUsername = createId('citizen');
     try {
       const result = await this.database.query<UserRow>(`
         insert into users (
@@ -134,15 +138,19 @@ export class PostgresAuthRepository implements AuthRepositoryPort {
           null::text as agency_name
       `, [
         id,
-        username,
+        internalUsername,
         hashPassword(input.password),
         input.name.trim(),
-        input.citizenId?.trim() ? hashCitizenId(input.citizenId) : null,
+        hashCitizenId(citizenId),
       ]);
       return toPublicUser(toAuthUser(result.rows[0]!));
     } catch (error) {
       if (typeof error === 'object' && error !== null && 'code' in error && error.code === '23505') {
-        throw new Error('USERNAME_EXISTS');
+        const constraint = 'constraint' in error ? String(error.constraint ?? '') : '';
+        if (constraint.includes('citizen_id_hash')) {
+          throw new Error('CITIZEN_ID_EXISTS');
+        }
+        throw new Error('CITIZEN_ID_EXISTS');
       }
       throw error;
     }
