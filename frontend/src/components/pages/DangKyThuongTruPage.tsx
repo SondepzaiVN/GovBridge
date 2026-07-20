@@ -35,6 +35,7 @@ import {
 import { saveAttachmentFile } from '../../utils/attachmentStorage';
 import { isLikelyConnectivityError, notifyConnectivityFallback } from '../../utils/connectivityFallback';
 import { reviewUploadedDocument } from '../../utils/attachmentDocumentReview';
+import { addFormFillAppliedListener } from '../../utils/formFillBridge';
 import {
   resolveCccdResidenceAddress,
   type ResidenceFieldSuggestion,
@@ -842,6 +843,34 @@ const DangKyThuongTruPage: React.FC = () => {
 
     setFieldValue(fieldId, value);
   };
+
+  useEffect(() => addFormFillAppliedListener(({ fields }) => {
+    if (Object.prototype.hasOwnProperty.call(fields, 'tinhThanhCQ')) {
+      if (!Object.prototype.hasOwnProperty.call(fields, 'xaPhuongCQ')) {
+        setFieldValue('xaPhuongCQ', '');
+      }
+      setFieldValue('coQuanDKCT', '');
+      setFieldValue('sdtCoQuan', '');
+      setAgencyWardOptions([]);
+      setIsLoadingAgencyWards(Boolean(fields.tinhThanhCQ));
+    }
+
+    if (Object.prototype.hasOwnProperty.call(fields, 'tinhThanhDN')) {
+      if (!Object.prototype.hasOwnProperty.call(fields, 'xaPhuongDN')) {
+        setFieldValue('xaPhuongDN', '');
+      }
+      setRequestWardOptions([]);
+      setIsLoadingRequestWards(Boolean(fields.tinhThanhDN));
+    }
+
+    if (Object.prototype.hasOwnProperty.call(fields, 'ct02TinhThanhVN')) {
+      if (!Object.prototype.hasOwnProperty.call(fields, 'ct02XaPhuongVN')) {
+        setFieldValue('ct02XaPhuongVN', '');
+      }
+      setCt02WardOptions([]);
+      setIsLoadingCt02Wards(Boolean(fields.ct02TinhThanhVN));
+    }
+  }), [setFieldValue]);
 
   const getUploadDraft = (
     caseId: string,

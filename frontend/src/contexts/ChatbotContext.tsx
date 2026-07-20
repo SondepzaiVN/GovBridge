@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
 import type { AssistantPageContext, ChatbotState, ChatbotAction, ChatMessage, AIResponse } from '../types';
-import { smartbotService } from '../api/aiServices';
-import { ttsService } from '../api/aiServices';
+import { smartbotService, ttsService, type ClientInterruptedAssistantMessage } from '../api/aiServices';
 import { agentEventBus } from '../utils/eventBus';
 import type { AgentEvent } from '../utils/eventBus';
-import { collectVisibleFormFieldIds } from '../utils/visibleFormFields';
+import { collectVisibleFieldGroups } from '../utils/visibleFormFields';
 import {
   CONNECTIVITY_FALLBACK_MESSAGE,
   isLikelyConnectivityError,
@@ -27,6 +26,23 @@ const toSpeechText = (message: string) =>
 
 const isAbortError = (error: unknown) =>
   error instanceof DOMException && error.name === 'AbortError';
+
+const MAX_CLIENT_INTERRUPTED_ASSISTANT_MESSAGES = 5;
+
+const toInterruptedAssistantMessage = (message: ChatMessage): ClientInterruptedAssistantMessage | null => {
+  const content = message.content.trim();
+  if (!content) return null;
+  return {
+    content,
+    createdAt: message.interruptedAt?.toISOString() ?? message.timestamp.toISOString(),
+  };
+};
+
+const hasSameInterruptedAssistantMessage = (
+  messages: ClientInterruptedAssistantMessage[],
+  candidate: ClientInterruptedAssistantMessage,
+) =>
+  messages.some((message) => message.content.trim() === candidate.content.trim());
 
 // ============================================================
 // Reducer
@@ -58,7 +74,7 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
       const messages = [...state.messages];
       for (let index = messages.length - 1; index >= 0; index -= 1) {
         const message = messages[index];
-        if (message.role !== 'bot' || message.status === 'interrupted' || message.status === 'failed') continue;
+        if (message.role !== 'bot' || message.status !== 'speaking') continue;
         messages[index] = {
           ...message,
           status: 'interrupted',
@@ -190,6 +206,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 }) => {
   const [state, dispatch] = useReducer(chatbotReducer, initialState);
   const messageIdCounter = useRef(0);
+  const messagesRef = useRef<ChatMessage[]>(state.messages);
+  const pendingInterruptedAssistantMessagesRef = useRef<ClientInterruptedAssistantMessage[]>([]);
   const isProcessingMessageRef = useRef(false);
   const activeGenerationRef = useRef(0);
   const assistantAbortControllerRef = useRef<AbortController | null>(null);
@@ -210,6 +228,10 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const highlightSpeechTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
+    messagesRef.current = state.messages;
+    if (state.messages.length === 0) {
+      pendingInterruptedAssistantMessagesRef.current = [];
+    }
     if (conversationVersionRef.current !== state.conversationVersion) {
       conversationVersionRef.current = state.conversationVersion;
     }
@@ -222,6 +244,40 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     requiresUserActionRef.current = state.requiresUserAction;
     confirmationSourceRef.current = state.confirmationSource;
   });
+
+  const rememberLatestInterruptedAssistantMessage = useCallback(() => {
+    for (let index = messagesRef.current.length - 1; index >= 0; index -= 1) {
+      const message = messagesRef.current[index];
+      if (message.role !== 'bot' || message.status !== 'speaking') continue;
+      const interruptedMessage = toInterruptedAssistantMessage({
+        ...message,
+        interruptedAt: new Date(),
+      });
+      if (!interruptedMessage) return;
+      if (hasSameInterruptedAssistantMessage(
+        pendingInterruptedAssistantMessagesRef.current,
+        interruptedMessage,
+      )) {
+        return;
+      }
+      pendingInterruptedAssistantMessagesRef.current = [
+        ...pendingInterruptedAssistantMessagesRef.current,
+        interruptedMessage,
+      ].slice(-MAX_CLIENT_INTERRUPTED_ASSISTANT_MESSAGES);
+      return;
+    }
+  }, []);
+
+  const collectInterruptedAssistantMessages = useCallback(() => {
+    const messages = [...pendingInterruptedAssistantMessagesRef.current];
+    for (const message of messagesRef.current) {
+      if (message.role !== 'bot' || message.status !== 'interrupted') continue;
+      const interruptedMessage = toInterruptedAssistantMessage(message);
+      if (!interruptedMessage || hasSameInterruptedAssistantMessage(messages, interruptedMessage)) continue;
+      messages.push(interruptedMessage);
+    }
+    return messages.slice(-MAX_CLIENT_INTERRUPTED_ASSISTANT_MESSAGES);
+  }, []);
 
   const createMessageId = () => `msg_${Date.now()}_${messageIdCounter.current++}`;
 
@@ -526,6 +582,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   }, [enterConfirmationMode, speakConfirmation]);
 
   const interruptAssistantTurn = useCallback(() => {
+    rememberLatestInterruptedAssistantMessage();
     activeGenerationRef.current += 1;
     suppressConnectivityFallback();
     assistantAbortControllerRef.current?.abort();
@@ -542,7 +599,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       payload: { status: 'interrupting', text: 'Đã nghe bạn, tôi dừng câu trả lời hiện tại...' },
     });
     console.info('[Voice] interrupt requested: current generation invalidated and audio stopped.');
-  }, []);
+  }, [rememberLatestInterruptedAssistantMessage]);
 
   const cancelAssistantResponse = useCallback(() => {
     const activeMessageId = activeMessageRequestIdRef.current;
@@ -580,11 +637,48 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     }
 
     try {
+      const visibleFieldGroups = collectVisibleFieldGroups();
+
+      // Thu thập tất cả sectionId đang hiển thị trong viewport
+      const visibleSectionIds = new Set(
+        visibleFieldGroups
+          .filter((g) => g.sectionId)
+          .map((g) => g.sectionId as string),
+      );
+      // Clone pageContext và đánh dấu isCurrentlyVisible cho từng case/section
+      const rawPageContext = pageContextRef.current;
+      const enrichedPageContext = rawPageContext
+        ? {
+            ...rawPageContext,
+            sections: rawPageContext.sections?.map((section) => ({
+              ...section,
+              isCurrentlyVisible:
+                visibleSectionIds.has(section.id)
+                || Boolean(section.isVisible),
+            })),
+            residenceRegistration: rawPageContext.residenceRegistration
+              ? {
+                  ...rawPageContext.residenceRegistration,
+                  uploadCases: rawPageContext.residenceRegistration.uploadCases?.map((uploadCase) => ({
+                    ...uploadCase,
+                    isCurrentlyVisible:
+                      visibleSectionIds.has(uploadCase.id)
+                      || visibleFieldGroups.some((g) =>
+                        g.fieldIds.some((fid) => fid.startsWith(uploadCase.id))
+                      )
+                      || Boolean(uploadCase.isVisible),
+                  })),
+                }
+              : undefined,
+          }
+        : null;
+
       const result = await smartbotService.sendMessage(messageRequest.text, {
         currentRoute: currentRouteRef.current,
         formValues: formValuesRef.current,
-        pageContext: pageContextRef.current,
-        visibleFieldIds: collectVisibleFormFieldIds(),
+        pageContext: enrichedPageContext,
+        visibleFieldGroups,
+        clientInterruptedAssistantMessages: collectInterruptedAssistantMessages(),
       }, {
         signal: controller.signal,
       });
@@ -623,7 +717,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       const isConnectivityIssue = isLikelyConnectivityError(err);
       const message = isConnectivityIssue
         ? CONNECTIVITY_FALLBACK_MESSAGE
-        : 'Có vẻ tôi chưa nghe rõ, bạn nói lại giúp tôi nhé.';
+        : 'Mình đã nhận được câu hỏi nhưng hệ thống chưa thể phân tích đủ tin cậy để trả lời chính xác. Bạn hãy cho biết rõ mục tiêu cần hỗ trợ và thông tin chính liên quan, chẳng hạn muốn tra cứu thủ tục, thao tác trên màn hình hay điền biểu mẫu.';
       const errMsg: ChatMessage = {
         id: createMessageId(),
         role: 'bot',
@@ -632,7 +726,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         timestamp: new Date(),
         suggestions: isConnectivityIssue
           ? ['Kiểm tra Wi-Fi', 'Thử lại sau']
-          : ['Nói lại', 'Tôi cần hỗ trợ'],
+          : ['Tra cứu thủ tục', 'Hướng dẫn thao tác', 'Điền biểu mẫu'],
       };
       dispatch({ type: 'ADD_MESSAGE', payload: errMsg });
 
@@ -675,7 +769,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     }
-  }, [handleAIResponse]);
+  }, [collectInterruptedAssistantMessages, handleAIResponse]);
 
   // ============================================================
   // sendMessage là điểm vào chính.

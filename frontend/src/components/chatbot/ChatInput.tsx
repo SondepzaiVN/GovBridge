@@ -66,7 +66,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     onKeyDown={handleKeyDown}
                     onFocus={onFocusInput}
                     placeholder={variant === 'bar' ? 'Bạn có cần Agent giúp?' : 'Nhập tin nhắn hoặc câu hỏi...'}
-                    disabled={disabled || isProcessing}
+                    disabled={disabled}
                     rows={1}
                     aria-label="Nhập tin nhắn"
                     id="chat-input-field"

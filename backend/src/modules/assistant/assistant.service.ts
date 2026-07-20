@@ -54,19 +54,34 @@ const RESIDENCE_PROCEDURE_TERMS = [
 const includesAny = (value: string, terms: string[]): boolean =>
   terms.some((term) => value.includes(term));
 
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const includesAnyWholePhrase = (value: string, terms: string[]): boolean =>
+  terms.some((term) => {
+    const phrasePattern = term
+      .trim()
+      .split(/\s+/)
+      .map(escapeRegExp)
+      .join('\\s+');
+    return new RegExp(`(?:^|\\s)${phrasePattern}(?=$|\\s)`, 'u').test(value);
+  });
+
 const PENDING_FILL_CONFIRM_TERMS = [
   'cap nhat',
   'cap nhat thong tin',
   'xac nhan',
   'dong y',
-  'co',
-  'ok',
-  'duoc',
   'dien vao',
   'dien thong tin',
   'tiep tuc dien',
   'hoan tat bieu mau',
 ];
+
+const PENDING_FILL_SHORT_CONFIRM_RESPONSES = new Set([
+  'co',
+  'ok',
+  'duoc',
+]);
 
 const PENDING_FILL_CANCEL_TERMS = [
   'huy',
@@ -75,6 +90,37 @@ const PENDING_FILL_CANCEL_TERMS = [
   'khong dien',
   'bo qua',
 ];
+
+const SESSION_MESSAGE_LIMIT = 20;
+
+const getConversationMessageKey = (message: AssistantSession['messages'][number]): string =>
+  `${message.role}\u0000${normalizeText(message.content)}`;
+
+const mergeClientInterruptedAssistantMessages = (
+  history: AssistantSession['messages'],
+  clientMessages: AssistantMessageInput['clientInterruptedAssistantMessages'],
+  now: string,
+): AssistantSession['messages'] => {
+  if (!clientMessages?.length) return history;
+
+  const merged = [...history];
+  const seen = new Set(merged.map(getConversationMessageKey));
+  for (const message of clientMessages) {
+    const content = message.content.trim();
+    if (!content) continue;
+    const assistantMessage = {
+      role: 'assistant' as const,
+      content,
+      createdAt: message.createdAt?.trim() || now,
+    };
+    const key = getConversationMessageKey(assistantMessage);
+    if (seen.has(key)) continue;
+    merged.push(assistantMessage);
+    seen.add(key);
+  }
+
+  return merged.slice(-SESSION_MESSAGE_LIMIT);
+};
 
 const isPendingFillRelevant = (
   pendingFill: AssistantSessionState['pendingFill'] | undefined,
@@ -86,11 +132,14 @@ const isPendingFillRelevant = (
   );
 
 const shouldConfirmPendingFill = (normalizedMessage: string): boolean =>
-  includesAny(normalizedMessage, PENDING_FILL_CONFIRM_TERMS)
-  && !includesAny(normalizedMessage, PENDING_FILL_CANCEL_TERMS);
+  (
+    includesAnyWholePhrase(normalizedMessage, PENDING_FILL_CONFIRM_TERMS)
+    || PENDING_FILL_SHORT_CONFIRM_RESPONSES.has(normalizedMessage)
+  )
+  && !includesAnyWholePhrase(normalizedMessage, PENDING_FILL_CANCEL_TERMS);
 
 const shouldCancelPendingFill = (normalizedMessage: string): boolean =>
-  includesAny(normalizedMessage, PENDING_FILL_CANCEL_TERMS);
+  includesAnyWholePhrase(normalizedMessage, PENDING_FILL_CANCEL_TERMS);
 
 const getRequestConfirmFillAction = (actions: AgentAction[]) =>
   actions.find((action): action is Extract<AgentAction, { type: 'REQUEST_CONFIRM_FILL' }> =>
@@ -117,6 +166,20 @@ const shouldLetOrchestratorHandleUnclear = (
     ].map(normalizeText).join(' ');
     return includesAny(corpus, RESIDENCE_PROCEDURE_TERMS);
   });
+};
+
+const isExplanatoryClarification = (question: string): boolean => {
+  const normalized = normalizeText(question);
+  return question.trim().length >= 80 && includesAny(normalized, [
+    'vi ',
+    'do ',
+    'chua biet',
+    'chua cho biet',
+    'chua the chon',
+    'thieu',
+    'mau thuan',
+    'co the hieu',
+  ]);
 };
 
 export class AssistantService {
@@ -154,7 +217,11 @@ export class AssistantService {
       formContext,
     };
 
-    const history = existing?.messages ?? [];
+    const history = mergeClientInterruptedAssistantMessages(
+      existing?.messages ?? [],
+      input.clientInterruptedAssistantMessages,
+      now,
+    );
     const activePendingFill = isPendingFillRelevant(existing?.state?.pendingFill, formContext.knownFields)
       ? existing?.state?.pendingFill
       : undefined;
@@ -182,7 +249,7 @@ export class AssistantService {
           ...history,
           { role: 'user' as const, content: input.message, createdAt: now },
           { role: 'assistant' as const, content: cancelMessage, createdAt: now },
-        ].slice(-20),
+        ].slice(-SESSION_MESSAGE_LIMIT),
       };
       await this.sessions.upsert(session);
       return {
@@ -204,7 +271,7 @@ export class AssistantService {
           .map((fieldId) => [fieldId, formContext.knownFields[fieldId] ?? '']),
       );
       const message = 'Mình sẽ cập nhật các thông tin này vào biểu mẫu. Anh/Chị kiểm tra lại rồi bấm Xác nhận và điền nhé.';
-      const suggestions = ['Gi?i th?ch c?c tr??ng n?y', 'T?i mu?n s?a th?ng tin'];
+      const suggestions = ['Giải thích các trường này', 'Tôi muốn sửa thông tin'];
       const action: Extract<AgentAction, { type: 'REQUEST_CONFIRM_FILL' }> = {
         type: 'REQUEST_CONFIRM_FILL',
         fields,
@@ -238,7 +305,7 @@ export class AssistantService {
           ...history,
           { role: 'user' as const, content: input.message, createdAt: now },
           { role: 'assistant' as const, content: message, createdAt: now },
-        ].slice(-20),
+        ].slice(-SESSION_MESSAGE_LIMIT),
       };
       await this.sessions.upsert(session);
       return {
@@ -268,6 +335,7 @@ export class AssistantService {
       intentNormalization.intent === 'UNCLEAR'
       && intentNormalization.confidence >= AssistantService.CLARIFY_INTENT_CONFIDENCE
       && intentNormalization.clarificationQuestion
+      && isExplanatoryClarification(intentNormalization.clarificationQuestion)
       && !shouldLetOrchestratorHandleUnclear(context, intentNormalization)
     ) {
       const clarificationMessage = intentNormalization.clarificationQuestion;
@@ -290,7 +358,7 @@ export class AssistantService {
           ...history,
           { role: 'user' as const, content: input.message, createdAt: now },
           { role: 'assistant' as const, content: clarificationMessage, createdAt: now },
-        ].slice(-20),
+        ].slice(-SESSION_MESSAGE_LIMIT),
       };
       await this.sessions.upsert(session);
       return {
@@ -363,7 +431,7 @@ export class AssistantService {
         ...history,
         { role: 'user' as const, content: input.message, createdAt: now },
         { role: 'assistant' as const, content: result.response.message, createdAt: now },
-      ].slice(-20),
+      ].slice(-SESSION_MESSAGE_LIMIT),
     };
     await this.sessions.upsert(session);
 

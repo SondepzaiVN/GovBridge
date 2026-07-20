@@ -2,146 +2,397 @@
   "schemaVersion": 1,
   "sessions": [
     {
-      "id": "29e966e8-036e-4140-8ec0-bb3d315d6257",
+      "id": "b0156bdf-320d-48e5-822c-18782efb43a2",
       "currentRoute": "/",
       "state": {
         "formSnapshot": {},
         "candidateCases": [],
         "recentFacts": [],
         "knowledgeSession": {
-          "senderId": "sender_e34722a2-2866-48a1-919b-923d5390c198",
-          "sessionId": "knowledge_ef5da5b1-3027-45b7-b9fc-6ef2a7537c0f"
+          "senderId": "sender_0a032f22-1ab2-4b6a-9c52-dfc49d54c738",
+          "sessionId": "knowledge_5c794a75-169f-4062-8af4-7bd421d37683"
         },
         "lastIntentNormalization": {
-          "intent": "NAVIGATION",
-          "confidence": 0.9,
-          "reason": "Người dân muốn biết thủ tục cần làm khi chuyển đến sống với con gái.",
-          "targetTool": "navigation",
-          "clarificationQuestion": null,
-          "procedureHint": {
-            "id": "ho-khau",
-            "name": "Đăng ký thường trú",
-            "route": "/ho-khau"
-          },
+          "intent": "UNCLEAR",
+          "confidence": 0.85,
+          "reason": "Yêu cầu không rõ ràng và không liên quan đến thủ tục hành chính.",
+          "targetTool": null,
+          "clarificationQuestion": "Tôi hiểu bạn đang nói đến một lọ hoa thật. Tuy nhiên, tôi không rõ bạn muốn biết thông tin gì về nó. Bạn có thể cho biết cụ thể hơn về yêu cầu của mình không? Bạn đang tìm kiếm thông tin về cách mua, chăm sóc hoa, hay một điều gì khác liên quan đến hoa?",
+          "procedureHint": null,
           "fieldHints": [],
           "secondaryIntents": [],
           "safetyFlags": []
         }
       },
-      "createdAt": "2026-07-15T15:18:43.474Z",
-      "updatedAt": "2026-07-15T15:40:59.027Z",
+      "createdAt": "2026-07-19T19:06:02.126Z",
+      "updatedAt": "2026-07-19T19:06:02.126Z",
       "messages": [
         {
           "role": "user",
-          "content": "tôi mới mua nhà tôi cần phải làm gì",
-          "createdAt": "2026-07-15T15:18:43.474Z"
+          "content": "1 lọ hoa thật",
+          "createdAt": "2026-07-19T19:06:02.126Z"
         },
         {
           "role": "assistant",
-          "content": "Bạn có thể cho biết cụ thể bạn muốn hỏi về thủ tục nào liên quan đến việc mua nhà không?",
-          "createdAt": "2026-07-15T15:18:43.474Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi muốn đến trang đăng ký thường trú",
-          "createdAt": "2026-07-15T15:19:02.115Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn muốn đến trang đăng ký thường trú để thực hiện các thủ tục liên quan. Thủ tục này sẽ giúp bạn đăng ký thường trú tại địa chỉ mới của mình. Tôi sẽ chuyển bạn đến trang đăng ký thường trú ngay bây giờ.\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-15T15:19:02.115Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới mua nhà tôi cần phải làm gì",
-          "createdAt": "2026-07-15T15:20:23.961Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Bạn có thể cho biết bạn muốn hỏi về thủ tục nào liên quan đến việc mua nhà không?",
-          "createdAt": "2026-07-15T15:20:23.961Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới mua nhà tôi cần phải làm gì",
-          "createdAt": "2026-07-15T15:26:59.543Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Khi bạn mới mua nhà, bạn cần thực hiện một số thủ tục như đăng ký thường trú tại địa chỉ mới, và có thể cần làm các giấy tờ khác liên quan đến sở hữu nhà. Thủ tục đăng ký thường trú sẽ giúp bạn cập nhật thông tin cư trú của mình.\n\nTôi có thể hướng dẫn bạn đến trang đăng ký thường trú để bạn thực hiện thủ tục này. Bạn có muốn chuyển đến trang đó không?\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-15T15:26:59.543Z"
-        },
-        {
-          "role": "user",
-          "content": "tôi mới chuyển đến sống với con gái tôi thì tôi cần làm gì",
-          "createdAt": "2026-07-15T15:40:59.027Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Khi bạn chuyển đến sống với con gái, bạn cần thực hiện thủ tục đăng ký thường trú tại địa chỉ mới. Điều này sẽ giúp bạn được ghi nhận là cư trú tại nơi ở mới và có căn cứ cư trú chính thức.\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
-          "createdAt": "2026-07-15T15:40:59.027Z"
+          "content": "Tôi hiểu bạn đang nói đến một lọ hoa thật. Tuy nhiên, tôi không rõ bạn muốn biết thông tin gì về nó. Bạn có thể cho biết cụ thể hơn về yêu cầu của mình không? Bạn đang tìm kiếm thông tin về cách mua, chăm sóc hoa, hay một điều gì khác liên quan đến hoa?\n\nBạn muốn biết thông tin gì về lọ hoa này?",
+          "createdAt": "2026-07-19T19:06:02.126Z"
         }
       ]
     },
     {
-      "id": "5a58d24d-31ed-4494-8a6e-e422398012a1",
-      "currentRoute": "/dang-ky-tam-tru",
+      "id": "fd75b749-81ab-423c-a06a-67b7fbf2e91e",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "tinhThanhCQ": "92",
+          "xaPhuongCQ": "31135",
+          "coQuanDKCT": "ca_phuong",
+          "sdtCoQuan": "0292 3894 939",
+          "thuTuc": "dktt",
+          "truongHop": "lan_dau",
+          "loaiDKTT": "vao_ho_co",
+          "danToc": "kinh",
+          "tonGiao": "phat_giao",
+          "sdt": "0793920953"
+        },
+        "candidateCases": [],
+        "recentFacts": [
+          {
+            "fieldHint": "danToc",
+            "value": "kinh",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "dân tộc kinh"
+          },
+          {
+            "fieldHint": "sdt",
+            "value": "0793920953",
+            "confidence": 0.9,
+            "source": "chat",
+            "evidence": "số điện thoại là 0793920953"
+          },
+          {
+            "fieldHint": "tonGiao",
+            "value": "Phật Giáo",
+            "confidence": 0.95,
+            "source": "chat"
+          }
+        ],
+        "knowledgeSession": {
+          "senderId": "sender_31b6f385-5d1f-4f2a-a7e7-5a17a12c8131",
+          "sessionId": "knowledge_e697a3f8-247c-438e-8346-48c17e861a10"
+        },
+        "lastIntentNormalization": {
+          "intent": "UI_HIGHLIGHT",
+          "confidence": 0.95,
+          "reason": "Người dân hỏi về vị trí nút gửi hồ sơ.",
+          "targetTool": "ui_highlighter",
+          "clarificationQuestion": null,
+          "procedureHint": null,
+          "fieldHints": [],
+          "secondaryIntents": [],
+          "safetyFlags": []
+        }
+      },
+      "createdAt": "2026-07-19T17:55:22.591Z",
+      "updatedAt": "2026-07-19T18:01:06.357Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi mới mua nhà ở cần thơ tôi sẽ sống lâu dài ở đó phải chú cần làm gì",
+          "createdAt": "2026-07-19T17:55:22.591Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi hiểu bạn vừa mua nhà ở Cần Thơ và muốn đăng ký nơi thường trú tại địa chỉ mới. Thủ tục phù hợp trong trường hợp này là \"Đăng ký thường trú\". Đây là bước cần thiết để ghi nhận nơi cư trú chính thức của bạn tại địa chỉ mới. \n\nTôi sẽ hướng dẫn bạn chuyển đến trang thủ tục này để bạn có thể bắt đầu thực hiện.\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-19T17:55:22.591Z"
+        },
+        {
+          "role": "user",
+          "content": "Các trường hợp tôi đăng ký trên màn hình là sao tôi chưa hiểu lắm bạn giải thích giúp tôi nhé",
+          "createdAt": "2026-07-19T17:55:48.894Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi thấy bạn đang muốn tìm hiểu về các trường hợp đăng ký thường trú. Hiện tại có một số trường hợp như sau:\n\n1. **Đăng ký thường trú cả hộ**: Dành cho những ai muốn đăng ký thường trú cho cả gia đình tại địa chỉ mới.\n2. **Đăng ký thường trú lần đầu**: Dành cho những người chưa từng đăng ký thường trú trước đó.\n3. **Đăng ký thường trú nhân khẩu**: Nếu bạn chỉ muốn đăng ký cho một cá nhân trong hộ gia đình.\n\nBạn thuộc trường hợp nào trong số này?\n\nBạn muốn đăng ký thường trú cho cả hộ, lần đầu hay chỉ cho một cá nhân?",
+          "createdAt": "2026-07-19T17:55:48.894Z"
+        },
+        {
+          "role": "user",
+          "content": "Giúp tôi dân tộc kinh tôn giáo là phật giáo số điện thoại là 0793920853 à nhầm 0793920953 mới đúng",
+          "createdAt": "2026-07-19T17:57:08.471Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi đã hiểu bạn muốn cập nhật thông tin về dân tộc và tôn giáo. Bạn là dân tộc Kinh, tôn giáo Phật giáo, và số điện thoại liên hệ là 0793920953. \n\nTôi sẽ ghi nhận thông tin này cho bạn. Tuy nhiên, bạn vẫn cần cung cấp thêm một số thông tin khác như họ tên, ngày sinh, giới tính, số ĐDCN (CCCD), tỉnh/thành phố nơi đề nghị đăng ký thường trú, xã/phường và địa chỉ cụ thể để hoàn tất thủ tục. \n\nBạn có thể cung cấp những thông tin này không?",
+          "createdAt": "2026-07-19T17:57:08.471Z"
+        },
+        {
+          "role": "user",
+          "content": "Đến giúp tôi tôn giáo làm phật giáo",
+          "createdAt": "2026-07-19T17:57:49.078Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi đã ghi nhận bạn muốn cập nhật tôn giáo thành Phật giáo. Hiện tại, bạn vẫn cần cung cấp thêm các thông tin sau để hoàn tất thủ tục:\n- Họ tên\n- Ngày sinh\n- Giới tính\n- Số ĐDCN (CCCD)\n- Tỉnh/Thành phố (nơi đề nghị ĐKTT)\n- Xã/Phường/Đặc khu\n- Địa chỉ cụ thể\n\nBạn có thể cung cấp những thông tin này không?\n\nBạn có thể cho biết họ tên, ngày sinh và các thông tin còn thiếu không?",
+          "createdAt": "2026-07-19T17:57:49.078Z"
+        },
+        {
+          "role": "user",
+          "content": "tôn giáo là Phật Giáo",
+          "createdAt": "2026-07-19T17:58:18.388Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi đã ghi nhận tôn giáo của bạn là Phật giáo. Tuy nhiên, bạn vẫn cần cung cấp thêm các thông tin sau để hoàn tất thủ tục:\n- Họ tên\n- Ngày sinh\n- Giới tính\n- Số ĐDCN (CCCD)\n- Tỉnh/Thành phố (nơi đề nghị ĐKTT)\n- Xã/Phường/Đặc khu\n- Địa chỉ cụ thể\n\nBạn có thể cung cấp những thông tin này không?",
+          "createdAt": "2026-07-19T17:58:18.388Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi mới mua nhà vậy tôi thuộc trường hợp nào vậy ta",
+          "createdAt": "2026-07-19T17:59:06.239Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Vì bạn mới mua nhà, bạn thuộc trường hợp **Đăng ký thường trú tại chỗ ở hợp pháp thuộc quyền sở hữu của mình**. Cụ thể:\n\n- **Giải thích**: Bạn có thể đăng ký thường trú tại nơi ở mà bạn có quyền sở hữu hợp pháp, bao gồm nhà ở đã mua bán hợp pháp.\n- **Hồ sơ cần chuẩn bị**:\n  1. Tờ khai thay đổi thông tin cư trú (Mẫu CT01).\n  2. Giấy tờ chứng minh chỗ ở hợp pháp, như **Hợp đồng mua bán nhà ở** hoặc giấy chứng nhận quyền sử dụng đất, quyền sở hữu nhà ở nếu đã sang tên.\n\n*Lưu ý: Nếu thông tin này đã được cơ quan đăng ký cư trú khai thác từ cơ sở dữ liệu quốc gia thì bạn không cần xuất trình lại giấy tờ.*",
+          "createdAt": "2026-07-19T17:59:06.239Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi đi gần hết rồi bạn có thể giúp tôi xem hồ sơ còn thiếu gì không",
+          "createdAt": "2026-07-19T17:59:44.737Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn! Để xác định hồ sơ của bạn còn thiếu gì, tôi cần biết thêm thông tin về trường hợp của bạn:\n\n- Bạn đăng ký thường trú vào nhà thuộc quyền sở hữu của mình hay của người thân (vợ/chồng, cha/mẹ, con...)?\n- Hoặc bạn đang đăng ký vào nhà thuê, mượn, ở nhờ? \n\nDưới đây là các giấy tờ cần chuẩn bị theo từng trường hợp:\n\n1. **Chủ sở hữu nhà**:\n   - Tờ khai thay đổi thông tin cư trú (Mẫu CT01).\n   - Giấy chứng nhận quyền sử dụng đất, quyền sở hữu nhà ở hoặc hợp đồng mua bán.\n\n2. **Nhà của người thân**:\n   - Tờ khai CT01.\n   - Giấy tờ chứng minh quan hệ (Giấy khai sinh, Giấy đăng ký kết hôn).\n   - Sự đồng ý của chủ hộ.\n\n3. **Nhà thuê, mượn**:\n   - Tờ khai CT01.\n   - Hợp đồng thuê, cho mượn đã công chứng hoặc chứng thực.\n   - Sự đồng ý của chủ nhà.\n\nBạn có thể cho tôi biết bạn thuộc trường hợp nào không?",
+          "createdAt": "2026-07-19T17:59:44.737Z"
+        },
+        {
+          "role": "user",
+          "content": "Ờm… tôi điền gần hết rồi đó. Bạn coi thử giúp tôi hồ sơ còn thiếu gì hay có chỗ nào sai không?",
+          "createdAt": "2026-07-19T18:00:45.803Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để giúp bạn kiểm tra hồ sơ, hiện tại bạn đã điền đầy đủ thông tin cho các trường sau:\n- **Tỉnh/Thành phố**: Đã có\n- **Xã/Phường**: Đã có\n- **Cơ quan đăng ký cư trú**: Đã có\n- **Thủ tục**: Đã có\n- **Trường hợp**: Đã có\n- **Loại đăng ký**: Đã có\n- **Dân tộc**: Đã có\n- **Số điện thoại liên hệ**: Đã có\n\n**Tuy nhiên, bạn vẫn còn thiếu một số thông tin bắt buộc, bao gồm**:\n- **Họ tên**\n- **Ngày sinh**\n- **Giới tính**\n- **Số ĐDCN (CCCD)**\n- **Tỉnh/Thành phố (nơi đề nghị ĐKTT)**\n- **Xã/Phường/Đặc khu**\n- **Địa chỉ (số nhà, đường phố, thôn, xóm, làng, ấp, bản, buôn, phum, sóc)**\n- **Nội dung đề nghị**\n\nVui lòng hoàn thiện các trường này để hồ sơ của bạn được đầy đủ và chính xác! Nếu cần thêm thông tin hay hỗ trợ, bạn cứ hỏi nhé!",
+          "createdAt": "2026-07-19T18:00:45.803Z"
+        },
+        {
+          "role": "user",
+          "content": "Rồi giờ tôi muốn gửi hồ sơ đi luôn thì bấm ở đâu?",
+          "createdAt": "2026-07-19T18:01:06.357Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Để gửi hồ sơ, bạn hãy tìm nút **\"Gửi hồ sơ\"** hoặc **\"Nộp đơn\"** trên màn hình. Thông thường, nút này sẽ có biểu tượng như một dấu mũi tên hoặc chữ \"Gửi\". Nếu bạn không thấy nút này, hãy kiểm tra các thông tin đã điền có đúng và đầy đủ chưa. \n\nNếu bạn cần thêm thông tin cụ thể về vị trí nút gửi, tôi có thể giúp bạn xác định chính xác hơn!",
+          "createdAt": "2026-07-19T18:01:06.357Z"
+        }
+      ]
+    },
+    {
+      "id": "0d1f31ba-e26a-46f4-ab18-840bd4fabf43",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "tinhThanhCQ": "92",
+          "xaPhuongCQ": "31135",
+          "coQuanDKCT": "ca_phuong",
+          "sdtCoQuan": "0292 3894 939",
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi"
+        },
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_bcb2a725-77b0-4d16-81ec-34fd3f71b0e5",
+          "sessionId": "knowledge_51bfbc26-33d7-4670-9811-7c3d28df4881"
+        },
+        "lastIntentNormalization": {
+          "intent": "PROCEDURE_KNOWLEDGE",
+          "confidence": 0.85,
+          "reason": "Người dân hỏi về trường hợp cụ thể trong thủ tục đăng ký thường trú.",
+          "targetTool": "chat",
+          "clarificationQuestion": "Tôi thấy bạn đang thắc mắc về các trường hợp trong thủ tục Đăng ký thường trú. Có nhiều trường hợp như đăng ký thường trú cả hộ, lần đầu hay cho nhân khẩu. Bạn có thể cho tôi biết bạn thuộc trường hợp nào để tôi giải thích rõ hơn không?",
+          "procedureHint": null,
+          "fieldHints": [],
+          "secondaryIntents": [],
+          "safetyFlags": []
+        }
+      },
+      "createdAt": "2026-07-19T17:51:39.191Z",
+      "updatedAt": "2026-07-19T17:53:16.715Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tôi mới mua nhà ở cần thơ chắc sẽ ở lâu dài luôn tôi cần làm gì",
+          "createdAt": "2026-07-19T17:51:39.191Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi hiểu bạn vừa mua nhà ở Cần Thơ và muốn đăng ký nơi thường trú mới. Thủ tục phù hợp với bạn là Đăng ký thường trú. Đây là bước quan trọng để ghi nhận địa chỉ cư trú chính thức của bạn tại nơi ở mới. \n\nBạn có muốn chuyển đến trang đăng ký thường trú để tiếp tục không?\n\nMình tìm thấy trang **Đăng ký thường trú**. Bạn có muốn chuyển đến trang này không?",
+          "createdAt": "2026-07-19T17:51:39.191Z"
+        },
+        {
+          "role": "user",
+          "content": "Trên màn hình là sao vậy tôi chưa hiểu lắm bạn giải thích giúp tôi nhé",
+          "createdAt": "2026-07-19T17:52:26.165Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi thấy bạn đang xem thông tin về thủ tục Đăng ký thường trú. Tuy nhiên, bạn chưa rõ phần nào trong thông tin đó. Có phải bạn muốn biết về các bước thực hiện, giấy tờ cần chuẩn bị hay là thông tin về cơ quan tiếp nhận? Hãy cho tôi biết cụ thể để tôi có thể giúp bạn tốt hơn.",
+          "createdAt": "2026-07-19T17:52:26.165Z"
+        },
+        {
+          "role": "user",
+          "content": "Trường hợp trên màn hình là sao vậy tôi chưa hiểu lắm sẽ thích giúp tôi với",
+          "createdAt": "2026-07-19T17:53:16.715Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Chào bạn,\n\nTôi xin giải thích rõ hơn về trường hợp bạn đang xem:\n\n1. **Đối tượng áp dụng**: Thủ tục này thường dành cho những người muốn đăng ký khai sinh cho trẻ em dưới 6 tuổi. Người làm thủ tục có thể là cha, mẹ hoặc người giám hộ.\n\n2. **Nội dung thực hiện**: Khi bạn thực hiện thủ tục này, bạn có thể đăng ký khai sinh, đăng ký thường trú và cấp thẻ bảo hiểm y tế cho trẻ trong một lần kê khai.\n\n3. **Trường hợp đặc biệt**: Nếu trẻ không dưới 6 tuổi hoặc thiếu giấy chứng sinh, quy trình có thể khác. Nếu có yếu tố nước ngoài, bạn cũng cần lưu ý rằng quy trình sẽ thuộc thẩm quyền của Ủy ban nhân dân cấp huyện.\n\n4. **Cách thức thực hiện**: Bạn chỉ cần nộp một hồ sơ điện tử, hệ thống sẽ tự động chuyển đến các cơ quan liên quan để xử lý.\n\nNếu bạn có thắc mắc cụ thể nào trên màn hình hoặc cần hỗ trợ thêm, hãy cho tôi biết!",
+          "createdAt": "2026-07-19T17:53:16.715Z"
+        }
+      ]
+    },
+    {
+      "id": "4bd33d09-aa7d-4773-a1d7-ee8ec3f917f2",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi"
+        },
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_5b72c732-199e-433e-80ea-3715a49e365d",
+          "sessionId": "knowledge_0abe541f-8ddb-48c1-acfc-21d69fb5d6c8"
+        },
+        "lastIntentNormalization": {
+          "intent": "PROCEDURE_KNOWLEDGE",
+          "confidence": 0.9,
+          "reason": "Người dân hỏi về phần trường hợp trong thủ tục đăng ký thường trú.",
+          "targetTool": "chat",
+          "clarificationQuestion": "Tôi hiểu bạn đang muốn biết về phần 'trường hợp' trong biểu mẫu đăng ký thường trú. Tuy nhiên, có nhiều loại trường hợp khác nhau như đăng ký thường trú cả hộ, lần đầu hay nhân khẩu. Bạn có thể cho tôi biết bạn đang quan tâm đến trường hợp nào cụ thể không?",
+          "procedureHint": null,
+          "fieldHints": [
+            "truongHop"
+          ],
+          "secondaryIntents": [],
+          "safetyFlags": []
+        }
+      },
+      "createdAt": "2026-07-19T17:44:13.000Z",
+      "updatedAt": "2026-07-19T17:44:13.000Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Chỗ ô trường hợp chọn sao vậy ta, tôi chưa hiểu phần đó lắm, giải thích cho tôi được không ta ơi",
+          "createdAt": "2026-07-19T17:44:13.000Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi hiểu bạn đang muốn biết về phần \"trường hợp\" trong biểu mẫu đăng ký thường trú. Có nhiều loại trường hợp khác nhau như:\n\n1. **Đăng ký thường trú cả hộ**: Dành cho những người muốn đăng ký thường trú cho toàn bộ hộ gia đình.\n2. **Đăng ký thường trú lần đầu**: Dành cho những người lần đầu tiên đăng ký thường trú.\n3. **Đăng ký thường trú nhân khẩu**: Dành cho những người đã có hộ khẩu và cần thêm người vào hộ.\n\nBạn có thể cho tôi biết bạn đang quan tâm đến trường hợp nào cụ thể không?",
+          "createdAt": "2026-07-19T17:44:13.000Z"
+        }
+      ]
+    },
+    {
+      "id": "cfe2016a-932c-4768-be5a-9ec76b256b00",
+      "currentRoute": "/ho-khau",
+      "state": {
+        "formSnapshot": {
+          "thuTuc": "dktt",
+          "loaiDKTT": "lap_ho_moi"
+        },
+        "candidateCases": [],
+        "recentFacts": [],
+        "knowledgeSession": {
+          "senderId": "sender_1ab8d47b-9f9b-4103-a7dd-3af44ca5c9e5",
+          "sessionId": "knowledge_c33baeed-a32f-41fb-bd4e-7517341841fc"
+        },
+        "lastIntentNormalization": {
+          "intent": "PROCEDURE_KNOWLEDGE",
+          "confidence": 0.9,
+          "reason": "Người dân hỏi về cách chọn trường hợp trong thủ tục đăng ký thường trú.",
+          "targetTool": "chat",
+          "clarificationQuestion": "Tôi hiểu bạn đang muốn biết cách chọn trường hợp trong thủ tục đăng ký thường trú. Tuy nhiên, có nhiều trường hợp khác nhau như đăng ký thường trú cả hộ, lần đầu hay nhân khẩu. Bạn có thể cho tôi biết bạn đang ở trong tình huống nào để tôi có thể giải thích rõ hơn không? Ví dụ, bạn đang muốn đăng ký cho cả hộ gia đình hay chỉ cho bản thân?",
+          "procedureHint": null,
+          "fieldHints": [],
+          "secondaryIntents": [],
+          "safetyFlags": []
+        }
+      },
+      "createdAt": "2026-07-19T17:39:30.877Z",
+      "updatedAt": "2026-07-19T17:42:33.521Z",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Không muốn yêu cầu này nữa tôi muốn thực hiện yêu cầu khác",
+          "createdAt": "2026-07-19T17:39:30.877Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi hiểu bạn không muốn thực hiện yêu cầu trước đó và muốn chuyển sang yêu cầu khác. Bạn có thể cho tôi biết rõ hơn về yêu cầu mà bạn muốn thực hiện không?\n\nBạn muốn thực hiện yêu cầu gì khác?",
+          "createdAt": "2026-07-19T17:39:30.877Z"
+        },
+        {
+          "role": "user",
+          "content": "Tôi mới mua nhà ở cần thơ tôi cần làm gì",
+          "createdAt": "2026-07-19T17:39:51.015Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Nguồn tra cứu đã trả về dữ liệu không hoàn chỉnh nên mình chưa thể dùng dữ liệu đó để trả lời chắc chắn. Câu hỏi của bạn vẫn được giữ nguyên; bạn có thể thử lại hoặc cho biết rõ tên thủ tục và nội dung muốn tra cứu, chẳng hạn điều kiện, giấy tờ, quy trình hay nơi nộp.",
+          "createdAt": "2026-07-19T17:39:51.015Z"
+        },
+        {
+          "role": "user",
+          "content": "Chỗ ô trường hợp chọn sao vậy ta, tôi chưa hiểu phần đó lắm, giải thích cho tôi được không ta ơi",
+          "createdAt": "2026-07-19T17:42:33.521Z"
+        },
+        {
+          "role": "assistant",
+          "content": "Tôi hiểu bạn đang muốn biết cách chọn trường hợp trong thủ tục đăng ký thường trú. Có một số lựa chọn khác nhau như đăng ký thường trú cho cả hộ, lần đầu hoặc cho cá nhân. \n\n1. **Đăng ký thường trú cả hộ**: Bạn chọn lựa chọn này nếu muốn đăng ký thường trú cho tất cả các thành viên trong gia đình cùng một lúc.\n2. **Đăng ký thường trú lần đầu**: Đây là lựa chọn dành cho những người lần đầu tiên đăng ký thường trú tại một địa chỉ mới.\n3. **Đăng ký thường trú nhân khẩu**: Bạn chọn lựa chọn này nếu chỉ muốn đăng ký thường trú cho một cá nhân cụ thể trong gia đình.\n\nBạn có thể cho tôi biết tình huống cụ thể của bạn để tôi có thể giúp bạn chọn lựa chọn phù hợp nhất không?\n\nBạn đang muốn đăng ký cho cả hộ gia đình, lần đầu hay chỉ cho cá nhân?",
+          "createdAt": "2026-07-19T17:42:33.521Z"
+        }
+      ]
+    },
+    {
+      "id": "923efcef-1f06-44e6-bcad-76f0c67e4307",
+      "currentRoute": "/",
       "state": {
         "formSnapshot": {},
         "candidateCases": [],
         "recentFacts": [],
         "knowledgeSession": {
-          "senderId": "sender_878b2997-9ac5-462d-ae14-b0666b030e8d",
-          "sessionId": "knowledge_c8c73d52-e459-4074-b2cd-457579980019"
+          "senderId": "sender_c13bde85-ff2a-486c-97bf-47a2c5851e83",
+          "sessionId": "knowledge_6c0e1d37-73b7-4b4f-8d96-de81f62c736b"
         },
         "lastIntentNormalization": {
           "intent": "PROCEDURE_KNOWLEDGE",
-          "confidence": 0.95,
-          "reason": "Người dân hỏi về thủ tục cấp lại CCCD.",
-          "targetTool": "procedure_knowledge",
-          "clarificationQuestion": null,
-          "procedureHint": {
-            "id": "cccd",
-            "name": "Cấp lại CCCD",
-            "route": "/cccd"
-          },
+          "confidence": 0.85,
+          "reason": "Người dân hỏi về thủ tục cần làm khi chuyển nhà.",
+          "targetTool": "navigation",
+          "clarificationQuestion": "Bạn vừa chuyển đến Cần Thơ và cần làm thủ tục gì? Nếu bạn muốn đăng ký thường trú tại địa chỉ mới, bạn có thể cần làm thủ tục đăng ký thường trú. Nếu bạn chỉ ở tạm thời, có thể bạn cần đăng ký tạm trú. Bạn thuộc trường hợp nào?",
+          "procedureHint": null,
           "fieldHints": [],
           "secondaryIntents": [],
           "safetyFlags": []
         }
       },
-      "createdAt": "2026-07-15T14:20:03.655Z",
-      "updatedAt": "2026-07-15T14:23:03.001Z",
+      "createdAt": "2026-07-19T17:39:21.353Z",
+      "updatedAt": "2026-07-19T17:39:21.353Z",
       "messages": [
         {
           "role": "user",
-          "content": "Tôi muốn tìm hiểu thủ tục đăng ký khai sinh",
-          "createdAt": "2026-07-15T14:20:03.655Z"
+          "content": "Tôi mới chuyển nhà đến cần thơ tôi cần làm thủ tục gì",
+          "createdAt": "2026-07-19T17:39:21.353Z"
         },
         {
           "role": "assistant",
-          "content": "Chào bạn, dưới đây là thông tin về thủ tục **Đăng ký Khai Sinh** cho trẻ em:\n\n1. **Thủ tục liên thông** (khuyên dùng): Bạn có thể thực hiện một lần trên môi trường điện tử để xử lý đồng thời 3 việc cho trẻ em dưới 6 tuổi:\n   - Đăng ký khai sinh.\n   - Đăng ký thường trú.\n   - Cấp thẻ Bảo hiểm y tế (BHYT).\n\n2. **Cơ quan giải quyết:**\n   - Ủy ban nhân dân cấp xã (đăng ký khai sinh).\n   - Công an cấp xã (đăng ký thường trú).\n   - Bảo hiểm xã hội cấp huyện (cấp thẻ BHYT).\n\n3. **Cách thức thực hiện:**\n   - Trực tuyến qua Cổng Dịch vụ công quốc gia (dichvucong.gov.vn) hoặc ứng dụng VNeID.\n\n4. **Hồ sơ chuẩn bị:**\n   - Tài khoản đăng nhập Cổng Dịch vụ công hoặc VNeID.\n   - Giấy chứng sinh điện tử (hoặc giấy tờ thay thế).\n   - Thông tin của trẻ (họ tên, ngày sinh, giới tính).\n   - Thông tin của cha/mẹ hoặc người giám hộ.\n   - Thông tin nơi cư trú dự kiến cho trẻ.\n\nNếu bạn cần hướng dẫn chi tiết hơn, vui lòng cho biết thêm thông tin về giấy chứng sinh của bé và bạn là cha, mẹ hay người giám hộ!",
-          "createdAt": "2026-07-15T14:20:03.655Z"
-        },
-        {
-          "role": "user",
-          "content": "Trung quốc thể hiện công khai tử",
-          "createdAt": "2026-07-15T14:20:36.475Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Chào anh/chị,\n\nDưới đây là thông tin về thủ tục **Liên thông khai tử**:\n\n1. **Cách thức thực hiện:**\n   - Trực tuyến qua Cổng Dịch vụ công quốc gia (dichvucong.gov.vn) hoặc ứng dụng VNeID.\n\n2. **Trình tự thực hiện:**\n   - **Bước 1:** Truy cập Cổng Dịch vụ công hoặc ứng dụng VNeID, chọn mục \"Dịch vụ công liên thông khai tử\". Chọn các nội dung cần thực hiện (chỉ khai tử hay liên thông với các dịch vụ khác).\n   - **Bước 2:** Hệ thống tiếp nhận hồ sơ và thông báo hẹn trả kết quả qua Cổng Dịch vụ công hoặc SMS.\n   - **Kết quả:** Nhận Trích lục khai tử và tự động xử lý xóa đăng ký thường trú và các chế độ trợ cấp liên quan ngay trong ngày.\n\nNếu cần hỗ trợ về hồ sơ hoặc cách điền tờ khai, hãy cho tôi biết nhé!",
-          "createdAt": "2026-07-15T14:20:36.475Z"
-        },
-        {
-          "role": "user",
-          "content": "Cấp lại CCCD",
-          "createdAt": "2026-07-15T14:23:03.001Z"
-        },
-        {
-          "role": "assistant",
-          "content": "Mình chưa tìm thấy đủ nguồn để trả lời chắc chắn câu hỏi này.",
-          "createdAt": "2026-07-15T14:23:03.001Z"
+          "content": "Bạn vừa chuyển đến Cần Thơ, có thể bạn cần thực hiện thủ tục đăng ký thường trú nếu đây là nơi ở ổn định và lâu dài. Nếu bạn chỉ ở tạm thời, bạn có thể cần làm thủ tục đăng ký tạm trú. Bạn thuộc trường hợp nào?\n\nBạn muốn đăng ký thường trú hay đăng ký tạm trú?",
+          "createdAt": "2026-07-19T17:39:21.353Z"
         }
       ]
     }

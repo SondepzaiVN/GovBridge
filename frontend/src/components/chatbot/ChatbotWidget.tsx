@@ -314,6 +314,7 @@ const VoiceCallController: React.FC = () => {
     const sendMessageRef = useRef(sendMessage);
     const isFinishingRef = useRef(false);
     const introPlayedRef = useRef(false);
+    const isGreetingInProgressRef = useRef(false);
     const previousGreetingRef = useRef<string | null>(null);
     const bargeInMonitorRef = useRef<BargeInMonitor | null>(null);
     const pendingBargeInAudioRef = useRef<VoiceInitialAudio | null>(null);
@@ -338,10 +339,12 @@ const VoiceCallController: React.FC = () => {
         if (!state.isCallMode) {
             // Reset để lần sau phát lại
             introPlayedRef.current = false;
+            isGreetingInProgressRef.current = false;
             return;
         }
         if (introPlayedRef.current) return;
         introPlayedRef.current = true;
+        isGreetingInProgressRef.current = true;
 
         const greetings = state.messages.length === 0 ? INTRO_GREETINGS : SUBSEQUENT_GREETINGS;
         const greeting = pickRandomGreeting(greetings, previousGreetingRef.current);
@@ -354,6 +357,9 @@ const VoiceCallController: React.FC = () => {
             payload: { status: 'speaking', text: greeting },
         });
         void ttsService.speak(greeting, (isPlaying) => {
+            if (!isPlaying) {
+                isGreetingInProgressRef.current = false;
+            }
             dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
             dispatch({
                 type: 'SET_CALL_STATUS',
@@ -491,7 +497,7 @@ const VoiceCallController: React.FC = () => {
             || (!options.force && stateRef.current.isLoading)
             || (!options.force && stateRef.current.isSpeaking)
             || stateRef.current.requiresUserAction
-            || isFinishingRef.current
+            || (!options.force && isFinishingRef.current)
         ) {
             return;
         }
@@ -544,6 +550,12 @@ const VoiceCallController: React.FC = () => {
     }, [dispatch, finishVoiceUtterance, handleAIResponse, stopBargeInMonitor]);
 
     const handleBargeInSpeechStart = useCallback((initialAudio?: VoiceInitialAudio) => {
+        if (isGreetingInProgressRef.current) {
+            pendingBargeInAudioRef.current = null;
+            console.info('[Voice] speech detected during greeting; barge-in ignored.');
+            return;
+        }
+
         const now = performance.now();
         if (now - lastBargeInAtRef.current < BARGE_IN_COOLDOWN_MS) return;
         lastBargeInAtRef.current = now;
@@ -560,6 +572,7 @@ const VoiceCallController: React.FC = () => {
 
     useEffect(() => {
         const shouldMonitorBargeIn = state.isCallMode
+            && !isGreetingInProgressRef.current
             && !state.requiresUserAction
             && !state.isListening
             && (state.isSpeaking || state.isLoading || state.callStatus === 'thinking' || state.callStatus === 'speaking');
@@ -707,6 +720,16 @@ const ChatbotWidget: React.FC = () => {
             document.removeEventListener('pointerdown', handlePointerDown);
         };
     }, [handleClose, state.isOpen]);
+
+    const wasLoadingRef = useRef(state.isLoading);
+    useEffect(() => {
+        // Nếu vừa chuyển từ isLoading = true -> false (đã trả lời xong)
+        // và chatbot đang đóng, và không phải đang dùng giọng nói -> tự động mở lên
+        if (wasLoadingRef.current && !state.isLoading && !state.isOpen && !state.isCallMode) {
+            openChatbot();
+        }
+        wasLoadingRef.current = state.isLoading;
+    }, [state.isLoading, state.isOpen, state.isCallMode, openChatbot]);
 
     return (
         <>

@@ -172,11 +172,28 @@ export const buildAssistantFormContext = (
   const knownFields = selectSchemaValues(currentProcedure, input.formValues);
   const previousValues = existing?.state?.formSnapshot ?? {};
   const currentStep = getCurrentStep(currentRoute);
-  const visibleFieldIds = new Set(
-    (input.visibleFieldIds ?? [])
+
+  // Trích xuất danh sách field ID phẳng từ cấu trúc phân tầng.
+  const groups = input.visibleFieldGroups ?? [];
+  const visibleFieldIds = new Set<string>(
+    [
+      ...(input.visibleFieldIds ?? []),
+      ...groups.flatMap((group) => group.fieldIds),
+    ]
       .map((fieldId) => fieldId.trim())
       .filter(Boolean),
   );
+
+  // Lookup: fieldId -> sectionTitle của nhóm chứa field đó.
+  const fieldSectionTitleMap = new Map<string, string>();
+  // Lookup: fieldId -> isPrimaryFocus của nhóm chứa field đó.
+  const fieldIsPrimaryFocusMap = new Map<string, boolean>();
+  for (const group of groups) {
+    for (const fieldId of group.fieldIds) {
+      if (group.sectionTitle) fieldSectionTitleMap.set(fieldId, group.sectionTitle);
+      if (group.isPrimaryFocus) fieldIsPrimaryFocusMap.set(fieldId, true);
+    }
+  }
 
   const recentChanges = Object.fromEntries(
     Object.entries(knownFields)
@@ -200,6 +217,8 @@ export const buildAssistantFormContext = (
     .slice(0, MAX_VISIBLE_FIELDS)
     .map((field) => {
       const options = compactVisibleFieldOptions(field);
+      const sectionTitle = fieldSectionTitleMap.get(field.id);
+      const isPrimaryFocus = fieldIsPrimaryFocusMap.get(field.id) ?? false;
       return {
         id: field.id,
         label: field.label,
@@ -207,6 +226,8 @@ export const buildAssistantFormContext = (
         required: field.required,
         isEmpty: !knownFields[field.id]?.trim(),
         priority: 'high' as const,
+        ...(sectionTitle ? { sectionTitle } : {}),
+        ...(isPrimaryFocus ? { isPrimaryFocus } : {}),
         ...(options ? { options } : {}),
       };
     }) ?? [];
