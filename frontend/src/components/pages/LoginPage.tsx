@@ -76,6 +76,11 @@ const LoginPage: React.FC = () => {
         navigate('/dang-nhap', { replace: true, state: location.state });
     };
 
+    const focusInputFromContainer = (event: React.MouseEvent<HTMLDivElement>) => {
+        if ((event.target as HTMLElement).closest('button')) return;
+        event.currentTarget.querySelector<HTMLInputElement>('input:not(:disabled)')?.focus();
+    };
+
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const nextErrors: FormErrors = {};
@@ -245,7 +250,7 @@ const LoginPage: React.FC = () => {
                             <>
                                 <div className="login-ref-field-block">
                                     <label htmlFor="login-ref-full-name" className="sr-only">Họ tên</label>
-                                    <div className={`login-ref-input${errors.fullName ? ' invalid' : ''}`}>
+                                    <div className={`login-ref-input${errors.fullName ? ' invalid' : ''}`} onClick={focusInputFromContainer}>
                                         <UserRound size={23} />
                                         <input id="login-ref-full-name" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Họ tên công dân" autoComplete="name" />
                                     </div>
@@ -253,7 +258,7 @@ const LoginPage: React.FC = () => {
                                 </div>
                                 <div className="login-ref-field-block">
                                     <label htmlFor="login-ref-citizen-id" className="sr-only">Số CCCD / mã định danh</label>
-                                    <div className={`login-ref-input${errors.citizenId ? ' invalid' : ''}`}>
+                                    <div className={`login-ref-input${errors.citizenId ? ' invalid' : ''}`} onClick={focusInputFromContainer}>
                                         <ShieldCheck size={23} />
                                         <input id="login-ref-citizen-id" value={citizenId} onChange={(event) => setCitizenId(event.target.value)} placeholder="Số CCCD/mã định danh" autoComplete="off" />
                                     </div>
@@ -265,7 +270,7 @@ const LoginPage: React.FC = () => {
                         {!isRegister && (
                             <div className="login-ref-field-block">
                                 <label htmlFor="login-ref-username" className="sr-only">{role === 'can-bo' ? 'Mã cán bộ' : 'Số CCCD / mã định danh'}</label>
-                                <div className={`login-ref-input${errors.username ? ' invalid' : ''}`}>
+                                <div className={`login-ref-input${errors.username ? ' invalid' : ''}`} onClick={focusInputFromContainer}>
                                     <UserRound size={23} />
                                     <input
                                         id="login-ref-username"
@@ -281,7 +286,7 @@ const LoginPage: React.FC = () => {
 
                         <div className="login-ref-field-block">
                             <label htmlFor="login-ref-password" className="sr-only">Mật khẩu</label>
-                            <div className={`login-ref-input${errors.password ? ' invalid' : ''}`}>
+                            <div className={`login-ref-input${errors.password ? ' invalid' : ''}`} onClick={focusInputFromContainer}>
                                 <LockKeyhole size={23} />
                                 <input id="login-ref-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mật khẩu" autoComplete={isRegister ? 'new-password' : 'current-password'} />
                                 <button type="button" className="login-ref-password-toggle" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
