@@ -17,6 +17,8 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(200),
   DATA_DIR: z.string().optional(),
+  DATA_STORE: z.enum(['json', 'postgres']).default('json'),
+  DATABASE_URL: z.string().default(''),
   ASSISTANT_PROVIDER: z.enum(['mock', 'vnpt', 'openai']).default('mock'),
   ORCHESTRATOR_PROVIDER: z.enum(['mock', 'openai']).optional(),
   KNOWLEDGE_PROVIDER: z.enum(['mock', 'vnpt']).optional(),
@@ -89,6 +91,10 @@ const preferNewVnptSetting = (
 
 if (orchestratorProvider === 'openai' && !parsed.data.OPENAI_API_KEY.trim()) {
   throw new Error('Invalid backend environment: OPENAI_API_KEY is required when ORCHESTRATOR_PROVIDER=openai.');
+}
+
+if (parsed.data.DATA_STORE === 'postgres' && !parsed.data.DATABASE_URL.trim()) {
+  throw new Error('Invalid backend environment: DATABASE_URL is required when DATA_STORE=postgres.');
 }
 
 export const env = {

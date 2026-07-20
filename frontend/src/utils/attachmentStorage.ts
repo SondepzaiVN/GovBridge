@@ -1,3 +1,5 @@
+import { withAuthHeaders } from '../services/authService';
+
 export type AttachmentMetadata = {
     id: string;
     fileName: string;
@@ -13,6 +15,7 @@ export const saveAttachmentFile = async (file: File): Promise<AttachmentMetadata
 
     const response = await fetch('/api/v1/dashboard/applications/upload', {
         method: 'POST',
+        headers: withAuthHeaders(),
         body: formData,
     });
 
@@ -39,7 +42,9 @@ export const saveAttachmentFile = async (file: File): Promise<AttachmentMetadata
 
 export const getAttachmentFile = async (storageKey: string): Promise<Blob | null> => {
     try {
-        const response = await fetch(`/api/v1/dashboard/applications/attachments/${storageKey}`);
+        const response = await fetch(`/api/v1/dashboard/applications/attachments/${storageKey}`, {
+            headers: withAuthHeaders(),
+        });
         if (!response.ok) return null;
         return await response.blob();
     } catch (error) {

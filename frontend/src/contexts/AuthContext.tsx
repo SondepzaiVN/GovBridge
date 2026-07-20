@@ -4,6 +4,7 @@ import {
     getCurrentUser,
     loginCitizenWithProvider,
     loginWithPassword,
+    registerCitizen,
     type AuthUser,
 } from '../services/authService';
 import { AuthContext, type AuthContextValue } from './useAuth';
@@ -13,12 +14,17 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
 
     const value = useMemo<AuthContextValue>(() => ({
         user,
-        login: (role, username, password, agency) => {
-            const authenticatedUser = loginWithPassword(role, { username, password, agency });
+        login: async (role, username, password, agency) => {
+            const authenticatedUser = await loginWithPassword(role, { username, password, agency });
             setUser(authenticatedUser);
             return Boolean(authenticatedUser);
         },
-        loginWithCitizenProvider: () => setUser(loginCitizenWithProvider()),
+        registerCitizenAccount: async (input) => {
+            const authenticatedUser = await registerCitizen(input);
+            setUser(authenticatedUser);
+            return Boolean(authenticatedUser);
+        },
+        loginWithCitizenProvider: async () => setUser(await loginCitizenWithProvider()),
         logout: () => {
             clearCurrentUser();
             setUser(null);

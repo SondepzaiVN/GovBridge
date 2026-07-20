@@ -12065,7 +12065,7 @@ button.header-nav-link.active {
 
 .login-ref-auth-card {
     width: 100%;
-    max-width: 870px;
+    max-width: 900px;
     min-height: 448px;
     display: grid;
     grid-template-columns: minmax(0, 1.65fr) minmax(260px, 1fr);
@@ -12075,22 +12075,47 @@ button.header-nav-link.active {
     box-shadow: 0 16px 36px rgba(46, 0, 0, 0.28);
 }
 
+.login-ref-auth-card.register {
+    max-width: 920px;
+}
+
 .login-ref-form-pane {
-    padding: 38px 36px 24px;
+    padding: 34px 36px 24px;
     border-right: 1px solid #ebeaea;
 }
 
+.login-ref-form-heading {
+    margin-bottom: 22px;
+}
+
+.login-ref-form-heading > span {
+    display: inline-flex;
+    margin-bottom: 7px;
+    color: #b91c1c;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
 .login-ref-form-pane h1 {
-    margin-bottom: 26px;
+    margin: 0;
     color: #3e3333;
     font-size: 1.4rem;
-    font-weight: 600;
+    font-weight: 750;
     text-transform: none;
+}
+
+.login-ref-form-heading > p {
+    max-width: 480px;
+    margin: 8px 0 0;
+    color: #6b5f5f;
+    font-size: 0.84rem;
+    line-height: 1.55;
 }
 
 .login-ref-form-pane form {
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
 
 .login-ref-field-block {
@@ -12112,6 +12137,7 @@ button.header-nav-link.active {
 
 .login-ref-input:focus-within {
     border-color: #fecc0a;
+    box-shadow: 0 0 0 3px rgba(254, 204, 10, 0.18);
 }
 
 .login-ref-input.invalid {
@@ -12126,6 +12152,12 @@ button.header-nav-link.active {
     color: #3e3333;
     font-family: inherit;
     font-size: 0.9rem;
+}
+
+.login-ref-input input:disabled {
+    background: transparent;
+    color: #7c6f6f;
+    cursor: not-allowed;
 }
 
 .login-ref-input input::placeholder {
@@ -12190,10 +12222,13 @@ button.header-nav-link.active {
     font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
+    transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .login-ref-submit:hover:not(:disabled) {
     background: #bf1118;
+    box-shadow: 0 10px 20px rgba(215, 25, 32, 0.2);
+    transform: translateY(-1px);
 }
 
 .login-ref-submit:disabled {
@@ -12202,8 +12237,9 @@ button.header-nav-link.active {
 }
 
 .login-ref-help {
-    margin-top: 12px;
+    margin: 0;
     font-size: 0.7rem;
+    color: #5f5656;
 }
 
 .login-ref-help button {
@@ -12225,19 +12261,54 @@ button.header-nav-link.active {
     font-size: 0.68rem;
 }
 
+.login-ref-form-footer {
+    display: grid;
+    gap: 10px;
+    margin-top: 2px;
+}
+
+.login-ref-secondary-action {
+    width: 100%;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border: 1px solid #f0c8c9;
+    border-radius: 6px;
+    background: #fff7f7;
+    color: #a30f14;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.login-ref-secondary-action:hover,
+.login-ref-secondary-action:focus-visible {
+    border-color: #d71920;
+    background: #fff0f0;
+}
+
 .login-ref-side-pane {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     padding: 28px 24px;
+    background: linear-gradient(180deg, #fff 0%, #fff8f8 100%);
     text-align: center;
 }
 
 .login-ref-side-pane > img {
-    width: 126px;
-    height: 126px;
+    width: 118px;
+    height: 118px;
     object-fit: contain;
+    padding: 12px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 14px 28px rgba(95, 0, 4, 0.08);
 }
 
 .login-ref-side-pane > p {

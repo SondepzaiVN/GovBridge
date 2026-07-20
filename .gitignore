@@ -8,6 +8,7 @@ ref/
 .codex-work/
 outputs/
 prompt.md
+dev-server*.log
 
 # Runtime data and user uploads
 backend/src/storage/data/applications.json
