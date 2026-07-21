@@ -320,6 +320,7 @@ export const assertSafeVnptOutboundPayload = (
     || !/^[A-Za-z0-9_-]{8,128}$/u.test(payload.session_id)
     || payload.text.length > MAX_VNPT_TEXT_LENGTH
     || countExact(payload.text, '[NGỮ CẢNH GOVBRIDGE]') !== 1
+    || countExact(payload.text, '[YÊU CẦU CĂN CỨ PHÁP LÝ]') !== 1
     || countExact(payload.text, '[CÂU HỎI CỦA NGƯỜI DÂN]') !== 1
     || containsKnownPii(payload.text, knownPii)
     || containsUnredactedDirectPii(payload.text)

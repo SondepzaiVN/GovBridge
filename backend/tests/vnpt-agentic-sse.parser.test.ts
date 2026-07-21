@@ -183,6 +183,37 @@ describe('independent SSE decoder and VNPT stream parser', () => {
     );
   });
 
+  it('joins VNPT text_id token deltas without adding blank lines and preserves references', async () => {
+    const chunkEvent = (text: string, references: unknown[] = []): string => JSON.stringify({
+      object: {
+        sb: {
+          text_id: 'response-id',
+          card_data: [{ text, status: 1, references }],
+          card_data_info: { status: 1 },
+        },
+      },
+    });
+
+    const output = await parseVnptKnowledgeStream(streamFromChunks([
+      sse(
+        chunkEvent('Luật'),
+        chunkEvent(' Cư trú'),
+        chunkEvent(' số 68/2020/QH14', [{
+          title: 'Luật Cư trú số 68/2020/QH14',
+          uri: 'https://example.gov.vn/luat-cu-tru',
+        }]),
+      ),
+    ]));
+    const result = normalizeVnptKnowledgeResult(output);
+
+    expect(output.answer).toBe('Luật Cư trú số 68/2020/QH14');
+    expect(result.references).toEqual([{
+      title: 'Luật Cư trú số 68/2020/QH14',
+      url: 'https://example.gov.vn/luat-cu-tru',
+      documentNumber: '68/2020/QH14',
+    }]);
+  });
+
   it('keeps intentionally repeated identical fragments when they have no identity', async () => {
     const output = await parseVnptKnowledgeStream(
       streamFromChunks([sse(cardEvent('Lặp lại'), cardEvent('Lặp lại'))]),

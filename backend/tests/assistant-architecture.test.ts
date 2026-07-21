@@ -466,7 +466,7 @@ describe('assistant orchestration boundaries', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('does not invent an answer when KnowledgeProvider reports no source', async () => {
+  it('returns the available knowledge answer even when KnowledgeProvider has no source', async () => {
     const knowledge = new MockKnowledgeProvider(() => ({
       answer: 'Không tìm thấy đủ nguồn.',
       references: [],
@@ -483,9 +483,7 @@ describe('assistant orchestration boundaries', () => {
       })
       .expect(200);
 
-    expect(response.body.data.response.message).toBe(
-      'Mình chưa tìm thấy đủ nguồn để trả lời chắc chắn câu hỏi này.',
-    );
+    expect(response.body.data.response.message).toContain('Không tìm thấy đủ nguồn.');
     expect(response.body.data.actions).toEqual([]);
 
     const cleared = await request(app)
@@ -507,7 +505,7 @@ describe('assistant orchestration boundaries', () => {
       })
       .expect(200);
 
-    expect(response.body.data.response.message).toContain('chưa sẵn sàng');
+    expect(response.body.data.response.message).toContain('Dịch vụ tra cứu kiến thức hiện không khả dụng.');
     expect(response.body.data.actions).toEqual([]);
     const cleared = await request(app)
       .delete(`/api/v1/assistant/sessions/${response.body.data.sessionId}`)

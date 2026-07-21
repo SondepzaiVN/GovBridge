@@ -43,6 +43,9 @@ export const serializeVnptKnowledgeText = (
     '[NGỮ CẢNH GOVBRIDGE]',
     ...contextLines,
     '',
+    '[YÊU CẦU CĂN CỨ PHÁP LÝ]',
+    'Nếu câu trả lời dựa trên văn bản pháp luật, hãy nêu rõ số hiệu văn bản, ngày hiệu lực và nguồn/trích dẫn nếu có trong kho tri thức.',
+    '',
     '[CÂU HỎI CỦA NGƯỜI DÂN]',
     dto.redactedQuestion,
   ].join('\n');

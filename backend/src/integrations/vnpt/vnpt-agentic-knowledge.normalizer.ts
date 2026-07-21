@@ -73,9 +73,20 @@ export const normalizeVnptKnowledgeResult = (
     };
   }
 
+  const references = [
+    ...output.references,
+    ...extractKnowledgeReferences(output.answer),
+  ];
+  const seenReferences = new Set<string>();
+
   return {
     answer: output.answer,
-    references: extractKnowledgeReferences(output.answer),
+    references: references.filter((reference) => {
+      const key = `${reference.title}\n${reference.url ?? ''}\n${reference.documentNumber ?? ''}`;
+      if (seenReferences.has(key)) return false;
+      seenReferences.add(key);
+      return true;
+    }).slice(0, 20),
     quickReplies: output.quickReplies,
     provider: 'vnpt-agentic',
     status: vnptAnswerHasNoSource(output.answer) ? 'no_source' : 'success',
