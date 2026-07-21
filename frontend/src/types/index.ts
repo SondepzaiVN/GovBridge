@@ -268,6 +268,7 @@ export interface ChatbotState {
 export type ChatbotAction =
   | { type: 'OPEN' }
   | { type: 'CLOSE' }
+  | { type: 'CLOSE_PANEL' }
   | { type: 'MINIMIZE' }
   | { type: 'ADD_MESSAGE'; payload: ChatMessage }
   | { type: 'UPDATE_MESSAGE_STATUS'; payload: { id: string; status: MessageStatus } }
