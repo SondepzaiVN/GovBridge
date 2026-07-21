@@ -73,7 +73,10 @@ export class VnptOrderedContentAccumulator {
       if (existingIndex >= 0) {
         const existing = this.segments[existingIndex];
         if (existing && existing.text !== text) {
-          this.segments[existingIndex] = { text, identity: fragment.identity };
+          const nextText = fragment.identity.startsWith('stream:')
+            ? this.mergeStreamText(existing.text, text)
+            : text;
+          this.segments[existingIndex] = { text: nextText, identity: fragment.identity };
           this.assertAnswerLimit();
         }
         return;
@@ -108,5 +111,11 @@ export class VnptOrderedContentAccumulator {
     if (this.answer().length > MAX_ANSWER_LENGTH) {
       throw new VnptContentLimitError();
     }
+  }
+
+  private mergeStreamText(current: string, next: string): string {
+    if (next.length > current.length && next.startsWith(current)) return next;
+    if (current.length > next.length && current.startsWith(next)) return current;
+    return `${current}${next}`;
   }
 }

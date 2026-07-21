@@ -99,17 +99,40 @@ const getRouteSpecificCccdFieldMap = (route: string, info: Record<string, string
   return null;
 };
 
+const renderInlineContent = (line: string) => {
+  const parts = line.split(/(\*\*.*?\*\*|\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g);
+  return parts.filter(Boolean).map((part, partIndex) => {
+    const linkMatch = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/u);
+    if (linkMatch) {
+      const [, label, url] = linkMatch;
+      return (
+        <a
+          key={partIndex}
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="message-link"
+        >
+          {label}
+        </a>
+      );
+    }
+    const boldMatch = part.match(/^\*\*(.*?)\*\*$/u);
+    if (boldMatch) return <strong key={partIndex}>{boldMatch[1]}</strong>;
+    return <span key={partIndex}>{part}</span>;
+  });
+};
+
 const renderContent = (content: string) => {
   const lines = content.split('\n');
   return lines.map((line, index) => {
-    const parts = line.split(/\*\*(.*?)\*\*/g);
+    const headingMatch = line.match(/^#{2,4}\s+(.+)$/u);
+    const renderedLine = headingMatch ? headingMatch[1] : line;
     return (
       <React.Fragment key={index}>
-        {parts.map((part, partIndex) =>
-          partIndex % 2 === 1
-            ? <strong key={partIndex}>{part}</strong>
-            : <span key={partIndex}>{part}</span>,
-        )}
+        {headingMatch
+          ? <strong className="message-heading">{renderInlineContent(renderedLine)}</strong>
+          : renderInlineContent(renderedLine)}
         {index < lines.length - 1 && <br />}
       </React.Fragment>
     );

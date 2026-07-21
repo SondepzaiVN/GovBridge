@@ -6,6 +6,7 @@ import {
   VnptOrderedContentAccumulator,
 } from './vnpt-agentic-content.accumulator.js';
 import { extractVnptAgenticEvent } from './vnpt-agentic-event.extractor.js';
+import type { KnowledgeReference } from '../../modules/assistant/knowledge.types.js';
 
 export interface VnptKnowledgeStreamOutput {
   answer: string;
@@ -14,6 +15,7 @@ export interface VnptKnowledgeStreamOutput {
   invalidEventCount: number;
   doneReceived: boolean;
   totalBytes: number;
+  references: KnowledgeReference[];
 }
 
 export const parseVnptKnowledgeStream = async (
@@ -22,6 +24,18 @@ export const parseVnptKnowledgeStream = async (
   const accumulator = new VnptOrderedContentAccumulator();
   let validEventCount = 0;
   let invalidEventCount = 0;
+  const references: KnowledgeReference[] = [];
+  const referenceKeys = new Set<string>();
+
+  const addReferences = (items: KnowledgeReference[]): void => {
+    for (const reference of items) {
+      const key = `${reference.title}\n${reference.url ?? ''}\n${reference.documentNumber ?? ''}`;
+      if (referenceKeys.has(key)) continue;
+      referenceKeys.add(key);
+      references.push(reference);
+      if (references.length >= 20) break;
+    }
+  };
 
   const summary: SseDecodeSummary = await decodeSseStream(body, (sseEvent) => {
     if (!sseEvent.data.trim()) return;
@@ -40,6 +54,7 @@ export const parseVnptKnowledgeStream = async (
       accumulator.addFragments(extracted.fragments);
     }
     accumulator.addButtons(extracted.buttons);
+    addReferences(extracted.references);
   });
 
   return {
@@ -49,5 +64,6 @@ export const parseVnptKnowledgeStream = async (
     invalidEventCount,
     doneReceived: summary.doneReceived,
     totalBytes: summary.totalBytes,
+    references,
   };
 };

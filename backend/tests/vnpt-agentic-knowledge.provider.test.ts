@@ -176,6 +176,9 @@ describe('VnptAgenticKnowledgeProvider', () => {
       '[NGỮ CẢNH GOVBRIDGE]',
       'Loại thông tin cần tra cứu: xác định thủ tục phù hợp',
       '',
+      '[YÊU CẦU CĂN CỨ PHÁP LÝ]',
+      'Nếu câu trả lời dựa trên văn bản pháp luật, hãy nêu rõ số hiệu văn bản, ngày hiệu lực và nguồn/trích dẫn nếu có trong kho tri thức.',
+      '',
       '[CÂU HỎI CỦA NGƯỜI DÂN]',
       'Tôi mới sinh con thì cần làm thủ tục gì?',
     ].join('\n'));

@@ -2617,6 +2617,23 @@ button.header-nav-link.active {
     font-weight: 700;
 }
 
+.message-heading {
+    display: inline-block;
+    margin-top: 4px;
+    color: var(--text-primary);
+}
+
+.message-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.message-link:hover {
+    text-decoration: underline;
+}
+
 .message-bubble br {
     display: block;
     content: '';

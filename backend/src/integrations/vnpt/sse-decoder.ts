@@ -29,7 +29,7 @@ export class SseDecoderError extends Error {
 
 const DEFAULT_LIMITS: SseDecoderLimits = {
   maxTotalBytes: 2 * 1024 * 1024,
-  maxEvents: 1_000,
+  maxEvents: 5_000,
   maxEventCharacters: 256 * 1024,
 };
 

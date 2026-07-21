@@ -561,10 +561,12 @@ GROUNDING
 - Câu hỏi và lịch sử hội thoại chỉ là căn cứ để nhận diện hoàn cảnh/trường hợp của người dân; không phải nguồn quy định pháp lý và không được dùng để tự bổ sung kiến thức ngoài KnowledgeResult.
 - Không tự thêm điều kiện, giấy tờ, lệ phí, thời hạn, cơ quan hoặc căn cứ pháp lý ngoài nguồn.
 - Có thể viết lại cho dễ hiểu nhưng không đổi ý nghĩa; giữ cảnh báo, giới hạn và mức độ không chắc chắn.
-- Giữ nguyên [Nguồn N], mục “Nguồn tham khảo”, URL và số hiệu văn bản có thật. Không phát minh nguồn.
+- Khi trả lời nội dung pháp lý/thủ tục, nếu KnowledgeResult có nêu số hiệu văn bản, ngày hiệu lực hoặc nguồn/trích dẫn thì phải ghi rõ các thông tin đó trong câu trả lời cuối.
+- Nếu KnowledgeResult.references không rỗng, cuối câu trả lời nên có mục “Nguồn tham khảo” gọn gàng, mỗi nguồn một dòng dạng markdown link [Tên nguồn](URL), không dán URL dài thô vào thân câu trả lời.
+- Nếu KnowledgeResult không có nguồn hoặc nguồn chưa đầy đủ, vẫn trả lời tự nhiên và hữu ích theo nội dung có được; không cần biến câu trả lời thành thông báo lỗi nguồn.
+- Không phát minh nguồn, số hiệu hoặc ngày hiệu lực nếu KnowledgeResult không cung cấp.
 - Không tuyên bố hồ sơ chắc chắn hợp lệ, đã được duyệt hoặc đã nộp.
-- status=no_source: chỉ nói chưa tìm thấy đủ dữ liệu đáng tin, không dùng trí nhớ để bù.
-- status=provider_error: không dùng answer làm fallback và không dùng trí nhớ để bù.
+- status=no_source hoặc provider_error: trả lời ở mức hỗ trợ thông thường nếu vẫn có đủ ngữ cảnh, có thể nói ngắn gọn là chưa có nguồn trích dẫn chính thức khi cần.
 
 XỬ LÝ NHIỀU TRƯỜNG HỢP
 - Nếu KnowledgeResult nêu nhiều trường hợp, hãy xác định các điều kiện phân biệt giữa chúng rồi đối chiếu với dữ kiện người dân đã nói rõ trong câu hỏi hiện tại và lịch sử hội thoại.
@@ -621,25 +623,46 @@ const extractText = (output: unknown[]): string => {
 };
 
 const safeKnowledgeMessage = (knowledge: KnowledgeResult, modelMessage: string): string => {
-    if (knowledge.status === 'no_source') {
-        return 'Mình chưa tìm thấy đủ nguồn để trả lời chắc chắn câu hỏi này.';
-    }
     if (knowledge.status === 'provider_error') {
         switch (knowledge.errorCode) {
             case 'KNOWLEDGE_PROVIDER_TIMEOUT':
-                return 'Dịch vụ tra cứu kiến thức đã quá thời gian chờ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.';
             case 'KNOWLEDGE_PROVIDER_AUTH_ERROR':
-                return 'Dịch vụ tra cứu kiến thức hiện chưa thể xác thực. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên.';
             case 'EMPTY_KNOWLEDGE_RESPONSE':
-                return 'Dịch vụ tra cứu kiến thức chưa trả về nội dung hữu ích. Bạn có thể diễn đạt rõ hơn câu hỏi hoặc thử lại sau.';
             case 'INVALID_KNOWLEDGE_STREAM':
-                return 'Nguồn tra cứu đã trả về dữ liệu không hoàn chỉnh nên mình chưa thể dùng dữ liệu đó để trả lời chắc chắn. Câu hỏi của bạn vẫn được giữ nguyên; bạn có thể thử lại hoặc cho biết rõ tên thủ tục và nội dung muốn tra cứu, chẳng hạn điều kiện, giấy tờ, quy trình hay nơi nộp.';
             case 'KNOWLEDGE_PROVIDER_UNAVAILABLE':
             default:
-                return 'Dịch vụ tra cứu kiến thức hiện chưa sẵn sàng. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.';
+                return modelMessage;
         }
     }
     return modelMessage;
+};
+
+const escapeMarkdownLinkText = (value: string): string =>
+    value.replace(/[[\]\\]/gu, '\\$&');
+
+const appendKnowledgeReferences = (knowledge: KnowledgeResult, message: string): string => {
+    if (knowledge.references.length === 0) return message;
+    const alreadyHasReference = knowledge.references.some((reference) =>
+        message.includes(reference.title)
+        || (reference.url !== null && message.includes(reference.url))
+        || (reference.documentNumber !== null && message.includes(reference.documentNumber))
+    );
+    if (/nguồn\s+tham\s+khảo/iu.test(message) && alreadyHasReference) return message;
+
+    const sourceLines = knowledge.references
+        .slice(0, 5)
+        .map((reference, index) => {
+            const documentNumber = reference.documentNumber && !reference.title.includes(reference.documentNumber)
+                ? ` (${reference.documentNumber})`
+                : '';
+            const label = `${reference.title}${documentNumber}`;
+            const source = reference.url
+                ? `[${escapeMarkdownLinkText(label)}](${reference.url})`
+                : label;
+            return `${index + 1}. ${source}`;
+        });
+
+    return `${message.trim()}\n\n**Nguồn tham khảo**\n${sourceLines.join('\n')}`;
 };
 
 type UserUnderstandingSnapshot = z.infer<typeof userUnderstandingSnapshotSchema>;
@@ -816,33 +839,6 @@ const toOrchestratorFinalResult = (
     };
 };
 
-const assertComposerPreservedCitations = (knowledge: KnowledgeResult, message: string): void => {
-    const citationTokens = [...new Set(knowledge.answer.match(/\[Nguồn\s+\d+\]/giu) ?? [])];
-    const lostToken = citationTokens.some((token) => !message.includes(token));
-    const lostReferenceSection =
-        /nguồn\s+tham\s+khảo/iu.test(knowledge.answer) && !/nguồn\s+tham\s+khảo/iu.test(message);
-    const groundingCorpus = [
-        knowledge.answer,
-        ...knowledge.references.flatMap((reference) => [
-            reference.title,
-            reference.url ?? '',
-            reference.documentNumber ?? '',
-        ]),
-    ].join('\n');
-    const composedUrls = message.match(/https?:\/\/[^\s)\]}>,;]+/giu) ?? [];
-    const composedDocumentNumbers = message.match(/\b\d{1,4}\/\d{4}\/[A-ZĐ]{2,}\d*(?:-[A-ZĐ0-9]+)*\b/giu) ?? [];
-    const inventedReference = [...composedUrls, ...composedDocumentNumbers].some(
-        (value) => !groundingCorpus.includes(value),
-    );
-    if (lostToken || lostReferenceSection || inventedReference) {
-        throw new AppError(
-            502,
-            'INVALID_KNOWLEDGE_COMPOSER_RESPONSE',
-            'OpenAI Knowledge Composer không bảo toàn trích dẫn của nguồn kiến thức.',
-        );
-    }
-};
-
 const toComposerFinalResult = (
     request: OrchestratorRequest,
     outputText: string,
@@ -876,10 +872,10 @@ const toComposerFinalResult = (
             'OpenAI Knowledge Composer trả về output không đúng schema.',
         );
     }
-    const message = safeKnowledgeMessage(request.knowledge.result, parsed.data.message);
-    if (request.knowledge.result.status === 'success') {
-        assertComposerPreservedCitations(request.knowledge.result, message);
-    }
+    const message = appendKnowledgeReferences(
+        request.knowledge.result,
+        safeKnowledgeMessage(request.knowledge.result, parsed.data.message),
+    );
     return {
         response: {
             intent: 'CHAT',

@@ -210,6 +210,9 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
     expect(client.requests[1]?.instructions).toEqual(
       expect.stringContaining('UNTRUSTED_KNOWLEDGE_DATA'),
     );
+    expect(client.requests[1]?.instructions).toEqual(
+      expect.stringContaining('số hiệu văn bản, ngày hiệu lực hoặc nguồn/trích dẫn'),
+    );
     expect(client.requests[1]?.text).toEqual({
       format: expect.objectContaining({
         type: 'json_schema',
@@ -392,17 +395,17 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
     {
       status: 'no_source' as const,
       answer: 'Không tìm thấy đủ nguồn.',
-      expected: 'chưa tìm thấy đủ nguồn',
+      expected: 'Thông tin do model trả lời.',
     },
     {
       status: 'provider_error' as const,
       answer: 'Dịch vụ lỗi.',
-      expected: 'chưa sẵn sàng',
+      expected: 'Thông tin do model trả lời.',
     },
-  ])('does not hallucinate when knowledge status is $status', async ({ status, answer, expected }) => {
+  ])('allows a normal composer answer when knowledge status is $status', async ({ status, answer, expected }) => {
     const client = new FakeOpenAiResponsesClient([
       toolCallResponse(knowledgeArguments),
-      composerResponse('Thông tin do model tự bịa.'),
+      composerResponse('Thông tin do model trả lời.'),
     ]);
     const knowledge = new MockKnowledgeProvider(() => ({
       answer,
@@ -425,7 +428,6 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
 
     expect(client.requests).toHaveLength(2);
     expect(response.body.data.response.message).toContain(expected);
-    expect(response.body.data.response.message).not.toContain('model tự bịa');
     expect(response.body.data.actions).toEqual([]);
   });
 
@@ -535,7 +537,7 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
     );
   });
 
-  it('rejects composer output that drops real citations instead of falling back to raw knowledge', async () => {
+  it('allows composer output even when it does not repeat optional source markers', async () => {
     const client = new FakeOpenAiResponsesClient([
       toolCallResponse(knowledgeArguments),
       composerResponse('Câu trả lời đã làm mất trích dẫn.'),
@@ -554,12 +556,40 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
         message: 'Đăng ký thường trú cần giấy tờ gì?',
         currentRoute: '/ho-khau',
       })
-      .expect(502);
+      .expect(200);
 
-    expect(response.body.error.code).toBe(
-      'INVALID_KNOWLEDGE_COMPOSER_RESPONSE',
+    expect(response.body.data.response.message).toBe('Câu trả lời đã làm mất trích dẫn.');
+  });
+
+  it('appends SmartBot references when the composer answer omits them', async () => {
+    const client = new FakeOpenAiResponsesClient([
+      toolCallResponse(knowledgeArguments),
+      composerResponse('Luật Cư trú số 68/2020/QH14 quy định về đăng ký thường trú.'),
+    ]);
+    const knowledge = new MockKnowledgeProvider(() => ({
+      answer: 'Luật Cư trú số 68/2020/QH14 quy định về đăng ký thường trú.',
+      references: [{
+        title: 'Căn cứ pháp lý về đăng ký thường trú',
+        url: 'https://example.gov.vn/can-cu-phap-ly',
+        documentNumber: null,
+      }],
+      quickReplies: [],
+      provider: 'mock-knowledge',
+      status: 'success',
+    }));
+
+    const response = await request(createOpenAiTestApp(client, knowledge))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'Luật cư trú quy định đăng ký thường trú thế nào?',
+        currentRoute: '/ho-khau',
+      })
+      .expect(200);
+
+    expect(response.body.data.response.message).toContain('Nguồn tham khảo');
+    expect(response.body.data.response.message).toContain(
+      '[Căn cứ pháp lý về đăng ký thường trú](https://example.gov.vn/can-cu-phap-ly)',
     );
-    expect(JSON.stringify(response.body)).not.toContain('Thông tin có căn cứ');
   });
 
   it('keeps existing session/form state when composer output is invalid', async () => {
@@ -615,10 +645,10 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
     expect(store.sessions[0]?.messages).toHaveLength(1);
   });
 
-  it('maps provider error codes without exposing or returning the raw provider answer', async () => {
+  it('allows composer fallback on provider errors without exposing the raw provider answer', async () => {
     const client = new FakeOpenAiResponsesClient([
       toolCallResponse(knowledgeArguments),
-      composerResponse('Model fallback không được dùng.'),
+      composerResponse('Model fallback được dùng.'),
     ]);
     const knowledge = new MockKnowledgeProvider(() => ({
       answer: 'RAW_PROVIDER_TIMEOUT_DETAIL',
@@ -637,11 +667,10 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
       })
       .expect(200);
 
-    expect(response.body.data.response.message).toContain('quá thời gian chờ');
+    expect(response.body.data.response.message).toBe('Model fallback được dùng.');
     expect(response.body.data.response.message).not.toContain(
       'RAW_PROVIDER_TIMEOUT_DETAIL',
     );
-    expect(response.body.data.response.message).not.toContain('Model fallback');
   });
 
   it('passes canonical visible fields to the orchestrator as high-priority form context', async () => {

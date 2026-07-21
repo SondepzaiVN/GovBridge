@@ -44,24 +44,11 @@ const composeKnowledgeResult = (
     throw new Error('Knowledge result is required for composition.');
   }
 
-  if (knowledge.result.status === 'provider_error') {
-    const message = knowledge.result.errorCode === 'KNOWLEDGE_PROVIDER_TIMEOUT'
-      ? 'Dịch vụ tra cứu kiến thức đã quá thời gian chờ. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên.'
-      : 'Dịch vụ tra cứu kiến thức hiện chưa sẵn sàng. Dữ liệu biểu mẫu của bạn vẫn được giữ nguyên; bạn có thể thử lại sau.';
+  if (knowledge.result.status !== 'success' && !knowledge.result.answer.trim()) {
     return {
       response: {
         intent: 'CHAT',
-        message,
-      },
-      actions: [],
-      responseProvenance: 'knowledge_composer',
-    };
-  }
-  if (knowledge.result.status === 'no_source') {
-    return {
-      response: {
-        intent: 'CHAT',
-        message: 'Mình chưa tìm thấy đủ nguồn để trả lời chắc chắn câu hỏi này.',
+        message: 'Mình chưa có đủ dữ liệu tra cứu cho câu hỏi này. Bạn có thể hỏi rõ hơn về điều kiện, giấy tờ, quy trình hoặc nơi nộp.',
       },
       actions: [],
       responseProvenance: 'knowledge_composer',
