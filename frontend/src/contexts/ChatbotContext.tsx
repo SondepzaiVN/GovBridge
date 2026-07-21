@@ -90,7 +90,17 @@ const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotStat
       return { ...state, messages };
     }
     case 'SET_LOADING': return { ...state, isLoading: action.payload };
-    case 'SET_LISTENING': return { ...state, isListening: action.payload };
+    case 'SET_LISTENING': {
+      if (action.payload && state.isCallMode && state.callStatus === 'idle') {
+        return {
+          ...state,
+          isListening: true,
+          callStatus: 'listening',
+          callStatusText: null,
+        };
+      }
+      return { ...state, isListening: action.payload };
+    }
     case 'SET_SPEAKING': return { ...state, isSpeaking: action.payload };
     case 'SET_CALL_MODE': return {
       ...state,
@@ -306,6 +316,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       highlightSpeechTimerRef.current = null;
     }
     void ttsService.speak(toSpeechText(message), (isPlaying) => {
+      const shouldReturnToListening = !isPlaying && callModeRef.current && !requiresUserActionRef.current;
       dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
       if (!isPlaying && messageId) {
         dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: messageId, status: 'completed' } });
@@ -313,7 +324,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       dispatch({
         type: 'SET_CALL_STATUS',
         payload: {
-          status: isPlaying ? 'speaking' : 'idle',
+          status: isPlaying ? 'speaking' : shouldReturnToListening ? 'listening' : 'idle',
           text: isPlaying ? 'Trợ lý đang đọc nội dung chỉ dẫn...' : null,
         },
       });
@@ -351,6 +362,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
     if (shouldSpeak) {
       ttsService.speak(content, (isPlaying) => {
+        const shouldReturnToListening = !isPlaying && callModeRef.current && !requiresUserActionRef.current;
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
         if (!isPlaying) {
           dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: msg.id, status: 'completed' } });
@@ -358,7 +370,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         dispatch({
           type: 'SET_CALL_STATUS',
           payload: {
-            status: isPlaying ? 'speaking' : 'idle',
+            status: isPlaying ? 'speaking' : shouldReturnToListening ? 'listening' : 'idle',
             text: isPlaying ? 'Trợ lý đang trả lời bằng giọng nói...' : null,
           },
         });
@@ -599,6 +611,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
 
     if (callModeRef.current && response.intent !== 'HIGHLIGHT') {
       ttsService.speak(response.message, (isPlaying) => {
+        const shouldReturnToListening = !isPlaying && callModeRef.current && !requiresUserActionRef.current;
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
         if (!isPlaying) {
           dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: msg.id, status: 'completed' } });
@@ -606,7 +619,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         dispatch({
           type: 'SET_CALL_STATUS',
           payload: {
-            status: isPlaying ? 'speaking' : 'idle',
+            status: isPlaying ? 'speaking' : shouldReturnToListening ? 'listening' : 'idle',
             text: isPlaying ? 'Trợ lý đang trả lời bằng giọng nói...' : null,
           },
         });

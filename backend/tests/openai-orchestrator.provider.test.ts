@@ -763,6 +763,31 @@ describe('OpenAiOrchestratorProvider tool calling', () => {
     expect(response.body.data.response.intent).toBe('HIGHLIGHT');
   });
 
+  it('highlights the submit button for natural button-location phrasing', async () => {
+    const answer =
+      'Nút nộp hồ sơ nằm ở cuối biểu mẫu. Bạn kéo xuống phần cuối trang để bấm nộp hồ sơ.';
+    const client = new FakeOpenAiResponsesClient([
+      orchestratorResponse(answer),
+    ]);
+
+    const response = await request(createOpenAiTestApp(client, new MockKnowledgeProvider()))
+      .post('/api/v1/assistant/messages')
+      .send({
+        message: 'cái nút bấm nộp hồ sơ ở đâu',
+        currentRoute: '/dang-ky-tam-tru',
+      })
+      .expect(200);
+
+    expect(response.body.data.actions).toEqual([
+      expect.objectContaining({
+        type: 'HIGHLIGHT_ELEMENT',
+        elementId: 'submit-btn',
+        message: answer,
+      }),
+    ]);
+    expect(response.body.data.response.intent).toBe('HIGHLIGHT');
+  });
+
 });
 
 describe('HttpOpenAiResponsesClient errors', () => {

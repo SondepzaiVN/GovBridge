@@ -22,9 +22,15 @@ const isExplicitNextStepRequest = (normalizedMessage: string): boolean => [
 ].some((pattern) => pattern.test(normalizedMessage));
 
 const inferUiHighlightElement = (normalizedMessage: string): string | null => {
-  const asksForSubmitButton =
-    /\b(?:nut\s+)?(?:nop|gui)(?:\s+ho\s+so)?\b/u.test(normalizedMessage)
-    && /\b(?:o dau|cho nao|vi tri|tim|nam dau)\b/u.test(normalizedMessage);
+  const asksForUiLocation = /\b(?:o dau|cho nao|vi tri|tim|nam dau|bam dau|an dau|chon dau)\b/u
+    .test(normalizedMessage);
+  const mentionsUiControl = /\b(?:nut|bam|an|chon|click)\b/u.test(normalizedMessage);
+  const mentionsDossier = /\bho so\b/u.test(normalizedMessage);
+  const mentionsSubmitAction = /\b(?:nop|gui)\b/u.test(normalizedMessage);
+  const asksForSubmitButton = asksForUiLocation
+    && mentionsUiControl
+    && mentionsDossier
+    && (mentionsSubmitAction || /\bnut\b/u.test(normalizedMessage));
   return asksForSubmitButton ? 'submit-btn' : null;
 };
 
@@ -416,7 +422,29 @@ export const planAssistantResult = (
   providerResult: OrchestratorFinalResult,
 ): AssistantResult => {
   const understanding = providerResult.understanding;
+  const inferredHighlightElementId = inferUiHighlightElement(context.normalizedMessage);
   if (!understanding) {
+    if (inferredHighlightElementId) {
+      return {
+        response: {
+          ...providerResult.response,
+          intent: 'HIGHLIGHT',
+          data: {
+            ...(providerResult.response.data ?? {}),
+            elementId: inferredHighlightElementId,
+          },
+        },
+        actions: [
+          ...providerResult.actions,
+          {
+            type: 'HIGHLIGHT_ELEMENT',
+            elementId: inferredHighlightElementId,
+            message: providerResult.response.message,
+          },
+        ],
+      };
+    }
+
     return {
       response: providerResult.response,
       actions: providerResult.actions,
@@ -466,7 +494,7 @@ export const planAssistantResult = (
   // 1.5 Handle Highlight
   const highlightElementId =
     understanding.highlightElementId
-    ?? inferUiHighlightElement(context.normalizedMessage);
+    ?? inferredHighlightElementId;
   if (highlightElementId) {
     actions.push({
       type: 'HIGHLIGHT_ELEMENT',
