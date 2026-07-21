@@ -1884,7 +1884,16 @@ const DangKyTamTruPage: React.FC = () => {
                         >
                             <Save size={16} /> Lưu nháp
                         </button>
-                        <button className="btn btn-primary" type="button" onClick={handleSubmit} disabled={isSubmittingApplication}>
+                        <button
+                            className="btn btn-primary"
+                            type="button"
+                            id="submit-btn"
+                            data-highlight-id="submit-btn"
+                            data-highlight-label="Nút Nộp Hồ Sơ"
+                            aria-label="Nộp hồ sơ"
+                            onClick={handleSubmit}
+                            disabled={isSubmittingApplication}
+                        >
                             <Send size={16} /> {isSubmittingApplication ? 'Đang gửi...' : 'Nộp hồ sơ'}
                         </button>
                     </div>
