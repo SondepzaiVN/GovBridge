@@ -50,6 +50,11 @@ const hasSameInterruptedAssistantMessage = (
 const chatbotReducer = (state: ChatbotState, action: ChatbotAction): ChatbotState => {
   switch (action.type) {
     case 'OPEN': return { ...state, isOpen: true, isMinimized: false };
+    case 'CLOSE_PANEL': return {
+      ...state,
+      isOpen: false,
+      isMinimized: false,
+    };
     case 'CLOSE': return {
       ...state,
       isOpen: false,
@@ -225,6 +230,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const conversationVersionRef = useRef(state.conversationVersion);
   const pendingHighlightSpeechRef = useRef<string | null>(null);
   const pendingHighlightShouldSpeakRef = useRef(false);
+  const pendingHighlightMessageIdRef = useRef<string | null>(null);
   const highlightSpeechTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -287,17 +293,30 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     if (!message || !shouldSpeak) {
       pendingHighlightSpeechRef.current = null;
       pendingHighlightShouldSpeakRef.current = false;
+      pendingHighlightMessageIdRef.current = null;
       return;
     }
 
+    const messageId = pendingHighlightMessageIdRef.current;
     pendingHighlightSpeechRef.current = null;
     pendingHighlightShouldSpeakRef.current = false;
+    pendingHighlightMessageIdRef.current = null;
     if (highlightSpeechTimerRef.current !== null) {
       window.clearTimeout(highlightSpeechTimerRef.current);
       highlightSpeechTimerRef.current = null;
     }
     void ttsService.speak(toSpeechText(message), (isPlaying) => {
       dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
+      if (!isPlaying && messageId) {
+        dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: messageId, status: 'completed' } });
+      }
+      dispatch({
+        type: 'SET_CALL_STATUS',
+        payload: {
+          status: isPlaying ? 'speaking' : 'idle',
+          text: isPlaying ? 'Trợ lý đang đọc nội dung chỉ dẫn...' : null,
+        },
+      });
     });
   }, []);
 
@@ -313,8 +332,10 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     content: string,
     type: ChatMessage['type'] = 'text',
     data?: Record<string, unknown>,
-    suggestions?: string[]
+    suggestions?: string[],
+    options: { speak?: boolean } = {},
   ) => {
+    const shouldSpeak = callModeRef.current && options.speak !== false;
     const msg: ChatMessage = {
       id: createMessageId(),
       role: 'bot',
@@ -328,7 +349,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     };
     dispatch({ type: 'ADD_MESSAGE', payload: msg });
 
-    if (callModeRef.current) {
+    if (shouldSpeak) {
       ttsService.speak(content, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
         if (!isPlaying) {
@@ -343,6 +364,8 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         });
       });
     }
+
+    return msg.id;
   }, []);
 
   const enterConfirmationMode = useCallback(() => {
@@ -396,15 +419,21 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           {
           const shouldSpeakAfterHighlight = callModeRef.current;
           if (shouldSpeakAfterHighlight) {
-            callModeRef.current = false;
             ttsService.stop();
           }
-          addBotMessage(event.message, 'text', undefined, event.suggestions);
+          const messageId = addBotMessage(
+            event.message,
+            'text',
+            undefined,
+            event.suggestions,
+            { speak: false },
+          );
           // Thu chat xuống trước để không che phần giao diện đang được chỉ dẫn.
-          dispatch({ type: 'CLOSE' });
+          dispatch({ type: 'CLOSE_PANEL' });
           dispatch({ type: 'SET_HIGHLIGHT', payload: event.elementId });
           pendingHighlightSpeechRef.current = event.message;
           pendingHighlightShouldSpeakRef.current = shouldSpeakAfterHighlight;
+          pendingHighlightMessageIdRef.current = shouldSpeakAfterHighlight ? messageId : null;
           if (highlightSpeechTimerRef.current !== null) {
             window.clearTimeout(highlightSpeechTimerRef.current);
           }
@@ -545,16 +574,20 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         if (response.data?.elementId) {
           const shouldSpeakAfterHighlight = callModeRef.current;
           if (shouldSpeakAfterHighlight) {
-            callModeRef.current = false;
             ttsService.stop();
           }
-          dispatch({ type: 'CLOSE' });
+          dispatch({ type: 'CLOSE_PANEL' });
           dispatch({ type: 'SET_HIGHLIGHT', payload: response.data.elementId });
-          if (shouldSpeakAfterHighlight) window.setTimeout(() => {
-            void ttsService.speak(toSpeechText(response.message), (isPlaying) => {
-              dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
-            });
-          }, 700);
+          pendingHighlightSpeechRef.current = response.message;
+          pendingHighlightShouldSpeakRef.current = shouldSpeakAfterHighlight;
+          pendingHighlightMessageIdRef.current = shouldSpeakAfterHighlight ? msg.id : null;
+          if (highlightSpeechTimerRef.current !== null) {
+            window.clearTimeout(highlightSpeechTimerRef.current);
+          }
+          highlightSpeechTimerRef.current = window.setTimeout(
+            speakPendingHighlight,
+            1_200,
+          );
         }
         break;
     }
@@ -564,7 +597,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       if (source === 'voice') speakConfirmation(responseMessage);
     }
 
-    if (callModeRef.current) {
+    if (callModeRef.current && response.intent !== 'HIGHLIGHT') {
       ttsService.speak(response.message, (isPlaying) => {
         dispatch({ type: 'SET_SPEAKING', payload: isPlaying });
         if (!isPlaying) {
@@ -579,7 +612,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         });
       });
     }
-  }, [enterConfirmationMode, speakConfirmation]);
+  }, [enterConfirmationMode, speakConfirmation, speakPendingHighlight]);
 
   const interruptAssistantTurn = useCallback(() => {
     rememberLatestInterruptedAssistantMessage();
