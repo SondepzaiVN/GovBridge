@@ -30,6 +30,7 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   status?: MessageStatus;
+  responseTimeMs?: number;
   generationId?: number;
   interruptedAt?: Date;
   data?: Record<string, unknown>;

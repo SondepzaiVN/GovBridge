@@ -181,7 +181,7 @@ interface ChatbotContextValue {
   dispatch: React.Dispatch<ChatbotAction>;
   sendMessage: (text: string) => Promise<void>;
   cancelAssistantResponse: () => void;
-  handleAIResponse: (response: AIResponse) => void;
+  handleAIResponse: (response: AIResponse, metrics?: { responseTimeMs?: number }) => void;
   interruptAssistantTurn: () => void;
   openChatbot: () => void;
   clearHighlight: () => void;
@@ -241,6 +241,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   const pendingHighlightSpeechRef = useRef<string | null>(null);
   const pendingHighlightShouldSpeakRef = useRef(false);
   const pendingHighlightMessageIdRef = useRef<string | null>(null);
+  const pendingAgentEventResponseTimeMsRef = useRef<number | null>(null);
   const highlightSpeechTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -344,7 +345,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
     type: ChatMessage['type'] = 'text',
     data?: Record<string, unknown>,
     suggestions?: string[],
-    options: { speak?: boolean } = {},
+    options: { speak?: boolean; responseTimeMs?: number } = {},
   ) => {
     const shouldSpeak = callModeRef.current && options.speak !== false;
     const msg: ChatMessage = {
@@ -354,6 +355,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       content,
       timestamp: new Date(),
       status: callModeRef.current ? 'speaking' : 'completed',
+      responseTimeMs: options.responseTimeMs,
       generationId: activeGenerationRef.current,
       data,
       suggestions,
@@ -418,9 +420,15 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   // ============================================================
   useEffect(() => {
     const handleAgentEvent = (event: AgentEvent) => {
+      const consumeResponseTimeOptions = () => {
+        const responseTimeMs = pendingAgentEventResponseTimeMsRef.current;
+        pendingAgentEventResponseTimeMsRef.current = null;
+        return responseTimeMs === null ? {} : { responseTimeMs };
+      };
+
       switch (event.type) {
         case 'CHAT':
-          addBotMessage(event.message, 'text', event.data, event.suggestions);
+          addBotMessage(event.message, 'text', event.data, event.suggestions, consumeResponseTimeOptions());
           if (event.data?.documentReview) {
             dispatch({ type: 'SET_CALL_MODE', payload: false });
             dispatch({ type: 'OPEN' });
@@ -438,7 +446,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
             'text',
             undefined,
             event.suggestions,
-            { speak: false },
+            { speak: false, ...consumeResponseTimeOptions() },
           );
           // Thu chat xuống trước để không che phần giao diện đang được chỉ dẫn.
           dispatch({ type: 'CLOSE_PANEL' });
@@ -462,7 +470,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           break;
 
         case 'FILL_FORM':
-          addBotMessage(event.message, 'form-filled', undefined, event.suggestions);
+          addBotMessage(event.message, 'form-filled', undefined, event.suggestions, consumeResponseTimeOptions());
           onFillFormRef.current(event.fields);
           if (window.innerWidth <= 768) {
             setTimeout(() => dispatch({ type: 'CLOSE' }), 800);
@@ -482,6 +490,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
               previousValues: event.previousValues,
             },
             event.suggestions,
+            consumeResponseTimeOptions(),
           );
           if (source === 'voice') speakConfirmation(confirmationMessage);
           break;
@@ -491,7 +500,13 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
           {
           const confirmationMessage = withConfirmationGuidance(event.message);
           const source = enterConfirmationMode();
-          addBotMessage(confirmationMessage, 'navigation-confirm', undefined, event.suggestions);
+          addBotMessage(
+            confirmationMessage,
+            'navigation-confirm',
+            undefined,
+            event.suggestions,
+            consumeResponseTimeOptions(),
+          );
           // Đặt pending navigation, user confirm thì mới navigate.
           dispatch({
             type: 'SET_PENDING_NAV',
@@ -506,21 +521,22 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
             event.message,
             'validation-result',
             { validationErrors: event.validationErrors },
-            event.suggestions
+            event.suggestions,
+            consumeResponseTimeOptions(),
           );
           break;
 
         case 'SHOW_SERVICE_INFO':
-          addBotMessage(event.message, 'text', undefined, event.suggestions);
+          addBotMessage(event.message, 'text', undefined, event.suggestions, consumeResponseTimeOptions());
           break;
 
         case 'ERROR':
-          addBotMessage(event.message, 'text', undefined, ['Thử lại', 'Tôi cần hỗ trợ']);
+          addBotMessage(event.message, 'text', undefined, ['Thử lại', 'Tôi cần hỗ trợ'], consumeResponseTimeOptions());
           break;
 
         case 'NEXT_STEP':
           if (event.message) {
-            addBotMessage(event.message, 'text', undefined, event.suggestions);
+            addBotMessage(event.message, 'text', undefined, event.suggestions, consumeResponseTimeOptions());
           }
           break;
       }
@@ -541,7 +557,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
   // handleAIResponse vẫn hỗ trợ backward compatibility cho mock/VNPT path.
   // Khi dùng OpenAI Tool Calling, event đã được emit qua agentEventBus.
   // ============================================================
-  const handleAIResponse = useCallback((response: AIResponse) => {
+  const handleAIResponse = useCallback((response: AIResponse, metrics: { responseTimeMs?: number } = {}) => {
     // Legacy path: mock/VNPT không emit event thì xử lý trực tiếp.
     const isConfirmation = response.intent === 'NAVIGATE' || response.intent === 'OCR_CONFIRM';
     const responseMessage = isConfirmation
@@ -557,6 +573,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       content: responseMessage,
       timestamp: new Date(),
       status: callModeRef.current ? 'speaking' : 'completed',
+      responseTimeMs: metrics.responseTimeMs,
       generationId: activeGenerationRef.current,
       data: response.data as Record<string, unknown> | undefined,
       suggestions: response.suggestions,
@@ -682,6 +699,9 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
       });
     }
 
+    const responseStartedAt = performance.now();
+    const getResponseTimeMs = () => Math.max(0, Math.round(performance.now() - responseStartedAt));
+
     try {
       const visibleFieldGroups = collectVisibleFieldGroups();
 
@@ -741,10 +761,13 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         return;
       }
 
+      const responseTimeMs = getResponseTimeMs();
       if (result.actions.length > 0) {
+        pendingAgentEventResponseTimeMsRef.current = responseTimeMs;
         result.actions.forEach((action) => agentEventBus.emit(action));
+        pendingAgentEventResponseTimeMsRef.current = null;
       } else {
-        handleAIResponse(result.response);
+        handleAIResponse(result.response, { responseTimeMs });
       }
       dispatch({ type: 'UPDATE_MESSAGE_STATUS', payload: { id: messageRequest.id, status: 'completed' } });
     } catch (err) {
@@ -770,6 +793,7 @@ export const ChatbotProvider: React.FC<ChatbotProviderProps> = ({
         type: 'text',
         content: message,
         timestamp: new Date(),
+        responseTimeMs: getResponseTimeMs(),
         suggestions: isConnectivityIssue
           ? ['Kiểm tra Wi-Fi', 'Thử lại sau']
           : ['Tra cứu thủ tục', 'Hướng dẫn thao tác', 'Điền biểu mẫu'],

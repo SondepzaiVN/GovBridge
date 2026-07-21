@@ -165,6 +165,12 @@ const getBotMessageStatusLabel = (status: ChatMessage['status']) => {
   }
 };
 
+const formatResponseTime = (responseTimeMs?: number) => {
+  if (typeof responseTimeMs !== 'number' || !Number.isFinite(responseTimeMs)) return null;
+  if (responseTimeMs < 1_000) return `${responseTimeMs} ms`;
+  return `${(responseTimeMs / 1_000).toFixed(2)} giây`;
+};
+
 interface ChatMessageProps {
   message: ChatMessage;
 }
@@ -191,6 +197,7 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
   const statusLabel = isBot
     ? getBotMessageStatusLabel(message.status)
     : getUserMessageStatusLabel(message.status);
+  const responseTimeLabel = isBot ? formatResponseTime(message.responseTimeMs) : null;
 
   const showFillSuccessMessage = (
     voiceMessage: string,
@@ -568,6 +575,11 @@ const ChatMessageItem: React.FC<ChatMessageProps> = ({ message }) => {
           {statusLabel && (
             <span className={`message-status message-status--${message.status}`}>
               {statusLabel}
+            </span>
+          )}
+          {responseTimeLabel && (
+            <span className="message-response-time" title="Thời gian từ lúc gửi câu hỏi đến khi nhận phản hồi hoàn chỉnh">
+              Phản hồi: {responseTimeLabel}
             </span>
           )}
         </span>
